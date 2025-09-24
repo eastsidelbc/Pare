@@ -1,0 +1,1237 @@
+<div id="all_team_stats" class="table_wrapper">
+
+    <div class="section_heading assoc_team_stats has_controls" id="team_stats_sh">
+        <span class="section_anchor" id="team_stats_link" data-label="Team Defense"></span>
+        <h2>Team Defense</h2>
+        <div class="section_heading_text">
+            <ul>
+                <li class="hasmore"><span>Share &amp; Export</span>
+                    <div>
+                        <ul>
+                            <li><button class="tooltip"
+                                    tip="Use a customizable report creator that can&lt;br&gt;output HTML, CSV, or a shareable link."
+                                    type="button" id="share_on_team_stats">Modify, Export &amp; Share Table</button>
+                            </li>
+                            <li><button class="tooltip" tip="Export table as &lt;br&gt;suitable for use with Excel"
+                                    type="button">Get as Excel Workbook</button><a id="dlink"
+                                    style="display: none;"></a></li>
+                            <li><button class="tooltip"
+                                    tip="Convert the table below to comma-separated values&lt;br&gt;suitable for use with Excel"
+                                    type="button">Get table as CSV (for Excel)</button></li>
+                            <li><button class="tooltip" tip="Get a link directly to this table on this page"
+                                    type="button" id="a_team_stats" name="team_stats" href="#team_stats">Get Link to
+                                    Table</button></li>
+                            <li><button class="tooltip" tip="" type="button">About Sharing Tools</button></li>
+                            <li><button class="tooltip" tip="" type="button"><a
+                                        href="https://www.youtube.com/watch?v=MWapXbaWs_U&amp;feature=youtu.be"
+                                        target="_blank">Video: SR Sharing Tools &amp; How-to</a></button></li>
+                            <li><button class="tooltip" tip="" type="button"><a
+                                        href="https://www.youtube.com/watch?v=JkDLV0roT14&amp;feature=youtu.be"
+                                        target="_blank">Video: Stats Table Tips &amp; Tricks</a></button></li>
+                            <li><button class="tooltip" tip="" type="button"><a
+                                        href="https://www.sports-reference.com/data_use.html" target="_blank">Data Usage
+                                        Terms</a></button></li>
+                        </ul>
+                    </div>
+                </li>
+                <li><button class="tooltip"
+                        tip="Show a glossary for each term in the table below&lt;br&gt;or hold your mouse over the header"
+                        type="button">Glossary</button></li>
+                <li><button class="tooltip"
+                        tip="Convert the counting stats in the table below to a per-match value.&lt;br&gt;Changed values will be shaded."
+                        type="button" id="team_stats_per_match_toggle">Toggle Per-Game Stats</button></li>
+            </ul>
+        </div>
+
+
+    </div>
+    <div class="table_container is_setup" id="div_team_stats">
+
+        <table class="per_match_toggle sortable stats_table now_sortable" id="team_stats" data-cols-to-freeze=",2">
+            <caption>Team Defense Table</caption>
+
+
+            <colgroup>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+                <col>
+            </colgroup>
+            <thead>
+
+
+                <tr class="over_header">
+                    <th aria-label="" data-stat="" colspan="2" class=" over_header center"></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th aria-label="" data-stat="header_tot_off_tgl" colspan="3" class=" over_header center">Tot Yds
+                        &amp; TO</th>
+                    <th></th>
+                    <th></th>
+                    <th aria-label="" data-stat="header_pass" colspan="7" class=" over_header center">Passing</th>
+                    <th aria-label="" data-stat="header_rush" colspan="5" class=" over_header center">Rushing</th>
+                    <th aria-label="" data-stat="header_penalties" colspan="3" class=" over_header center">Penalties
+                    </th>
+                    <th aria-label="" data-stat="" colspan="2" class=" over_header center"></th>
+                    <th></th>
+                </tr>
+
+                <tr>
+                    <th aria-label="Rk" data-stat="ranker" scope="col"
+                        class="ranker poptip sort_default_asc show_partial_when_sorting center"
+                        data-tip="&lt;b&gt;Rank&lt;/b&gt;&lt;br&gt;This is a count of the rows from top to bottom.&lt;br&gt;It is recalculated following the sorting of a column.">
+                        Rk</th>
+                    <th aria-label="Tm" data-stat="team" scope="col"
+                        class=" poptip sort_default_asc show_partial_when_sorting left">Tm</th>
+                    <th aria-label="Games" data-stat="g" scope="col" class=" poptip center" data-tip="Games played"
+                        data-over-header="Games">G</th>
+                    <th aria-label="Points For" data-stat="points" scope="col" class=" poptip center"
+                        data-tip="Points allowed by team" data-over-header="Points">PA</th>
+                    <th aria-label="Yds" data-stat="total_yards" scope="col" class=" poptip center">Yds</th>
+                    <th aria-label=" Offensive Plays Run " data-stat="plays_offense" scope="col" class=" poptip center"
+                        data-tip="Offensive Plays: Pass Attempts + Rush Attempts + Times Sacked"
+                        data-over-header="Tot Yds &amp; TO">Ply</th>
+                    <th aria-label=" Yards Per Offensive Play " data-stat="yds_per_play_offense" scope="col"
+                        class=" poptip center"
+                        data-tip="Yards per Offensive Play&lt;br&gt;(Rush + Pass Yards)/( Pass Attempts + Rush Attempts + Times Sacked)"
+                        data-over-header="Tot Yds &amp; TO">Y/P</th>
+                    <th aria-label="Turnovers" data-stat="turnovers" scope="col" class=" poptip center"
+                        data-tip="Takeaways" data-over-header="Tot Yds &amp; TO">TO</th>
+                    <th aria-label="Fumbles Lost" data-stat="fumbles_lost" scope="col" class=" poptip center"
+                        data-tip="Fumbles Lost by Team" data-over-header="Fumbles">FL</th>
+                    <th aria-label="1st Downs" data-stat="first_down" scope="col" class=" poptip center"
+                        data-over-header="First Downs">1stD</th>
+                    <th aria-label="Passes Completed" data-stat="pass_cmp" scope="col" class=" poptip center"
+                        data-tip="Passes completed" data-over-header="Passing">Cmp</th>
+                    <th aria-label="Pass Attempts" data-stat="pass_att" scope="col" class=" poptip center"
+                        data-tip="Passes attempted" data-over-header="Passing">Att</th>
+                    <th aria-label="Passing Yds" data-stat="pass_yds" scope="col" class=" poptip center"
+                        data-tip="Yards Gained by Passing&lt;br&gt;For teams, sack yardage is deducted from this total"
+                        data-over-header="Passing">Yds</th>
+                    <th aria-label="Passing TD" data-stat="pass_td" scope="col" class=" poptip center"
+                        data-tip="Passing Touchdowns" data-over-header="Passing">TD</th>
+                    <th aria-label="Passes Intercepted" data-stat="pass_int" scope="col" class=" poptip center"
+                        data-tip="Interceptions thrown" data-over-header="Passing">Int</th>
+                    <th aria-label="Net Yds/Pass Att" data-stat="pass_net_yds_per_att" scope="col"
+                        class=" poptip hide_non_quals center"
+                        data-tip="Net Yards gained per pass attempt&lt;br /&gt;(Passing Yards - Sack Yards) / (Passes Attempted + Times Sacked)&lt;br /&gt;Minimum 14 attempts per schedule game to qualify as leader.&lt;br /&gt;Minimum 1500 pass attempts to qualify as career leader."
+                        data-over-header="Passing" data-filter="1" data-name="Net Yds/Pass Att">NY/A</th>
+                    <th aria-label="1stD" data-stat="pass_fd" scope="col" class=" poptip center"
+                        data-tip="First Downs by Passing" data-over-header="Passing">1stD</th>
+                    <th aria-label="Rushing Att" data-stat="rush_att" scope="col" class=" poptip center"
+                        data-tip="Rushing Attempts (sacks not included in NFL)" data-over-header="Rushing">Att</th>
+                    <th aria-label="Rushing Yds" data-stat="rush_yds" scope="col" class=" poptip center"
+                        data-tip="Rushing Yards Gained (sack yardage is not included by NFL)"
+                        data-over-header="Rushing">Yds</th>
+                    <th aria-label="Rushing TD" data-stat="rush_td" scope="col" class=" poptip center"
+                        data-tip="Rushing Touchdowns" data-over-header="Rushing">TD</th>
+                    <th aria-label="Yds/Rushing Att" data-stat="rush_yds_per_att" scope="col"
+                        class=" poptip hide_non_quals center"
+                        data-tip="Rushing Yards per Attempt&lt;br&gt;Minimum 6.25 rushes per game scheduled to qualify as leader.&lt;br /&gt;Minimum 750 rushes to qualify as career leader."
+                        data-over-header="Rushing" data-filter="1" data-name="Yds/Rushing Att">Y/A</th>
+                    <th aria-label="1stD" data-stat="rush_fd" scope="col" class=" poptip center"
+                        data-tip="First Downs by Rushing" data-over-header="Rushing">1stD</th>
+                    <th aria-label="Penalties" data-stat="penalties" scope="col" class=" poptip center"
+                        data-tip="Penalties committed by team and accepted " data-over-header="Penalties">Pen</th>
+                    <th aria-label="Penalty Yds" data-stat="penalties_yds" scope="col" class=" poptip center"
+                        data-tip="Penalties in yards committed by team " data-over-header="Penalties">Yds</th>
+                    <th aria-label="1stPy" data-stat="pen_fd" scope="col" class=" poptip center"
+                        data-tip="First Downs by Penalty" data-over-header="Penalties">1stPy</th>
+                    <th aria-label="Sc%" data-stat="score_pct" scope="col" class=" poptip center"
+                        data-tip="Percentage of drives ending in an offensive score">Sc%</th>
+                    <th aria-label="TO%" data-stat="turnover_pct" scope="col" class=" poptip center"
+                        data-tip="Percentage of drives ending in an offensive turnover">TO%</th>
+                    <th aria-label="EXP" data-stat="exp_pts_def_tot" scope="col" class=" poptip center"
+                        data-tip="Expected points contributed by all defense" data-over-header="Expected Points">EXP
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-row="0">
+                    <th scope="row" class="right " data-stat="ranker" csk="1">1</th>
+                    <td class="left " data-stat="team"><a href="/teams/gnb/2025.htm">Green Bay Packers</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">44</td>
+                    <td class="right " data-stat="total_yards">697</td>
+                    <td class="right " data-stat="plays_offense">187</td>
+                    <td class="right " data-stat="yds_per_play_offense">3.7</td>
+                    <td class="right " data-stat="turnovers">2</td>
+                    <td class="right iz" data-stat="fumbles_lost">0</td>
+                    <td class="right " data-stat="first_down">46</td>
+                    <td class="right " data-stat="pass_cmp">76</td>
+                    <td class="right " data-stat="pass_att">117</td>
+                    <td class="right " data-stat="pass_yds">504</td>
+                    <td class="right " data-stat="pass_td">3</td>
+                    <td class="right " data-stat="pass_int">2</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">4.0</td>
+                    <td class="right " data-stat="pass_fd">30</td>
+                    <td class="right " data-stat="rush_att">60</td>
+                    <td class="right " data-stat="rush_yds">193</td>
+                    <td class="right " data-stat="rush_td">1</td>
+                    <td class="right " data-stat="rush_yds_per_att">3.2</td>
+                    <td class="right " data-stat="rush_fd">10</td>
+                    <td class="right " data-stat="penalties">20</td>
+                    <td class="right " data-stat="penalties_yds">160</td>
+                    <td class="right " data-stat="pen_fd">6</td>
+                    <td class="right " data-stat="score_pct">30.0</td>
+                    <td class="right " data-stat="turnover_pct">6.7</td>
+                    <td class="right " data-stat="exp_pts_def_tot">19.44</td>
+                </tr>
+                <tr data-row="1">
+                    <th scope="row" class="right " data-stat="ranker" csk="2">2</th>
+                    <td class="left " data-stat="team"><a href="/teams/sea/2025.htm">Seattle Seahawks</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">47</td>
+                    <td class="right " data-stat="total_yards">935</td>
+                    <td class="right " data-stat="plays_offense">201</td>
+                    <td class="right " data-stat="yds_per_play_offense">4.7</td>
+                    <td class="right " data-stat="turnovers">5</td>
+                    <td class="right iz" data-stat="fumbles_lost">0</td>
+                    <td class="right " data-stat="first_down">58</td>
+                    <td class="right " data-stat="pass_cmp">74</td>
+                    <td class="right " data-stat="pass_att">111</td>
+                    <td class="right " data-stat="pass_yds">665</td>
+                    <td class="right " data-stat="pass_td">4</td>
+                    <td class="right " data-stat="pass_int">5</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">5.7</td>
+                    <td class="right " data-stat="pass_fd">33</td>
+                    <td class="right " data-stat="rush_att">84</td>
+                    <td class="right " data-stat="rush_yds">270</td>
+                    <td class="right iz" data-stat="rush_td">0</td>
+                    <td class="right " data-stat="rush_yds_per_att">3.2</td>
+                    <td class="right " data-stat="rush_fd">17</td>
+                    <td class="right " data-stat="penalties">22</td>
+                    <td class="right " data-stat="penalties_yds">153</td>
+                    <td class="right " data-stat="pen_fd">8</td>
+                    <td class="right " data-stat="score_pct">28.6</td>
+                    <td class="right " data-stat="turnover_pct">14.3</td>
+                    <td class="right " data-stat="exp_pts_def_tot">2.69</td>
+                </tr>
+                <tr data-row="2">
+                    <th scope="row" class="right " data-stat="ranker" csk="3">3</th>
+                    <td class="left " data-stat="team"><a href="/teams/sfo/2025.htm">San Francisco 49ers</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">49</td>
+                    <td class="right " data-stat="total_yards">797</td>
+                    <td class="right " data-stat="plays_offense">181</td>
+                    <td class="right " data-stat="yds_per_play_offense">4.4</td>
+                    <td class="right " data-stat="turnovers">3</td>
+                    <td class="right " data-stat="fumbles_lost">3</td>
+                    <td class="right " data-stat="first_down">51</td>
+                    <td class="right " data-stat="pass_cmp">63</td>
+                    <td class="right " data-stat="pass_att">92</td>
+                    <td class="right " data-stat="pass_yds">486</td>
+                    <td class="right " data-stat="pass_td">4</td>
+                    <td class="right iz" data-stat="pass_int">0</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">5.0</td>
+                    <td class="right " data-stat="pass_fd">26</td>
+                    <td class="right " data-stat="rush_att">84</td>
+                    <td class="right " data-stat="rush_yds">311</td>
+                    <td class="right " data-stat="rush_td">1</td>
+                    <td class="right " data-stat="rush_yds_per_att">3.7</td>
+                    <td class="right " data-stat="rush_fd">19</td>
+                    <td class="right " data-stat="penalties">16</td>
+                    <td class="right " data-stat="penalties_yds">105</td>
+                    <td class="right " data-stat="pen_fd">6</td>
+                    <td class="right " data-stat="score_pct">29.0</td>
+                    <td class="right " data-stat="turnover_pct">9.7</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-0.11</td>
+                </tr>
+                <tr data-row="3">
+                    <th scope="row" class="right " data-stat="ranker" csk="4">4</th>
+                    <td class="left " data-stat="team"><a href="/teams/sdg/2025.htm">Los Angeles Chargers</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">50</td>
+                    <td class="right " data-stat="total_yards">830</td>
+                    <td class="right " data-stat="plays_offense">171</td>
+                    <td class="right " data-stat="yds_per_play_offense">4.9</td>
+                    <td class="right " data-stat="turnovers">3</td>
+                    <td class="right iz" data-stat="fumbles_lost">0</td>
+                    <td class="right " data-stat="first_down">42</td>
+                    <td class="right " data-stat="pass_cmp">62</td>
+                    <td class="right " data-stat="pass_att">107</td>
+                    <td class="right " data-stat="pass_yds">546</td>
+                    <td class="right " data-stat="pass_td">2</td>
+                    <td class="right " data-stat="pass_int">3</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">4.8</td>
+                    <td class="right " data-stat="pass_fd">22</td>
+                    <td class="right " data-stat="rush_att">57</td>
+                    <td class="right " data-stat="rush_yds">284</td>
+                    <td class="right " data-stat="rush_td">2</td>
+                    <td class="right " data-stat="rush_yds_per_att">5.0</td>
+                    <td class="right " data-stat="rush_fd">16</td>
+                    <td class="right " data-stat="penalties">25</td>
+                    <td class="right " data-stat="penalties_yds">208</td>
+                    <td class="right " data-stat="pen_fd">4</td>
+                    <td class="right " data-stat="score_pct">40.0</td>
+                    <td class="right " data-stat="turnover_pct">10.0</td>
+                    <td class="right " data-stat="exp_pts_def_tot">10.68</td>
+                </tr>
+                <tr data-row="4">
+                    <th scope="row" class="right " data-stat="ranker" csk="5">5</th>
+                    <td class="left " data-stat="team"><a href="/teams/crd/2025.htm">Arizona Cardinals</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">51</td>
+                    <td class="right " data-stat="total_yards">1022</td>
+                    <td class="right " data-stat="plays_offense">208</td>
+                    <td class="right " data-stat="yds_per_play_offense">4.9</td>
+                    <td class="right " data-stat="turnovers">3</td>
+                    <td class="right " data-stat="fumbles_lost">1</td>
+                    <td class="right " data-stat="first_down">66</td>
+                    <td class="right " data-stat="pass_cmp">89</td>
+                    <td class="right " data-stat="pass_att">142</td>
+                    <td class="right " data-stat="pass_yds">793</td>
+                    <td class="right " data-stat="pass_td">4</td>
+                    <td class="right " data-stat="pass_int">2</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">5.4</td>
+                    <td class="right " data-stat="pass_fd">45</td>
+                    <td class="right " data-stat="rush_att">61</td>
+                    <td class="right " data-stat="rush_yds">229</td>
+                    <td class="right " data-stat="rush_td">1</td>
+                    <td class="right " data-stat="rush_yds_per_att">3.8</td>
+                    <td class="right " data-stat="rush_fd">13</td>
+                    <td class="right " data-stat="penalties">25</td>
+                    <td class="right " data-stat="penalties_yds">241</td>
+                    <td class="right " data-stat="pen_fd">8</td>
+                    <td class="right " data-stat="score_pct">36.7</td>
+                    <td class="right " data-stat="turnover_pct">10.0</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-0.53</td>
+                </tr>
+                <tr data-row="5">
+                    <th scope="row" class="right " data-stat="ranker" csk="6">6</th>
+                    <td class="left " data-stat="team"><a href="/teams/jax/2025.htm">Jacksonville Jaguars</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">51</td>
+                    <td class="right " data-stat="total_yards">876</td>
+                    <td class="right " data-stat="plays_offense">185</td>
+                    <td class="right " data-stat="yds_per_play_offense">4.7</td>
+                    <td class="right " data-stat="turnovers">9</td>
+                    <td class="right " data-stat="fumbles_lost">2</td>
+                    <td class="right " data-stat="first_down">52</td>
+                    <td class="right " data-stat="pass_cmp">71</td>
+                    <td class="right " data-stat="pass_att">118</td>
+                    <td class="right " data-stat="pass_yds">628</td>
+                    <td class="right " data-stat="pass_td">5</td>
+                    <td class="right " data-stat="pass_int">7</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">5.1</td>
+                    <td class="right " data-stat="pass_fd">33</td>
+                    <td class="right " data-stat="rush_att">61</td>
+                    <td class="right " data-stat="rush_yds">248</td>
+                    <td class="right " data-stat="rush_td">1</td>
+                    <td class="right " data-stat="rush_yds_per_att">4.1</td>
+                    <td class="right " data-stat="rush_fd">12</td>
+                    <td class="right " data-stat="penalties">14</td>
+                    <td class="right " data-stat="penalties_yds">130</td>
+                    <td class="right " data-stat="pen_fd">7</td>
+                    <td class="right " data-stat="score_pct">26.5</td>
+                    <td class="right " data-stat="turnover_pct">26.5</td>
+                    <td class="right " data-stat="exp_pts_def_tot">15.02</td>
+                </tr>
+                <tr data-row="6">
+                    <th scope="row" class="right " data-stat="ranker" csk="7">7</th>
+                    <td class="left " data-stat="team"><a href="/teams/htx/2025.htm">Houston Texans</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">51</td>
+                    <td class="right " data-stat="total_yards">947</td>
+                    <td class="right " data-stat="plays_offense">195</td>
+                    <td class="right " data-stat="yds_per_play_offense">4.9</td>
+                    <td class="right " data-stat="turnovers">2</td>
+                    <td class="right " data-stat="fumbles_lost">1</td>
+                    <td class="right " data-stat="first_down">60</td>
+                    <td class="right " data-stat="pass_cmp">66</td>
+                    <td class="right " data-stat="pass_att">107</td>
+                    <td class="right " data-stat="pass_yds">620</td>
+                    <td class="right " data-stat="pass_td">3</td>
+                    <td class="right " data-stat="pass_int">1</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">5.3</td>
+                    <td class="right " data-stat="pass_fd">35</td>
+                    <td class="right " data-stat="rush_att">79</td>
+                    <td class="right " data-stat="rush_yds">327</td>
+                    <td class="right " data-stat="rush_td">4</td>
+                    <td class="right " data-stat="rush_yds_per_att">4.1</td>
+                    <td class="right " data-stat="rush_fd">17</td>
+                    <td class="right " data-stat="penalties">23</td>
+                    <td class="right " data-stat="penalties_yds">175</td>
+                    <td class="right " data-stat="pen_fd">8</td>
+                    <td class="right " data-stat="score_pct">25.0</td>
+                    <td class="right " data-stat="turnover_pct">6.3</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-7.26</td>
+                </tr>
+                <tr data-row="7">
+                    <th scope="row" class="right " data-stat="ranker" csk="8">8</th>
+                    <td class="left " data-stat="team"><a href="/teams/car/2025.htm">Carolina Panthers</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">53</td>
+                    <td class="right " data-stat="total_yards">1003</td>
+                    <td class="right " data-stat="plays_offense">177</td>
+                    <td class="right " data-stat="yds_per_play_offense">5.7</td>
+                    <td class="right " data-stat="turnovers">5</td>
+                    <td class="right " data-stat="fumbles_lost">1</td>
+                    <td class="right " data-stat="first_down">52</td>
+                    <td class="right " data-stat="pass_cmp">59</td>
+                    <td class="right " data-stat="pass_att">99</td>
+                    <td class="right " data-stat="pass_yds">590</td>
+                    <td class="right " data-stat="pass_td">2</td>
+                    <td class="right " data-stat="pass_int">4</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">5.9</td>
+                    <td class="right " data-stat="pass_fd">30</td>
+                    <td class="right " data-stat="rush_att">77</td>
+                    <td class="right " data-stat="rush_yds">413</td>
+                    <td class="right " data-stat="rush_td">2</td>
+                    <td class="right " data-stat="rush_yds_per_att">5.4</td>
+                    <td class="right " data-stat="rush_fd">21</td>
+                    <td class="right " data-stat="penalties">26</td>
+                    <td class="right " data-stat="penalties_yds">212</td>
+                    <td class="right " data-stat="pen_fd">1</td>
+                    <td class="right " data-stat="score_pct">34.5</td>
+                    <td class="right " data-stat="turnover_pct">17.2</td>
+                    <td class="right " data-stat="exp_pts_def_tot">1.34</td>
+                </tr>
+                <tr data-row="8">
+                    <th scope="row" class="right " data-stat="ranker" csk="9">9</th>
+                    <td class="left " data-stat="team"><a href="/teams/min/2025.htm">Minnesota Vikings</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">56</td>
+                    <td class="right " data-stat="total_yards">814</td>
+                    <td class="right " data-stat="plays_offense">178</td>
+                    <td class="right " data-stat="yds_per_play_offense">4.6</td>
+                    <td class="right " data-stat="turnovers">7</td>
+                    <td class="right " data-stat="fumbles_lost">5</td>
+                    <td class="right " data-stat="first_down">51</td>
+                    <td class="right " data-stat="pass_cmp">53</td>
+                    <td class="right " data-stat="pass_att">83</td>
+                    <td class="right " data-stat="pass_yds">424</td>
+                    <td class="right " data-stat="pass_td">2</td>
+                    <td class="right " data-stat="pass_int">2</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">4.6</td>
+                    <td class="right " data-stat="pass_fd">21</td>
+                    <td class="right " data-stat="rush_att">86</td>
+                    <td class="right " data-stat="rush_yds">390</td>
+                    <td class="right " data-stat="rush_td">2</td>
+                    <td class="right " data-stat="rush_yds_per_att">4.5</td>
+                    <td class="right " data-stat="rush_fd">22</td>
+                    <td class="right " data-stat="penalties">21</td>
+                    <td class="right " data-stat="penalties_yds">201</td>
+                    <td class="right " data-stat="pen_fd">8</td>
+                    <td class="right " data-stat="score_pct">30.6</td>
+                    <td class="right " data-stat="turnover_pct">19.4</td>
+                    <td class="right " data-stat="exp_pts_def_tot">36.82</td>
+                </tr>
+                <tr data-row="9">
+                    <th scope="row" class="right " data-stat="ranker" csk="10">10</th>
+                    <td class="left " data-stat="team"><a href="/teams/clt/2025.htm">Indianapolis Colts</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">56</td>
+                    <td class="right " data-stat="total_yards">817</td>
+                    <td class="right " data-stat="plays_offense">165</td>
+                    <td class="right " data-stat="yds_per_play_offense">5.0</td>
+                    <td class="right " data-stat="turnovers">5</td>
+                    <td class="right " data-stat="fumbles_lost">1</td>
+                    <td class="right " data-stat="first_down">56</td>
+                    <td class="right " data-stat="pass_cmp">64</td>
+                    <td class="right " data-stat="pass_att">99</td>
+                    <td class="right " data-stat="pass_yds">535</td>
+                    <td class="right " data-stat="pass_td">5</td>
+                    <td class="right " data-stat="pass_int">4</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">5.0</td>
+                    <td class="right " data-stat="pass_fd">31</td>
+                    <td class="right " data-stat="rush_att">59</td>
+                    <td class="right " data-stat="rush_yds">282</td>
+                    <td class="right " data-stat="rush_td">2</td>
+                    <td class="right " data-stat="rush_yds_per_att">4.8</td>
+                    <td class="right " data-stat="rush_fd">18</td>
+                    <td class="right " data-stat="penalties">19</td>
+                    <td class="right " data-stat="penalties_yds">166</td>
+                    <td class="right " data-stat="pen_fd">7</td>
+                    <td class="right " data-stat="score_pct">36.0</td>
+                    <td class="right " data-stat="turnover_pct">20.0</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-8.25</td>
+                </tr>
+                <tr data-row="10">
+                    <th scope="row" class="right " data-stat="ranker" csk="11">11</th>
+                    <td class="left " data-stat="team"><a href="/teams/kan/2025.htm">Kansas City Chiefs</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">56</td>
+                    <td class="right " data-stat="total_yards">891</td>
+                    <td class="right " data-stat="plays_offense">181</td>
+                    <td class="right " data-stat="yds_per_play_offense">4.9</td>
+                    <td class="right " data-stat="turnovers">2</td>
+                    <td class="right iz" data-stat="fumbles_lost">0</td>
+                    <td class="right " data-stat="first_down">57</td>
+                    <td class="right " data-stat="pass_cmp">58</td>
+                    <td class="right " data-stat="pass_att">88</td>
+                    <td class="right " data-stat="pass_yds">549</td>
+                    <td class="right " data-stat="pass_td">3</td>
+                    <td class="right " data-stat="pass_int">2</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">5.8</td>
+                    <td class="right " data-stat="pass_fd">27</td>
+                    <td class="right " data-stat="rush_att">86</td>
+                    <td class="right " data-stat="rush_yds">342</td>
+                    <td class="right " data-stat="rush_td">3</td>
+                    <td class="right " data-stat="rush_yds_per_att">4.0</td>
+                    <td class="right " data-stat="rush_fd">23</td>
+                    <td class="right " data-stat="penalties">19</td>
+                    <td class="right " data-stat="penalties_yds">179</td>
+                    <td class="right " data-stat="pen_fd">7</td>
+                    <td class="right " data-stat="score_pct">40.7</td>
+                    <td class="right " data-stat="turnover_pct">7.4</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-5.43</td>
+                </tr>
+                <tr data-row="11">
+                    <th scope="row" class="right " data-stat="ranker" csk="12">12</th>
+                    <td class="left " data-stat="team"><a href="/teams/was/2025.htm">Washington Commanders</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">57</td>
+                    <td class="right " data-stat="total_yards">989</td>
+                    <td class="right " data-stat="plays_offense">187</td>
+                    <td class="right " data-stat="yds_per_play_offense">5.3</td>
+                    <td class="right iz" data-stat="turnovers"></td>
+                    <td class="right iz" data-stat="fumbles_lost">0</td>
+                    <td class="right " data-stat="first_down">56</td>
+                    <td class="right " data-stat="pass_cmp">55</td>
+                    <td class="right " data-stat="pass_att">97</td>
+                    <td class="right " data-stat="pass_yds">687</td>
+                    <td class="right " data-stat="pass_td">5</td>
+                    <td class="right iz" data-stat="pass_int">0</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">6.5</td>
+                    <td class="right " data-stat="pass_fd">35</td>
+                    <td class="right " data-stat="rush_att">81</td>
+                    <td class="right " data-stat="rush_yds">302</td>
+                    <td class="right " data-stat="rush_td">1</td>
+                    <td class="right " data-stat="rush_yds_per_att">3.7</td>
+                    <td class="right " data-stat="rush_fd">15</td>
+                    <td class="right " data-stat="penalties">22</td>
+                    <td class="right " data-stat="penalties_yds">166</td>
+                    <td class="right " data-stat="pen_fd">6</td>
+                    <td class="right " data-stat="score_pct">33.3</td>
+                    <td class="right iz" data-stat="turnover_pct">0.0</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-3.80</td>
+                </tr>
+                <tr data-row="12">
+                    <th scope="row" class="right " data-stat="ranker" csk="13">13</th>
+                    <td class="left " data-stat="team"><a href="/teams/atl/2025.htm">Atlanta Falcons</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">59</td>
+                    <td class="right " data-stat="total_yards">682</td>
+                    <td class="right " data-stat="plays_offense">157</td>
+                    <td class="right " data-stat="yds_per_play_offense">4.3</td>
+                    <td class="right " data-stat="turnovers">5</td>
+                    <td class="right " data-stat="fumbles_lost">3</td>
+                    <td class="right " data-stat="first_down">41</td>
+                    <td class="right " data-stat="pass_cmp">44</td>
+                    <td class="right " data-stat="pass_att">77</td>
+                    <td class="right " data-stat="pass_yds">393</td>
+                    <td class="right " data-stat="pass_td">3</td>
+                    <td class="right " data-stat="pass_int">2</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">4.6</td>
+                    <td class="right " data-stat="pass_fd">24</td>
+                    <td class="right " data-stat="rush_att">72</td>
+                    <td class="right " data-stat="rush_yds">289</td>
+                    <td class="right " data-stat="rush_td">2</td>
+                    <td class="right " data-stat="rush_yds_per_att">4.0</td>
+                    <td class="right " data-stat="rush_fd">15</td>
+                    <td class="right " data-stat="penalties">19</td>
+                    <td class="right " data-stat="penalties_yds">165</td>
+                    <td class="right " data-stat="pen_fd">2</td>
+                    <td class="right " data-stat="score_pct">37.9</td>
+                    <td class="right " data-stat="turnover_pct">10.3</td>
+                    <td class="right " data-stat="exp_pts_def_tot">4.75</td>
+                </tr>
+                <tr data-row="13">
+                    <th scope="row" class="right " data-stat="ranker" csk="14">14</th>
+                    <td class="left " data-stat="team"><a href="/teams/ram/2025.htm">Los Angeles Rams</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">61</td>
+                    <td class="right " data-stat="total_yards">805</td>
+                    <td class="right " data-stat="plays_offense">184</td>
+                    <td class="right " data-stat="yds_per_play_offense">4.4</td>
+                    <td class="right " data-stat="turnovers">4</td>
+                    <td class="right " data-stat="fumbles_lost">3</td>
+                    <td class="right " data-stat="first_down">55</td>
+                    <td class="right " data-stat="pass_cmp">59</td>
+                    <td class="right " data-stat="pass_att">92</td>
+                    <td class="right " data-stat="pass_yds">496</td>
+                    <td class="right " data-stat="pass_td">4</td>
+                    <td class="right " data-stat="pass_int">1</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">4.8</td>
+                    <td class="right " data-stat="pass_fd">26</td>
+                    <td class="right " data-stat="rush_att">80</td>
+                    <td class="right " data-stat="rush_yds">309</td>
+                    <td class="right " data-stat="rush_td">1</td>
+                    <td class="right " data-stat="rush_yds_per_att">3.9</td>
+                    <td class="right " data-stat="rush_fd">23</td>
+                    <td class="right " data-stat="penalties">26</td>
+                    <td class="right " data-stat="penalties_yds">192</td>
+                    <td class="right " data-stat="pen_fd">6</td>
+                    <td class="right " data-stat="score_pct">36.7</td>
+                    <td class="right " data-stat="turnover_pct">13.3</td>
+                    <td class="right " data-stat="exp_pts_def_tot">6.14</td>
+                </tr>
+                <tr data-row="14">
+                    <th scope="row" class="right " data-stat="ranker" csk="15">15</th>
+                    <td class="left " data-stat="team"><a href="/teams/phi/2025.htm">Philadelphia Eagles</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">63</td>
+                    <td class="right " data-stat="total_yards">957</td>
+                    <td class="right " data-stat="plays_offense">179</td>
+                    <td class="right " data-stat="yds_per_play_offense">5.3</td>
+                    <td class="right " data-stat="turnovers">3</td>
+                    <td class="right " data-stat="fumbles_lost">1</td>
+                    <td class="right " data-stat="first_down">61</td>
+                    <td class="right " data-stat="pass_cmp">56</td>
+                    <td class="right " data-stat="pass_att">97</td>
+                    <td class="right " data-stat="pass_yds">557</td>
+                    <td class="right " data-stat="pass_td">3</td>
+                    <td class="right " data-stat="pass_int">2</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">5.6</td>
+                    <td class="right " data-stat="pass_fd">26</td>
+                    <td class="right " data-stat="rush_att">79</td>
+                    <td class="right " data-stat="rush_yds">400</td>
+                    <td class="right " data-stat="rush_td">3</td>
+                    <td class="right " data-stat="rush_yds_per_att">5.1</td>
+                    <td class="right " data-stat="rush_fd">27</td>
+                    <td class="right " data-stat="penalties">14</td>
+                    <td class="right " data-stat="penalties_yds">128</td>
+                    <td class="right " data-stat="pen_fd">8</td>
+                    <td class="right " data-stat="score_pct">46.4</td>
+                    <td class="right " data-stat="turnover_pct">10.7</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-13.44</td>
+                </tr>
+                <tr data-row="15">
+                    <th scope="row" class="right " data-stat="ranker" csk="16">16</th>
+                    <td class="left " data-stat="team"><a href="/teams/den/2025.htm">Denver Broncos</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">64</td>
+                    <td class="right " data-stat="total_yards">982</td>
+                    <td class="right " data-stat="plays_offense">202</td>
+                    <td class="right " data-stat="yds_per_play_offense">4.9</td>
+                    <td class="right " data-stat="turnovers">4</td>
+                    <td class="right " data-stat="fumbles_lost">3</td>
+                    <td class="right " data-stat="first_down">62</td>
+                    <td class="right " data-stat="pass_cmp">63</td>
+                    <td class="right " data-stat="pass_att">109</td>
+                    <td class="right " data-stat="pass_yds">638</td>
+                    <td class="right " data-stat="pass_td">2</td>
+                    <td class="right " data-stat="pass_int">1</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">5.3</td>
+                    <td class="right " data-stat="pass_fd">38</td>
+                    <td class="right " data-stat="rush_att">81</td>
+                    <td class="right " data-stat="rush_yds">344</td>
+                    <td class="right " data-stat="rush_td">2</td>
+                    <td class="right " data-stat="rush_yds_per_att">4.2</td>
+                    <td class="right " data-stat="rush_fd">14</td>
+                    <td class="right " data-stat="penalties">27</td>
+                    <td class="right " data-stat="penalties_yds">224</td>
+                    <td class="right " data-stat="pen_fd">10</td>
+                    <td class="right " data-stat="score_pct">45.7</td>
+                    <td class="right " data-stat="turnover_pct">8.6</td>
+                    <td class="right " data-stat="exp_pts_def_tot">3.31</td>
+                </tr>
+                <tr data-row="16">
+                    <th scope="row" class="right " data-stat="ranker" csk="17">17</th>
+                    <td class="left " data-stat="team"><a href="/teams/tam/2025.htm">Tampa Bay Buccaneers</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">66</td>
+                    <td class="right " data-stat="total_yards">891</td>
+                    <td class="right " data-stat="plays_offense">180</td>
+                    <td class="right " data-stat="yds_per_play_offense">5.0</td>
+                    <td class="right " data-stat="turnovers">2</td>
+                    <td class="right " data-stat="fumbles_lost">1</td>
+                    <td class="right " data-stat="first_down">56</td>
+                    <td class="right " data-stat="pass_cmp">66</td>
+                    <td class="right " data-stat="pass_att">102</td>
+                    <td class="right " data-stat="pass_yds">639</td>
+                    <td class="right " data-stat="pass_td">4</td>
+                    <td class="right " data-stat="pass_int">1</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">5.8</td>
+                    <td class="right " data-stat="pass_fd">36</td>
+                    <td class="right " data-stat="rush_att">70</td>
+                    <td class="right " data-stat="rush_yds">252</td>
+                    <td class="right " data-stat="rush_td">2</td>
+                    <td class="right " data-stat="rush_yds_per_att">3.6</td>
+                    <td class="right " data-stat="rush_fd">12</td>
+                    <td class="right " data-stat="penalties">21</td>
+                    <td class="right " data-stat="penalties_yds">181</td>
+                    <td class="right " data-stat="pen_fd">8</td>
+                    <td class="right " data-stat="score_pct">38.7</td>
+                    <td class="right " data-stat="turnover_pct">6.5</td>
+                    <td class="right " data-stat="exp_pts_def_tot">1.10</td>
+                </tr>
+                <tr data-row="17">
+                    <th scope="row" class="right " data-stat="ranker" csk="18">18</th>
+                    <td class="left " data-stat="team"><a href="/teams/cle/2025.htm">Cleveland Browns</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">68</td>
+                    <td class="right " data-stat="total_yards">613</td>
+                    <td class="right " data-stat="plays_offense">163</td>
+                    <td class="right " data-stat="yds_per_play_offense">3.8</td>
+                    <td class="right " data-stat="turnovers">1</td>
+                    <td class="right iz" data-stat="fumbles_lost">0</td>
+                    <td class="right " data-stat="first_down">39</td>
+                    <td class="right " data-stat="pass_cmp">51</td>
+                    <td class="right " data-stat="pass_att">77</td>
+                    <td class="right " data-stat="pass_yds">441</td>
+                    <td class="right " data-stat="pass_td">6</td>
+                    <td class="right " data-stat="pass_int">1</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">5.0</td>
+                    <td class="right " data-stat="pass_fd">25</td>
+                    <td class="right " data-stat="rush_att">75</td>
+                    <td class="right " data-stat="rush_yds">172</td>
+                    <td class="right " data-stat="rush_td">1</td>
+                    <td class="right " data-stat="rush_yds_per_att">2.3</td>
+                    <td class="right " data-stat="rush_fd">9</td>
+                    <td class="right " data-stat="penalties">27</td>
+                    <td class="right " data-stat="penalties_yds">136</td>
+                    <td class="right " data-stat="pen_fd">5</td>
+                    <td class="right " data-stat="score_pct">34.4</td>
+                    <td class="right " data-stat="turnover_pct">3.1</td>
+                    <td class="right " data-stat="exp_pts_def_tot">8.06</td>
+                </tr>
+                <tr data-row="18">
+                    <th scope="row" class="right " data-stat="ranker" csk="19">19</th>
+                    <td class="left " data-stat="team"><a href="/teams/nwe/2025.htm">New England Patriots</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">68</td>
+                    <td class="right " data-stat="total_yards">950</td>
+                    <td class="right " data-stat="plays_offense">163</td>
+                    <td class="right " data-stat="yds_per_play_offense">5.8</td>
+                    <td class="right " data-stat="turnovers">3</td>
+                    <td class="right iz" data-stat="fumbles_lost">0</td>
+                    <td class="right " data-stat="first_down">54</td>
+                    <td class="right " data-stat="pass_cmp">66</td>
+                    <td class="right " data-stat="pass_att">89</td>
+                    <td class="right " data-stat="pass_yds">769</td>
+                    <td class="right " data-stat="pass_td">5</td>
+                    <td class="right " data-stat="pass_int">3</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">7.8</td>
+                    <td class="right " data-stat="pass_fd">37</td>
+                    <td class="right " data-stat="rush_att">65</td>
+                    <td class="right " data-stat="rush_yds">181</td>
+                    <td class="right " data-stat="rush_td">2</td>
+                    <td class="right " data-stat="rush_yds_per_att">2.8</td>
+                    <td class="right " data-stat="rush_fd">11</td>
+                    <td class="right " data-stat="penalties">27</td>
+                    <td class="right " data-stat="penalties_yds">201</td>
+                    <td class="right " data-stat="pen_fd">6</td>
+                    <td class="right " data-stat="score_pct">36.7</td>
+                    <td class="right " data-stat="turnover_pct">10.0</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-15.09</td>
+                </tr>
+                <tr data-row="19">
+                    <th scope="row" class="right " data-stat="ranker" csk="20">20</th>
+                    <td class="left " data-stat="team"><a href="/teams/buf/2025.htm">Buffalo Bills</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">71</td>
+                    <td class="right " data-stat="total_yards">862</td>
+                    <td class="right " data-stat="plays_offense">156</td>
+                    <td class="right " data-stat="yds_per_play_offense">5.5</td>
+                    <td class="right " data-stat="turnovers">3</td>
+                    <td class="right " data-stat="fumbles_lost">2</td>
+                    <td class="right " data-stat="first_down">49</td>
+                    <td class="right " data-stat="pass_cmp">46</td>
+                    <td class="right " data-stat="pass_att">75</td>
+                    <td class="right " data-stat="pass_yds">394</td>
+                    <td class="right " data-stat="pass_td">5</td>
+                    <td class="right " data-stat="pass_int">1</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">4.9</td>
+                    <td class="right " data-stat="pass_fd">24</td>
+                    <td class="right " data-stat="rush_att">75</td>
+                    <td class="right " data-stat="rush_yds">468</td>
+                    <td class="right " data-stat="rush_td">4</td>
+                    <td class="right " data-stat="rush_yds_per_att">6.2</td>
+                    <td class="right " data-stat="rush_fd">23</td>
+                    <td class="right " data-stat="penalties">18</td>
+                    <td class="right " data-stat="penalties_yds">143</td>
+                    <td class="right " data-stat="pen_fd">2</td>
+                    <td class="right " data-stat="score_pct">40.0</td>
+                    <td class="right " data-stat="turnover_pct">10.0</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-16.60</td>
+                </tr>
+                <tr data-row="20">
+                    <th scope="row" class="right " data-stat="ranker" csk="21">21</th>
+                    <td class="left " data-stat="team"><a href="/teams/rai/2025.htm">Las Vegas Raiders</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">74</td>
+                    <td class="right " data-stat="total_yards">1053</td>
+                    <td class="right " data-stat="plays_offense">177</td>
+                    <td class="right " data-stat="yds_per_play_offense">5.9</td>
+                    <td class="right " data-stat="turnovers">3</td>
+                    <td class="right " data-stat="fumbles_lost">2</td>
+                    <td class="right " data-stat="first_down">50</td>
+                    <td class="right " data-stat="pass_cmp">64</td>
+                    <td class="right " data-stat="pass_att">94</td>
+                    <td class="right " data-stat="pass_yds">711</td>
+                    <td class="right " data-stat="pass_td">4</td>
+                    <td class="right " data-stat="pass_int">1</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">7.0</td>
+                    <td class="right " data-stat="pass_fd">30</td>
+                    <td class="right " data-stat="rush_att">76</td>
+                    <td class="right " data-stat="rush_yds">342</td>
+                    <td class="right " data-stat="rush_td">3</td>
+                    <td class="right " data-stat="rush_yds_per_att">4.5</td>
+                    <td class="right " data-stat="rush_fd">16</td>
+                    <td class="right " data-stat="penalties">21</td>
+                    <td class="right " data-stat="penalties_yds">157</td>
+                    <td class="right " data-stat="pen_fd">4</td>
+                    <td class="right " data-stat="score_pct">39.4</td>
+                    <td class="right " data-stat="turnover_pct">9.1</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-17.58</td>
+                </tr>
+                <tr data-row="21">
+                    <th scope="row" class="right " data-stat="ranker" csk="22">22</th>
+                    <td class="left " data-stat="team"><a href="/teams/pit/2025.htm">Pittsburgh Steelers</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">77</td>
+                    <td class="right " data-stat="total_yards">1158</td>
+                    <td class="right " data-stat="plays_offense">197</td>
+                    <td class="right " data-stat="yds_per_play_offense">5.9</td>
+                    <td class="right " data-stat="turnovers">8</td>
+                    <td class="right " data-stat="fumbles_lost">5</td>
+                    <td class="right " data-stat="first_down">70</td>
+                    <td class="right " data-stat="pass_cmp">66</td>
+                    <td class="right " data-stat="pass_att">92</td>
+                    <td class="right " data-stat="pass_yds">740</td>
+                    <td class="right " data-stat="pass_td">5</td>
+                    <td class="right " data-stat="pass_int">3</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">7.4</td>
+                    <td class="right " data-stat="pass_fd">35</td>
+                    <td class="right " data-stat="rush_att">97</td>
+                    <td class="right " data-stat="rush_yds">418</td>
+                    <td class="right " data-stat="rush_td">4</td>
+                    <td class="right " data-stat="rush_yds_per_att">4.3</td>
+                    <td class="right " data-stat="rush_fd">31</td>
+                    <td class="right " data-stat="penalties">16</td>
+                    <td class="right " data-stat="penalties_yds">138</td>
+                    <td class="right " data-stat="pen_fd">4</td>
+                    <td class="right " data-stat="score_pct">40.0</td>
+                    <td class="right " data-stat="turnover_pct">23.3</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-13.61</td>
+                </tr>
+                <tr data-row="22">
+                    <th scope="row" class="right " data-stat="ranker" csk="23">23</th>
+                    <td class="left " data-stat="team"><a href="/teams/det/2025.htm">Detroit Lions</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">78</td>
+                    <td class="right " data-stat="total_yards">923</td>
+                    <td class="right " data-stat="plays_offense">165</td>
+                    <td class="right " data-stat="yds_per_play_offense">5.6</td>
+                    <td class="right " data-stat="turnovers">3</td>
+                    <td class="right " data-stat="fumbles_lost">2</td>
+                    <td class="right " data-stat="first_down">54</td>
+                    <td class="right " data-stat="pass_cmp">58</td>
+                    <td class="right " data-stat="pass_att">83</td>
+                    <td class="right " data-stat="pass_yds">626</td>
+                    <td class="right " data-stat="pass_td">7</td>
+                    <td class="right " data-stat="pass_int">1</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">6.7</td>
+                    <td class="right " data-stat="pass_fd">33</td>
+                    <td class="right " data-stat="rush_att">71</td>
+                    <td class="right " data-stat="rush_yds">297</td>
+                    <td class="right " data-stat="rush_td">3</td>
+                    <td class="right " data-stat="rush_yds_per_att">4.2</td>
+                    <td class="right " data-stat="rush_fd">15</td>
+                    <td class="right " data-stat="penalties">15</td>
+                    <td class="right " data-stat="penalties_yds">100</td>
+                    <td class="right " data-stat="pen_fd">6</td>
+                    <td class="right " data-stat="score_pct">41.9</td>
+                    <td class="right " data-stat="turnover_pct">9.7</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-17.33</td>
+                </tr>
+                <tr data-row="23">
+                    <th scope="row" class="right " data-stat="ranker" csk="24">24</th>
+                    <td class="left " data-stat="team"><a href="/teams/nyg/2025.htm">New York Giants</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">83</td>
+                    <td class="right " data-stat="total_yards">1216</td>
+                    <td class="right " data-stat="plays_offense">215</td>
+                    <td class="right " data-stat="yds_per_play_offense">5.7</td>
+                    <td class="right " data-stat="turnovers">1</td>
+                    <td class="right iz" data-stat="fumbles_lost">0</td>
+                    <td class="right " data-stat="first_down">79</td>
+                    <td class="right " data-stat="pass_cmp">79</td>
+                    <td class="right " data-stat="pass_att">119</td>
+                    <td class="right " data-stat="pass_yds">756</td>
+                    <td class="right " data-stat="pass_td">4</td>
+                    <td class="right " data-stat="pass_int">1</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">6.0</td>
+                    <td class="right " data-stat="pass_fd">42</td>
+                    <td class="right " data-stat="rush_att">88</td>
+                    <td class="right " data-stat="rush_yds">460</td>
+                    <td class="right " data-stat="rush_td">5</td>
+                    <td class="right " data-stat="rush_yds_per_att">5.2</td>
+                    <td class="right " data-stat="rush_fd">25</td>
+                    <td class="right " data-stat="penalties">32</td>
+                    <td class="right " data-stat="penalties_yds">280</td>
+                    <td class="right " data-stat="pen_fd">12</td>
+                    <td class="right " data-stat="score_pct">47.1</td>
+                    <td class="right " data-stat="turnover_pct">2.9</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-48.46</td>
+                </tr>
+                <tr data-row="24">
+                    <th scope="row" class="right " data-stat="ranker" csk="25">25</th>
+                    <td class="left " data-stat="team"><a href="/teams/nor/2025.htm">New Orleans Saints</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">90</td>
+                    <td class="right " data-stat="total_yards">940</td>
+                    <td class="right " data-stat="plays_offense">183</td>
+                    <td class="right " data-stat="yds_per_play_offense">5.1</td>
+                    <td class="right " data-stat="turnovers">2</td>
+                    <td class="right " data-stat="fumbles_lost">2</td>
+                    <td class="right " data-stat="first_down">64</td>
+                    <td class="right " data-stat="pass_cmp">63</td>
+                    <td class="right " data-stat="pass_att">89</td>
+                    <td class="right " data-stat="pass_yds">630</td>
+                    <td class="right " data-stat="pass_td">7</td>
+                    <td class="right iz" data-stat="pass_int">0</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">6.5</td>
+                    <td class="right " data-stat="pass_fd">37</td>
+                    <td class="right " data-stat="rush_att">86</td>
+                    <td class="right " data-stat="rush_yds">310</td>
+                    <td class="right " data-stat="rush_td">2</td>
+                    <td class="right " data-stat="rush_yds_per_att">3.6</td>
+                    <td class="right " data-stat="rush_fd">17</td>
+                    <td class="right " data-stat="penalties">22</td>
+                    <td class="right " data-stat="penalties_yds">164</td>
+                    <td class="right " data-stat="pen_fd">10</td>
+                    <td class="right " data-stat="score_pct">50.0</td>
+                    <td class="right " data-stat="turnover_pct">6.7</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-23.89</td>
+                </tr>
+                <tr data-row="25">
+                    <th scope="row" class="right " data-stat="ranker" csk="26">26</th>
+                    <td class="left " data-stat="team"><a href="/teams/cin/2025.htm">Cincinnati Bengals</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">91</td>
+                    <td class="right " data-stat="total_yards">1079</td>
+                    <td class="right " data-stat="plays_offense">199</td>
+                    <td class="right " data-stat="yds_per_play_offense">5.4</td>
+                    <td class="right " data-stat="turnovers">4</td>
+                    <td class="right iz" data-stat="fumbles_lost">0</td>
+                    <td class="right " data-stat="first_down">65</td>
+                    <td class="right " data-stat="pass_cmp">71</td>
+                    <td class="right " data-stat="pass_att">111</td>
+                    <td class="right " data-stat="pass_yds">722</td>
+                    <td class="right " data-stat="pass_td">6</td>
+                    <td class="right " data-stat="pass_int">4</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">6.2</td>
+                    <td class="right " data-stat="pass_fd">38</td>
+                    <td class="right " data-stat="rush_att">82</td>
+                    <td class="right " data-stat="rush_yds">357</td>
+                    <td class="right " data-stat="rush_td">3</td>
+                    <td class="right " data-stat="rush_yds_per_att">4.4</td>
+                    <td class="right " data-stat="rush_fd">20</td>
+                    <td class="right " data-stat="penalties">26</td>
+                    <td class="right " data-stat="penalties_yds">213</td>
+                    <td class="right " data-stat="pen_fd">7</td>
+                    <td class="right " data-stat="score_pct">41.2</td>
+                    <td class="right " data-stat="turnover_pct">11.8</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-16.34</td>
+                </tr>
+                <tr data-row="26">
+                    <th scope="row" class="right " data-stat="ranker" csk="27">27</th>
+                    <td class="left " data-stat="team"><a href="/teams/dal/2025.htm">Dallas Cowboys</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">92</td>
+                    <td class="right " data-stat="total_yards">1193</td>
+                    <td class="right " data-stat="plays_offense">184</td>
+                    <td class="right " data-stat="yds_per_play_offense">6.5</td>
+                    <td class="right " data-stat="turnovers">1</td>
+                    <td class="right iz" data-stat="fumbles_lost">0</td>
+                    <td class="right " data-stat="first_down">61</td>
+                    <td class="right " data-stat="pass_cmp">68</td>
+                    <td class="right " data-stat="pass_att">92</td>
+                    <td class="right " data-stat="pass_yds">864</td>
+                    <td class="right " data-stat="pass_td">7</td>
+                    <td class="right " data-stat="pass_int">1</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">9.0</td>
+                    <td class="right " data-stat="pass_fd">32</td>
+                    <td class="right " data-stat="rush_att">88</td>
+                    <td class="right " data-stat="rush_yds">329</td>
+                    <td class="right " data-stat="rush_td">4</td>
+                    <td class="right " data-stat="rush_yds_per_att">3.7</td>
+                    <td class="right " data-stat="rush_fd">27</td>
+                    <td class="right " data-stat="penalties">29</td>
+                    <td class="right " data-stat="penalties_yds">311</td>
+                    <td class="right " data-stat="pen_fd">2</td>
+                    <td class="right " data-stat="score_pct">53.3</td>
+                    <td class="right " data-stat="turnover_pct">3.3</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-47.78</td>
+                </tr>
+                <tr data-row="27">
+                    <th scope="row" class="right " data-stat="ranker" csk="28">28</th>
+                    <td class="left " data-stat="team"><a href="/teams/nyj/2025.htm">New York Jets</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">93</td>
+                    <td class="right " data-stat="total_yards">1021</td>
+                    <td class="right " data-stat="plays_offense">189</td>
+                    <td class="right " data-stat="yds_per_play_offense">5.4</td>
+                    <td class="right iz" data-stat="turnovers"></td>
+                    <td class="right iz" data-stat="fumbles_lost">0</td>
+                    <td class="right " data-stat="first_down">63</td>
+                    <td class="right " data-stat="pass_cmp">56</td>
+                    <td class="right " data-stat="pass_att">86</td>
+                    <td class="right " data-stat="pass_yds">622</td>
+                    <td class="right " data-stat="pass_td">5</td>
+                    <td class="right iz" data-stat="pass_int">0</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">6.8</td>
+                    <td class="right " data-stat="pass_fd">35</td>
+                    <td class="right " data-stat="rush_att">97</td>
+                    <td class="right " data-stat="rush_yds">399</td>
+                    <td class="right " data-stat="rush_td">3</td>
+                    <td class="right " data-stat="rush_yds_per_att">4.1</td>
+                    <td class="right " data-stat="rush_fd">18</td>
+                    <td class="right " data-stat="penalties">24</td>
+                    <td class="right " data-stat="penalties_yds">219</td>
+                    <td class="right " data-stat="pen_fd">10</td>
+                    <td class="right " data-stat="score_pct">54.5</td>
+                    <td class="right iz" data-stat="turnover_pct">0.0</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-26.50</td>
+                </tr>
+                <tr data-row="28">
+                    <th scope="row" class="right " data-stat="ranker" csk="29">29</th>
+                    <td class="left " data-stat="team"><a href="/teams/chi/2025.htm">Chicago Bears</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">93</td>
+                    <td class="right " data-stat="total_yards">1161</td>
+                    <td class="right " data-stat="plays_offense">174</td>
+                    <td class="right " data-stat="yds_per_play_offense">6.7</td>
+                    <td class="right " data-stat="turnovers">5</td>
+                    <td class="right " data-stat="fumbles_lost">1</td>
+                    <td class="right " data-stat="first_down">62</td>
+                    <td class="right " data-stat="pass_cmp">70</td>
+                    <td class="right " data-stat="pass_att">93</td>
+                    <td class="right " data-stat="pass_yds">743</td>
+                    <td class="right " data-stat="pass_td">8</td>
+                    <td class="right " data-stat="pass_int">4</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">7.6</td>
+                    <td class="right " data-stat="pass_fd">34</td>
+                    <td class="right " data-stat="rush_att">76</td>
+                    <td class="right " data-stat="rush_yds">418</td>
+                    <td class="right " data-stat="rush_td">3</td>
+                    <td class="right " data-stat="rush_yds_per_att">5.5</td>
+                    <td class="right " data-stat="rush_fd">22</td>
+                    <td class="right " data-stat="penalties">15</td>
+                    <td class="right " data-stat="penalties_yds">103</td>
+                    <td class="right " data-stat="pen_fd">6</td>
+                    <td class="right " data-stat="score_pct">45.7</td>
+                    <td class="right " data-stat="turnover_pct">14.3</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-25.58</td>
+                </tr>
+                <tr data-row="29">
+                    <th scope="row" class="right " data-stat="ranker" csk="30">30</th>
+                    <td class="left " data-stat="team"><a href="/teams/oti/2025.htm">Tennessee Titans</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">94</td>
+                    <td class="right " data-stat="total_yards">1121</td>
+                    <td class="right " data-stat="plays_offense">183</td>
+                    <td class="right " data-stat="yds_per_play_offense">6.1</td>
+                    <td class="right " data-stat="turnovers">5</td>
+                    <td class="right " data-stat="fumbles_lost">2</td>
+                    <td class="right " data-stat="first_down">64</td>
+                    <td class="right " data-stat="pass_cmp">66</td>
+                    <td class="right " data-stat="pass_att">98</td>
+                    <td class="right " data-stat="pass_yds">684</td>
+                    <td class="right " data-stat="pass_td">4</td>
+                    <td class="right " data-stat="pass_int">3</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">6.8</td>
+                    <td class="right " data-stat="pass_fd">31</td>
+                    <td class="right " data-stat="rush_att">83</td>
+                    <td class="right " data-stat="rush_yds">437</td>
+                    <td class="right " data-stat="rush_td">6</td>
+                    <td class="right " data-stat="rush_yds_per_att">5.3</td>
+                    <td class="right " data-stat="rush_fd">22</td>
+                    <td class="right " data-stat="penalties">14</td>
+                    <td class="right " data-stat="penalties_yds">97</td>
+                    <td class="right " data-stat="pen_fd">11</td>
+                    <td class="right " data-stat="score_pct">47.1</td>
+                    <td class="right " data-stat="turnover_pct">11.8</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-28.60</td>
+                </tr>
+                <tr data-row="30">
+                    <th scope="row" class="right " data-stat="ranker" csk="31">31</th>
+                    <td class="left " data-stat="team"><a href="/teams/rav/2025.htm">Baltimore Ravens</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">96</td>
+                    <td class="right " data-stat="total_yards">1245</td>
+                    <td class="right " data-stat="plays_offense">216</td>
+                    <td class="right " data-stat="yds_per_play_offense">5.8</td>
+                    <td class="right " data-stat="turnovers">2</td>
+                    <td class="right " data-stat="fumbles_lost">1</td>
+                    <td class="right " data-stat="first_down">70</td>
+                    <td class="right " data-stat="pass_cmp">81</td>
+                    <td class="right " data-stat="pass_att">122</td>
+                    <td class="right " data-stat="pass_yds">798</td>
+                    <td class="right " data-stat="pass_td">5</td>
+                    <td class="right " data-stat="pass_int">1</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">6.4</td>
+                    <td class="right " data-stat="pass_fd">39</td>
+                    <td class="right " data-stat="rush_att">91</td>
+                    <td class="right " data-stat="rush_yds">447</td>
+                    <td class="right " data-stat="rush_td">7</td>
+                    <td class="right " data-stat="rush_yds_per_att">4.9</td>
+                    <td class="right " data-stat="rush_fd">28</td>
+                    <td class="right " data-stat="penalties">19</td>
+                    <td class="right " data-stat="penalties_yds">148</td>
+                    <td class="right " data-stat="pen_fd">3</td>
+                    <td class="right " data-stat="score_pct">48.6</td>
+                    <td class="right " data-stat="turnover_pct">5.7</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-29.74</td>
+                </tr>
+                <tr data-row="31">
+                    <th scope="row" class="right " data-stat="ranker" csk="32">32</th>
+                    <td class="left " data-stat="team"><a href="/teams/mia/2025.htm">Miami Dolphins</a></td>
+                    <td class="right " data-stat="g">3</td>
+                    <td class="right " data-stat="points">97</td>
+                    <td class="right " data-stat="total_yards">1111</td>
+                    <td class="right " data-stat="plays_offense">182</td>
+                    <td class="right " data-stat="yds_per_play_offense">6.1</td>
+                    <td class="right iz" data-stat="turnovers"></td>
+                    <td class="right iz" data-stat="fumbles_lost">0</td>
+                    <td class="right " data-stat="first_down">68</td>
+                    <td class="right " data-stat="pass_cmp">63</td>
+                    <td class="right " data-stat="pass_att">80</td>
+                    <td class="right " data-stat="pass_yds">676</td>
+                    <td class="right " data-stat="pass_td">6</td>
+                    <td class="right iz" data-stat="pass_int">0</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">7.9</td>
+                    <td class="right " data-stat="pass_fd">35</td>
+                    <td class="right " data-stat="rush_att">96</td>
+                    <td class="right " data-stat="rush_yds">435</td>
+                    <td class="right " data-stat="rush_td">4</td>
+                    <td class="right " data-stat="rush_yds_per_att">4.5</td>
+                    <td class="right " data-stat="rush_fd">27</td>
+                    <td class="right " data-stat="penalties">19</td>
+                    <td class="right " data-stat="penalties_yds">155</td>
+                    <td class="right " data-stat="pen_fd">6</td>
+                    <td class="right " data-stat="score_pct">68.0</td>
+                    <td class="right iz" data-stat="turnover_pct">0.0</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-49.57</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr class="average_table no_ranker" data-row="32">
+                    <th scope="row" class="right iz" data-stat="ranker"></th>
+                    <td class="left " data-stat="team"><strong>Avg Team</strong></td>
+                    <td class="right iz" data-stat="g"></td>
+                    <td class="right " data-stat="points">68.7</td>
+                    <td class="right " data-stat="total_yards">955.7</td>
+                    <td class="right " data-stat="plays_offense">183.3</td>
+                    <td class="right " data-stat="yds_per_play_offense">5.2</td>
+                    <td class="right " data-stat="turnovers">3.3</td>
+                    <td class="right " data-stat="fumbles_lost">1.3</td>
+                    <td class="right " data-stat="first_down">57.3</td>
+                    <td class="right " data-stat="pass_cmp">63.9</td>
+                    <td class="right " data-stat="pass_att">98.0</td>
+                    <td class="right " data-stat="pass_yds">622.7</td>
+                    <td class="right " data-stat="pass_td">4.4</td>
+                    <td class="right " data-stat="pass_int">2.0</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">5.9</td>
+                    <td class="right " data-stat="pass_fd">32.0</td>
+                    <td class="right " data-stat="rush_att">78.2</td>
+                    <td class="right " data-stat="rush_yds">333.0</td>
+                    <td class="right " data-stat="rush_td">2.6</td>
+                    <td class="right " data-stat="rush_yds_per_att">4.3</td>
+                    <td class="right " data-stat="rush_fd">18.9</td>
+                    <td class="right " data-stat="penalties">21.3</td>
+                    <td class="right " data-stat="penalties_yds">173.5</td>
+                    <td class="right " data-stat="pen_fd">6.4</td>
+                    <td class="right " data-stat="score_pct">40.0</td>
+                    <td class="right " data-stat="turnover_pct">10.0</td>
+                    <td class="right " data-stat="exp_pts_def_tot">-9.6</td>
+                </tr>
+                <tr class="league_total" data-row="33">
+                    <th scope="row" class="right iz" data-stat="ranker"></th>
+                    <td class="left " data-stat="team">League Total</td>
+                    <td class="right iz" data-stat="g"></td>
+                    <td class="right " data-stat="points">2199</td>
+                    <td class="right " data-stat="total_yards">30581</td>
+                    <td class="right " data-stat="plays_offense">5864</td>
+                    <td class="right " data-stat="yds_per_play_offense">5.2</td>
+                    <td class="right " data-stat="turnovers">105</td>
+                    <td class="right " data-stat="fumbles_lost">42</td>
+                    <td class="right " data-stat="first_down">1834</td>
+                    <td class="right " data-stat="pass_cmp">2046</td>
+                    <td class="right " data-stat="pass_att">3137</td>
+                    <td class="right " data-stat="pass_yds">19926</td>
+                    <td class="right " data-stat="pass_td">142</td>
+                    <td class="right " data-stat="pass_int">63</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">5.9</td>
+                    <td class="right " data-stat="pass_fd">1025</td>
+                    <td class="right " data-stat="rush_att">2503</td>
+                    <td class="right " data-stat="rush_yds">10655</td>
+                    <td class="right " data-stat="rush_td">84</td>
+                    <td class="right " data-stat="rush_yds_per_att">4.3</td>
+                    <td class="right " data-stat="rush_fd">605</td>
+                    <td class="right " data-stat="penalties">683</td>
+                    <td class="right " data-stat="penalties_yds">5551</td>
+                    <td class="right " data-stat="pen_fd">204</td>
+                    <td class="right " data-stat="score_pct">40.0</td>
+                    <td class="right " data-stat="turnover_pct">10.0</td>
+                    <td class="right iz" data-stat="exp_pts_def_tot"></td>
+                </tr>
+                <tr class="average_line" data-row="34">
+                    <th scope="row" class="right iz" data-stat="ranker"></th>
+                    <td class="left " data-stat="team"><strong>Avg Tm/G</strong></td>
+                    <td class="right iz" data-stat="g"></td>
+                    <td class="right " data-stat="points">22.9</td>
+                    <td class="right " data-stat="total_yards">318.6</td>
+                    <td class="right " data-stat="plays_offense">61.1</td>
+                    <td class="right " data-stat="yds_per_play_offense">5.2</td>
+                    <td class="right " data-stat="turnovers">1.1</td>
+                    <td class="right " data-stat="fumbles_lost">0.4</td>
+                    <td class="right " data-stat="first_down">19.1</td>
+                    <td class="right " data-stat="pass_cmp">21.3</td>
+                    <td class="right " data-stat="pass_att">32.7</td>
+                    <td class="right " data-stat="pass_yds">207.6</td>
+                    <td class="right " data-stat="pass_td">1.5</td>
+                    <td class="right " data-stat="pass_int">0.7</td>
+                    <td class="right " data-stat="pass_net_yds_per_att">5.9</td>
+                    <td class="right " data-stat="pass_fd">10.7</td>
+                    <td class="right " data-stat="rush_att">26.1</td>
+                    <td class="right " data-stat="rush_yds">111.0</td>
+                    <td class="right " data-stat="rush_td">0.9</td>
+                    <td class="right " data-stat="rush_yds_per_att">4.3</td>
+                    <td class="right " data-stat="rush_fd">6.3</td>
+                    <td class="right " data-stat="penalties">7.1</td>
+                    <td class="right " data-stat="penalties_yds">57.8</td>
+                    <td class="right " data-stat="pen_fd">2.1</td>
+                    <td class="right " data-stat="score_pct">40.0</td>
+                    <td class="right " data-stat="turnover_pct">10.0</td>
+                    <td class="right iz" data-stat="exp_pts_def_tot"></td>
+                </tr>
+
+            </tfoot>
+
+        </table>
+
+
+    </div>
+
+
+
+</div>
