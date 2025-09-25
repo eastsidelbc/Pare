@@ -12,6 +12,7 @@ import { useNflStats } from '@/lib/useNflStats';
 import { DEFAULT_OFFENSE_METRICS, DEFAULT_DEFENSE_METRICS } from '@/lib/metricsConfig';
 import MetricsSelector from '@/components/MetricsSelector';
 import DynamicComparisonRow from '@/components/DynamicComparisonRow';
+import TeamLogo from '@/components/TeamLogo';
 
 export default function ComparePage() {
   const { 
@@ -324,23 +325,31 @@ export default function ComparePage() {
 
         {/* Dual-Section Comparison - Side by Side */}
         <div className="grid grid-cols-2 gap-6 max-w-7xl mx-auto">
-          {/* Ultra-Sleek Offense Panel */}
-          <div className="bg-slate-900/70 backdrop-blur-lg border border-slate-700/30 rounded-2xl p-6 shadow-2xl shadow-black/50 relative overflow-hidden">
-            {/* Subtle gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-800/20 via-transparent to-slate-900/20 pointer-events-none" />
+          {/* Optimized Offense Panel */}
+          <div className="bg-slate-900/90 border border-slate-700/50 rounded-2xl p-6 shadow-lg relative">
             
-            <div className="flex items-center justify-center gap-3 mb-6 relative z-10">
-              <h2 className="text-xl font-bold text-green-400 tracking-tight">
-                Offense 
-              </h2>
-              <select 
-                value={offenseDisplayMode}
-                onChange={(e) => setOffenseDisplayMode(e.target.value as 'total' | 'per-game')}
-                className="bg-slate-800/90 backdrop-blur-sm border border-slate-600/50 rounded-lg px-3 py-1.5 text-slate-200 font-medium text-xs focus:outline-none focus:border-slate-500 transition-all duration-300 shadow-lg shadow-black/30"
-              >
-                <option value="per-game">PER GAME</option>
-                <option value="total">TOTAL</option>
-              </select>
+            {/* Header Row - Logos, Title, and Dropdown */}
+            <div className="flex items-center justify-between mb-6 px-2">
+              {/* Left Logo */}
+              <TeamLogo teamName={selectedTeamA} size="60" />
+              
+              {/* Center Content - Title and Dropdown */}
+              <div className="flex flex-col items-center gap-3">
+                <h2 className="text-xl font-bold text-purple-400 tracking-tight">
+                  Offense 
+                </h2>
+                <select 
+                  value={offenseDisplayMode}
+                  onChange={(e) => setOffenseDisplayMode(e.target.value as 'total' | 'per-game')}
+                  className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-1.5 text-slate-200 font-medium text-xs focus:outline-none focus:border-slate-500 transition-colors duration-200"
+                >
+                  <option value="per-game">PER GAME</option>
+                  <option value="total">TOTAL</option>
+                </select>
+              </div>
+              
+              {/* Right Logo */}
+              <TeamLogo teamName={selectedTeamB} size="60" />
             </div>
             
             {teamAOffenseDisplay && teamBOffenseDisplay && (
@@ -352,6 +361,8 @@ export default function ComparePage() {
                     teamAData={teamAOffenseDisplay}
                     teamBData={teamBOffenseDisplay}
                     type="offense"
+                    allOffenseData={offenseData}
+                    allDefenseData={defenseData}
                   />
                 ))}
                 
@@ -365,23 +376,31 @@ export default function ComparePage() {
             )}
           </div>
 
-          {/* Ultra-Sleek Defense Panel */}
-          <div className="bg-slate-900/70 backdrop-blur-lg border border-slate-700/30 rounded-2xl p-6 shadow-2xl shadow-black/50 relative overflow-hidden">
-            {/* Subtle gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-800/20 via-transparent to-slate-900/20 pointer-events-none" />
+          {/* Optimized Defense Panel */}
+          <div className="bg-slate-900/90 border border-slate-700/50 rounded-2xl p-6 shadow-lg relative">
             
-            <div className="flex items-center justify-center gap-3 mb-6 relative z-10">
-              <h2 className="text-xl font-bold text-blue-400 tracking-tight">
-                Defense 
-              </h2>
-              <select 
-                value={defenseDisplayMode}
-                onChange={(e) => setDefenseDisplayMode(e.target.value as 'total' | 'per-game')}
-                className="bg-slate-800/90 backdrop-blur-sm border border-slate-600/50 rounded-lg px-3 py-1.5 text-slate-200 font-medium text-xs focus:outline-none focus:border-slate-500 transition-all duration-300 shadow-lg shadow-black/30"
-              >
-                <option value="per-game">PER GAME</option>
-                <option value="total">TOTAL</option>
-              </select>
+            {/* Header Row - Logos, Title, and Dropdown */}
+            <div className="flex items-center justify-between mb-6 px-2">
+              {/* Left Logo */}
+              <TeamLogo teamName={selectedTeamA} size="60" />
+              
+              {/* Center Content - Title and Dropdown */}
+              <div className="flex flex-col items-center gap-3">
+                <h2 className="text-xl font-bold text-purple-400 tracking-tight">
+                  Defense 
+                </h2>
+                <select 
+                  value={defenseDisplayMode}
+                  onChange={(e) => setDefenseDisplayMode(e.target.value as 'total' | 'per-game')}
+                  className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-1.5 text-slate-200 font-medium text-xs focus:outline-none focus:border-slate-500 transition-colors duration-200"
+                >
+                  <option value="per-game">PER GAME</option>
+                  <option value="total">TOTAL</option>
+                </select>
+              </div>
+              
+              {/* Right Logo */}
+              <TeamLogo teamName={selectedTeamB} size="60" />
             </div>
             
             {teamADefenseDisplay && teamBDefenseDisplay && (
@@ -393,6 +412,8 @@ export default function ComparePage() {
                     teamAData={teamADefenseDisplay}
                     teamBData={teamBDefenseDisplay}
                     type="defense"
+                    allOffenseData={offenseData}
+                    allDefenseData={defenseData}
                   />
                 ))}
                 

@@ -34,7 +34,7 @@ interface CacheEntry {
 let cache: CacheEntry = {
   data: null,
   timestamp: 0,
-  maxAge: 6 * 60 * 60 * 1000 // 6 hours in milliseconds
+  maxAge: 10 * 1000 // 10 seconds for debugging (change back to 6 hours later)
 };
 
 // Ranking basis for defense metrics (lower = better for most defensive stats)
@@ -137,7 +137,23 @@ export async function GET() {
     // Compute rankings
     console.log(`🏆 [DEFENSE-${requestId}] Computing rankings...`);
     const rankStartTime = Date.now();
+    console.log(`🐛 [DEFENSE-API-${requestId}] Computing ranks with basis:`, DEFENSE_RANK_BASIS);
     const rowsWithRanks = computeRanks(rows, DEFENSE_RANK_BASIS);
+    
+    // 🐛 DEBUGGING: Check Pittsburgh Steelers and Tampa Bay Buccaneers ranks after computation
+    const debugTeams = rowsWithRanks.filter(team => 
+      team.team === 'Pittsburgh Steelers' || team.team === 'Tampa Bay Buccaneers'
+    );
+    
+    if (debugTeams.length > 0) {
+      console.log(`🐛 [DEFENSE-API-${requestId}] DEBUG TEAMS AFTER RANK COMPUTATION:`);
+      debugTeams.forEach(team => {
+        console.log(`   ${team.team}:`);
+        console.log(`     points: ${team.points} (rank: ${team.ranks?.points})`);
+        console.log(`     total_yards: ${team.total_yards} (rank: ${team.ranks?.total_yards})`);
+        console.log(`     All ranks:`, team.ranks);
+      });
+    }
     const rankTime = Date.now() - rankStartTime;
     
     console.log(`🏆 [DEFENSE-${requestId}] Ranking completed in ${rankTime}ms`);

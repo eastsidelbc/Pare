@@ -85,6 +85,14 @@ export function useNflStats(): UseNflStatsReturn {
           // Store the rank if available
           if (team.ranks && team.ranks[key] !== undefined) {
             transformedTeam[`${key}Rank`] = team.ranks[key];
+            
+            // 🐛 DEBUGGING: Log rank assignment for debug teams
+            if ((team.team === 'Pittsburgh Steelers' || team.team === 'Tampa Bay Buccaneers') && key === 'points') {
+              console.log(`🐛 [UI-TRANSFORM] ${team.team} - ${key}:`);
+              console.log(`   Raw value: ${team[key]}`);
+              console.log(`   Rank from API: ${team.ranks[key]}`);
+              console.log(`   Assigned to UI as: ${transformedTeam[`${key}Rank`]}`);
+            }
           }
         }
       });

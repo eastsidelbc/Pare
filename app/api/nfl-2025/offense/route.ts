@@ -34,7 +34,7 @@ interface CacheEntry {
 let cache: CacheEntry = {
   data: null,
   timestamp: 0,
-  maxAge: 6 * 60 * 60 * 1000 // 6 hours in milliseconds
+  maxAge: 10 * 1000 // 10 seconds for debugging (change back to 6 hours later)
 };
 
 // Ranking basis for offense metrics (higher = better)
@@ -77,6 +77,15 @@ export async function GET() {
   try {
     // Check cache first
     const now = Date.now();
+    console.log(`🐛 [OFFENSE-CACHE-${requestId}] Checking cache:`, {
+      cacheExists: !!cache.data,
+      cacheTimestamp: cache.timestamp,
+      now: now,
+      maxAge: cache.maxAge,
+      cacheAge: cache.timestamp ? now - cache.timestamp : 'N/A',
+      isExpired: cache.timestamp ? (now - cache.timestamp) >= cache.maxAge : true
+    });
+    
     if (cache.data && cache.timestamp && (now - cache.timestamp) < cache.maxAge) {
       const cacheAgeMinutes = Math.round((now - cache.timestamp) / 1000 / 60);
       console.log(`💾 [OFFENSE-${requestId}] Serving cached data (${cacheAgeMinutes} min old)`);
@@ -98,9 +107,11 @@ export async function GET() {
     console.log(`📁 [OFFENSE-${requestId}] Rank basis:`, OFFENSE_RANK_BASIS);
     
     const startTime = Date.now();
+    console.log(`🐛 [OFFENSE-${requestId}] About to call fetchAndParseCSV...`);
     const { updatedAt, rows } = await fetchAndParseCSV({
       type: 'offense'
     });
+    console.log(`🐛 [OFFENSE-${requestId}] fetchAndParseCSV returned ${rows.length} rows`);
     const fetchTime = Date.now() - startTime;
     
     console.log(`📊 [OFFENSE-${requestId}] Fetch completed in ${fetchTime}ms`);
@@ -124,7 +135,26 @@ export async function GET() {
     // Compute rankings
     console.log(`🏆 [OFFENSE-${requestId}] Computing rankings...`);
     const rankStartTime = Date.now();
+    console.log(`🐛 [OFFENSE-API-${requestId}] Computing ranks with basis:`, OFFENSE_RANK_BASIS);
+    console.log(`🐛 [OFFENSE-API-${requestId}] About to call computeRanks with ${rows.length} teams...`);
+    console.log(`🐛 [OFFENSE-API-${requestId}] Sample team before ranking:`, rows[0]);
     const rowsWithRanks = computeRanks(rows, OFFENSE_RANK_BASIS);
+    console.log(`🐛 [OFFENSE-API-${requestId}] computeRanks returned ${rowsWithRanks.length} teams`);
+    
+    // 🐛 DEBUGGING: Check Pittsburgh Steelers and Tampa Bay Buccaneers ranks after computation
+    const debugTeams = rowsWithRanks.filter(team => 
+      team.team === 'Pittsburgh Steelers' || team.team === 'Tampa Bay Buccaneers'
+    );
+    
+    if (debugTeams.length > 0) {
+      console.log(`🐛 [OFFENSE-API-${requestId}] DEBUG TEAMS AFTER RANK COMPUTATION:`);
+      debugTeams.forEach(team => {
+        console.log(`   ${team.team}:`);
+        console.log(`     points: ${team.points} (rank: ${team.ranks?.points})`);
+        console.log(`     total_yards: ${team.total_yards} (rank: ${team.ranks?.total_yards})`);
+        console.log(`     All ranks:`, team.ranks);
+      });
+    }
     const rankTime = Date.now() - rankStartTime;
     
     console.log(`🏆 [OFFENSE-${requestId}] Ranking completed in ${rankTime}ms`);

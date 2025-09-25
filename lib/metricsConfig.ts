@@ -54,24 +54,13 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
   
   // === SCORING ===
   'points': {
-    name: 'Points For (PF)',
+    name: 'Points (PF/PA)',
     field: 'points',
     category: 'scoring',
-    higherIsBetter: true,
+    higherIsBetter: true, // Context-dependent: offense=higher better, defense=lower better
     format: 'decimal',
-    description: 'Points scored per game',
+    description: 'Points scored (offense) or allowed (defense) per game',
     availableInOffense: true,
-    availableInDefense: false,
-  },
-
-  'points_allowed': {
-    name: 'Points Against (PA)',
-    field: 'points',
-    category: 'scoring',
-    higherIsBetter: false,
-    format: 'decimal',
-    description: 'Points allowed per game',
-    availableInOffense: false,
     availableInDefense: true,
   },
 
@@ -79,22 +68,11 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
   'total_yards': {
     name: 'Total Yards (Yds)',
     field: 'total_yards',
-    category: 'efficiency',
-    higherIsBetter: true,
+    category: 'efficiency', 
+    higherIsBetter: true, // For offense: higher is better, for defense: lower is better (context-dependent)
     format: 'decimal',
-    description: 'Total offensive yards per game',
+    description: 'Total yards gained (offense) or allowed (defense) per game',
     availableInOffense: true,
-    availableInDefense: false,
-  },
-
-  'total_yards_allowed': {
-    name: 'Total Yards Allowed (Yds)',
-    field: 'total_yards',
-    category: 'efficiency',
-    higherIsBetter: false,
-    format: 'decimal',
-    description: 'Total yards allowed per game',
-    availableInOffense: false,
     availableInDefense: true,
   },
 
@@ -184,7 +162,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     format: 'decimal',
     description: 'Passing yards per game',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true,
   },
 
   'pass_td': {
@@ -251,7 +229,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     format: 'decimal',
     description: 'Rushing yards per game',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true,
   },
 
   'rush_td': {
@@ -402,8 +380,8 @@ export const DEFAULT_OFFENSE_METRICS = [
  * Default metrics for defense comparison  
  */
 export const DEFAULT_DEFENSE_METRICS = [
-  'points_allowed',
-  'total_yards_allowed',
+  'points',
+  'total_yards', 
   'pass_yds',
   'rush_yds',
   'score_pct'

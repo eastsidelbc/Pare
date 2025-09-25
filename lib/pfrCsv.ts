@@ -47,10 +47,10 @@ const CSV_COLUMN_MAPPING_BY_POSITION: Record<number, string> = {
   // 0  1  2 3  4   5   6   7  8  9    10  11  12  13 14  15   16   17  18  19 20   21   22  23  24   25  26  27
   
   0: 'rk',               // Rk = Rank
-  1: 'team',             // Tm = Team  
+  1: 'team',             // Tm = Team
   2: 'g',                // G = Games
-  3: 'points',           // PF = Points For
-  4: 'total_yards',      // Yds = TOTAL YARDS (position 4)
+  3: 'points',           // PF = Points For (Offense) / PA = Points Against (Defense)
+  4: 'total_yards',      // Yds = TOTAL YARDS (position 4) - Offense/Defense
   5: 'plays_offense',    // Ply = Plays
   6: 'yds_per_play_offense', // Y/P = Yards per Play
   7: 'turnovers',        // TO = Turnovers
@@ -210,6 +210,7 @@ const readLocalFile = (filePath: string): Promise<string> => {
  * (Same as HTML version - reusable!)
  */
 export function computeRanks(rows: TeamStats[], basis: RankBasis): TeamStatsWithRanks[] {
+  console.log(`🐛 [CSV-COMPUTE-RANKS] Function called with ${rows.length} teams and ${Object.keys(basis).length} metrics`);
   debugLog('RANK', `Computing ranks for ${rows.length} teams`, { 
     rankingMetrics: Object.keys(basis).length,
     metrics: Object.keys(basis) 
@@ -246,9 +247,48 @@ export function computeRanks(rows: TeamStats[], basis: RankBasis): TeamStatsWith
       return direction === 'desc' ? bVal - aVal : aVal - bVal;
     });
 
-    // Assign ranks
+    // Assign ranks with proper tie handling
     validRows.forEach((row, index) => {
-      row.ranks[key] = index + 1;
+      const currentValue = sanitizeNumeric((row as unknown as Record<string, string>)[key])!;
+      
+      // Count how many teams have a BETTER value than this team
+      let betterTeamsCount = 0;
+      for (let i = 0; i < validRows.length; i++) {
+        const otherValue = sanitizeNumeric((validRows[i] as unknown as Record<string, string>)[key])!;
+        
+        // For descending order (higher is better), count teams with higher values
+        // For ascending order (lower is better), count teams with lower values
+        if (direction === 'desc' && otherValue > currentValue) {
+          betterTeamsCount++;
+        } else if (direction === 'asc' && otherValue < currentValue) {
+          betterTeamsCount++;
+        }
+      }
+      
+      // Rank = number of better teams + 1
+      const calculatedRank = betterTeamsCount + 1;
+      row.ranks[key] = calculatedRank;
+      
+      // 🐛 EXTENSIVE DEBUGGING for Pittsburgh Steelers and Tampa Bay Buccaneers
+      if (row.team === 'Pittsburgh Steelers' || row.team === 'Tampa Bay Buccaneers') {
+        console.log(`🐛 [RANK-DEBUG] ${row.team}:`);
+        console.log(`   Metric: ${key}`);
+        console.log(`   Value: ${currentValue}`);
+        console.log(`   Direction: ${direction}`);
+        console.log(`   Better teams count: ${betterTeamsCount}`);
+        console.log(`   Calculated rank: ${calculatedRank}`);
+        console.log(`   Assigned rank: ${row.ranks[key]}`);
+        console.log(`   Position in array: ${index}`);
+        
+        // Show teams with better values
+        const betterTeams = validRows.filter(otherRow => {
+          const otherValue = sanitizeNumeric((otherRow as unknown as Record<string, string>)[key])!;
+          return direction === 'desc' ? otherValue > currentValue : otherValue < currentValue;
+        }).map(team => `${team.team}: ${(team as unknown as Record<string, string>)[key]}`);
+        
+        console.log(`   Teams with better values (${betterTeams.length}):`, betterTeams);
+        console.log(`   ---`);
+      }
     });
 
     debugLog('RANK', `${key} - Ranked ${validRows.length} teams. Top 3:`, 
@@ -258,6 +298,21 @@ export function computeRanks(rows: TeamStats[], basis: RankBasis): TeamStatsWith
         rank: r.ranks[key] 
       }))
     );
+    
+    // 🐛 SPECIAL DEBUGGING: Show all teams with value 72 for points metric
+    if (key === 'points') {
+      const teamsWithValue72 = validRows.filter(row => {
+        const value = sanitizeNumeric((row as unknown as Record<string, string>)[key])!;
+        return value === 72;
+      });
+      
+      if (teamsWithValue72.length > 0) {
+        console.log(`🐛 [72-POINTS-DEBUG] Found ${teamsWithValue72.length} teams with 72 points:`);
+        teamsWithValue72.forEach(team => {
+          console.log(`   ${team.team}: value=${(team as unknown as Record<string, string>)[key]}, rank=${team.ranks[key]}`);
+        });
+      }
+    }
   });
 
   return rowsWithRanks;

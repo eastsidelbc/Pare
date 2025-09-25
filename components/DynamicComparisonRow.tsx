@@ -9,7 +9,9 @@
 
 import { AVAILABLE_METRICS, formatMetricValue } from '@/lib/metricsConfig';
 import { TeamData } from '@/lib/useNflStats';
-import { motion } from 'framer-motion';
+import { useRanking } from '@/lib/useRanking';
+// Removed Framer Motion for better scroll performance
+// import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
 interface DynamicComparisonRowProps {
@@ -17,13 +19,17 @@ interface DynamicComparisonRowProps {
   teamAData: TeamData;
   teamBData: TeamData;
   type: 'offense' | 'defense';
+  allOffenseData: TeamData[]; // For ranking calculations
+  allDefenseData: TeamData[]; // For ranking calculations
 }
 
 export default function DynamicComparisonRow({ 
   metricKey, 
   teamAData, 
   teamBData, 
-  type 
+  type,
+  allOffenseData,
+  allDefenseData
 }: DynamicComparisonRowProps) {
   const metric = AVAILABLE_METRICS[metricKey];
   
@@ -35,18 +41,40 @@ export default function DynamicComparisonRow({
   // Get values and ranks
   const teamAValue = String((teamAData as Record<string, unknown>)[metricKey] || '0');
   const teamBValue = String((teamBData as Record<string, unknown>)[metricKey] || '0');
-  const teamARank = Number((teamAData as Record<string, unknown>)[`${metricKey}Rank`] || 999);
-  const teamBRank = Number((teamBData as Record<string, unknown>)[`${metricKey}Rank`] || 999);
+  // 🚀 NEW RANKING SYSTEM: Use client-side ranking instead of API ranks
+  const isDefenseMetric = type === 'defense';
+  const allData = isDefenseMetric ? allDefenseData : allOffenseData;
+  const higherIsBetter = isDefenseMetric ? !metric.higherIsBetter : metric.higherIsBetter;
+  
+  const teamARanking = useRanking(allData, metricKey, teamAData?.team, { 
+    higherIsBetter,
+    excludeSpecialTeams: true 
+  });
+  
+  const teamBRanking = useRanking(allData, metricKey, teamBData?.team, { 
+    higherIsBetter,
+    excludeSpecialTeams: true 
+  });
+
+  // 🐛 DEBUGGING: Log new ranking system results
+  if (metricKey === 'points' && (
+    (teamAData?.team === 'Pittsburgh Steelers' || teamAData?.team === 'Tampa Bay Buccaneers') ||
+    (teamBData?.team === 'Pittsburgh Steelers' || teamBData?.team === 'Tampa Bay Buccaneers')
+  )) {
+    console.log(`🚀 [NEW-RANKING] ${metricKey} ranks for comparison:`);
+    console.log(`   Team A (${teamAData?.team}): value=${teamAValue}, ranking=`, teamARanking);
+    console.log(`   Team B (${teamBData?.team}): value=${teamBValue}, ranking=`, teamBRanking);
+  }
 
   // Format values for display
   const formattedTeamAValue = formatMetricValue(teamAValue, metric.format);
   const formattedTeamBValue = formatMetricValue(teamBValue, metric.format);
 
-  // Determine which team is better based on the metric and type
+  // Determine which team is better based on the metric and type (for visual comparison)
   const isOffense = type === 'offense';
-  const higherIsBetter = isOffense ? metric.higherIsBetter : !metric.higherIsBetter;
+  const higherIsBetterForComparison = isOffense ? metric.higherIsBetter : !metric.higherIsBetter;
   
-  const teamABetter = higherIsBetter 
+  const teamABetter = higherIsBetterForComparison 
     ? parseFloat(teamAValue) > parseFloat(teamBValue)
     : parseFloat(teamAValue) < parseFloat(teamBValue);
   
@@ -64,14 +92,7 @@ export default function DynamicComparisonRow({
   const teamAPercentage = totalValue > 0 ? (teamANum / totalValue) * availableWidth : (availableWidth / 2);
   const teamBPercentage = totalValue > 0 ? (teamBNum / totalValue) * availableWidth : (availableWidth / 2);
 
-  // Format rank display
-  const formatRank = (rank: number): string => {
-    if (rank === 1) return '1st';
-    if (rank === 2) return '2nd';
-    if (rank === 3) return '3rd';
-    if (rank <= 32) return `${rank}th`;
-    return 'N/A';
-  };
+  // 🗑️ OLD formatRank function removed - now using useRanking hook
 
   // Fixed colors: Left side = Green, Right side = Dark Blue
   const getTeamAColor = () => {
@@ -79,7 +100,7 @@ export default function DynamicComparisonRow({
   };
 
   const getTeamBColor = () => {
-    return 'text-blue-400'; // Always dark blue for right side
+    return 'text-orange-400'; // Always orange text for right side
   };
 
   const getTeamABarColor = () => {
@@ -87,27 +108,21 @@ export default function DynamicComparisonRow({
   };
 
   const getTeamBBarColor = () => {
-    return 'bg-blue-400'; // Always dark blue bar for right side
+    return 'bg-orange-500'; // Always orange bar for right side
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 5 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2, ease: [0.4, 0.0, 0.2, 1] }}
-      className="py-4 bg-slate-900/80 backdrop-blur-md rounded-xl border border-slate-700/40 shadow-xl shadow-black/40 mb-3 relative overflow-hidden"
-    >
-      {/* Sleek inner gradient */}
-      <div className="absolute inset-0 bg-gradient-to-r from-slate-800/10 via-transparent to-slate-800/10 pointer-events-none" />
+    <div className="py-4 bg-slate-900/90 rounded-xl border border-slate-700/50 shadow-lg mb-3 relative">
+      {/* Removed heavy backdrop-blur, gradients, and motion for performance */}
       {/* Team Stats and Rankings */}
-      <div className="flex justify-between items-center mb-4 px-4 relative z-10">
+      <div className="flex justify-between items-center mb-4 px-4">
         {/* Team A Stats */}
         <div className="flex items-center gap-3">
           <div className={`font-semibold text-base ${getTeamAColor()}`}>
             {formattedTeamAValue}
           </div>
           <div className={`text-xs ${getTeamAColor()} opacity-60`}>
-            ({formatRank(teamARank)})
+            ({teamARanking?.formattedRank || 'N/A'})
           </div>
         </div>
         
@@ -124,7 +139,7 @@ export default function DynamicComparisonRow({
         {/* Team B Stats */}
         <div className="flex items-center gap-3">
           <div className={`text-xs ${getTeamBColor()} opacity-60`}>
-            ({formatRank(teamBRank)})
+            ({teamBRanking?.formattedRank || 'N/A'})
           </div>
           <div className={`font-semibold text-base ${getTeamBColor()}`}>
             {formattedTeamBValue}
@@ -132,34 +147,32 @@ export default function DynamicComparisonRow({
         </div>
       </div>
       
-      {/* Ultra-Sleek theScore Style Bars */}
-      <div className="px-4 relative z-10">
-        <div className="relative w-full h-5 bg-slate-800/90 rounded-full overflow-hidden shadow-inner shadow-black/60">
-          {/* Team A Bar - Sleek green with rounded left edge */}
-          <motion.div 
-            initial={{ width: 0 }}
-            animate={{ width: `${teamAPercentage}%` }}
-            transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
-            className="absolute left-0 top-0 h-full bg-green-500 rounded-l-full"
+      {/* Optimized theScore Style Bars */}
+      <div className="px-4">
+        <div className="relative w-full h-5 bg-slate-800 rounded-full overflow-hidden">
+          {/* Team A Bar - Fully rounded green pill */}
+          <div 
+            className="absolute left-0 top-0 h-full bg-green-500 rounded-full transition-all duration-300 ease-out"
             style={{ 
-              background: 'linear-gradient(90deg, #22c55e, #16a34a)'
+              width: `${teamAPercentage}%`,
+              background: 'linear-gradient(90deg, #22c55e, #16a34a)',
+              willChange: 'width'
             }}
           />
           
-          {/* Center gap/separator - sharp edges where bars meet */}
+          {/* Center gap/separator - invisible background match */}
           <div 
-            className="absolute top-0 h-full w-0.5 bg-slate-900 z-10"
+            className="absolute top-0 h-full w-0.5 bg-slate-800 z-10"
             style={{ left: `${teamAPercentage}%` }}
           />
           
-          {/* Team B Bar - Sleek blue with rounded right edge */}
-          <motion.div 
-            initial={{ width: 0 }}
-            animate={{ width: `${teamBPercentage}%` }}
-            transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1], delay: 0.05 }}
-            className="absolute right-0 top-0 h-full bg-blue-500 rounded-r-full"
+          {/* Team B Bar - Fully rounded orange pill */}
+          <div 
+            className="absolute right-0 top-0 h-full bg-orange-500 rounded-full transition-all duration-300 ease-out"
             style={{ 
-              background: 'linear-gradient(90deg, #3b82f6, #1d4ed8)'
+              width: `${teamBPercentage}%`,
+              background: 'linear-gradient(90deg, #f97316, #ea580c)',
+              willChange: 'width'
             }}
           />
         </div>
@@ -171,6 +184,6 @@ export default function DynamicComparisonRow({
           {teamANum} + {teamBNum} = {totalValue} | {teamAPercentage.toFixed(1)}% + {teamBPercentage.toFixed(1)}% + {gapPercentage}% gap = {(teamAPercentage + teamBPercentage + gapPercentage).toFixed(1)}%
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }

@@ -262,6 +262,7 @@ export async function fetchAndParse({
  * Computes ranking for each team based on specified metrics
  */
 export function computeRanks(rows: TeamStats[], basis: RankBasis): TeamStatsWithRanks[] {
+  console.log(`🚨 [OLD-PFR-COMPUTE-RANKS] WARNING: OLD RANKING FUNCTION CALLED! This should NOT be used anymore!`);
   debugLog('RANK', `Computing ranks for ${Object.keys(basis).length} metrics`, {
     metricsCount: Object.keys(basis).length,
     teamsCount: rows.length,
