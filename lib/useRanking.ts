@@ -10,6 +10,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { TeamData } from './useNflStats';
 
 export interface RankingResult {
   rank: number;
@@ -28,14 +29,26 @@ export interface RankingOptions {
  * Calculate rankings for a specific metric across all NFL teams
  */
 export function useRanking(
-  allData: any[], 
+  allData: TeamData[], 
   metricKey: string, 
   targetTeamName: string,
   options: RankingOptions = {}
 ): RankingResult | null {
   
   return useMemo(() => {
-    if (!allData || allData.length === 0 || !metricKey || !targetTeamName) {
+    // 🔒 TYPE SAFETY: Improved error handling with logging
+    if (!allData || allData.length === 0) {
+      console.warn(`[useRanking] No data provided for ranking calculation (metric: ${metricKey})`);
+      return null;
+    }
+    
+    if (!metricKey) {
+      console.warn(`[useRanking] No metric key provided for ranking calculation`);
+      return null;
+    }
+    
+    if (!targetTeamName) {
+      console.warn(`[useRanking] No target team name provided for ranking calculation (metric: ${metricKey})`);
       return null;
     }
 
@@ -61,7 +74,7 @@ export function useRanking(
     }
 
     // Get numeric value for the metric
-    const targetValue = parseFloat(targetTeam[metricKey] || '0');
+    const targetValue = parseFloat(String(targetTeam[metricKey] || '0'));
     if (isNaN(targetValue)) {
       console.log(`🏆 [USE-RANKING] Invalid metric value for ${targetTeamName}: ${targetTeam[metricKey]}`);
       return null;
@@ -74,7 +87,7 @@ export function useRanking(
     let teamsWithSameValue = 0;
 
     filteredData.forEach(team => {
-      const teamValue = parseFloat(team[metricKey] || '0');
+      const teamValue = parseFloat(String(team[metricKey] || '0'));
       if (isNaN(teamValue)) return;
 
       if (teamValue === targetValue) {
@@ -118,7 +131,7 @@ export function useRanking(
       teamsWithSameValue
     };
 
-  }, [allData, metricKey, targetTeamName, options.higherIsBetter, options.excludeSpecialTeams]);
+  }, [allData, metricKey, targetTeamName, options]);
 }
 
 /**
@@ -126,7 +139,7 @@ export function useRanking(
  * Note: This is a utility function, not a hook
  */
 export function calculateBulkRanking(
-  allData: any[],
+  allData: TeamData[],
   metricKey: string,
   teamNames: string[],
   options: RankingOptions = {}
@@ -153,7 +166,7 @@ export function calculateBulkRanking(
       return;
     }
 
-    const targetValue = parseFloat(targetTeam[metricKey] || '0');
+    const targetValue = parseFloat(String(targetTeam[metricKey] || '0'));
     if (isNaN(targetValue)) {
       results[teamName] = null;
       return;
@@ -163,7 +176,7 @@ export function calculateBulkRanking(
     let teamsWithSameValue = 0;
 
     filteredData.forEach(team => {
-      const teamValue = parseFloat(team[metricKey] || '0');
+      const teamValue = parseFloat(String(team[metricKey] || '0'));
       if (isNaN(teamValue)) return;
 
       if (teamValue === targetValue) {
@@ -203,7 +216,7 @@ export function calculateBulkRanking(
  * Get league-wide ranking statistics for a metric
  */
 export function useMetricStats(
-  allData: any[],
+  allData: TeamData[],
   metricKey: string,
   options: RankingOptions = {}
 ): {
@@ -229,7 +242,7 @@ export function useMetricStats(
     }
 
     const values = filteredData
-      .map(team => parseFloat(team[metricKey] || '0'))
+      .map(team => parseFloat(String(team[metricKey] || '0')))
       .filter(val => !isNaN(val))
       .sort((a, b) => a - b);
 
@@ -250,5 +263,5 @@ export function useMetricStats(
       totalTeams: values.length
     };
 
-  }, [allData, metricKey, options.excludeSpecialTeams]);
+  }, [allData, metricKey, options]);
 }

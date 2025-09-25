@@ -13,6 +13,7 @@ import { DEFAULT_OFFENSE_METRICS, DEFAULT_DEFENSE_METRICS } from '@/lib/metricsC
 import TeamSelectionPanel from '@/components/TeamSelectionPanel';
 import OffensePanel from '@/components/OffensePanel';
 import DefensePanel from '@/components/DefensePanel';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export default function ComparePage() {
   const { 
@@ -124,27 +125,43 @@ export default function ComparePage() {
         />
 
 
-        {/* Comparison Panels */}
+        {/* Comparison Panels - Protected by Error Boundaries */}
         <div className="grid md:grid-cols-2 gap-6">
           {/* Offense Panel */}
-          <OffensePanel
-            offenseData={offenseData}
-            defenseData={defenseData}
-            selectedTeamA={selectedTeamA}
-            selectedTeamB={selectedTeamB}
-            selectedMetrics={selectedOffenseMetrics}
-            isLoading={isLoadingOffense}
-          />
+          <ErrorBoundary fallback={
+            <div className="p-8 bg-slate-900/90 rounded-xl border border-red-500/30 text-center">
+              <div className="text-red-400 text-4xl mb-2">⚠️</div>
+              <h3 className="text-lg font-bold text-red-400">Offense Panel Error</h3>
+              <p className="text-slate-400 mt-2">Unable to load offense comparison data</p>
+            </div>
+          }>
+            <OffensePanel
+              offenseData={offenseData}
+              defenseData={defenseData}
+              selectedTeamA={selectedTeamA}
+              selectedTeamB={selectedTeamB}
+              selectedMetrics={selectedOffenseMetrics}
+              isLoading={isLoadingOffense}
+            />
+          </ErrorBoundary>
 
           {/* Defense Panel */}
-          <DefensePanel
-            defenseData={defenseData}
-            offenseData={offenseData}
-            selectedTeamA={selectedTeamA}
-            selectedTeamB={selectedTeamB}
-            selectedMetrics={selectedDefenseMetrics}
-            isLoading={isLoadingDefense}
-          />
+          <ErrorBoundary fallback={
+            <div className="p-8 bg-slate-900/90 rounded-xl border border-red-500/30 text-center">
+              <div className="text-red-400 text-4xl mb-2">⚠️</div>
+              <h3 className="text-lg font-bold text-red-400">Defense Panel Error</h3>
+              <p className="text-slate-400 mt-2">Unable to load defense comparison data</p>
+            </div>
+          }>
+            <DefensePanel
+              defenseData={defenseData}
+              offenseData={offenseData}
+              selectedTeamA={selectedTeamA}
+              selectedTeamB={selectedTeamB}
+              selectedMetrics={selectedDefenseMetrics}
+              isLoading={isLoadingDefense}
+            />
+          </ErrorBoundary>
         </div>
       </div>
     </div>

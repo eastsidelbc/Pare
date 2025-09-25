@@ -36,7 +36,6 @@ export default function OffensePanel({
   const {
     mode: displayMode,
     setMode: setDisplayMode,
-    modeLabel,
     transformTeamData
   } = useDisplayMode('per-game');
 

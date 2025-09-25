@@ -76,8 +76,15 @@ export function useTeamSelection(
 
     const availableTeams = getAvailableTeams(offenseData);
     if (availableTeams.length >= 2) {
-      const teamA = availableTeams[0]?.team || '';
-      const teamB = availableTeams[1]?.team || '';
+      // 🏈 DEFAULT TEAM SELECTION: Minnesota Vikings vs Detroit Lions
+      const preferredTeamA = 'Minnesota Vikings';
+      const preferredTeamB = 'Detroit Lions';
+      
+      // Try to find preferred teams, otherwise fall back to first available teams
+      const teamA = availableTeams.find(team => team.team === preferredTeamA)?.team || 
+                   availableTeams[0]?.team || '';
+      const teamB = availableTeams.find(team => team.team === preferredTeamB && team.team !== teamA)?.team || 
+                   availableTeams.find(team => team.team !== teamA)?.team || '';
       
       if (teamA && teamB) {
         console.log(`🏈 [USE-TEAM-SELECTION] Auto-selecting teams: ${teamA} vs ${teamB}`);

@@ -5,7 +5,6 @@
  * Much simpler and faster than HTML parsing!
  */
 
-import fs from 'fs/promises';
 import { logger } from '@/utils/logger';
 
 // Debug logging utility - now uses centralized logger with log levels

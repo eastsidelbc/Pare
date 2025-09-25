@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { TeamData } from '@/lib/useNflStats';
 import { transformTeamDataByMode, transformAllTeamDataByMode, type DisplayMode as TransformDisplayMode } from '@/utils/teamDataTransform';
 
@@ -45,18 +45,6 @@ export function useDisplayMode(initialMode: DisplayMode = 'per-game'): UseDispla
     console.log(`📊 [USE-DISPLAY-MODE] Toggling from ${mode} to ${newMode}`);
     setMode(newMode);
   }, [mode]);
-
-  // Check if a field should be converted for per-game calculation
-  const shouldConvertField = useCallback((key: string, value: unknown): boolean => {
-    if (typeof value !== 'string' && typeof value !== 'number') return false;
-    if (key === 'team' || key === 'g') return false; // Never convert team name or games
-    
-    // Don't convert percentages, rates, or per-game stats
-    const skipPatterns = ['pct', 'per', 'avg', 'rate', '%'];
-    const keyLower = key.toLowerCase();
-    
-    return !skipPatterns.some(pattern => keyLower.includes(pattern));
-  }, []);
 
   // ✅ Transform individual team data using consolidated utility
   const transformTeamData = useCallback((teamData: TeamData | null): TeamData | null => {
