@@ -10,6 +10,7 @@
 import { AVAILABLE_METRICS, formatMetricValue } from '@/lib/metricsConfig';
 import { TeamData } from '@/lib/useNflStats';
 import { useRanking } from '@/lib/useRanking';
+import { useTheme } from '@/lib/useTheme';
 // Removed Framer Motion for better scroll performance
 // import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown } from 'lucide-react';
@@ -21,6 +22,7 @@ interface DynamicComparisonRowProps {
   type: 'offense' | 'defense';
   allOffenseData: TeamData[]; // For ranking calculations
   allDefenseData: TeamData[]; // For ranking calculations
+  panelType: 'offense' | 'defense';
 }
 
 export default function DynamicComparisonRow({ 
@@ -29,7 +31,8 @@ export default function DynamicComparisonRow({
   teamBData, 
   type,
   allOffenseData,
-  allDefenseData
+  allDefenseData,
+  panelType
 }: DynamicComparisonRowProps) {
   const metric = AVAILABLE_METRICS[metricKey];
   
@@ -80,48 +83,114 @@ export default function DynamicComparisonRow({
   
   const teamBBetter = !teamABetter && parseFloat(teamAValue) !== parseFloat(teamBValue);
 
-  // Calculate proportional bar widths (theScore app style)
-  const teamANum = parseFloat(teamAValue) || 0;
-  const teamBNum = parseFloat(teamBValue) || 0;
+  // Calculate proportional bar widths with STRONGER visual emphasis
+  let teamANum = parseFloat(teamAValue) || 0;
+  let teamBNum = parseFloat(teamBValue) || 0;
+  
+  // 🛡️ DEFENSE LOGIC: For defense panels, flip values so lower is better gets larger bars
+  if (panelType === 'defense') {
+    [teamANum, teamBNum] = [teamBNum, teamANum];
+  }
+  
   const totalValue = teamANum + teamBNum;
   
   // Calculate each team's percentage of the total with small gap for distinction
   const gapPercentage = 2; // 2% total gap (1% each side)
   const availableWidth = 100 - gapPercentage;
   
-  const teamAPercentage = totalValue > 0 ? (teamANum / totalValue) * availableWidth : (availableWidth / 2);
-  const teamBPercentage = totalValue > 0 ? (teamBNum / totalValue) * availableWidth : (availableWidth / 2);
+  let teamAPercentage, teamBPercentage;
+  
+  if (totalValue > 0) {
+    // 🔥 RANK-BASED DRAMATIC AMPLIFICATION: Like theScore app!
+    const baseRatioA = teamANum / totalValue;
+    const baseRatioB = teamBNum / totalValue;
+    
+    // 🏆 CALCULATE RANK-BASED AMPLIFICATION FACTOR
+    const teamARank = teamARanking?.rank || 999;
+    const teamBRank = teamBRanking?.rank || 999;
+    const rankGap = Math.abs(teamARank - teamBRank);
+    
+    // 📊 Determine amplification factor based on rank gap
+    let amplificationFactor = 1.2; // Base factor for small gaps
+    
+    if (rankGap >= 20) {
+      amplificationFactor = 2.5; // EXTREME difference
+    } else if (rankGap >= 15) {
+      amplificationFactor = 2.2; // HUGE difference  
+    } else if (rankGap >= 10) {
+      amplificationFactor = 1.8; // BIG difference
+    } else if (rankGap >= 5) {
+      amplificationFactor = 1.5; // MODERATE difference
+    } else {
+      amplificationFactor = 1.2; // SUBTLE difference
+    }
+    
+    // 🎖️ ELITE vs POOR BONUS: If one team is Top 5 AND other is Bottom 10
+    const teamAIsElite = teamARank <= 5;
+    const teamBIsElite = teamBRank <= 5;
+    const teamAIsPoor = teamARank >= 23; // Bottom 10 in 32-team league
+    const teamBIsPoor = teamBRank >= 23;
+    
+    const eliteVsPoorBonus = (teamAIsElite && teamBIsPoor) || (teamBIsElite && teamAIsPoor) ? 0.5 : 0;
+    amplificationFactor += eliteVsPoorBonus;
+    
+    // Apply exponential scaling with dynamic amplification
+    const amplifiedRatioA = Math.pow(baseRatioA, amplificationFactor);
+    const amplifiedRatioB = Math.pow(baseRatioB, amplificationFactor);
+    const amplifiedTotal = amplifiedRatioA + amplifiedRatioB;
+    
+    // Normalize back to 100% and apply to available width
+    teamAPercentage = (amplifiedRatioA / amplifiedTotal) * availableWidth;
+    teamBPercentage = (amplifiedRatioB / amplifiedTotal) * availableWidth;
+    
+    // 📊 Debug: Show the rank-based amplification effect
+    const amplificationLevel = rankGap >= 20 ? 'EXTREME' : 
+                              rankGap >= 15 ? 'HUGE' : 
+                              rankGap >= 10 ? 'BIG' : 
+                              rankGap >= 5 ? 'MODERATE' : 'SUBTLE';
+    
+    console.log(`🔥 RANK-BASED BARS [${metric?.name}]:`, {
+      ranks: `${teamARank} vs ${teamBRank} (gap: ${rankGap})`,
+      amplification: `${amplificationFactor.toFixed(1)}x (${amplificationLevel})`,
+      eliteBonus: eliteVsPoorBonus > 0 ? '🎖️ ELITE vs POOR BONUS!' : '',
+      original: `${(baseRatioA * 100).toFixed(1)}% vs ${(baseRatioB * 100).toFixed(1)}%`,
+      final: `${teamAPercentage.toFixed(1)}% vs ${teamBPercentage.toFixed(1)}%`,
+      dramaticEffect: `${teamAPercentage > teamBPercentage ? '🟢 TEAM A DOMINANCE' : '🟠 TEAM B DOMINANCE'}`
+    });
+  } else {
+    // Fallback for zero totals
+    teamAPercentage = availableWidth / 2;
+    teamBPercentage = availableWidth / 2;
+  }
 
-  // 🗑️ OLD formatRank function removed - now using useRanking hook
+  // 🎨 THEME SYSTEM: Dynamic colors with fallback to original styling
+  const {
+    getTeamAColor,
+    getTeamBColor,
+    getTeamABarColor,
+    getTeamBBarColor,
+    getTeamAGradient,
+    getTeamBGradient,
+    getPanelClasses,
+    getBarContainerClasses,
+    theme
+  } = useTheme();
 
-  // Fixed colors: Left side = Green, Right side = Dark Blue
-  const getTeamAColor = () => {
-    return 'text-green-400'; // Always green for left side
-  };
-
-  const getTeamBColor = () => {
-    return 'text-orange-400'; // Always orange text for right side
-  };
-
-  const getTeamABarColor = () => {
-    return 'bg-green-400'; // Always green bar for left side
-  };
-
-  const getTeamBBarColor = () => {
-    return 'bg-orange-500'; // Always orange bar for right side
-  };
+  // 🔧 FALLBACK: Original styling if theme fails
+  const fallbackPanelClasses = "py-4 bg-slate-900/90 rounded-xl border border-slate-700/50 shadow-lg mb-3 relative";
+  const fallbackBarClasses = "relative w-full h-5 bg-slate-800 rounded-full overflow-hidden";
 
   return (
-    <div className="py-4 bg-slate-900/90 rounded-xl border border-slate-700/50 shadow-lg mb-3 relative">
+    <div className={getPanelClasses ? `py-4 mb-3 relative ${getPanelClasses()}` : fallbackPanelClasses}>
       {/* Removed heavy backdrop-blur, gradients, and motion for performance */}
       {/* Team Stats and Rankings */}
       <div className="flex justify-between items-center mb-4 px-4">
         {/* Team A Stats */}
         <div className="flex items-center gap-3">
-          <div className={`font-semibold text-base ${getTeamAColor()}`}>
+              <div className={`font-semibold text-base ${getTeamAColor ? getTeamAColor() : 'text-green-400'}`}>
             {formattedTeamAValue}
           </div>
-          <div className={`text-xs ${getTeamAColor()} opacity-60`}>
+              <div className={`text-xs ${getTeamAColor ? getTeamAColor() : 'text-green-400'} opacity-60`}>
             ({teamARanking?.formattedRank || 'N/A'})
           </div>
         </div>
@@ -138,10 +207,10 @@ export default function DynamicComparisonRow({
         
         {/* Team B Stats */}
         <div className="flex items-center gap-3">
-          <div className={`text-xs ${getTeamBColor()} opacity-60`}>
+              <div className={`text-xs ${getTeamBColor ? getTeamBColor() : 'text-orange-400'} opacity-60`}>
             ({teamBRanking?.formattedRank || 'N/A'})
           </div>
-          <div className={`font-semibold text-base ${getTeamBColor()}`}>
+              <div className={`font-semibold text-base ${getTeamBColor ? getTeamBColor() : 'text-orange-400'}`}>
             {formattedTeamBValue}
           </div>
         </div>
@@ -149,13 +218,13 @@ export default function DynamicComparisonRow({
       
       {/* Optimized theScore Style Bars */}
       <div className="px-4">
-        <div className="relative w-full h-5 bg-slate-800 rounded-full overflow-hidden">
+        <div className={getBarContainerClasses ? getBarContainerClasses() : fallbackBarClasses}>
           {/* Team A Bar - Fully rounded green pill */}
           <div 
-            className="absolute left-0 top-0 h-full bg-green-500 rounded-full transition-all duration-300 ease-out"
+            className={`absolute left-0 top-0 h-full rounded-full ${theme?.animations ? 'transition-all duration-300 ease-out' : 'transition-all duration-300 ease-out'}`}
             style={{ 
               width: `${teamAPercentage}%`,
-              background: 'linear-gradient(90deg, #22c55e, #16a34a)',
+              background: getTeamAGradient ? getTeamAGradient() : 'linear-gradient(90deg, #22c55e, #16a34a)',
               willChange: 'width'
             }}
           />
@@ -168,10 +237,10 @@ export default function DynamicComparisonRow({
           
           {/* Team B Bar - Fully rounded orange pill */}
           <div 
-            className="absolute right-0 top-0 h-full bg-orange-500 rounded-full transition-all duration-300 ease-out"
+            className={`absolute right-0 top-0 h-full rounded-full ${theme?.animations ? 'transition-all duration-300 ease-out' : 'transition-all duration-300 ease-out'}`}
             style={{ 
               width: `${teamBPercentage}%`,
-              background: 'linear-gradient(90deg, #f97316, #ea580c)',
+              background: getTeamBGradient ? getTeamBGradient() : 'linear-gradient(90deg, #f97316, #ea580c)',
               willChange: 'width'
             }}
           />
