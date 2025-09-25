@@ -11,15 +11,17 @@
  */
 
 import { NextResponse } from 'next/server';
-import { fetchAndParseCSV, computeRanks, type RankBasis, type TeamStatsWithRanks } from '@/lib/pfrCsv';
+import { fetchAndParseCSV, type TeamStats } from '@/lib/pfrCsv';
+import { APP_CONSTANTS } from '@/config/constants';
+import { logger } from '@/utils/logger';
+import { generateRequestId, getCacheAgeMinutes } from '@/utils/helpers';
 
 // API Response interface
 interface ApiResponse {
   season: number;
   type: string;
   updatedAt: string;
-  rankBasis: RankBasis;
-  rows: TeamStatsWithRanks[];
+  rows: TeamStats[];
   stale?: boolean;
   error?: string;
 }
@@ -34,62 +36,29 @@ interface CacheEntry {
 let cache: CacheEntry = {
   data: null,
   timestamp: 0,
-  maxAge: 10 * 1000 // 10 seconds for debugging (change back to 6 hours later)
+  maxAge: process.env.NODE_ENV === 'production' ? APP_CONSTANTS.CACHE.PRODUCTION_MAX_AGE : APP_CONSTANTS.CACHE.DEBUG_MAX_AGE
 };
 
-// Ranking basis for offense metrics (higher = better)
-// These metrics match the dual-section UI requirements
-const OFFENSE_RANK_BASIS: RankBasis = {
-  // Dual-section UI required metrics
-  'points': 'desc',           // Points (per game)
-  'total_yards': 'desc',      // Total Yards (per game)
-  'pass_yds': 'desc',         // Passing Yards (per game)
-  'rush_yds': 'desc',         // Rushing Yards (per game)
-  'third_down_pct': 'desc',   // 3rd Down % (conversion rate)
-  
-  // Additional useful metrics
-  'pass_td': 'desc',          // Passing touchdowns
-  'rush_td': 'desc',          // Rushing touchdowns
-  'pass_cmp': 'desc',         // Pass completions
-  'pass_att': 'desc',         // Pass attempts
-  'rush_att': 'desc',         // Rush attempts
-};
+// ✅ Server-side ranking removed - now handled client-side by useRanking hook
 
 export async function GET() {
-  const requestId = Math.random().toString(36).substr(2, 9);
+  const requestId = generateRequestId();
   const timestamp = new Date().toISOString();
   
-  console.log(`\n🏈 [OFFENSE-${requestId}] [${timestamp}] ===== API REQUEST START =====`);
-  console.log(`🏈 [OFFENSE-${requestId}] Environment:`, {
-    nodeVersion: process.version,
-    platform: process.platform,
-    cacheStatus: cache.data ? 'EXISTS' : 'EMPTY',
-    cacheAge: cache.timestamp ? Math.round((Date.now() - cache.timestamp) / 1000 / 60) : 'N/A'
-  });
+  // API request start (verbose only) 
+  // Environment info (verbose only)
   
-  // Add more environment debugging
-  console.log(`🏈 [OFFENSE-${requestId}] Process info:`, {
-    pid: process.pid,
-    memoryUsage: process.memoryUsage(),
-    uptime: process.uptime()
-  });
+  // Process info (verbose only)
   
   try {
     // Check cache first
     const now = Date.now();
-    console.log(`🐛 [OFFENSE-CACHE-${requestId}] Checking cache:`, {
-      cacheExists: !!cache.data,
-      cacheTimestamp: cache.timestamp,
-      now: now,
-      maxAge: cache.maxAge,
-      cacheAge: cache.timestamp ? now - cache.timestamp : 'N/A',
-      isExpired: cache.timestamp ? (now - cache.timestamp) >= cache.maxAge : true
-    });
+    // Cache checking (verbose only)
     
     if (cache.data && cache.timestamp && (now - cache.timestamp) < cache.maxAge) {
-      const cacheAgeMinutes = Math.round((now - cache.timestamp) / 1000 / 60);
-      console.log(`💾 [OFFENSE-${requestId}] Serving cached data (${cacheAgeMinutes} min old)`);
-      console.log(`💾 [OFFENSE-${requestId}] Cache contains ${cache.data.rows.length} teams`);
+      logger.cache({ context: 'OFFENSE', requestId }, `Serving cached data (${getCacheAgeMinutes(cache.timestamp)} min old)`, {
+        teamCount: cache.data.rows.length
+      });
       
       return NextResponse.json(cache.data, {
         headers: {
@@ -102,74 +71,32 @@ export async function GET() {
     }
 
     // Fetch fresh data from local CSV file
-    console.log(`📁 [OFFENSE-${requestId}] Cache miss - reading fresh data from CSV file...`);
-    console.log(`📁 [OFFENSE-${requestId}] File: data/pfr/offense-2025.csv`);
-    console.log(`📁 [OFFENSE-${requestId}] Rank basis:`, OFFENSE_RANK_BASIS);
+    // CSV file reading (verbose only)
     
     const startTime = Date.now();
-    console.log(`🐛 [OFFENSE-${requestId}] About to call fetchAndParseCSV...`);
+    // About to fetch CSV (verbose only)
     const { updatedAt, rows } = await fetchAndParseCSV({
       type: 'offense'
     });
-    console.log(`🐛 [OFFENSE-${requestId}] fetchAndParseCSV returned ${rows.length} rows`);
+    // CSV fetch completed (verbose only)
     const fetchTime = Date.now() - startTime;
-    
-    console.log(`📊 [OFFENSE-${requestId}] Fetch completed in ${fetchTime}ms`);
-    console.log(`📊 [OFFENSE-${requestId}] Raw data: ${rows.length} teams`);
     
     if (rows.length === 0) {
       throw new Error('No team data found in PFR response');
     }
 
-    // Log sample of raw data
-    console.log(`📊 [OFFENSE-${requestId}] Sample raw team:`, {
-      team: rows[0]?.team,
-      availableFields: Object.keys(rows[0] || {}),
-      sampleValues: {
-        points: rows[0]?.points,
-        total_yards: rows[0]?.total_yards,
-        pass_yds: rows[0]?.pass_yds
-      }
-    });
+    // Sample data logging (verbose only)
 
     // Compute rankings
-    console.log(`🏆 [OFFENSE-${requestId}] Computing rankings...`);
-    const rankStartTime = Date.now();
-    console.log(`🐛 [OFFENSE-API-${requestId}] Computing ranks with basis:`, OFFENSE_RANK_BASIS);
-    console.log(`🐛 [OFFENSE-API-${requestId}] About to call computeRanks with ${rows.length} teams...`);
-    console.log(`🐛 [OFFENSE-API-${requestId}] Sample team before ranking:`, rows[0]);
-    const rowsWithRanks = computeRanks(rows, OFFENSE_RANK_BASIS);
-    console.log(`🐛 [OFFENSE-API-${requestId}] computeRanks returned ${rowsWithRanks.length} teams`);
-    
-    // 🐛 DEBUGGING: Check Pittsburgh Steelers and Tampa Bay Buccaneers ranks after computation
-    const debugTeams = rowsWithRanks.filter(team => 
-      team.team === 'Pittsburgh Steelers' || team.team === 'Tampa Bay Buccaneers'
-    );
-    
-    if (debugTeams.length > 0) {
-      console.log(`🐛 [OFFENSE-API-${requestId}] DEBUG TEAMS AFTER RANK COMPUTATION:`);
-      debugTeams.forEach(team => {
-        console.log(`   ${team.team}:`);
-        console.log(`     points: ${team.points} (rank: ${team.ranks?.points})`);
-        console.log(`     total_yards: ${team.total_yards} (rank: ${team.ranks?.total_yards})`);
-        console.log(`     All ranks:`, team.ranks);
-      });
-    }
-    const rankTime = Date.now() - rankStartTime;
-    
-    console.log(`🏆 [OFFENSE-${requestId}] Ranking completed in ${rankTime}ms`);
-    console.log(`🏆 [OFFENSE-${requestId}] Sample ranked team:`, {
-      team: rowsWithRanks[0]?.team,
-      ranks: rowsWithRanks[0]?.ranks
-    });
+    // ✅ Rankings now computed client-side using useRanking hook for better performance
+    // Client-side ranking info (verbose only)
 
     // Build response object
     const response: ApiResponse = {
       season: 2025,
       type: 'offense',
       updatedAt,
-      rankBasis: OFFENSE_RANK_BASIS,
-      rows: rowsWithRanks
+      rows: rows  // Raw data without server-side rankings
     };
 
     // Update cache
@@ -179,8 +106,10 @@ export async function GET() {
       maxAge: cache.maxAge
     };
 
-    console.log(`✅ [OFFENSE-${requestId}] Successfully processed ${rowsWithRanks.length} teams`);
-    console.log(`✅ [OFFENSE-${requestId}] Total processing time: ${Date.now() - startTime}ms`);
+    logger.performance({ context: 'OFFENSE', requestId }, 'API Processing Complete', {
+      duration: Date.now() - startTime,
+      operation: `Processed ${rows.length} teams`
+    });
 
     return NextResponse.json(response, {
       headers: {
@@ -205,8 +134,7 @@ export async function GET() {
 
     // If we have stale cache data, serve it with a warning
     if (cache.data) {
-      console.log(`🔄 [OFFENSE-${requestId}] Serving stale cache data due to error`);
-      console.log(`🔄 [OFFENSE-${requestId}] Stale cache age: ${Math.round((Date.now() - cache.timestamp) / 1000 / 60)} minutes`);
+      // Stale cache info (verbose only)
       
       const staleResponse: ApiResponse = {
         ...cache.data,

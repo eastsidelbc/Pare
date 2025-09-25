@@ -8,7 +8,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { APP_CONSTANTS } from '@/config/constants';
 import { TeamStatsWithRanks } from './pfr';
+import { transformApiResponseToTeamData } from '@/utils/teamDataTransform';
 
 // API Response structure
 export interface NflApiResponse {
@@ -70,36 +72,8 @@ export function useNflStats(): UseNflStatsReturn {
    * Transforms API response data to UI-friendly format
    * Now dynamically maps ALL available metrics from PFR!
    */
-  const transformApiData = useCallback((apiData: NflApiResponse): TeamData[] => {
-    return apiData.rows.map(team => {
-      const transformedTeam: TeamData = {
-        team: team.team,
-      };
-      
-      // Dynamically map all available fields from the API response
-      Object.keys(team).forEach(key => {
-        if (key !== 'team' && key !== 'ranks') {
-          // Store the raw value as string
-          transformedTeam[key] = String(team[key] || '0');
-          
-          // Store the rank if available
-          if (team.ranks && team.ranks[key] !== undefined) {
-            transformedTeam[`${key}Rank`] = team.ranks[key];
-            
-            // 🐛 DEBUGGING: Log rank assignment for debug teams
-            if ((team.team === 'Pittsburgh Steelers' || team.team === 'Tampa Bay Buccaneers') && key === 'points') {
-              console.log(`🐛 [UI-TRANSFORM] ${team.team} - ${key}:`);
-              console.log(`   Raw value: ${team[key]}`);
-              console.log(`   Rank from API: ${team.ranks[key]}`);
-              console.log(`   Assigned to UI as: ${transformedTeam[`${key}Rank`]}`);
-            }
-          }
-        }
-      });
-      
-      return transformedTeam;
-    });
-  }, []);
+  // ✅ Using consolidated transformation utility (eliminates duplication)
+  // Note: Rank logic will be handled client-side by useRanking hook
 
   /**
    * Fetches offense data from API
@@ -112,7 +86,7 @@ export function useNflStats(): UseNflStatsReturn {
       setIsLoadingOffense(true);
       setOffenseError(null);
       
-      const response = await fetch('/api/nfl-2025/offense');
+      const response = await fetch(APP_CONSTANTS.API.ENDPOINTS.OFFENSE);
       
       console.log(`🏈 [HOOK-${requestId}] Response status: ${response.status}`, {
         ok: response.ok,
@@ -139,7 +113,7 @@ export function useNflStats(): UseNflStatsReturn {
         error: apiData.error || null
       });
       
-      const transformedData = transformApiData(apiData);
+      const transformedData = transformApiResponseToTeamData(apiData);
       
       setOffenseData(transformedData);
       setLastUpdated(apiData.updatedAt);
@@ -161,7 +135,7 @@ export function useNflStats(): UseNflStatsReturn {
     } finally {
       setIsLoadingOffense(false);
     }
-  }, [transformApiData]);
+  }, []);
 
   /**
    * Fetches defense data from API
@@ -174,7 +148,7 @@ export function useNflStats(): UseNflStatsReturn {
       setIsLoadingDefense(true);
       setDefenseError(null);
       
-      const response = await fetch('/api/nfl-2025/defense');
+      const response = await fetch(APP_CONSTANTS.API.ENDPOINTS.DEFENSE);
       
       console.log(`🛡️ [HOOK-${requestId}] Response status: ${response.status}`, {
         ok: response.ok,
@@ -201,7 +175,7 @@ export function useNflStats(): UseNflStatsReturn {
         error: apiData.error || null
       });
       
-      const transformedData = transformApiData(apiData);
+      const transformedData = transformApiResponseToTeamData(apiData);
       
       setDefenseData(transformedData);
       
@@ -222,7 +196,7 @@ export function useNflStats(): UseNflStatsReturn {
     } finally {
       setIsLoadingDefense(false);
     }
-  }, [transformApiData]);
+  }, []);
 
   /**
    * Refresh all data

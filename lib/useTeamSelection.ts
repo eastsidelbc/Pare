@@ -8,6 +8,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { isSpecialTeam } from '@/utils/helpers';
 import { TeamData } from '@/lib/useNflStats';
 
 export interface TeamSelectionOptions {
@@ -64,9 +65,7 @@ export function useTeamSelection(
   const getAvailableTeams = useCallback((data: TeamData[]): TeamData[] => {
     if (!excludeSpecialTeams) return data;
     
-    return data.filter(team => 
-      !['Avg Team', 'League Total', 'Avg Tm/G', 'Avg/TmG'].includes(team.team)
-    );
+    return data.filter(team => !isSpecialTeam(team.team));
   }, [excludeSpecialTeams]);
 
   // Auto-select teams when data loads

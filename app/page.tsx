@@ -1,3 +1,5 @@
+import { APP_CONSTANTS } from '@/config/constants';
+
 export default function Home() {
   return (
     <div className="min-h-screen w-screen bg-gradient-to-br from-[#0b1120] via-[#0f172a] to-[#1e293b] text-white flex items-center justify-center px-6 py-12">
@@ -31,11 +33,11 @@ export default function Home() {
               <h2 className="text-2xl font-bold text-green-400 mb-4">API Endpoints</h2>
               <div className="space-y-3 text-left">
                 <div className="bg-slate-800/50 rounded-lg p-3">
-                  <code className="text-green-400">GET /api/nfl-2025/offense</code>
+                  <code className="text-green-400">GET {APP_CONSTANTS.API.ENDPOINTS.OFFENSE}</code>
                   <p className="text-sm text-slate-400 mt-1">NFL team offense statistics with rankings</p>
                 </div>
                 <div className="bg-slate-800/50 rounded-lg p-3">
-                  <code className="text-green-400">GET /api/nfl-2025/defense</code>
+                  <code className="text-green-400">GET {APP_CONSTANTS.API.ENDPOINTS.DEFENSE}</code>
                   <p className="text-sm text-slate-400 mt-1">NFL team defense statistics with rankings</p>
                 </div>
               </div>

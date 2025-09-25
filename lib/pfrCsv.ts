@@ -5,13 +5,12 @@
  * Much simpler and faster than HTML parsing!
  */
 
-// Debug logging utility
+import fs from 'fs/promises';
+import { logger } from '@/utils/logger';
+
+// Debug logging utility - now uses centralized logger with log levels
 const debugLog = (context: string, message: string, data?: unknown) => {
-  const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] [PFR-CSV-${context}] ${message}`);
-  if (data) {
-    console.log(`[${timestamp}] [PFR-CSV-${context}] Data:`, JSON.stringify(data, null, 2));
-  }
+  logger.debug({ context: `PFR-CSV-${context}` }, message, data);
 };
 
 export interface TeamStats {
@@ -210,7 +209,7 @@ const readLocalFile = (filePath: string): Promise<string> => {
  * (Same as HTML version - reusable!)
  */
 export function computeRanks(rows: TeamStats[], basis: RankBasis): TeamStatsWithRanks[] {
-  console.log(`🐛 [CSV-COMPUTE-RANKS] Function called with ${rows.length} teams and ${Object.keys(basis).length} metrics`);
+  // Note: This function is deprecated in favor of client-side ranking
   debugLog('RANK', `Computing ranks for ${rows.length} teams`, { 
     rankingMetrics: Object.keys(basis).length,
     metrics: Object.keys(basis) 
@@ -271,23 +270,7 @@ export function computeRanks(rows: TeamStats[], basis: RankBasis): TeamStatsWith
       
       // 🐛 EXTENSIVE DEBUGGING for Pittsburgh Steelers and Tampa Bay Buccaneers
       if (row.team === 'Pittsburgh Steelers' || row.team === 'Tampa Bay Buccaneers') {
-        console.log(`🐛 [RANK-DEBUG] ${row.team}:`);
-        console.log(`   Metric: ${key}`);
-        console.log(`   Value: ${currentValue}`);
-        console.log(`   Direction: ${direction}`);
-        console.log(`   Better teams count: ${betterTeamsCount}`);
-        console.log(`   Calculated rank: ${calculatedRank}`);
-        console.log(`   Assigned rank: ${row.ranks[key]}`);
-        console.log(`   Position in array: ${index}`);
-        
-        // Show teams with better values
-        const betterTeams = validRows.filter(otherRow => {
-          const otherValue = sanitizeNumeric((otherRow as unknown as Record<string, string>)[key])!;
-          return direction === 'desc' ? otherValue > currentValue : otherValue < currentValue;
-        }).map(team => `${team.team}: ${(team as unknown as Record<string, string>)[key]}`);
-        
-        console.log(`   Teams with better values (${betterTeams.length}):`, betterTeams);
-        console.log(`   ---`);
+        // Debugging removed - using client-side ranking instead
       }
     });
 
@@ -306,12 +289,7 @@ export function computeRanks(rows: TeamStats[], basis: RankBasis): TeamStatsWith
         return value === 72;
       });
       
-      if (teamsWithValue72.length > 0) {
-        console.log(`🐛 [72-POINTS-DEBUG] Found ${teamsWithValue72.length} teams with 72 points:`);
-        teamsWithValue72.forEach(team => {
-          console.log(`   ${team.team}: value=${(team as unknown as Record<string, string>)[key]}, rank=${team.ranks[key]}`);
-        });
-      }
+      // Specific debugging removed - using client-side ranking instead
     }
   });
 
