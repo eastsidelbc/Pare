@@ -9,7 +9,6 @@
 
 import React, { useState } from 'react';
 import { TeamData } from '@/lib/useNflStats';
-import { useTeamSelection } from '@/lib/useTeamSelection';
 import TeamSelector from '@/components/TeamSelector';
 import MetricsSelector from '@/components/MetricsSelector';
 
@@ -23,6 +22,9 @@ interface TeamSelectionPanelProps {
   onDefenseMetricsChange: (metrics: string[]) => void;
   isLoading?: boolean;
   className?: string;
+  // NEW: Controlled team selection to sync with global state
+  currentTeamA?: string;
+  currentTeamB?: string;
 }
 
 export default function TeamSelectionPanel({
@@ -34,54 +36,40 @@ export default function TeamSelectionPanel({
   onOffenseMetricsChange,
   onDefenseMetricsChange,
   isLoading = false,
-  className = ''
+  className = '',
+  currentTeamA = '',
+  currentTeamB = ''
 }: TeamSelectionPanelProps) {
   
-  // Global team selection (same teams for both offense and defense)
-  const {
-    selectedTeamA,
-    selectedTeamB,
-    setTeamA,
-    setTeamB,
-    getAvailableTeams,
-    isValidSelection
-  } = useTeamSelection(offenseData, defenseData, {
-    autoSelectOnLoad: true,
-    allowSameTeam: false,
-    excludeSpecialTeams: false
-  });
+  // 🎯 SIMPLE: Use global state directly, no internal state management
+  const selectedTeamA = currentTeamA;
+  const selectedTeamB = currentTeamB;
 
-  // Notify parent component when teams change
-  React.useEffect(() => {
-    if (isValidSelection) {
-      onTeamChange(selectedTeamA, selectedTeamB);
-    }
-  }, [selectedTeamA, selectedTeamB, isValidSelection, onTeamChange]);
+  // 🎯 SIMPLE: Direct handlers for team changes (no complex sync logic)
+  const handleTeamAChange = (teamName: string) => {
+    console.log(`🏈 [TEAM-SELECTION-PANEL] Team A changed to: ${teamName}`);
+    onTeamChange(teamName, selectedTeamB);
+  };
 
-  // Get available teams (filtered and sorted)
-  const availableTeams = getAvailableTeams(offenseData);
+  const handleTeamBChange = (teamName: string) => {
+    console.log(`🏈 [TEAM-SELECTION-PANEL] Team B changed to: ${teamName}`);
+    onTeamChange(selectedTeamA, teamName);
+  };
+
+  // Filter out special teams for team selection
+  const specialTeams = ['Avg Team', 'League Total', 'Avg Tm/G', 'Avg/TmG'];
+  const availableTeams = offenseData.filter(team => !specialTeams.includes(team.team));
   
-  // Sort teams alphabetically but keep special teams at bottom
-  const sortedTeams = [...availableTeams].sort((a, b) => {
-    const specialTeams = ['Avg Team', 'League Total', 'Avg Tm/G', 'Avg/TmG'];
-    
-    const aIsSpecial = specialTeams.includes(a.team);
-    const bIsSpecial = specialTeams.includes(b.team);
-    
-    if (aIsSpecial && !bIsSpecial) return 1;
-    if (!aIsSpecial && bIsSpecial) return -1;
-    
-    return a.team.localeCompare(b.team);
-  });
+  // Sort teams alphabetically 
+  const sortedTeams = [...availableTeams].sort((a, b) => a.team.localeCompare(b.team));
 
   // Settings panel state
   const [showSettings, setShowSettings] = useState(false);
   const [activeTab, setActiveTab] = useState<'offense' | 'defense'>('offense');
 
-  console.log('🏈 [TEAM-SELECTION-PANEL] Global teams:', { 
+  console.log('🏈 [TEAM-SELECTION-PANEL] Current teams:', { 
     selectedTeamA, 
-    selectedTeamB, 
-    isValidSelection, 
+    selectedTeamB,
     offenseMetrics: selectedOffenseMetrics.length,
     defenseMetrics: selectedDefenseMetrics.length
   });
@@ -95,7 +83,7 @@ export default function TeamSelectionPanel({
         <div className="flex-1">
           <TeamSelector
             selectedTeam={selectedTeamA}
-            onTeamChange={setTeamA}
+            onTeamChange={handleTeamAChange}
             availableTeams={sortedTeams}
             placeholder="Select Team A..."
             disabled={isLoading}
@@ -112,7 +100,7 @@ export default function TeamSelectionPanel({
         <div className="flex-1">
           <TeamSelector
             selectedTeam={selectedTeamB}
-            onTeamChange={setTeamB}
+            onTeamChange={handleTeamBChange}
             availableTeams={sortedTeams}
             placeholder="Select Team B..."
             disabled={isLoading}
@@ -214,13 +202,10 @@ export default function TeamSelectionPanel({
       )}
 
       {/* Status Message */}
-      {!isValidSelection && !isLoading && (
+      {(!selectedTeamA || !selectedTeamB) && !isLoading && (
         <div className="text-center mt-4">
           <p className="text-slate-400 text-sm">
-            {!selectedTeamA || !selectedTeamB 
-              ? 'Select both teams to start comparing' 
-              : 'Invalid team selection'
-            }
+            Select both teams to start comparing
           </p>
         </div>
       )}

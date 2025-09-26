@@ -15,6 +15,9 @@ export interface TeamSelectionOptions {
   autoSelectOnLoad?: boolean;
   allowSameTeam?: boolean;
   excludeSpecialTeams?: boolean;
+  // NEW: External team state for syncing with global state
+  currentTeamA?: string;
+  currentTeamB?: string;
 }
 
 export interface UseTeamSelectionReturn {
@@ -52,7 +55,9 @@ export function useTeamSelection(
   const {
     autoSelectOnLoad = true,
     allowSameTeam = false,
-    excludeSpecialTeams = true
+    excludeSpecialTeams = true,
+    currentTeamA = '',
+    currentTeamB = ''
   } = options;
 
   // Team selection state
@@ -60,6 +65,18 @@ export function useTeamSelection(
   const [selectedTeamB, setSelectedTeamB] = useState<string>('');
 
   console.log(`🏈 [USE-TEAM-SELECTION] Hook initialized with ${offenseData.length} offense teams, ${defenseData.length} defense teams`);
+
+  // 🔧 FIX: Sync internal state with external state changes (from RankingDropdown)
+  useEffect(() => {
+    if (currentTeamA && currentTeamA !== selectedTeamA) {
+      console.log(`🔄 [USE-TEAM-SELECTION] Syncing Team A: ${selectedTeamA} → ${currentTeamA}`);
+      setSelectedTeamA(currentTeamA);
+    }
+    if (currentTeamB && currentTeamB !== selectedTeamB) {
+      console.log(`🔄 [USE-TEAM-SELECTION] Syncing Team B: ${selectedTeamB} → ${currentTeamB}`);
+      setSelectedTeamB(currentTeamB);
+    }
+  }, [currentTeamA, currentTeamB, selectedTeamA, selectedTeamB]);
 
   // Filter available teams (exclude special teams)
   const getAvailableTeams = useCallback((data: TeamData[]): TeamData[] => {
@@ -73,6 +90,8 @@ export function useTeamSelection(
     if (!autoSelectOnLoad) return;
     if (offenseData.length === 0) return;
     if (selectedTeamA && selectedTeamB) return; // Already selected
+    // 🔧 FIX: Don't auto-select if external state is provided
+    if (currentTeamA || currentTeamB) return;
 
     const availableTeams = getAvailableTeams(offenseData);
     if (availableTeams.length >= 2) {
@@ -92,7 +111,7 @@ export function useTeamSelection(
         setSelectedTeamB(teamB);
       }
     }
-  }, [offenseData, autoSelectOnLoad, selectedTeamA, selectedTeamB, getAvailableTeams]);
+  }, [offenseData, autoSelectOnLoad, selectedTeamA, selectedTeamB, getAvailableTeams, currentTeamA, currentTeamB]);
 
   // Team selection functions
   const setTeamA = useCallback((teamName: string) => {

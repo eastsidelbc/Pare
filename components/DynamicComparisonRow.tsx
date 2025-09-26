@@ -12,6 +12,7 @@ import { TeamData } from '@/lib/useNflStats';
 import { useRanking } from '@/lib/useRanking';
 import { useTheme } from '@/lib/useTheme';
 import { useBarCalculation } from '@/lib/useBarCalculation';
+import RankingDropdown from './RankingDropdown';
 // Removed Framer Motion for better scroll performance
 // import { motion } from 'framer-motion';
 
@@ -23,6 +24,8 @@ interface DynamicComparisonRowProps {
   allOffenseData: TeamData[]; // For ranking calculations
   allDefenseData: TeamData[]; // For ranking calculations
   panelType: 'offense' | 'defense';
+  onTeamAChange?: (teamName: string) => void; // NEW: Team A selection callback
+  onTeamBChange?: (teamName: string) => void; // NEW: Team B selection callback
 }
 
 export default function DynamicComparisonRow({ 
@@ -32,7 +35,9 @@ export default function DynamicComparisonRow({
   type,
   allOffenseData,
   allDefenseData,
-  panelType
+  panelType,
+  onTeamAChange,
+  onTeamBChange
 }: DynamicComparisonRowProps) {
   // 🚀 PERFORMANCE: Move all hooks to top to fix React Hook violations
   const metric = AVAILABLE_METRICS[metricKey];
@@ -124,12 +129,25 @@ export default function DynamicComparisonRow({
       <div className="flex justify-between items-center mb-4 px-4">
         {/* Team A Stats */}
         <div className="flex items-center gap-3">
-              <div className={`font-semibold text-base ${getTeamAColor ? getTeamAColor() : 'text-green-400'}`}>
+          <div className={`font-semibold text-base ${getTeamAColor ? getTeamAColor() : 'text-green-400'}`}>
             {formattedTeamAValue}
           </div>
-              <div className={`text-xs ${getTeamAColor ? getTeamAColor() : 'text-green-400'} opacity-60`}>
-            ({teamARanking?.formattedRank || 'N/A'})
-          </div>
+          {/* Interactive Ranking Dropdown for Team A */}
+          {onTeamAChange ? (
+            <RankingDropdown
+              allData={allData}
+              metricKey={metricKey}
+              currentTeam={teamAData?.team || ''}
+              type={type}
+              side="teamA"
+              onTeamChange={onTeamAChange}
+              className="ml-1"
+            />
+          ) : (
+            <div className={`text-xs ${getTeamAColor ? getTeamAColor() : 'text-green-400'} opacity-60`}>
+              ({teamARanking?.formattedRank || 'N/A'})
+            </div>
+          )}
         </div>
         
         {/* Metric Name (Center) */}
@@ -144,10 +162,23 @@ export default function DynamicComparisonRow({
         
         {/* Team B Stats */}
         <div className="flex items-center gap-3">
-              <div className={`text-xs ${getTeamBColor ? getTeamBColor() : 'text-orange-400'} opacity-60`}>
-            ({teamBRanking?.formattedRank || 'N/A'})
-          </div>
-              <div className={`font-semibold text-base ${getTeamBColor ? getTeamBColor() : 'text-orange-400'}`}>
+          {/* Interactive Ranking Dropdown for Team B */}
+          {onTeamBChange ? (
+            <RankingDropdown
+              allData={allData}
+              metricKey={metricKey}
+              currentTeam={teamBData?.team || ''}
+              type={type}
+              side="teamB"
+              onTeamChange={onTeamBChange}
+              className="mr-1"
+            />
+          ) : (
+            <div className={`text-xs ${getTeamBColor ? getTeamBColor() : 'text-orange-400'} opacity-60`}>
+              ({teamBRanking?.formattedRank || 'N/A'})
+            </div>
+          )}
+          <div className={`font-semibold text-base ${getTeamBColor ? getTeamBColor() : 'text-orange-400'}`}>
             {formattedTeamBValue}
           </div>
         </div>

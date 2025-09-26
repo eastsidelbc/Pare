@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNflStats } from '@/lib/useNflStats';
 import { DEFAULT_OFFENSE_METRICS, DEFAULT_DEFENSE_METRICS } from '@/lib/metricsConfig';
 import TeamSelectionPanel from '@/components/TeamSelectionPanel';
@@ -35,9 +35,46 @@ export default function ComparePage() {
   const [selectedOffenseMetrics, setSelectedOffenseMetrics] = useState<string[]>(DEFAULT_OFFENSE_METRICS);
   const [selectedDefenseMetrics, setSelectedDefenseMetrics] = useState<string[]>(DEFAULT_DEFENSE_METRICS);
 
+  // 🎯 SIMPLE: Auto-select teams when data loads (moved from TeamSelectionPanel)
+  React.useEffect(() => {
+    if (offenseData.length > 0 && !selectedTeamA && !selectedTeamB) {
+      // Filter out special teams
+      const specialTeams = ['Avg Team', 'League Total', 'Avg Tm/G', 'Avg/TmG'];
+      const availableTeams = offenseData.filter(team => !specialTeams.includes(team.team));
+      
+      if (availableTeams.length >= 2) {
+        // Default to Minnesota Vikings vs Detroit Lions
+        const preferredTeamA = 'Minnesota Vikings';
+        const preferredTeamB = 'Detroit Lions';
+        
+        const teamA = availableTeams.find(team => team.team === preferredTeamA)?.team || 
+                     availableTeams[0]?.team || '';
+        const teamB = availableTeams.find(team => team.team === preferredTeamB && team.team !== teamA)?.team || 
+                     availableTeams.find(team => team.team !== teamA)?.team || '';
+        
+        if (teamA && teamB) {
+          console.log(`🏈 [COMPARE-PAGE] Auto-selecting teams: ${teamA} vs ${teamB}`);
+          setSelectedTeamA(teamA);
+          setSelectedTeamB(teamB);
+        }
+      }
+    }
+  }, [offenseData, selectedTeamA, selectedTeamB]);
+
   const handleTeamChange = (teamA: string, teamB: string) => {
     setSelectedTeamA(teamA);
     setSelectedTeamB(teamB);
+  };
+
+  // NEW: Individual team change handlers for ranking dropdowns
+  const handleTeamAChange = (newTeamA: string) => {
+    console.log(`🚀 [COMPARE-PAGE] handleTeamAChange called with: ${newTeamA}`);
+    setSelectedTeamA(newTeamA);
+  };
+
+  const handleTeamBChange = (newTeamB: string) => {
+    console.log(`🚀 [COMPARE-PAGE] handleTeamBChange called with: ${newTeamB}`);
+    setSelectedTeamB(newTeamB);
   };
 
   console.log('🏈 [COMPARE-PAGE] Data loaded:', {
@@ -122,8 +159,9 @@ export default function ComparePage() {
           onDefenseMetricsChange={setSelectedDefenseMetrics}
           isLoading={isLoading}
           className="mb-8"
+          currentTeamA={selectedTeamA}
+          currentTeamB={selectedTeamB}
         />
-
 
         {/* Comparison Panels - Protected by Error Boundaries */}
         <div className="grid md:grid-cols-2 gap-6">
@@ -135,14 +173,16 @@ export default function ComparePage() {
               <p className="text-slate-400 mt-2">Unable to load offense comparison data</p>
             </div>
           }>
-            <OffensePanel
-              offenseData={offenseData}
-              defenseData={defenseData}
-              selectedTeamA={selectedTeamA}
-              selectedTeamB={selectedTeamB}
-              selectedMetrics={selectedOffenseMetrics}
-              isLoading={isLoadingOffense}
-            />
+                <OffensePanel
+                  offenseData={offenseData}
+                  defenseData={defenseData}
+                  selectedTeamA={selectedTeamA}
+                  selectedTeamB={selectedTeamB}
+                  selectedMetrics={selectedOffenseMetrics}
+                  isLoading={isLoadingOffense}
+                  onTeamAChange={handleTeamAChange}
+                  onTeamBChange={handleTeamBChange}
+                />
           </ErrorBoundary>
 
           {/* Defense Panel */}
@@ -153,14 +193,16 @@ export default function ComparePage() {
               <p className="text-slate-400 mt-2">Unable to load defense comparison data</p>
             </div>
           }>
-            <DefensePanel
-              defenseData={defenseData}
-              offenseData={offenseData}
-              selectedTeamA={selectedTeamA}
-              selectedTeamB={selectedTeamB}
-              selectedMetrics={selectedDefenseMetrics}
-              isLoading={isLoadingDefense}
-            />
+                <DefensePanel
+                  defenseData={defenseData}
+                  offenseData={offenseData}
+                  selectedTeamA={selectedTeamA}
+                  selectedTeamB={selectedTeamB}
+                  selectedMetrics={selectedDefenseMetrics}
+                  isLoading={isLoadingDefense}
+                  onTeamAChange={handleTeamAChange}
+                  onTeamBChange={handleTeamBChange}
+                />
           </ErrorBoundary>
         </div>
       </div>

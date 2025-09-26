@@ -11,6 +11,7 @@ import { TeamData } from '@/lib/useNflStats';
 import { useDisplayMode } from '@/lib/useDisplayMode';
 import DynamicComparisonRow from '@/components/DynamicComparisonRow';
 import TeamLogo from '@/components/TeamLogo';
+import TeamDropdown from '@/components/TeamDropdown';
 
 interface DefensePanelProps {
   defenseData: TeamData[];
@@ -20,6 +21,8 @@ interface DefensePanelProps {
   selectedMetrics: string[];
   isLoading?: boolean;
   className?: string;
+  onTeamAChange?: (teamName: string) => void; // NEW: Team A selection callback
+  onTeamBChange?: (teamName: string) => void; // NEW: Team B selection callback
 }
 
 export default function DefensePanel({
@@ -29,7 +32,9 @@ export default function DefensePanel({
   selectedTeamB,
   selectedMetrics,
   isLoading = false,
-  className = ''
+  className = '',
+  onTeamAChange,
+  onTeamBChange
 }: DefensePanelProps) {
 
   // Display mode (per-game vs total)
@@ -55,9 +60,19 @@ export default function DefensePanel({
       
       {/* Panel Header with Team Logos, Title, and Display Mode */}
       <div className="flex items-center justify-between mb-6">
-        {/* Team A Logo */}
+        {/* Team A - Interactive Dropdown */}
         <div className="flex-shrink-0">
-          <TeamLogo teamName={selectedTeamA} size="60" />
+          {onTeamAChange ? (
+            <TeamDropdown
+              currentTeam={selectedTeamA}
+              onTeamChange={onTeamAChange}
+              side="teamA"
+              allTeams={defenseData}
+              label="Team A"
+            />
+          ) : (
+            <TeamLogo teamName={selectedTeamA} size="60" />
+          )}
         </div>
 
         {/* Center: Title and Display Mode */}
@@ -77,9 +92,19 @@ export default function DefensePanel({
           </select>
         </div>
 
-        {/* Team B Logo */}
+        {/* Team B - Interactive Dropdown */}
         <div className="flex-shrink-0">
-          <TeamLogo teamName={selectedTeamB} size="60" />
+          {onTeamBChange ? (
+            <TeamDropdown
+              currentTeam={selectedTeamB}
+              onTeamChange={onTeamBChange}
+              side="teamB"
+              allTeams={defenseData}
+              label="Team B"
+            />
+          ) : (
+            <TeamLogo teamName={selectedTeamB} size="60" />
+          )}
         </div>
       </div>
 
@@ -105,6 +130,8 @@ export default function DefensePanel({
               allOffenseData={offenseData}
               allDefenseData={defenseData}
               panelType="defense"
+              onTeamAChange={onTeamAChange}
+              onTeamBChange={onTeamBChange}
             />
           ))}
           
