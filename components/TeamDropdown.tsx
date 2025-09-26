@@ -84,7 +84,7 @@ export default function TeamDropdown({
       {/* Team Logo Button (Closed State) - Looks identical to original */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="cursor-pointer transition-all duration-75"
+        className="cursor-pointer transition-all duration-100"
         whileHover={{ scale: 1.20 }}
         whileTap={{ scale: 0.97 }}
       >

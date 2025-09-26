@@ -10,9 +10,9 @@
 import React, { useState } from 'react';
 import { useNflStats } from '@/lib/useNflStats';
 import { DEFAULT_OFFENSE_METRICS, DEFAULT_DEFENSE_METRICS } from '@/lib/metricsConfig';
-import TeamSelectionPanel from '@/components/TeamSelectionPanel';
 import OffensePanel from '@/components/OffensePanel';
 import DefensePanel from '@/components/DefensePanel';
+import FloatingMetricsButton from '@/components/FloatingMetricsButton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export default function ComparePage() {
@@ -61,12 +61,7 @@ export default function ComparePage() {
     }
   }, [offenseData, selectedTeamA, selectedTeamB]);
 
-  const handleTeamChange = (teamA: string, teamB: string) => {
-    setSelectedTeamA(teamA);
-    setSelectedTeamB(teamB);
-  };
-
-  // NEW: Individual team change handlers for ranking dropdowns
+  // Individual team change handlers for dropdowns
   const handleTeamAChange = (newTeamA: string) => {
     console.log(`🚀 [COMPARE-PAGE] handleTeamAChange called with: ${newTeamA}`);
     setSelectedTeamA(newTeamA);
@@ -138,30 +133,10 @@ export default function ComparePage() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight font-sans text-slate-100 mb-4">
-            Pare: <span className="text-blue-400">NFL Team Comparison</span>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight font-sans text-slate-100">
+            Lock In
           </h1>
-          {lastUpdated && (
-            <p className="text-slate-400 text-sm">
-              Last updated: {new Date(lastUpdated).toLocaleString()}
-            </p>
-          )}
         </div>
-
-        {/* Global Team Selection Panel */}
-        <TeamSelectionPanel
-          offenseData={offenseData}
-          defenseData={defenseData}
-          onTeamChange={handleTeamChange}
-          selectedOffenseMetrics={selectedOffenseMetrics}
-          selectedDefenseMetrics={selectedDefenseMetrics}
-          onOffenseMetricsChange={setSelectedOffenseMetrics}
-          onDefenseMetricsChange={setSelectedDefenseMetrics}
-          isLoading={isLoading}
-          className="mb-8"
-          currentTeamA={selectedTeamA}
-          currentTeamB={selectedTeamB}
-        />
 
         {/* Comparison Panels - Protected by Error Boundaries */}
         <div className="grid md:grid-cols-2 gap-6">
@@ -205,6 +180,21 @@ export default function ComparePage() {
                 />
           </ErrorBoundary>
         </div>
+
+        {/* Footer */}
+        <div className="text-center mt-12 pt-8 border-t border-slate-800/50">
+          <p className="text-slate-500 text-sm">
+            Stay Locked
+          </p>
+        </div>
+
+        {/* Floating Metrics Button */}
+        <FloatingMetricsButton
+          selectedOffenseMetrics={selectedOffenseMetrics}
+          selectedDefenseMetrics={selectedDefenseMetrics}
+          onOffenseMetricsChange={setSelectedOffenseMetrics}
+          onDefenseMetricsChange={setSelectedDefenseMetrics}
+        />
       </div>
     </div>
   );

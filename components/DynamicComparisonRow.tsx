@@ -155,9 +155,6 @@ export default function DynamicComparisonRow({
           <div className="text-slate-300 font-medium text-sm">
             {metric.name}
           </div>
-          <div className="text-xs text-slate-500 mt-0.5">
-            ({metric.field})
-          </div>
         </div>
         
         {/* Team B Stats */}
@@ -215,12 +212,6 @@ export default function DynamicComparisonRow({
         </div>
       </div>
       
-      {/* Optional: Debug info (remove in production) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="text-xs text-slate-500 mt-3 text-center px-6 opacity-60">
-          {barCalculation.debugInfo.teamANum} + {barCalculation.debugInfo.teamBNum} = {barCalculation.debugInfo.totalValue} | {teamAPercentage.toFixed(1)}% + {teamBPercentage.toFixed(1)}% + 2% gap = {(teamAPercentage + teamBPercentage + 2).toFixed(1)}%
-        </div>
-      )}
     </div>
   );
 }
