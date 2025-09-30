@@ -65,6 +65,9 @@ export default function TeamLogo({ teamName, size = "40" }: TeamLogoProps) {
           width={sizeNum - 4}
           height={sizeNum - 4}
           className="object-contain"
+          sizes={`(max-width: 768px) ${Math.min(sizeNum, 60)}px, ${sizeNum}px`}
+          priority={sizeNum >= 60}
+          loading={sizeNum >= 60 ? "eager" : "lazy"}
         />
       </div>
     );

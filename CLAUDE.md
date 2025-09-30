@@ -15,7 +15,7 @@ This file provides comprehensive guidance to Claude Code (claude.ai/code) when w
 
 **🎯 PRIMARY STRATEGIC GOAL**: While currently a web application, the **biggest objective is to convert this to a native iOS app for the App Store**. The web app serves as the foundation and proof-of-concept, with the ultimate goal being to learn Swift and create a native mobile experience that leverages the existing API infrastructure and data processing logic.
 
-**Current Status**: Production ready web app with one outstanding issue - RankingDropdown state management needs debugging. Architecture designed to support future mobile app development.
+**Current Status**: ✅ **Web App & PWA Complete** (Phase 1-2 Complete) | 🍎 **NOW STARTING: Phase 0 - iOS Swift Development** | Full 6-phase roadmap to App Store in `Mobile_plan.md`
 
 ## 📱 **Strategic Development Direction**
 
@@ -29,12 +29,86 @@ The web application serves as a **proof-of-concept and API foundation** for the 
 - **App Store deployment**: Implement iOS-specific features and monetization strategies
 - **Maintain architecture**: Current modular design supports mobile conversion
 
-**Development Approach:**
-- **Phase 1**: Complete web app (current focus - finish RankingDropdown)
-- **Phase 2**: Learn Swift and iOS development fundamentals
-- **Phase 3**: Convert data processing and API logic to iOS-compatible format
-- **Phase 4**: Build native UI with enhanced mobile UX
-- **Phase 5**: App Store optimization and deployment
+### **🚀 CURRENT PHASE: iOS Native Development Roadmap**
+
+**Status**: ✅ **Phase 1-2 Complete** (Web + PWA) | 🍎 **NOW STARTING: Phase 0** (iOS Foundations)  
+**Target**: 🍎 **App Store Launch in Q1 2025**
+
+**6-Phase iOS Development Strategy** (detailed in `Mobile_plan.md`):
+
+#### **🍎 Phase 0: Foundations (Repo + Runtime) - CURRENT**
+**Goal**: Clean, reproducible environment + stable API endpoints for iOS
+- **Repo Hygiene**: Single lockfile, add MOBILE_NOTES.md, ios/README.md, SECURITY.md
+- **API Readiness**: HTTPS base URL (ATS compliance), `/health` endpoint with version
+- **Versioning**: Adopt SemVer (1.0.0) for iOS 1.0
+- **Gate Questions**: 
+  - Are we using Cloudflare in front of API for HTTPS?
+  - SemVer or CalVer?
+
+#### **📱 Phase 1: iOS Project Bootstrap**
+**Goal**: SwiftUI app skeleton that compiles, runs, and talks to API
+- **Xcode Project**: iOS 17+ target, PrivacyInfo.xcprivacy, AppIcon, Launch screen
+- **Networking Layer**: StatsAPI.swift with async/await, URLCache, Config.xcconfig
+- **Domain Models**: Swift structs mirror API responses (Team, Metric, CompareResult)
+- **Basic Screen**: CompareView with team pickers, fetch on load, MetricRowViews
+- **Gate Questions**:
+  - Minimum iOS version? (16 or 17)
+  - Dark mode only or both light/dark?
+
+#### **📱 Phase 2: Core UX Mechanics**
+**Goal**: Native UX parity with web app for Compare flow
+- **Team Selection**: Real team list, persist via AppStorage
+- **Inward Bars**: MetricRowView with ratio-based bars, smooth animations, optional haptics
+- **Caching & Offline**: URLCache baseline, cache TTLs, offline banner
+- **Errors & Retries**: Empty/error states, retry button, exponential backoff
+- **Gate Questions**:
+  - Show value labels on bars always or on tap?
+  - Aggressive vs conservative caching?
+
+#### **📱 Phase 3: Native System Integrations (Lite)**
+**Goal**: Essential native features without Live Activities
+- **Share Sheet**: Deep link to web `/compare?home=X&away=Y`, universal link handling
+- **Siri Shortcut** (optional): "Compare [TEAM] and [TEAM]"
+- **Settings Screen**: Default teams, refresh policy, theme toggle
+- **Gate Questions**:
+  - Add Siri Shortcut v1 now or later?
+  - Any default favorite teams to seed?
+
+#### **📱 Phase 4: Polish & Performance**
+**Goal**: App Store-quality fit and finish
+- **Design Pass**: 44×44pt touch targets, typography hierarchy, VoiceOver labels, Dynamic Type
+- **Perf Pass**: Cold start profiling, image optimization, ETags/If-None-Match
+- **QA Matrix**: iPhone 12-15, iOS 17+, airplane mode, bad network, server down
+- **Gate Questions**:
+  - Support both orientations or portrait only?
+  - Reduced motion default for accessibility?
+
+#### **📱 Phase 5: Distribution**
+**Goal**: TestFlight → App Store with clean metadata
+- **App Store Connect**: Name, subtitle, keywords, support URL, privacy policy
+- **Build & Upload**: Version/build increment, Archive → TestFlight
+- **Review Compliance**: Not "just a website" (native screens, share, settings, deep links)
+- **Gate Questions**:
+  - App name/subtitle finalized?
+  - Beta feedback prompt in Settings?
+
+#### **📱 Phase 6: Optional Enhancements (Post-1.0)**
+**Goal**: Advanced features after successful launch
+- **Widgets**: Small/medium widgets for favorite matchup snapshot
+- **Push Notifications**: "New week's stats are live" (requires APNs)
+- **In-App Purchases**: Pro tier with historical stats, saved matchups
+- **Deeper Animations**: Springy bar transitions, haptics on compare flips
+- **Gate Questions**:
+  - Which post-1.0 enhancement to prioritize?
+  - Monetization now or after traction?
+
+#### **Definition of Done (v1.0)**
+- ✅ Clean builds (Xcode + Next.js), green lint/TS/CI
+- ✅ iOS app loads compare view, works offline after first fetch
+- ✅ Share → deep link returns to correct teams
+- ✅ Accessibility & performance passes documented
+- ✅ TestFlight tested on ≥3 devices
+- ✅ Submitted with complete metadata & screenshots
 
 ## 🛠️ Development Commands
 
@@ -238,6 +312,319 @@ All NFL metrics are defined in `lib/metricsConfig.ts` with:
 - [ ] **Global behavior check** - does this maintain consistent user experience?
 - [ ] **State management review** - does this respect the single source of truth pattern?
 - [ ] **Documentation needed** - update relevant files after changes
+
+## 🍎 **iOS Swift Development Guidelines & Workflows**
+
+### **Current Phase**: Phase 0 - Foundations (Repo + Runtime)
+
+For detailed iOS development roadmap, see `Mobile_plan.md`. This section provides Swift/iOS-specific guidelines and patterns.
+
+### **🚀 Phase 0: iOS Foundations Checklist**
+
+When preparing for iOS development, follow this systematic approach:
+
+#### **Repo Hygiene & API Setup**
+```bash
+# Ensure single package manager
+rm -f yarn.lock pnpm-lock.yaml  # Keep only package-lock.json
+
+# Create iOS documentation structure
+mkdir -p ios
+touch ios/README.md ios/QA.md ios/RELEASE_NOTES.md
+touch MOBILE_NOTES.md SECURITY.md
+
+# Add health endpoint (create app/api/health/route.ts)
+# Returns: { ok: true, version: "1.0.0" }
+
+# Test HTTPS access (required for iOS ATS)
+curl https://your-domain.com/api/health
+```
+
+#### **API Documentation for iOS**
+```markdown
+# MOBILE_NOTES.md
+## API Endpoints Used by iOS App
+
+### Base URL
+- Production: https://your-domain.com
+- Development: http://localhost:3000 (for simulator only)
+
+### Endpoints
+- GET /api/health - Health check, returns {ok, version}
+- GET /api/nfl-2025/offense - Returns all team offense stats
+- GET /api/nfl-2025/defense - Returns all team defense stats
+
+### Response Format
+All endpoints return JSON with structure:
+{
+  rows: [{ team: string, ...stats }],
+  lastUpdated: timestamp
+}
+
+### Caching Strategy
+- Client should cache for 6 hours
+- Use ETags/If-None-Match for bandwidth optimization
+```
+
+### **🍎 Phase 1: Swift Project Bootstrap Patterns**
+
+#### **Basic SwiftUI Project Structure**
+```
+ios/
+├── PareApp/
+│   ├── PareApp.swift           # App entry point
+│   ├── Config.xcconfig         # Base URL, no secrets
+│   ├── PrivacyInfo.xcprivacy   # Privacy manifest
+│   ├── Models/
+│   │   ├── Team.swift          # Mirror API response
+│   │   ├── Metric.swift
+│   │   └── CompareResult.swift
+│   ├── Services/
+│   │   └── StatsAPI.swift      # Networking layer
+│   ├── Views/
+│   │   ├── CompareView.swift   # Main screen
+│   │   └── MetricRowView.swift # Individual bars
+│   └── Assets.xcassets/
+│       └── AppIcon.appiconset/
+```
+
+#### **Swift API Client Pattern**
+```swift
+// Services/StatsAPI.swift
+import Foundation
+
+class StatsAPI {
+    private let baseURL: String
+    private let session: URLSession
+    
+    init(baseURL: String) {
+        self.baseURL = baseURL
+        
+        // Configure URLCache for offline support
+        let cache = URLCache(
+            memoryCapacity: 50 * 1024 * 1024,  // 50MB memory
+            diskCapacity: 100 * 1024 * 1024     // 100MB disk
+        )
+        
+        let config = URLSessionConfiguration.default
+        config.urlCache = cache
+        config.requestCachePolicy = .returnCacheDataElseLoad
+        
+        self.session = URLSession(configuration: config)
+    }
+    
+    func fetchOffenseStats() async throws -> [TeamData] {
+        let url = URL(string: "\(baseURL)/api/nfl-2025/offense")!
+        let (data, _) = try await session.data(from: url)
+        let response = try JSONDecoder().decode(StatsResponse.self, from: data)
+        return response.rows
+    }
+    
+    func fetchDefenseStats() async throws -> [TeamData] {
+        let url = URL(string: "\(baseURL)/api/nfl-2025/defense")!
+        let (data, _) = try await session.data(from: url)
+        let response = try JSONDecoder().decode(StatsResponse.self, from: data)
+        return response.rows
+    }
+}
+
+struct StatsResponse: Codable {
+    let rows: [TeamData]
+}
+```
+
+#### **Domain Models Pattern**
+```swift
+// Models/Team.swift
+import Foundation
+
+struct TeamData: Codable, Identifiable {
+    let id = UUID()
+    let team: String
+    let games: Int
+    let points: Double
+    let totalYards: Double
+    let passYards: Double
+    let rushYards: Double
+    // Add all other stats matching API
+    
+    enum CodingKeys: String, CodingKey {
+        case team, games = "g"
+        case points, totalYards = "total_yards"
+        case passYards = "pass_yds"
+        case rushYards = "rush_yds"
+    }
+}
+
+struct Metric: Identifiable {
+    let id = UUID()
+    let key: String
+    let displayName: String
+    let higherIsBetter: Bool
+}
+```
+
+#### **SwiftUI CompareView Pattern**
+```swift
+// Views/CompareView.swift
+import SwiftUI
+
+struct CompareView: View {
+    @State private var teamA: String = "Buffalo Bills"
+    @State private var teamB: String = "Kansas City Chiefs"
+    @State private var offenseStats: [TeamData] = []
+    @State private var isLoading = false
+    @State private var error: Error?
+    
+    private let api = StatsAPI(baseURL: "https://your-domain.com")
+    
+    var body: some View {
+        NavigationStack {
+            VStack {
+                // Team Selection
+                TeamPicker(selection: $teamA, label: "Team A")
+                TeamPicker(selection: $teamB, label: "Team B")
+                
+                // Metrics List
+                if isLoading {
+                    ProgressView()
+                } else if let teamAData = offenseStats.first(where: { $0.team == teamA }),
+                          let teamBData = offenseStats.first(where: { $0.team == teamB }) {
+                    List {
+                        MetricRowView(
+                            metric: "Points",
+                            teamA: teamAData,
+                            teamB: teamBData,
+                            valueA: teamAData.points,
+                            valueB: teamBData.points
+                        )
+                        // Add more metrics...
+                    }
+                }
+            }
+            .navigationTitle("Compare Teams")
+            .task {
+                await loadData()
+            }
+        }
+    }
+    
+    func loadData() async {
+        isLoading = true
+        do {
+            offenseStats = try await api.fetchOffenseStats()
+        } catch {
+            self.error = error
+        }
+        isLoading = false
+    }
+}
+```
+
+#### **Inward Bars Component Pattern**
+```swift
+// Views/MetricRowView.swift
+import SwiftUI
+
+struct MetricRowView: View {
+    let metric: String
+    let teamA: TeamData
+    let teamB: TeamData
+    let valueA: Double
+    let valueB: Double
+    
+    private var teamAPercentage: Double {
+        valueA / (valueA + valueB)
+    }
+    
+    private var teamBPercentage: Double {
+        valueB / (valueA + valueB)
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(metric)
+                .font(.headline)
+            
+            // Team A Info
+            HStack {
+                Text(teamA.team)
+                Spacer()
+                Text(String(format: "%.1f", valueA))
+            }
+            .font(.caption)
+            
+            // Inward Bars (theScore-style)
+            GeometryReader { geometry in
+        HStack(spacing: 2) {
+                    // Left bar (Team A - grows from left to right)
+            Rectangle()
+                .fill(Color.green)
+                        .frame(width: geometry.size.width * teamAPercentage)
+            
+                    // Right bar (Team B - grows from right to left)
+            Rectangle()
+                .fill(Color.orange)
+                        .frame(width: geometry.size.width * teamBPercentage)
+                }
+            }
+            .frame(height: 20)
+            .animation(.spring(response: 0.4), value: teamAPercentage)
+            
+            // Team B Info
+            HStack {
+                Text(teamB.team)
+                Spacer()
+                Text(String(format: "%.1f", valueB))
+            }
+            .font(.caption)
+        }
+        .padding()
+    }
+}
+```
+
+### **🔧 iOS Development Commands**
+
+```bash
+# Next.js API (keep running for iOS simulator)
+npm run dev              # Provides API at localhost:3000
+npm run build            # Production build
+npm run start            # Production server
+
+# iOS Development (Xcode)
+# Open ios/PareApp.xcodeproj in Xcode
+# Cmd+R to build and run
+# Cmd+B to build only
+# Product → Archive for TestFlight/App Store
+
+# Testing
+# Simulator: Select device, press Cmd+R
+# Physical Device: Connect via USB, select device, Cmd+R
+```
+
+### **📊 iOS Performance & Monitoring Patterns**
+
+```swift
+// Add performance tracking to SwiftUI views
+import os.log
+
+extension View {
+    func measurePerformance(_ label: String) -> some View {
+        self.onAppear {
+            let start = CFAbsoluteTimeGetCurrent()
+            DispatchQueue.main.async {
+                let duration = CFAbsoluteTimeGetCurrent() - start
+                os_log("⚡ %{public}@ rendered in %.3f seconds", label, duration)
+            }
+        }
+    }
+}
+
+// Usage in CompareView
+CompareView()
+    .measurePerformance("CompareView")
+```
 
 ### **Code Standards & Patterns**
 - **TypeScript everywhere**: Full type safety, absolutely no `any` types allowed
@@ -495,13 +882,100 @@ If the app breaks:
 - **RankingDropdown State Management**: 95% complete, callbacks not propagating through component tree
 
 **🎯 Next Session Priority:**
-- Debug RankingDropdown state management issue (1-2 hours estimated)
+- ✅ **COMPLETED**: RankingDropdown state management issue resolved
+- ✅ **COMPLETED**: Web app interface optimization complete
+- **NEW PRIORITY**: Phase 1 Mobile Web Optimization (based on Mobile_plan.md)
 
 **📊 Current Status:**
-- **Architecture**: Professional-grade, recently refactored from monolith
+- **Architecture**: Professional-grade, simplified to pure global state
 - **Performance**: ~50ms API responses, production optimized
-- **Documentation**: Comprehensive guides for PROJECT_PLAN.md and CLAUDE.md
-- **Technical Debt**: Minimal, well-structured codebase
+- **Documentation**: Comprehensive guides including mobile development roadmap
+- **Technical Debt**: Minimal, ready for mobile optimization phase
+
+#### **Patch 1.0.4 - Mobile & iOS Development Roadmap (2025-09-26)**
+**Session Summary**: Integrated comprehensive mobile development strategy
+
+**🔍 What Was Accomplished:**
+- **Mobile_plan.md Integration**: Added 4-phase mobile development roadmap to both documentation files
+- **Strategic Planning**: Established Q1 2025 App Store launch target with clear phase breakdown
+- **Technical Guidelines**: Added comprehensive mobile optimization workflows and code patterns
+- **iOS Transition Planning**: Detailed both WKWebView wrapper and native SwiftUI development paths
+- **Development Readiness**: Project now has complete roadmap from mobile web to App Store
+
+**🚀 Mobile Development Phases Added:**
+- **Phase 1**: Mobile Web Excellence (2-3 weeks) - Layout, UX, performance, accessibility
+- **Phase 2**: PWA-Ready (2-3 days) - "Add to Home Screen" functionality
+- **Phase 3A**: iOS App WKWebView (1-2 weeks) - Fast market entry with web wrapper
+- **Phase 3B**: Native SwiftUI (2-3 months) - Ultimate native iOS experience
+- **Phase 4**: CI/CD & Release (1 week) - Professional deployment pipeline
+
+**📱 Next Session Priority:**
+- Begin Phase 3A: iOS App (WKWebView) - Swift learning and native wrapper development
+
+**📊 Current Status:**
+- **Web App**: ✅ Complete and production ready
+- **PWA**: ✅ Full offline functionality, cross-platform installation ready
+- **Mobile Optimization**: ✅ Phase 1 & 2 complete - excellent mobile experience
+- **Next Phase**: 🍎 Phase 3A iOS App development (WKWebView wrapper)
+- **Target**: 🍎 Q1 2025 App Store launch
+
+#### **Patch 1.0.5 - Phase 1: Mobile Web Excellence Complete (2025-09-26)**
+**Session Summary**: Achieved mobile web excellence with comprehensive optimizations
+
+**🔍 What Was Accomplished:**
+- ✅ **Foundation & Viewport**: iOS safe-area support, dynamic viewport units, responsive design
+- ✅ **Touch & Interaction**: 44×44pt touch targets, eliminated tap delays, prevented iOS zoom
+- ✅ **Performance & Images**: Optimized next/image, code splitting, mobile performance monitoring
+- ✅ **Accessibility & Polish**: ARIA labels, screen reader support, keyboard navigation, reduced motion
+
+**🎯 Next Session Priority:**
+- Phase 2: PWA-Ready implementation
+
+**📊 Current Status:**
+- **Mobile Web**: ✅ iOS-ready excellence achieved
+- **Performance**: ✅ Lighthouse mobile optimized
+- **Next Phase**: 📱 Ready for PWA implementation
+
+#### **Patch 1.0.6 - Phase 2: PWA-Ready Complete (2025-09-26)**
+**Session Summary**: Full PWA implementation with offline capabilities and cross-platform installation
+
+**🔍 What Was Accomplished:**
+- ✅ **PWA Manifest & Icons**: Custom PNG icons, app shortcuts, "Add to Home Screen" functionality  
+- ✅ **Service Worker**: Smart caching (30min fresh, 6hr stale), offline NFL stats, team logo caching
+- ✅ **Offline Excellence**: Auto-detection, user feedback banner, background sync capabilities
+- ✅ **Installation Prompts**: Cross-platform install detection, iOS instructions, Android one-click
+- ✅ **Standalone Mode**: App-like experience, deep links, navigation handling, touch optimizations
+
+**🎯 Next Session Priority:**
+- 🍎 Phase 0: iOS Foundations - Repo hygiene, API readiness, HTTPS setup, health endpoint
+
+**📊 Current Status:**
+- **PWA**: ✅ Fully functional, installable on all platforms
+- **Offline**: ✅ Smart caching with user feedback
+- **Next Phase**: 🍎 iOS App development starting
+
+#### **Patch 1.0.7 - iOS Development Roadmap Update (2025-09-29)**
+**Session Summary**: Updated documentation for iOS Swift development phase
+
+**🔍 What Was Accomplished:**
+- ✅ **Mobile_plan.md Updated**: Replaced with comprehensive 6-phase iOS native development roadmap
+- ✅ **CLAUDE.md iOS Focus**: Updated from web-mobile patterns to Swift/iOS development guidelines
+- ✅ **Phase Structure**: Now following Phase 0-6 roadmap (Foundations → Bootstrap → UX → Integrations → Polish → Distribution → Enhancements)
+- ✅ **Swift Code Patterns**: Added SwiftUI examples, API client patterns, domain models, inward bars implementation
+- ✅ **Gate Questions**: Documented decision points for each iOS development phase
+- ✅ **Definition of Done**: Clear v1.0 success criteria for App Store submission
+
+**🎯 Next Session Priority:**
+- 🍎 **Begin Phase 0**: Repo hygiene, add MOBILE_NOTES.md, ios/README.md, SECURITY.md
+- 🍎 **API Setup**: Add /health endpoint, verify HTTPS access
+- 🍎 **Decision Needed**: SemVer vs CalVer, Cloudflare HTTPS setup
+
+**📊 Current Status:**
+- **Web App**: ✅ Production ready with full feature set
+- **PWA**: ✅ Fully functional, installable on all platforms  
+- **Documentation**: ✅ Updated for iOS native development
+- **Current Phase**: 🍎 **Phase 0 - iOS Foundations** (Ready to start Swift development)
+- **Roadmap**: Complete 6-phase plan to App Store (Q1 2025 target)
 
 ---
 

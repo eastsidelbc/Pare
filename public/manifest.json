@@ -1,0 +1,82 @@
+{
+  "name": "Pare: NFL Team Comparison",
+  "short_name": "Pare NFL",
+  "description": "Professional NFL team comparison with theScore-style visualizations and real-time 2025 stats",
+  "start_url": "/compare",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "id": "pare-nfl-comparison",
+  "categories": ["sports", "entertainment"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Team Comparison",
+      "short_name": "Compare",
+      "description": "Compare NFL teams head-to-head with live stats",
+      "url": "/compare",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Offense Stats", 
+      "short_name": "Offense",
+      "description": "View NFL team offensive statistics",
+      "url": "/compare?focus=offense",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Defense Stats",
+      "short_name": "Defense", 
+      "description": "View NFL team defensive statistics",
+      "url": "/compare?focus=defense",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "NFL Team Comparison Interface"
+    }
+  ]
+}

@@ -85,7 +85,8 @@ export default function DefensePanel({
           <select
             value={displayMode}
             onChange={(e) => setDisplayMode(e.target.value as 'per-game' | 'total')}
-            className="px-3 py-1 bg-slate-800/90 border border-slate-600/50 rounded-lg text-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
+            className="px-3 py-2 bg-slate-800/90 border border-slate-600/50 rounded-lg text-slate-200 text-base font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 touch-optimized min-h-[2.75rem]"
+            style={{ fontSize: '16px' }}
           >
             <option value="per-game">PER GAME</option>
             <option value="total">TOTAL</option>

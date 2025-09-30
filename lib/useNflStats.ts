@@ -46,6 +46,10 @@ export interface UseNflStatsReturn {
   offenseError: string | null;
   defenseError: string | null;
   
+  // Data freshness indicators
+  offenseDataFreshness: 'fresh' | 'stale' | 'unavailable' | 'loading';
+  defenseDataFreshness: 'fresh' | 'stale' | 'unavailable' | 'loading';
+  
   // Metadata
   lastUpdated: string | null;
   
@@ -66,6 +70,8 @@ export function useNflStats(): UseNflStatsReturn {
   const [isLoadingDefense, setIsLoadingDefense] = useState(true);
   const [offenseError, setOffenseError] = useState<string | null>(null);
   const [defenseError, setDefenseError] = useState<string | null>(null);
+  const [offenseDataFreshness, setOffenseDataFreshness] = useState<'fresh' | 'stale' | 'unavailable' | 'loading'>('loading');
+  const [defenseDataFreshness, setDefenseDataFreshness] = useState<'fresh' | 'stale' | 'unavailable' | 'loading'>('loading');
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   /**
@@ -88,8 +94,14 @@ export function useNflStats(): UseNflStatsReturn {
       
       const response = await fetch(APP_CONSTANTS.API.ENDPOINTS.OFFENSE);
       
+      // Detect cache status from service worker
+      const cacheStatus = response.headers.get('sw-cache-status');
+      const cachedDate = response.headers.get('sw-cached-date');
+      
       console.log(`🏈 [HOOK-${requestId}] Response status: ${response.status}`, {
         ok: response.ok,
+        cacheStatus,
+        cachedDate,
         headers: {
           'content-type': response.headers.get('content-type'),
           'x-cache': response.headers.get('x-cache'),
@@ -118,6 +130,18 @@ export function useNflStats(): UseNflStatsReturn {
       setOffenseData(transformedData);
       setLastUpdated(apiData.updatedAt);
       
+      // Set data freshness based on service worker cache status
+      if (cacheStatus === 'fresh') {
+        setOffenseDataFreshness('fresh');
+      } else if (cacheStatus === 'stale') {
+        setOffenseDataFreshness('stale');
+      } else if (cacheStatus === 'unavailable') {
+        setOffenseDataFreshness('unavailable');
+      } else {
+        // No cache header means fresh from network
+        setOffenseDataFreshness('fresh');
+      }
+      
       console.log(`✅ [HOOK-${requestId}] Successfully loaded offense data for ${transformedData.length} teams`);
       
       if (apiData.stale) {
@@ -132,6 +156,7 @@ export function useNflStats(): UseNflStatsReturn {
         stack: error instanceof Error ? error.stack : 'No stack'
       });
       setOffenseError(errorMessage);
+      setOffenseDataFreshness('unavailable');
     } finally {
       setIsLoadingOffense(false);
     }
@@ -150,8 +175,14 @@ export function useNflStats(): UseNflStatsReturn {
       
       const response = await fetch(APP_CONSTANTS.API.ENDPOINTS.DEFENSE);
       
+      // Detect cache status from service worker
+      const cacheStatus = response.headers.get('sw-cache-status');
+      const cachedDate = response.headers.get('sw-cached-date');
+      
       console.log(`🛡️ [HOOK-${requestId}] Response status: ${response.status}`, {
         ok: response.ok,
+        cacheStatus,
+        cachedDate,
         headers: {
           'content-type': response.headers.get('content-type'),
           'x-cache': response.headers.get('x-cache'),
@@ -179,6 +210,18 @@ export function useNflStats(): UseNflStatsReturn {
       
       setDefenseData(transformedData);
       
+      // Set data freshness based on service worker cache status
+      if (cacheStatus === 'fresh') {
+        setDefenseDataFreshness('fresh');
+      } else if (cacheStatus === 'stale') {
+        setDefenseDataFreshness('stale');
+      } else if (cacheStatus === 'unavailable') {
+        setDefenseDataFreshness('unavailable');
+      } else {
+        // No cache header means fresh from network
+        setDefenseDataFreshness('fresh');
+      }
+      
       console.log(`✅ [HOOK-${requestId}] Successfully loaded defense data for ${transformedData.length} teams`);
       
       if (apiData.stale) {
@@ -193,6 +236,7 @@ export function useNflStats(): UseNflStatsReturn {
         stack: error instanceof Error ? error.stack : 'No stack'
       });
       setDefenseError(errorMessage);
+      setDefenseDataFreshness('unavailable');
     } finally {
       setIsLoadingDefense(false);
     }
@@ -244,6 +288,10 @@ export function useNflStats(): UseNflStatsReturn {
     // Error states
     offenseError,
     defenseError,
+    
+    // Data freshness indicators
+    offenseDataFreshness,
+    defenseDataFreshness,
     
     // Metadata
     lastUpdated,

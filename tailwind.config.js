@@ -14,6 +14,22 @@ module.exports = {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      spacing: {
+        'safe-top': 'env(safe-area-inset-top)',
+        'safe-bottom': 'env(safe-area-inset-bottom)',
+        'safe-left': 'env(safe-area-inset-left)',
+        'safe-right': 'env(safe-area-inset-right)',
+      },
+      height: {
+        'screen-dynamic': '100dvh',
+        'screen-small': '100svh',
+        'screen-large': '100lvh',
+      },
+      minHeight: {
+        'screen-dynamic': '100dvh',
+        'screen-small': '100svh',
+        'screen-large': '100lvh',
+      },
       boxShadow: {
         'premium': '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)',
         'premium-lg': '0 35px 80px -15px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.08)',

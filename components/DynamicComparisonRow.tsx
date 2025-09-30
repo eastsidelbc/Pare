@@ -183,7 +183,15 @@ export default function DynamicComparisonRow({
       
       {/* Optimized theScore Style Bars */}
       <div className="px-4">
-        <div className={getBarContainerClasses ? getBarContainerClasses() : fallbackBarClasses}>
+        <div 
+          className={getBarContainerClasses ? getBarContainerClasses() : fallbackBarClasses}
+          role="progressbar"
+          aria-label={`${metric?.name || 'Metric'} comparison: ${teamAData?.team || 'Team A'} ${formattedTeamAValue} vs ${teamBData?.team || 'Team B'} ${formattedTeamBValue}`}
+          aria-valuenow={teamAPercentage}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-describedby={`comparison-${metricKey}`}
+        >
           {/* Team A Bar - Fully rounded green pill */}
           <div 
             className={`absolute left-0 top-0 h-full rounded-full ${theme?.animations ? 'transition-all duration-300 ease-out' : 'transition-all duration-300 ease-out'}`}
@@ -210,6 +218,21 @@ export default function DynamicComparisonRow({
             }}
           />
         </div>
+      </div>
+
+      {/* Hidden description for screen readers */}
+      <div 
+        id={`comparison-${metricKey}`}
+        className="sr-only"
+      >
+        {teamAData?.team || 'Team A'} has {formattedTeamAValue} {metric?.name || 'metric'}, 
+        ranked {teamARanking?.formattedRank || 'unranked'} out of {allData.length} teams. 
+        {teamBData?.team || 'Team B'} has {formattedTeamBValue} {metric?.name || 'metric'}, 
+        ranked {teamBRanking?.formattedRank || 'unranked'} out of {allData.length} teams.
+        {teamAPercentage > teamBPercentage 
+          ? `${teamAData?.team || 'Team A'} performs better in this metric.`
+          : `${teamBData?.team || 'Team B'} performs better in this metric.`
+        }
       </div>
       
     </div>

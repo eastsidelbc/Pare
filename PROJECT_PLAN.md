@@ -384,73 +384,130 @@ Seamless, professional team selection experience ✨ COMPLETE!
 ## 🎯 **Future Goals & Next Steps**
 
 ### **Immediate Priority (Next Session)**
-1. **🐛 Debug RankingDropdown**: Fix state management issue where team selection doesn't propagate
-   - Problem: Callbacks received but `setSelectedTeamA`/`setSelectedTeamB` not updating global state
-   - Solution: Trace callback chain and ensure proper state updates
-   - Timeline: 1-2 hours
+1. **✅ Current Web App Complete**: All major features working (RankingDropdown, TeamDropdowns, FloatingMetrics)
+   - **Status**: Production ready with clean, modern interface
+   - **Ready for**: Mobile optimization and iOS development planning
 
-### **Short-term Enhancements (Next Month)**
-2. **📱 Mobile Optimization**: Improve responsive design for mobile devices
-3. **⚡ Performance Monitoring**: Add React DevTools profiling and bundle analysis
-4. **♿ Accessibility**: Implement ARIA labels and keyboard navigation
-5. **🧪 Testing Suite**: Add unit tests for critical components and hooks
+### **🚀 NEXT MAJOR PHASE: Mobile & iOS Development Roadmap**
 
-### **Medium-term Improvements (Next Quarter)**
-6. **🔍 Advanced RankingDropdown Features**:
-   - Keyboard navigation (arrow keys, enter, escape)
-   - Search/filter functionality within dropdowns
-   - Smart positioning (auto-adjust for screen space)
-   - Performance optimizations with memoized calculations
+Based on comprehensive `Mobile_plan.md`, this 4-phase transformation will convert Pare from web app to native iOS App Store release:
 
-7. **🎨 Enhanced UI/UX**:
-   - Drag-and-drop metric reordering
-   - Multiple color scheme options beyond current themes
-   - Save custom metric combinations
-   - Export comparisons as images or PDFs
+### **📱 Phase 1: Mobile Web Audit & Fixes (Ship-Quality)**
+**Goal**: Make mobile web experience excellent first, then prepare clean path to iOS
+**Timeline**: 2-3 weeks | **Priority**: HIGH
 
-8. **📊 Data Enhancements**:
-   - Historical data integration (multi-season comparisons)
-   - Advanced metrics (EPA, DVOA, PFF grades) 
-   - Player-level stats and position group filtering
-   - Custom user-defined formulas and calculations
+#### **Layout & Viewport Optimization**
+- ✅ Add iOS safe-area support with Tailwind utilities (`env(safe-area-inset-*)`)
+- ✅ Replace `100vh` with dynamic viewport units (`dvh`, `svh`, `lvh`) - fix iOS address bar jumps
+- ✅ Ensure responsive design (≤360px up to ≥428px) with fluid spacing and `clamp()` typography
+- ✅ Add proper viewport meta tag with `viewport-fit=cover`
 
-### **Long-term Vision (Next Year)**
-9. **📱 PRIORITY: Native iOS App Development**: 
-   - **Learn Swift programming language** for native iOS development
-   - **Convert web app to native iOS app** for App Store deployment
-   - **Leverage existing API infrastructure** - keep CSV processing and data logic
-   - **Enhance mobile UX**: Touch-optimized interfaces, native iOS design patterns
-   - **App Store optimization**: Implement iOS-specific features and monetization
+#### **Touch & Mobile UX**
+- ✅ Ensure 44×44pt minimum touch targets for all interactive elements
+- ✅ Add momentum scroll and passive listeners for scroll/gesture handlers
+- ✅ Remove 300ms tap delay issues; fix `cursor:pointer` bugs on iOS
+- ✅ Prevent unwanted input zooming: set form/input `font-size ≥16px`
+- ✅ Implement pull-to-refresh behavior where appropriate
 
-10. **🏀 Multi-Sport Platform**: Extend architecture to NBA, MLB, NHL using same foundation
-11. **👤 User Management**: Accounts, saved comparisons, custom leagues, sharing features
-12. **🤖 Advanced Analytics**: Predictive modeling, trend analysis, AI-powered insights
-13. **🔗 External Integrations**: ESPN API, Yahoo Sports, social media sharing
+#### **Performance Optimization**
+- ✅ Add Lighthouse mobile checks and Next.js optimization
+- ✅ Implement `next/image` everywhere with proper `sizes` attributes
+- ✅ Add `next/font` optimization or self-hosted font loading
+- ✅ Route-level code splitting, memoization of heavy components
+- ✅ Audit bundle size; propose dynamic imports for heavy panels/metrics
+- ✅ Prevent re-renders in charts/bars system
 
-### **Technical Debt & Infrastructure**
-14. **⚡ Performance Optimizations**:
-    - Bundle splitting and lazy loading
-    - Virtual scrolling for large datasets
-    - Service worker for offline capabilities
-    - CDN integration for static assets
+#### **Accessibility & Design Tokens**
+- ✅ Ensure color contrast compliance for dark theme
+- ✅ Add `prefers-reduced-motion` fallbacks for animations
+- ✅ Implement semantic roles/labels for interactive bars and dropdowns
+- ✅ Add keyboard focus order and skip links
+- ✅ Centralize colors, spacing, radii, shadows in Tailwind config
+- ✅ Expose CSS variables for theming system
 
-15. **🏗️ Architecture Improvements**:
-    - Consider Zustand for complex state management
-    - GraphQL layer for flexible data queries
-    - Microservices architecture for scalability
-    - Docker containerization for easier deployment
+#### **State & Testing**
+- ✅ Review hooks separation (pure logic vs view logic)
+- ✅ Add stable keys for lists and deterministic rendering
+- ✅ Implement robust error/empty/loading states with mobile skeletons
+- ✅ Add Playwright/Cypress mobile viewport tests for main flows
+- ✅ Add ESLint/TypeScript rules for hooks and exhaustive deps
 
-16. **🔒 Security & Reliability**:
-    - Rate limiting and API security
-    - Error monitoring and alerting
-    - Automated testing and CI/CD pipeline
-    - Database backup and disaster recovery
+**📋 Deliverables**: Concrete issues checklist, full file diffs, micro-learning notes, CHANGELOG updates
 
-### **Business & Growth Features**
-17. **📈 Analytics Dashboard**: User engagement metrics, popular comparisons, usage patterns
-18. **💰 Monetization Options**: Premium features, advanced analytics, API access
-19. **🌐 Community Features**: User-generated content, team discussions, prediction contests
-20. **🍎 iOS App Store Strategy**: App Store optimization, iOS-specific monetization, native feature integration
+### **📱 Phase 2: PWA-Ready (2-3 days)**
+**Goal**: "Add to Home Screen" functionality for iOS
+**Timeline**: 2-3 days | **Priority**: MEDIUM
+
+#### **PWA Implementation**
+- ✅ Add `manifest.webmanifest` with proper configuration
+- ✅ Create maskable icons, Apple touch icons, splash screen assets
+- ✅ Configure `display: standalone`, `theme_color`, `background_color`
+- ✅ Implement service worker via Workbox or Next.js built-in approach
+- ✅ Choose network strategy (Stale-While-Revalidate for stats, Cache First for icons)
+- ✅ Handle deep links and external links cleanly
+
+**📋 Deliverables**: PWA manifest, icon set, service worker config, installation guide
+
+### **📱 Phase 3A: iOS App (WKWebView Wrapper) - FASTEST PATH**
+**Goal**: Quick iOS App Store deployment using web app
+**Timeline**: 1-2 weeks | **Priority**: HIGH (for faster market entry)
+
+#### **Swift WKWebView Container**
+- ✅ Create SwiftUI project with WKWebView pointing to PWA/Next.js site
+- ✅ Implement JS ↔ Swift bridge (`WKScriptMessageHandler`) for future features
+- ✅ Add native share sheet, clipboard access
+- ✅ Use `SFSafariViewController` for external links; keep navigation scoped
+- ✅ Implement pull-to-refresh, loading indicator, offline error screen
+- ✅ Handle file downloads and iOS permissions
+- ✅ Create App icons, launch screen, accurate `Info.plist`
+
+**📋 Deliverables**: Minimal SwiftUI project scaffolding, native wrapper with web integration
+
+### **📱 Phase 3B: Full Native SwiftUI App - ULTIMATE GOAL**
+**Goal**: Best possible UX with native iOS implementation
+**Timeline**: 2-3 months | **Priority**: LONG-TERM
+
+#### **Native Architecture Planning**
+- ✅ **Domain Module**: Models for teams, metrics, comparisons
+- ✅ **Data Module**: Networking with async/await URLSession, typed decoders, retry/backoff
+- ✅ **UI Module**: Screens/Components with SwiftUI
+- ✅ **Local Cache**: SwiftData/CoreData strategy for stats snapshots
+- ✅ **Charts**: Swift Charts mirroring web bar-comparisons with design parity
+- ✅ **State**: Observable models or TCA (The Composable Architecture)
+- ✅ **Diagnostics**: Logging, feature flags, remote config
+
+**📋 Deliverables**: SwiftUI skeleton with one fully implemented comparison screen proving parity
+
+### **📱 Phase 4: CI/CD & Release**
+**Goal**: Professional deployment and App Store submission
+**Timeline**: 1 week | **Priority**: MEDIUM
+
+#### **Deployment Pipeline**
+- ✅ GitHub Actions for web build (lint, typecheck, test, bundle size guard, Lighthouse CI)
+- ✅ iOS: Fastlane lanes for signing, build, TestFlight distribution
+- ✅ Add Crashlytics and basic analytics
+- ✅ App Store checklist: Privacy manifest, ATT (if needed), screenshots (iPhone sizes)
+- ✅ Review data sourcing compliance (Pro Football Reference Terms of Use)
+
+**📋 Deliverables**: Complete CI/CD pipeline, App Store submission package
+
+### **🎯 Strategic Development Priorities**
+
+**Current Status**: ✅ **Phase 2 Complete** - Full PWA with offline capabilities and cross-platform installation
+**Next Sprint**: 🍎 **Phase 3A: iOS App (WKWebView)** - Fast market entry with web wrapper
+**Target**: 🍎 **App Store Launch in Q1 2025**
+
+### **📚 Learning Path for iOS Development**
+1. **Swift Fundamentals**: Complete Swift language essentials
+2. **SwiftUI Basics**: Learn declarative UI patterns and state management
+3. **iOS Frameworks**: URLSession, SwiftData, Swift Charts integration
+4. **App Store Process**: Submission guidelines, review process, monetization
+
+### **🏗️ Technical Debt & Infrastructure (Ongoing)**
+- **Performance**: Bundle splitting, lazy loading, virtual scrolling
+- **Architecture**: Consider Zustand, GraphQL, microservices, Docker
+- **Security**: Rate limiting, error monitoring, CI/CD, backup/recovery
+- **Business**: Analytics dashboard, monetization, community features
 
 ---
 
@@ -504,97 +561,78 @@ Seamless, professional team selection experience ✨ COMPLETE!
 
 ---
 
-#### **Patch 1.0.2 - Interactive TeamDropdown & Perfect UX Implementation (2025-09-26)**
-**Session Summary**: Complete implementation of seamless team selection via interactive corner logos across both panels
+#### **Patch 1.0.2 - Interactive TeamDropdown (2025-09-26)**
+- ✅ Added TeamDropdown component for seamless team selection via corner logos
+- ✅ Interactive team logos in all 4 corners (look identical but clickable)  
+- ✅ Fixed RankingDropdown state management issue
+- ✅ 6 total team selection methods working perfectly
+- **Status**: Production ready, iOS development ready
 
-**🔍 What Was Accomplished:**
-- **✨ TeamDropdown Component Creation**: Built new component for contextual team selection with NFL logos and alphabetical sorting
-- **🎯 4-Corner Integration**: Implemented interactive team logos in all 4 panel corners (OffensePanel + DefensePanel, Team A + Team B)
-- **🎨 Seamless UX Design**: Team logos look identical to original (60px size) but hide powerful dropdown functionality
-- **📱 Mobile Optimization**: Responsive dropdowns with proper z-index layering and mobile-friendly sizing
-- **⚡ Performance Enhancements**: Added useCallback optimizations and clean event handling
-- **🔧 Production Polish**: Removed debug logs, testing banners, and optimized for production deployment
+#### **Patch 1.0.3 - Floating Metrics & UI Cleanup (2025-09-26)**
+- ✅ Added FloatingMetricsButton in bottom-right corner (modern app-like experience)
+- ✅ Removed TeamSelectionPanel from header for ultra-clean interface
+- ✅ Added "Stay Locked" footer, removed calculation/debug text from bars
+- ✅ Larger metrics window (448px wide, 512px tall) for better usability
+- **Status**: Production ready, clean modern interface complete
 
-**🎮 User Experience Achievements:**
-- **6 Total Team Selection Methods**: Header dropdowns (2) + Corner dropdowns (4) + Ranking dropdowns (unlimited)
-- **Perfect Global State Sync**: All selection methods update same global state with instant synchronization
-- **"Hidden in Plain Sight" Design**: Users discover powerful functionality naturally - logos appear static until clicked
-- **Contextual Selection**: Change teams exactly where you're analyzing (offense/defense specific)
+#### **Patch 1.0.4 - Mobile & iOS Development Roadmap (2025-09-26)**
+- ✅ Integrated comprehensive Mobile_plan.md into PROJECT_PLAN.md and CLAUDE.md
+- ✅ Added 4-phase mobile development strategy (Mobile Web → PWA → iOS App → CI/CD)
+- ✅ Detailed technical guidelines for mobile optimization and iOS transition
+- ✅ Set strategic target: Q1 2025 App Store launch
+- **Status**: Ready for Phase 1 mobile web optimization
 
-**🐛 Issues Found/Fixed:**
-- **✅ Seamless UI Requirement**: Perfected closed state to show only team logo (no text, no arrows) - looks identical to original
+#### **Patch 1.0.5 - Phase 1: Mobile Web Excellence Complete (2025-09-26)**
+- ✅ **Foundation & Viewport**: iOS safe-area support, dynamic viewport units, responsive design
+- ✅ **Touch & Interaction**: 44×44pt touch targets, eliminated tap delays, prevented iOS zoom
+- ✅ **Performance & Images**: Optimized next/image, code splitting, mobile performance monitoring
+- ✅ **Accessibility & Polish**: ARIA labels, screen reader support, keyboard navigation, reduced motion
+- **Status**: Mobile web excellence achieved, ready for Phase 2 (PWA)
 
-**📊 Technical Implementation:**
-- **Component Architecture**: TeamDropdown follows RankingDropdown patterns with consistent styling and animations
-- **Global State Integration**: Uses existing handleTeamAChange/handleTeamBChange callbacks for perfect synchronization  
-- **Conditional Rendering**: Fallback to static TeamLogo if callbacks not provided (backward compatibility)
-- **Professional Animations**: Subtle hover effects (1.03x scale) and click feedback (0.97x scale)
-
-**🎯 Next Session Priority:**
-- **Ready for iOS Development**: Web app feature-complete, ready to begin Swift learning and mobile conversion planning
-- **Optional Polish**: Consider additional UX enhancements or proceed with iOS app development roadmap
-
-**📊 Current Status:**
-- **Architecture**: Feature-complete with seamless team selection across 6 different methods
-- **Performance**: Optimized for production with clean, efficient code
-- **Outstanding Issues**: None - all major functionality working perfectly
-- **Technical Debt**: Minimal - professional-grade codebase ready for iOS conversion
-- **User Experience**: Achieved perfect "seamless" design goal - powerful functionality hidden in natural interactions
+#### **Patch 1.0.6 - Phase 2: PWA-Ready Complete (2025-09-26)**
+- ✅ **PWA Manifest & Icons**: Custom PNG icons, app shortcuts, "Add to Home Screen" functionality
+- ✅ **Service Worker**: Smart caching (30min fresh, 6hr stale), offline NFL stats, team logo caching
+- ✅ **Offline Excellence**: Auto-detection, user feedback banner, background sync capabilities
+- ✅ **Installation Prompts**: Cross-platform install detection, iOS instructions, Android one-click
+- ✅ **Standalone Mode**: App-like experience, deep links, navigation handling, touch optimizations
+- **Status**: Full PWA ready, installable on all platforms, ready for Phase 3 (iOS App)
 
 ---
 
 ### **Session Template (Copy for Future Updates)**
 
 #### **Patch 1.0.X - [Session Title] (YYYY-MM-DD)**
-**Session Summary**: [Brief description of what was worked on]
-
-**🔍 What Was Accomplished:**
-- [ ] [Specific task completed]
-- [ ] [Another completed task]
-- [ ] [Documentation updates]
-
-**🐛 Issues Found/Fixed:**
-- **[Issue Name]**: [Description and resolution status]
-
-**🎯 Next Session Priority:**
-- [What should be tackled next with time estimates]
-
-**📊 Current Status:**
-- **Architecture**: [Any changes or confirmations]
-- **Performance**: [Any impacts or improvements]
-- **Outstanding Issues**: [What still needs work]
-- **Technical Debt**: [Any new debt or cleanup completed]
+- ✅ [What was accomplished - keep brief]
+- ✅ [Another accomplishment]
+- ✅ [Bug fix or improvement]
+- **Status**: [Current production status]
 
 ---
 
-### **Changelog Guidelines for Living Documentation**
+### **Simplified Changelog Guidelines**
 
-**When to Create New Patch Version:**
-- Each development session gets a new patch number (1.0.X)
-- Document all changes, discoveries, and architectural decisions
-- Update both PROJECT_PLAN.md and CLAUDE.md to maintain consistency
-- Keep session records for future context and decision tracking
+**Patch Format Rules:**
+- **Keep it concise** - 3-5 bullet points max per patch
+- **Use checkmarks** (✅) for completed items  
+- **Focus on user-facing changes** - what actually matters
+- **Include status line** - current production readiness
+- **One patch per session** - increment 1.0.X for each development session
 
-**What to Include in Each Session:**
-- **Accomplishments**: What was built, fixed, improved, or documented
-- **Issues**: Problems found and their resolution status (fixed/ongoing/identified)
-- **Architecture Impact**: Any structural changes, confirmations, or preservation notes
-- **Performance Notes**: Speed impacts, optimizations, or monitoring results
-- **Next Steps**: Clear priorities for the following session with time estimates
-- **Context Preservation**: Decisions made and why, for future reference
+**What to Include:**
+- Major features added or fixed
+- UI/UX improvements 
+- Bug fixes that affect users
+- Performance or architectural improvements
+- Brief status update
 
-**Version Numbering System:**
-- **Major (X.0.0)**: Significant architecture changes, new major features, or platform upgrades
-- **Minor (1.X.0)**: New features, substantial improvements, or component additions
-- **Patch (1.0.X)**: Bug fixes, documentation updates, minor enhancements, debugging sessions
-
-**File Maintenance:**
-- **PROJECT_PLAN.md**: High-level project status, rules, architecture, and session changelog
-- **CLAUDE.md**: Detailed technical guide, development workflows, and parallel session tracking
-- **Consistency**: Both files should reflect the same current status and session information
+**What NOT to Include:**
+- Verbose technical details (save for CLAUDE.md)
+- Internal implementation specifics
+- Debug/development artifacts
+- Extensive explanations
 
 ---
 
-**✅ Status**: Production Ready (v1.0.1) | **🏗️ Architecture**: Professional-Grade with Guardrails | **📊 Data**: Live 2025 NFL Stats | **🔧 Platform**: Next.js 15 + TypeScript + PM2
+**✅ Status**: Phase 2 Complete (v1.0.6) | **📱 PWA**: Full Offline, Cross-Platform Installation Ready | **📊 Data**: Live 2025 NFL Stats | **🔧 Platform**: Next.js 15 + TypeScript + PM2
 
-*Last Updated: 2025-09-25 | Single Source of Truth for Pare NFL Comparison Platform | Living Documentation System Active*
+*Last Updated: 2025-09-26 | Single Source of Truth for Pare NFL Comparison Platform | Living Documentation System Active*

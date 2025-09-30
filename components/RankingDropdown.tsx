@@ -150,10 +150,11 @@ export default function RankingDropdown({
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
         className={`
-          inline-flex items-center gap-1 px-2 py-1
+          inline-flex items-center gap-1 px-2 py-1.5
           bg-slate-800/80 border border-slate-600/50
-          rounded-md text-xs font-medium
+          rounded-md text-sm font-medium
           cursor-pointer transition-all duration-200
+          min-h-[2rem] min-w-[3rem] touch-optimized
           ${colors.badge}
         `}
         whileHover={{ scale: 1.05 }}
@@ -181,7 +182,7 @@ export default function RankingDropdown({
               bg-slate-900/95 backdrop-blur-sm
               border border-slate-700/50 rounded-lg
               shadow-2xl shadow-black/50
-              max-h-60 overflow-y-auto
+              max-h-60 overflow-y-auto momentum-scroll
               py-2
             `}
             style={{ 
@@ -210,11 +211,12 @@ export default function RankingDropdown({
                   <motion.div
                     key={item.team.team}
                     className={`
-                      flex items-center gap-3 px-3 py-2 mx-1
+                      flex items-center gap-3 px-3 py-3 mx-1
                       rounded-md cursor-pointer
                       hover:bg-slate-800/60 
                       ${isSelected ? `bg-${side === 'teamA' ? 'green' : 'orange'}-500/20 border-l-2 border-l-${side === 'teamA' ? 'green' : 'orange'}-400` : ''}
                       transition-all duration-150
+                      min-h-[3rem] touch-optimized
                     `}
                     whileHover={{ x: 2 }}
                     onClick={() => handleTeamSelect(item.team.team)}

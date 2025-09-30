@@ -13,6 +13,8 @@ import { DEFAULT_OFFENSE_METRICS, DEFAULT_DEFENSE_METRICS } from '@/lib/metricsC
 import OffensePanel from '@/components/OffensePanel';
 import DefensePanel from '@/components/DefensePanel';
 import FloatingMetricsButton from '@/components/FloatingMetricsButton';
+import OfflineStatusBanner from '@/components/OfflineStatusBanner';
+import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export default function ComparePage() {
@@ -82,10 +84,40 @@ export default function ComparePage() {
     hasErrors: !!(offenseError || defenseError)
   });
 
+  // Mobile Performance Monitoring
+  React.useEffect(() => {
+    if (typeof window !== 'undefined' && !isLoading) {
+      const isMobile = window.innerWidth <= 768;
+      const connection = (navigator as any).connection;
+      
+      if (isMobile) {
+        console.log('📱 [MOBILE-PERFORMANCE]:', {
+          viewport: `${window.innerWidth}×${window.innerHeight}`,
+          devicePixelRatio: window.devicePixelRatio,
+          connection: connection?.effectiveType || 'unknown',
+          memory: (navigator as any).deviceMemory || 'unknown',
+          dataLoaded: {
+            offense: offenseData.length,
+            defense: defenseData.length
+          },
+          timestamp: new Date().toISOString()
+        });
+        
+        // Performance timing
+        if (performance.getEntriesByType) {
+          const paintEntries = performance.getEntriesByType('paint');
+          paintEntries.forEach(entry => {
+            console.log(`🎨 [MOBILE-PAINT] ${entry.name}: ${entry.startTime.toFixed(2)}ms`);
+          });
+        }
+      }
+    }
+  }, [isLoading, offenseData.length, defenseData.length]);
+
   // Show error state if data fails to load
   if (offenseError || defenseError) {
     return (
-      <div className="min-h-screen w-screen bg-gradient-to-br from-[#0b1120] via-[#0f172a] to-[#1e293b] text-white px-6 py-12">
+      <div className="min-h-screen-dynamic w-full bg-gradient-to-br from-[#0b1120] via-[#0f172a] to-[#1e293b] text-white px-4 sm:px-6 py-safe-top pb-safe-bottom pt-12">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl font-bold text-red-400 mb-6">
             ⚠️ Data Loading Error
@@ -122,24 +154,28 @@ export default function ComparePage() {
                 🔄 Retry
               </button>
             </div>
-          </div>
         </div>
       </div>
-    );
+    </div>
+  );
   }
 
   return (
-    <div className="min-h-screen w-screen bg-gradient-to-br from-[#0b1120] via-[#0f172a] to-[#1e293b] text-white px-6 py-12">
-      <div className="max-w-6xl mx-auto">
+    <>
+      {/* Offline Status Banner */}
+      <OfflineStatusBanner />
+      
+      <div className="min-h-screen-dynamic w-full bg-gradient-to-br from-[#0b1120] via-[#0f172a] to-[#1e293b] text-white px-4 sm:px-6 py-safe-top pb-safe-bottom pt-12">
+        <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight font-sans text-slate-100">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight font-sans text-slate-100">
             Lock In
           </h1>
         </div>
 
         {/* Comparison Panels - Protected by Error Boundaries */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Offense Panel */}
           <ErrorBoundary fallback={
             <div className="p-8 bg-slate-900/90 rounded-xl border border-red-500/30 text-center">
@@ -182,7 +218,7 @@ export default function ComparePage() {
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-12 pt-8 border-t border-slate-800/50">
+        <div className="text-center mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-slate-800/50 mb-safe-bottom">
           <p className="text-slate-500 text-sm">
             Stay Locked
           </p>
@@ -197,5 +233,12 @@ export default function ComparePage() {
         />
       </div>
     </div>
+    
+    {/* PWA Install Prompt */}
+    <PWAInstallPrompt 
+      onInstall={() => console.log('🎉 [PWA] App installed successfully!')}
+      onDismiss={() => console.log('🙈 [PWA] Install prompt dismissed')}
+    />
+    </>
   );
 }

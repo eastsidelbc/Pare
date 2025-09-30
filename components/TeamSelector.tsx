@@ -45,7 +45,7 @@ export default function TeamSelector({
   });
 
   const baseClasses = `
-    px-4 py-2 
+    px-4 py-3
     bg-slate-800/90 
     border border-slate-600/50 
     rounded-lg 
@@ -56,6 +56,8 @@ export default function TeamSelector({
     focus:ring-purple-500/50 
     focus:border-purple-500/50
     transition-all duration-200
+    touch-optimized
+    min-h-[2.75rem]
     ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-slate-500/70'}
   `.trim().replace(/\s+/g, ' ');
 
@@ -72,6 +74,7 @@ export default function TeamSelector({
         onChange={(e) => onTeamChange(e.target.value)}
         disabled={disabled}
         className={baseClasses}
+        style={{ fontSize: '16px' }}
       >
         <option value="" disabled>
           {placeholder}

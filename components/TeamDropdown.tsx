@@ -84,9 +84,12 @@ export default function TeamDropdown({
       {/* Team Logo Button (Closed State) - Looks identical to original */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="cursor-pointer transition-all duration-100"
+        className="cursor-pointer transition-all duration-100 touch-optimized min-w-[3.5rem] min-h-[3.5rem] flex items-center justify-center focus-ring"
         whileHover={{ scale: 1.20 }}
         whileTap={{ scale: 0.97 }}
+        aria-label={`${label || 'Team selection'}: ${currentTeam}. Click to change team.`}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
       >
         <TeamLogo teamName={currentTeam} size="80" />
       </motion.button>
@@ -104,7 +107,7 @@ export default function TeamDropdown({
               bg-slate-900/95 backdrop-blur-sm
               border border-slate-700/50 rounded-lg
               shadow-2xl shadow-black/50
-              max-h-80 overflow-y-auto
+              max-h-80 overflow-y-auto momentum-scroll
               py-2
             `}
             style={{ 
@@ -123,7 +126,7 @@ export default function TeamDropdown({
             </div>
 
             {/* Team List */}
-            <div className="py-1">
+            <div className="py-1" role="listbox" aria-label={`${label || 'Team'} selection`}>
               {sortedTeams.map((team, index) => {
                 const isSelected = team.team === currentTeam;
 
@@ -131,14 +134,24 @@ export default function TeamDropdown({
                   <motion.div
                     key={team.team}
                     className={`
-                      flex items-center gap-3 px-3 py-2 mx-1
+                      flex items-center gap-3 px-3 py-3 mx-1
                       rounded-md cursor-pointer
                       hover:bg-slate-800/60 
                       ${isSelected ? colors.highlight : ''}
                       transition-all duration-150
+                      min-h-[3rem] touch-optimized focus-ring
                     `}
                     whileHover={{ x: 2 }}
                     onClick={() => handleTeamSelect(team.team)}
+                    role="option"
+                    aria-selected={isSelected}
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleTeamSelect(team.team);
+                      }
+                    }}
                   >
                     {/* Team Logo */}
                     <div className="flex-shrink-0">
