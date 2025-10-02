@@ -18,7 +18,7 @@ Links:
 - Alternatives considered: Defer changelog creation until next code change (rejected—normative process requires immediate setup).
 
 ### 3) Implementation Notes (algorithms, constants, config keys)
-- Files created: `docs/devnotes/2025-10-02-docs-release-ops-bootstrap.md`, `CHANGELOG.md` (root).
+- Files created: `docs/devnotes/2025-10-02-docs-release-ops-bootstrap.md`, `CHANGELOG.md` (root), `docs/adr/_template.md`.
 - Link conventions: Use root `CLAUDE.md#changelog-guidelines` anchor; no duplication of normative content.
 - Anchors: Prefer stable section headings in CLAUDE for deep links.
 
