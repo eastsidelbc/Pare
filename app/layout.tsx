@@ -59,6 +59,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Gate SW registration using public env var evaluated at build time
+  const enableSW = process.env.NEXT_PUBLIC_ENABLE_SW === 'true';
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -71,32 +73,35 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Pare NFL" />
         <script dangerouslySetInnerHTML={{
           __html: `
-            // Register Service Worker for PWA functionality
-            if ('serviceWorker' in navigator) {
-              window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                  .then((registration) => {
-                    console.log('✅ [PWA] Service Worker registered successfully:', registration.scope);
-                    
-                    // Handle updates
-                    registration.addEventListener('updatefound', () => {
-                      console.log('🔄 [PWA] Service Worker update found');
-                      const newWorker = registration.installing;
-                      if (newWorker) {
-                        newWorker.addEventListener('statechange', () => {
-                          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            console.log('📱 [PWA] New app version available - restart to update');
-                          }
-                        });
-                      }
+            // Register Service Worker for PWA functionality (gated by env flag)
+            try {
+              var ENABLE_SW = ${enableSW ? 'true' : 'false'};
+              if ('serviceWorker' in navigator && ENABLE_SW) {
+                window.addEventListener('load', () => {
+                  navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                      console.log('✅ [PWA] Service Worker registered successfully:', registration.scope);
+                      registration.addEventListener('updatefound', () => {
+                        console.log('🔄 [PWA] Service Worker update found');
+                        const newWorker = registration.installing;
+                        if (newWorker) {
+                          newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                              console.log('📱 [PWA] New app version available - restart to update');
+                            }
+                          });
+                        }
+                      });
+                    })
+                    .catch((error) => {
+                      console.log('❌ [PWA] Service Worker registration failed:', error);
                     });
-                  })
-                  .catch((error) => {
-                    console.log('❌ [PWA] Service Worker registration failed:', error);
-                  });
-              });
-            } else {
-              console.log('⚠️ [PWA] Service Workers not supported in this browser');
+                });
+              } else {
+                console.log('⚠️ [PWA] Service Worker disabled or not supported');
+              }
+            } catch (e) {
+              console.log('⚠️ [PWA] SW registration script error:', e);
             }
           `
         }} />

@@ -14,13 +14,11 @@ const CACHE_EXPIRATION = {
   STATIC: 24 * 60 * 60 * 1000, // 24 hours for static assets
 };
 
-// Assets to cache immediately on install
+// Assets to cache immediately on install (HTML excluded by policy)
 const STATIC_ASSETS = [
-  '/',
-  '/compare',
   '/icon-192.png',
   '/manifest.json',
-  // Add core CSS/JS that Next.js generates
+  // Add core CSS/JS that Next.js generates (paths cached on demand)
   '/_next/static/css/',
   '/_next/static/chunks/',
 ];
@@ -32,11 +30,9 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then((cache) => {
-        console.log('📦 [SW] Caching static assets');
-        // Only cache the essential files, let Next.js handle the rest
+        console.log('📦 [SW] Caching static assets (no HTML)');
+        // Do not cache HTML routes here
         return cache.addAll([
-          '/',
-          '/compare',
           '/icon-192.png',
           '/manifest.json'
         ]);
@@ -117,9 +113,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Strategy 3: HTML Pages - Network First with Offline Fallback
+  // Strategy 3: HTML Pages - Network only (no caching) per current policy
   if (request.headers.get('accept')?.includes('text/html')) {
-    event.respondWith(networkFirstWithFallback(request));
+    event.respondWith(fetch(request));
     return;
   }
 
