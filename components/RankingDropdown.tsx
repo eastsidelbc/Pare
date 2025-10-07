@@ -53,6 +53,7 @@ export default function RankingDropdown({
   // State for dropdown open/close
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   
   // Get theme colors for team-specific styling
   const { getTeamAColor, getTeamBColor } = useTheme();
@@ -127,6 +128,40 @@ export default function RankingDropdown({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // [Diagnostics] Log counts, filtering behavior, and computed menu sizing when opened
+  useEffect(() => {
+    if (!isOpen) return;
+
+    try {
+      const swControlled = typeof navigator !== 'undefined' && !!navigator.serviceWorker?.controller;
+      const isStandalone = typeof window !== 'undefined' && (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+      const viewport = typeof window !== 'undefined' ? { w: window.innerWidth, h: window.innerHeight, vv: (window as any).visualViewport?.height } : null;
+
+      const container = menuRef.current;
+      const rect = container ? container.getBoundingClientRect() : null;
+      const styles = container ? window.getComputedStyle(container) : null;
+
+      console.log('[Diag:RankingDropdown] open', {
+        metricKey,
+        side,
+        type,
+        swControlled,
+        isStandalone,
+        viewport,
+        allDataCount: allData?.length || 0,
+        sortedTeamsCount: sortedTeams.length,
+        rankingOptions: {
+          higherIsBetter: (type === 'defense') ? !metric?.higherIsBetter : metric?.higherIsBetter,
+          excludeSpecialTeams: true
+        },
+        menuRect: rect ? { x: rect.x, y: rect.y, w: rect.width, h: rect.height } : null,
+        menuStyles: styles ? { maxHeight: styles.maxHeight, overflowY: styles.overflowY, position: styles.position } : null,
+      });
+    } catch (err) {
+      console.log('[Diag:RankingDropdown] error capturing diagnostics', err);
+    }
+  }, [isOpen, allData, sortedTeams.length, metricKey, side, type, metric?.higherIsBetter]);
+
   // Handle team selection
   const handleTeamSelect = (teamName: string) => {
     console.log(`🔥 [RANKING-DROPDOWN] ${side} selected team: ${teamName}`);
@@ -182,9 +217,10 @@ export default function RankingDropdown({
               bg-slate-900/95 backdrop-blur-sm
               border border-slate-700/50 rounded-lg
               shadow-2xl shadow-black/50
-              max-h-60 overflow-y-auto momentum-scroll
+              max-h-[60vh] md:max-h-[500px] overflow-y-auto momentum-scroll
               py-2
             `}
+            ref={menuRef}
             style={{ 
               left: side === 'teamB' ? 'auto' : '0',
               right: side === 'teamB' ? '0' : 'auto'

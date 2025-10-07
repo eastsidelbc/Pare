@@ -29,39 +29,35 @@ export default function ComparePage() {
     lastUpdated 
   } = useNflStats();
 
-  // Global team selection state
-  const [selectedTeamA, setSelectedTeamA] = useState<string>('');
-  const [selectedTeamB, setSelectedTeamB] = useState<string>('');
+  // Global team selection state (deterministic defaults)
+  const defaultTeams = React.useMemo(() => {
+    const specialTeams = ['Avg Team', 'League Total', 'Avg Tm/G', 'Avg/TmG'];
+    const availableTeams = offenseData.filter(team => !specialTeams.includes(team.team));
+    if (availableTeams.length < 2) return { a: '', b: '' };
+    const preferredTeamA = 'Minnesota Vikings';
+    const preferredTeamB = 'Detroit Lions';
+    const a = availableTeams.find(t => t.team === preferredTeamA)?.team || availableTeams[0]?.team || '';
+    const b = availableTeams.find(t => t.team === preferredTeamB && t.team !== a)?.team || availableTeams.find(t => t.team !== a)?.team || '';
+    return { a, b };
+  }, [offenseData]);
+
+  const [selectedTeamA, setSelectedTeamA] = useState<string>(() => defaultTeams.a);
+  const [selectedTeamB, setSelectedTeamB] = useState<string>(() => defaultTeams.b);
 
   // Global metrics selection state
   const [selectedOffenseMetrics, setSelectedOffenseMetrics] = useState<string[]>(DEFAULT_OFFENSE_METRICS);
   const [selectedDefenseMetrics, setSelectedDefenseMetrics] = useState<string[]>(DEFAULT_DEFENSE_METRICS);
 
-  // 🎯 SIMPLE: Auto-select teams when data loads (moved from TeamSelectionPanel)
+  // Validation-only: ensure selections remain valid when data changes
   React.useEffect(() => {
-    if (offenseData.length > 0 && !selectedTeamA && !selectedTeamB) {
-      // Filter out special teams
-      const specialTeams = ['Avg Team', 'League Total', 'Avg Tm/G', 'Avg/TmG'];
-      const availableTeams = offenseData.filter(team => !specialTeams.includes(team.team));
-      
-      if (availableTeams.length >= 2) {
-        // Default to Minnesota Vikings vs Detroit Lions
-        const preferredTeamA = 'Minnesota Vikings';
-        const preferredTeamB = 'Detroit Lions';
-        
-        const teamA = availableTeams.find(team => team.team === preferredTeamA)?.team || 
-                     availableTeams[0]?.team || '';
-        const teamB = availableTeams.find(team => team.team === preferredTeamB && team.team !== teamA)?.team || 
-                     availableTeams.find(team => team.team !== teamA)?.team || '';
-        
-        if (teamA && teamB) {
-          console.log(`🏈 [COMPARE-PAGE] Auto-selecting teams: ${teamA} vs ${teamB}`);
-          setSelectedTeamA(teamA);
-          setSelectedTeamB(teamB);
-        }
-      }
+    if (offenseData.length === 0) return;
+    if (!selectedTeamA || !offenseData.some(t => t.team === selectedTeamA)) {
+      if (defaultTeams.a) setSelectedTeamA(defaultTeams.a);
     }
-  }, [offenseData, selectedTeamA, selectedTeamB]);
+    if (!selectedTeamB || !offenseData.some(t => t.team === selectedTeamB)) {
+      if (defaultTeams.b) setSelectedTeamB(defaultTeams.b);
+    }
+  }, [offenseData, selectedTeamA, selectedTeamB, defaultTeams]);
 
   // Individual team change handlers for dropdowns
   const handleTeamAChange = (newTeamA: string) => {
@@ -234,11 +230,11 @@ export default function ComparePage() {
       </div>
     </div>
     
-    {/* PWA Install Prompt */}
-    <PWAInstallPrompt 
+    {/* PWA Install Prompt - Disabled for now */}
+    {/* <PWAInstallPrompt 
       onInstall={() => console.log('🎉 [PWA] App installed successfully!')}
       onDismiss={() => console.log('🙈 [PWA] Install prompt dismissed')}
-    />
+    /> */}
     </>
   );
 }
