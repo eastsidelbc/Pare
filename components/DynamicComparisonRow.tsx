@@ -132,7 +132,7 @@ export default function DynamicComparisonRow({
           <div className={`font-semibold text-base ${getTeamAColor ? getTeamAColor() : 'text-green-400'}`}>
             {formattedTeamAValue}
           </div>
-          {/* Interactive Ranking Dropdown for Team A */}
+          {/* Interactive Ranking Dropdown for Team A (shows "Avg" badge when average selected) */}
           {onTeamAChange ? (
             <RankingDropdown
               allData={allData}
@@ -159,7 +159,7 @@ export default function DynamicComparisonRow({
         
         {/* Team B Stats */}
         <div className="flex items-center gap-3">
-          {/* Interactive Ranking Dropdown for Team B */}
+          {/* Interactive Ranking Dropdown for Team B (shows "Avg" badge when average selected) */}
           {onTeamBChange ? (
             <RankingDropdown
               allData={allData}

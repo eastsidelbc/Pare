@@ -54,7 +54,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
   
   // === SCORING ===
   'points': {
-    name: 'Points (PF/PA)',
+    name: 'Points',
     field: 'points',
     category: 'scoring',
     higherIsBetter: true, // Context-dependent: offense=higher better, defense=lower better
@@ -66,7 +66,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
 
   // === TOTAL OFFENSE/DEFENSE ===
   'total_yards': {
-    name: 'Total Yards (Yds)',
+    name: 'Total Yards',
     field: 'total_yards',
     category: 'efficiency', 
     higherIsBetter: true, // For offense: higher is better, for defense: lower is better (context-dependent)
@@ -77,51 +77,51 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
   },
 
   'plays_offense': {
-    name: 'Plays (Ply)',
+    name: 'Plays',
     field: 'plays_offense',
     category: 'efficiency',
-    higherIsBetter: true,
+    higherIsBetter: true, // Offense: more plays = better; Defense: fewer plays allowed = better (context-dependent)
     format: 'decimal',
-    description: 'Total offensive plays per game',
+    description: 'Total offensive plays per game (offense) or plays allowed per game (defense)',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true,
   },
 
   'yds_per_play_offense': {
-    name: 'Yards per Play (Y/P)',
+    name: 'Yards per Play',
     field: 'yds_per_play_offense',
     category: 'efficiency',
-    higherIsBetter: true,
+    higherIsBetter: true, // Offense: more Y/P = better; Defense: fewer Y/P allowed = better (context-dependent)
     format: 'decimal',
-    description: 'Average yards per offensive play',
+    description: 'Average yards per offensive play (offense) or yards per play allowed (defense)',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true,
   },
 
   'turnovers': {
-    name: 'Turnovers (TO)',
+    name: 'Turnovers',
     field: 'turnovers',
     category: 'efficiency',
-    higherIsBetter: false,
+    higherIsBetter: false, // Offense: fewer turnovers = better; Defense: more turnovers forced = better (context-dependent)
     format: 'decimal',
-    description: 'Turnovers per game',
+    description: 'Turnovers per game (offense: committed, defense: forced)',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true,
   },
 
   'fumbles_lost': {
-    name: 'Fumbles Lost (FL)',
+    name: 'Fumbles Lost',
     field: 'fumbles_lost',
     category: 'efficiency',
-    higherIsBetter: false,
+    higherIsBetter: false, // Offense: fewer fumbles lost = better; Defense: more fumbles forced = better (context-dependent)
     format: 'decimal',
-    description: 'Fumbles lost per game',
+    description: 'Fumbles lost per game (offense: lost, defense: forced)',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true,
   },
 
   'first_down': {
-    name: 'First Downs (1stD)',
+    name: 'First Downs',
     field: 'first_down',
     category: 'efficiency',
     higherIsBetter: true,
@@ -133,29 +133,29 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
 
   // === PASSING ===
   'pass_cmp': {
-    name: 'Completions (Cmp)',
+    name: 'Completions',
     field: 'pass_cmp',
     category: 'passing',
-    higherIsBetter: true,
+    higherIsBetter: true, // Offense: more completions = better; Defense: fewer completions allowed = better (context-dependent)
     format: 'decimal', 
-    description: 'Pass completions per game',
+    description: 'Pass completions per game (offense: made, defense: allowed)',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true,
   },
 
   'pass_att': {
-    name: 'Attempts (Att)',
+    name: 'Attempts',
     field: 'pass_att',
     category: 'passing',
-    higherIsBetter: true,
+    higherIsBetter: true, // Offense: more attempts = more volume; Defense: fewer attempts faced = better (context-dependent)
     format: 'decimal',
-    description: 'Pass attempts per game',
+    description: 'Pass attempts per game (offense: attempted, defense: faced)',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true,
   },
 
   'pass_yds': {
-    name: 'Passing Yards (Yds)',
+    name: 'Passing Yards',
     field: 'pass_yds',
     category: 'passing',
     higherIsBetter: true,
@@ -166,63 +166,63 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
   },
 
   'pass_td': {
-    name: 'Passing TDs (TD)',
+    name: 'Passing TDs',
     field: 'pass_td',
     category: 'passing',
-    higherIsBetter: true,
+    higherIsBetter: true, // Offense: more passing TDs = better; Defense: fewer passing TDs allowed = better (context-dependent)
     format: 'decimal',
-    description: 'Passing touchdowns per game',
+    description: 'Passing touchdowns per game (offense: scored, defense: allowed)',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true,
   },
 
   'pass_int': {
-    name: 'Interceptions (Int)',
+    name: 'Interceptions',
     field: 'pass_int',
     category: 'passing',
-    higherIsBetter: false,
+    higherIsBetter: false, // Offense: fewer interceptions thrown = better; Defense: more interceptions made = better (context-dependent)
     format: 'decimal',
-    description: 'Interceptions thrown per game',
+    description: 'Interceptions per game (offense: thrown, defense: made)',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true,
   },
 
   'pass_net_yds_per_att': {
-    name: 'Net Yards/Attempt (NY/A)',
+    name: 'Net Yards/Attempt',
     field: 'pass_net_yds_per_att',
     category: 'passing',
-    higherIsBetter: true,
+    higherIsBetter: true, // Offense: more net yards per attempt = better; Defense: fewer net yards per attempt allowed = better (context-dependent)
     format: 'decimal',
-    description: 'Net passing yards per attempt',
+    description: 'Net passing yards per attempt (offense: gained, defense: allowed)',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true,
   },
 
-  'pass_first_down': {
-    name: 'Pass 1st Downs (1stD)',
-    field: 'pass_first_down',
+  'pass_fd': {
+    name: 'Pass 1st Downs',
+    field: 'pass_fd',
     category: 'passing',
-    higherIsBetter: true,
+    higherIsBetter: true, // Offense: more passing first downs = better; Defense: fewer passing first downs allowed = better (context-dependent)
     format: 'decimal',
-    description: 'First downs via passing per game',
+    description: 'First downs via passing per game (offense: gained, defense: allowed)',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true,
   },
 
   // === RUSHING ===
   'rush_att': {
-    name: 'Rush Attempts (Att)',
+    name: 'Rush Attempts',
     field: 'rush_att',
     category: 'rushing',
-    higherIsBetter: true,
+    higherIsBetter: true, // Offense: more rush attempts = better ground game; Defense: fewer rush attempts faced = better (context-dependent)
     format: 'decimal',
-    description: 'Rushing attempts per game',
+    description: 'Rushing attempts per game (offense: attempted, defense: faced)',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true,
   },
 
   'rush_yds': {
-    name: 'Rushing Yards (Yds)',
+    name: 'Rushing Yards',
     field: 'rush_yds',
     category: 'rushing',
     higherIsBetter: true,
@@ -233,41 +233,41 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
   },
 
   'rush_td': {
-    name: 'Rushing TDs (TD)',
+    name: 'Rushing TDs',
     field: 'rush_td',
     category: 'rushing',
-    higherIsBetter: true,
+    higherIsBetter: true, // Offense: more rushing TDs = better; Defense: fewer rushing TDs allowed = better (context-dependent)
     format: 'decimal',
-    description: 'Rushing touchdowns per game',
+    description: 'Rushing touchdowns per game (offense: scored, defense: allowed)',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true,
   },
 
   'rush_yds_per_att': {
-    name: 'Yards/Attempt (Y/A)',
+    name: 'Yards/Attempt',
     field: 'rush_yds_per_att',
     category: 'rushing',
-    higherIsBetter: true,
+    higherIsBetter: true, // Offense: more yards per rush = better; Defense: fewer yards per rush allowed = better (context-dependent)
     format: 'decimal',
-    description: 'Rushing yards per attempt',
+    description: 'Rushing yards per attempt (offense: gained, defense: allowed)',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true,
   },
 
   'rush_fd': {
     name: 'Rush (1st)D',
     field: 'rush_fd',
     category: 'rushing', 
-    higherIsBetter: true,
+    higherIsBetter: true, // Offense: more rushing first downs = better; Defense: fewer rushing first downs allowed = better (context-dependent)
     format: 'decimal',
-    description: 'First downs via rushing per game',
+    description: 'First downs via rushing per game (offense: gained, defense: allowed)',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true,
   },
 
   // === PENALTIES ===
   'penalties': {
-    name: 'Penalties (Pen)',
+    name: 'Penalties',
     field: 'penalties',
     category: 'efficiency',
     higherIsBetter: false,
@@ -278,7 +278,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
   },
 
   'penalty_yds': {
-    name: 'Penalty Yards (Yds)',
+    name: 'Penalty Yards',
     field: 'penalty_yds',
     category: 'efficiency',
     higherIsBetter: false,
@@ -309,12 +309,12 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
   },
 
   'penalty_first_down': {
-    name: 'Penalty 1st Downs (1stPy)',
-    field: 'penalty_first_down',
+    name: 'Penalties',
+    field: 'penalties',
     category: 'efficiency',
     higherIsBetter: false,
     format: 'decimal',
-    description: 'First downs via penalties per game',
+    description: 'Penalties per game',
     availableInOffense: true,
     availableInDefense: true,
   },
@@ -324,44 +324,44 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     name: '3rd Down %',
     field: 'third_down_pct',
     category: 'efficiency',
-    higherIsBetter: true,
+    higherIsBetter: true, // Offense: higher 3rd down % = better; Defense: lower 3rd down % allowed = better (context-dependent)
     format: 'percentage',
-    description: '3rd down conversion percentage',
+    description: '3rd down conversion percentage (offense: converted, defense: allowed)',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true,
   },
 
   'score_pct': {
     name: 'Scoring %',
     field: 'score_pct',
     category: 'efficiency',
-    higherIsBetter: true,
+    higherIsBetter: true, // Offense: higher scoring % = better; Defense: lower scoring % allowed = better (context-dependent)
     format: 'percentage',
-    description: 'Percentage of drives that result in scores',
+    description: 'Percentage of drives that result in scores (offense: scored, defense: allowed)',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true,
   },
 
   'turnover_pct': {
     name: 'Turnover %',
     field: 'turnover_pct',
     category: 'efficiency',
-    higherIsBetter: false,
+    higherIsBetter: false, // Offense: lower turnover % = better; Defense: higher turnover % forced = better (context-dependent)
     format: 'percentage',
-    description: 'Percentage of drives that end in turnovers',
+    description: 'Percentage of drives that end in turnovers (offense: committed, defense: forced)',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true,
   },
 
   'exp_pts_tot': {
-    name: 'Expected Points (EXP)',
+    name: 'Expected Points',
     field: 'exp_pts_tot',
     category: 'advanced',
-    higherIsBetter: true,
+    higherIsBetter: true, // Offense: more expected points = better; Defense: fewer expected points allowed = better (context-dependent)
     format: 'decimal',
-    description: 'Expected points total',
+    description: 'Expected points total (offense: generated, defense: allowed)',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true,
   },
 };
 

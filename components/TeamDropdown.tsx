@@ -12,6 +12,7 @@ import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import { TeamData } from '@/lib/useNflStats';
 import TeamLogo from '@/components/TeamLogo';
+import { isAverageTeam, isNonSelectableSpecialTeam, getTeamDisplayLabel, getTeamEmoji } from '@/utils/teamHelpers';
 
 interface TeamDropdownProps {
   currentTeam: string;              // Currently selected team
@@ -35,14 +36,26 @@ export default function TeamDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
-  // Filter and sort teams alphabetically
+  // Filter, sort teams alphabetically, then append average last
   const sortedTeams = useMemo(() => {
-    // Filter out special teams
-    const specialTeams = ['Avg Team', 'League Total', 'Avg Tm/G', 'Avg/TmG'];
-    const availableTeams = allTeams.filter(team => !specialTeams.includes(team.team));
+    // Separate average team and non-selectable special teams
+    const avgTeam = allTeams.find(t => isAverageTeam(t.team));
     
-    // Sort alphabetically
-    return availableTeams.sort((a, b) => a.team.localeCompare(b.team));
+    // Filter out non-selectable special teams (League Total, Avg Team) but keep average
+    const regularTeams = allTeams.filter(team => 
+      !isNonSelectableSpecialTeam(team.team) && 
+      !isAverageTeam(team.team)
+    );
+    
+    // Sort regular teams alphabetically
+    const sorted = regularTeams.sort((a, b) => a.team.localeCompare(b.team));
+    
+    // Append average team last if it exists
+    if (avgTeam) {
+      sorted.push(avgTeam);
+    }
+    
+    return sorted;
   }, [allTeams]);
 
   // Team-specific styling based on side
@@ -107,7 +120,7 @@ export default function TeamDropdown({
               bg-slate-900/95 backdrop-blur-sm
               border border-slate-700/50 rounded-lg
               shadow-2xl shadow-black/50
-              max-h-80 overflow-y-auto momentum-scroll
+              max-h-[70vh] overflow-y-auto momentum-scroll
               py-2
             `}
             style={{ 
@@ -129,6 +142,9 @@ export default function TeamDropdown({
             <div className="py-1" role="listbox" aria-label={`${label || 'Team'} selection`}>
               {sortedTeams.map((team, index) => {
                 const isSelected = team.team === currentTeam;
+                const isAverage = isAverageTeam(team.team);
+                const emoji = getTeamEmoji(team.team);
+                const displayLabel = getTeamDisplayLabel(team.team);
 
                 return (
                   <motion.div
@@ -138,6 +154,7 @@ export default function TeamDropdown({
                       rounded-md cursor-pointer
                       hover:bg-slate-800/60 
                       ${isSelected ? colors.highlight : ''}
+                      ${isAverage ? 'border-t border-slate-700/50 mt-1 pt-3' : ''}
                       transition-all duration-150
                       min-h-[3rem] touch-optimized focus-ring
                     `}
@@ -145,6 +162,7 @@ export default function TeamDropdown({
                     onClick={() => handleTeamSelect(team.team)}
                     role="option"
                     aria-selected={isSelected}
+                    aria-label={isAverage ? `League average per game: ${displayLabel}` : `${team.team}`}
                     tabIndex={0}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
@@ -153,14 +171,20 @@ export default function TeamDropdown({
                       }
                     }}
                   >
-                    {/* Team Logo */}
+                    {/* Team Logo or Emoji */}
                     <div className="flex-shrink-0">
-                      <TeamLogo teamName={team.team} size="24" />
+                      {isAverage && emoji ? (
+                        <span className="text-xl" role="img" aria-label="Statistics icon">
+                          {emoji}
+                        </span>
+                      ) : (
+                        <TeamLogo teamName={team.team} size="24" />
+                      )}
                     </div>
 
                     {/* Team Name */}
                     <div className={`flex-1 text-sm font-medium truncate ${isSelected ? colors.text : 'text-white'}`}>
-                      {team.team}
+                      {displayLabel}
                     </div>
 
                     {/* Selected Indicator */}
@@ -177,7 +201,7 @@ export default function TeamDropdown({
             {/* Footer */}
             <div className="px-3 py-2 border-t border-slate-700/50">
               <div className="text-xs text-slate-500">
-                Click team to select • Alphabetical order
+                Click team to select • Alphabetical (Avg last)
               </div>
             </div>
           </motion.div>

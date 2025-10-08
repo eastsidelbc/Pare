@@ -16,6 +16,7 @@ import { TeamData } from '@/lib/useNflStats';
 import { calculateBulkRanking, RankingOptions } from '@/lib/useRanking';
 import { AVAILABLE_METRICS, formatMetricValue } from '@/lib/metricsConfig';
 import { useTheme } from '@/lib/useTheme';
+import { isAverageTeam, getTeamDisplayLabel, getTeamEmoji } from '@/utils/teamHelpers';
 
 interface RankingDropdownProps {
   allData: TeamData[];           // All teams data
@@ -80,9 +81,14 @@ export default function RankingDropdown({
     return calculateBulkRanking(allData, metricKey, teamNames, rankingOptions);
   }, [allData, metricKey, type, metric?.higherIsBetter]);
 
-  // Sort teams by rank for dropdown display
+  // Sort teams by rank for dropdown display, append average last
   const sortedTeams: TeamWithRanking[] = useMemo(() => {
-    return allData
+    // Separate average team from regular teams
+    const avgTeam = allData.find(t => isAverageTeam(t.team));
+    const regularTeams = allData.filter(t => !isAverageTeam(t.team));
+    
+    // Process and rank regular teams
+    const sorted = regularTeams
       .map(team => {
         const ranking = allTeamRankings[team.team];
         const rawValue = String(team[metricKey as keyof TeamData] || '0');
@@ -97,10 +103,26 @@ export default function RankingDropdown({
       })
       .filter(item => item.ranking) // Remove teams without valid rankings
       .sort((a, b) => (a.ranking?.rank || 999) - (b.ranking?.rank || 999)); // Sort by rank
+    
+    // Append average team at end if it exists (with null ranking)
+    if (avgTeam) {
+      const rawValue = String(avgTeam[metricKey as keyof TeamData] || '0');
+      const formattedValue = formatMetricValue(rawValue, metric?.format || 'number');
+      
+      sorted.push({
+        team: avgTeam,
+        ranking: null, // NO RANK for average
+        value: rawValue,
+        formattedValue
+      });
+    }
+    
+    return sorted;
   }, [allData, allTeamRankings, metricKey, metric?.format]);
 
-  // Get current team's ranking
+  // Get current team's ranking (or detect if it's the average team)
   const currentTeamRanking = allTeamRankings[currentTeam];
+  const isCurrentTeamAverage = isAverageTeam(currentTeam);
 
   // Team-specific styling based on side
   const sideColors = {
@@ -181,7 +203,7 @@ export default function RankingDropdown({
 
   return (
     <div ref={dropdownRef} className={`relative inline-block ${className}`}>
-      {/* Compact Rank Badge (Closed State) */}
+      {/* Compact Rank Badge (Closed State) - Shows "Avg" if average team selected */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
         className={`
@@ -194,8 +216,16 @@ export default function RankingDropdown({
         `}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.98 }}
+        aria-label={isCurrentTeamAverage ? `League average selected. Click to see rankings.` : `Ranked ${currentTeamRanking?.formattedRank || 'N/A'}. Click to change team.`}
       >
-        <span>{currentTeamRanking?.formattedRank || 'N/A'}</span>
+        {isCurrentTeamAverage ? (
+          <span className="flex items-center gap-1">
+            <span role="img" aria-hidden="true">📊</span>
+            <span>Avg</span>
+          </span>
+        ) : (
+          <span>{currentTeamRanking?.formattedRank || 'N/A'}</span>
+        )}
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
@@ -242,6 +272,9 @@ export default function RankingDropdown({
                 const isSelected = item.team.team === currentTeam;
                 const rank = item.ranking?.rank || 999;
                 const isTied = item.ranking?.isTied || false;
+                const isAverage = isAverageTeam(item.team.team);
+                const emoji = getTeamEmoji(item.team.team);
+                const displayLabel = getTeamDisplayLabel(item.team.team);
 
                 return (
                   <motion.div
@@ -251,25 +284,37 @@ export default function RankingDropdown({
                       rounded-md cursor-pointer
                       hover:bg-slate-800/60 
                       ${isSelected ? `bg-${side === 'teamA' ? 'green' : 'orange'}-500/20 border-l-2 border-l-${side === 'teamA' ? 'green' : 'orange'}-400` : ''}
+                      ${isAverage ? 'border-t border-slate-700/50 mt-1 pt-3' : ''}
                       transition-all duration-150
                       min-h-[3rem] touch-optimized
                     `}
                     whileHover={{ x: 2 }}
                     onClick={() => handleTeamSelect(item.team.team)}
                   >
-                    {/* Rank Emoji + Number */}
+                    {/* Rank Emoji + Number OR "📊 Avg" for average */}
                     <div className="flex items-center gap-1 w-12 flex-shrink-0">
-                      <span className="text-sm">
-                        {getRankEmoji(rank, isTied)}
-                      </span>
-                      <span className={`text-xs font-medium ${isTied ? 'text-amber-400' : 'text-slate-300'}`}>
-                        {item.ranking?.formattedRank}
-                      </span>
+                      {isAverage && emoji ? (
+                        <>
+                          <span className="text-sm" role="img" aria-label="Statistics icon">
+                            {emoji}
+                          </span>
+                          <span className="text-xs font-medium text-slate-300">Avg</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-sm">
+                            {getRankEmoji(rank, isTied)}
+                          </span>
+                          <span className={`text-xs font-medium ${isTied ? 'text-amber-400' : 'text-slate-300'}`}>
+                            {item.ranking?.formattedRank}
+                          </span>
+                        </>
+                      )}
                     </div>
 
                     {/* Team Name */}
                     <div className={`flex-1 text-sm font-medium truncate ${isSelected ? colors.text : 'text-white'}`}>
-                      {item.team.team}
+                      {displayLabel}
                     </div>
 
                     {/* Metric Value */}

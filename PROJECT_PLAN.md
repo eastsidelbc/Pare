@@ -9,8 +9,9 @@
 ### **Core Features**
 - **Interactive Comparison**: Visual side-by-side team analysis with dynamic bars
 - **Per-Game Intelligence**: Smart calculations showing meaningful per-game vs total stats  
-- **Unlimited Customization**: Choose any metrics from Pro Football Reference's dataset
+- **Unlimited Customization**: Choose any metrics from Pro Football Reference's dataset (44+ metrics with enhanced defense options)
 - **Real-Time Data**: Current 2025 NFL season stats with comprehensive metrics
+- **Context-Aware Display**: Smart metric interpretation for offense vs defense perspectives
 - **Self-Hosted Control**: Complete data ownership and customization freedom
 - **Mobile-Ready Architecture**: Designed to support future native iOS app development
 
@@ -54,7 +55,7 @@ lib/                           # Business logic and utilities
 ├── useNflStats.ts            # Data fetching and caching
 ├── useRanking.ts             # Client-side ranking calculations
 ├── useDisplayMode.ts         # Per-game vs total logic
-├── metricsConfig.ts          # 44+ NFL metrics registry
+├── metricsConfig.ts          # 44+ NFL metrics registry with enhanced defense options
 └── pfrCsv.ts                 # CSV parsing engine
 
 data/pfr/                     # Local data storage
@@ -388,108 +389,18 @@ Seamless, professional team selection experience ✨ COMPLETE!
    - **Status**: Production ready with clean, modern interface
    - **Ready for**: Mobile optimization and iOS development planning
 
-### **🚀 NEXT MAJOR PHASE: Mobile & iOS Development Roadmap**
+### **🚀 NEXT MAJOR PHASE: Mobile & iOS Development**
 
-Based on comprehensive `Mobile_plan.md`, this 4-phase transformation will convert Pare from web app to native iOS App Store release:
+**Current Working Plan**: See comprehensive roadmap in **`Mobile_plan.md`** for detailed phase breakdown, timelines, and deliverables.
 
-### **📱 Phase 1: Mobile Web Audit & Fixes (Ship-Quality)**
-**Goal**: Make mobile web experience excellent first, then prepare clean path to iOS
-**Timeline**: 2-3 weeks | **Priority**: HIGH
+**📱 Overview**: Multi-phase transformation converting Pare from web app to native iOS App Store release:
+- **Phase 1**: Mobile Web Excellence ✅ (Complete)
+- **Phase 2**: PWA Implementation ✅ (Complete) 
+- **Phase 3**: iOS App Development (Current focus)
+- **Phase 4**: App Store Deployment & CI/CD
 
-#### **Layout & Viewport Optimization**
-- ✅ Add iOS safe-area support with Tailwind utilities (`env(safe-area-inset-*)`)
-- ✅ Replace `100vh` with dynamic viewport units (`dvh`, `svh`, `lvh`) - fix iOS address bar jumps
-- ✅ Ensure responsive design (≤360px up to ≥428px) with fluid spacing and `clamp()` typography
-- ✅ Add proper viewport meta tag with `viewport-fit=cover`
-
-#### **Touch & Mobile UX**
-- ✅ Ensure 44×44pt minimum touch targets for all interactive elements
-- ✅ Add momentum scroll and passive listeners for scroll/gesture handlers
-- ✅ Remove 300ms tap delay issues; fix `cursor:pointer` bugs on iOS
-- ✅ Prevent unwanted input zooming: set form/input `font-size ≥16px`
-- ✅ Implement pull-to-refresh behavior where appropriate
-
-#### **Performance Optimization**
-- ✅ Add Lighthouse mobile checks and Next.js optimization
-- ✅ Implement `next/image` everywhere with proper `sizes` attributes
-- ✅ Add `next/font` optimization or self-hosted font loading
-- ✅ Route-level code splitting, memoization of heavy components
-- ✅ Audit bundle size; propose dynamic imports for heavy panels/metrics
-- ✅ Prevent re-renders in charts/bars system
-
-#### **Accessibility & Design Tokens**
-- ✅ Ensure color contrast compliance for dark theme
-- ✅ Add `prefers-reduced-motion` fallbacks for animations
-- ✅ Implement semantic roles/labels for interactive bars and dropdowns
-- ✅ Add keyboard focus order and skip links
-- ✅ Centralize colors, spacing, radii, shadows in Tailwind config
-- ✅ Expose CSS variables for theming system
-
-#### **State & Testing**
-- ✅ Review hooks separation (pure logic vs view logic)
-- ✅ Add stable keys for lists and deterministic rendering
-- ✅ Implement robust error/empty/loading states with mobile skeletons
-- ✅ Add Playwright/Cypress mobile viewport tests for main flows
-- ✅ Add ESLint/TypeScript rules for hooks and exhaustive deps
-
-**📋 Deliverables**: Concrete issues checklist, full file diffs, micro-learning notes, CHANGELOG updates
-
-### **📱 Phase 2: PWA-Ready (2-3 days)**
-**Goal**: "Add to Home Screen" functionality for iOS
-**Timeline**: 2-3 days | **Priority**: MEDIUM
-
-#### **PWA Implementation**
-- ✅ Add `manifest.webmanifest` with proper configuration
-- ✅ Create maskable icons, Apple touch icons, splash screen assets
-- ✅ Configure `display: standalone`, `theme_color`, `background_color`
-- ✅ Implement service worker via Workbox or Next.js built-in approach
-- ✅ Choose network strategy (Stale-While-Revalidate for stats, Cache First for icons)
-- ✅ Handle deep links and external links cleanly
-
-**📋 Deliverables**: PWA manifest, icon set, service worker config, installation guide
-
-### **📱 Phase 3A: iOS App (WKWebView Wrapper) - FASTEST PATH**
-**Goal**: Quick iOS App Store deployment using web app
-**Timeline**: 1-2 weeks | **Priority**: HIGH (for faster market entry)
-
-#### **Swift WKWebView Container**
-- ✅ Create SwiftUI project with WKWebView pointing to PWA/Next.js site
-- ✅ Implement JS ↔ Swift bridge (`WKScriptMessageHandler`) for future features
-- ✅ Add native share sheet, clipboard access
-- ✅ Use `SFSafariViewController` for external links; keep navigation scoped
-- ✅ Implement pull-to-refresh, loading indicator, offline error screen
-- ✅ Handle file downloads and iOS permissions
-- ✅ Create App icons, launch screen, accurate `Info.plist`
-
-**📋 Deliverables**: Minimal SwiftUI project scaffolding, native wrapper with web integration
-
-### **📱 Phase 3B: Full Native SwiftUI App - ULTIMATE GOAL**
-**Goal**: Best possible UX with native iOS implementation
-**Timeline**: 2-3 months | **Priority**: LONG-TERM
-
-#### **Native Architecture Planning**
-- ✅ **Domain Module**: Models for teams, metrics, comparisons
-- ✅ **Data Module**: Networking with async/await URLSession, typed decoders, retry/backoff
-- ✅ **UI Module**: Screens/Components with SwiftUI
-- ✅ **Local Cache**: SwiftData/CoreData strategy for stats snapshots
-- ✅ **Charts**: Swift Charts mirroring web bar-comparisons with design parity
-- ✅ **State**: Observable models or TCA (The Composable Architecture)
-- ✅ **Diagnostics**: Logging, feature flags, remote config
-
-**📋 Deliverables**: SwiftUI skeleton with one fully implemented comparison screen proving parity
-
-### **📱 Phase 4: CI/CD & Release**
-**Goal**: Professional deployment and App Store submission
-**Timeline**: 1 week | **Priority**: MEDIUM
-
-#### **Deployment Pipeline**
-- ✅ GitHub Actions for web build (lint, typecheck, test, bundle size guard, Lighthouse CI)
-- ✅ iOS: Fastlane lanes for signing, build, TestFlight distribution
-- ✅ Add Crashlytics and basic analytics
-- ✅ App Store checklist: Privacy manifest, ATT (if needed), screenshots (iPhone sizes)
-- ✅ Review data sourcing compliance (Pro Football Reference Terms of Use)
-
-**📋 Deliverables**: Complete CI/CD pipeline, App Store submission package
+**Current Status**: Phase 2 Complete | **Next**: iOS native development
+**Target**: 🍎 App Store Launch Q1 2025
 
 ### **🎯 Strategic Development Priorities**
 
@@ -597,6 +508,13 @@ Based on comprehensive `Mobile_plan.md`, this 4-phase transformation will conver
 - ✅ **Standalone Mode**: App-like experience, deep links, navigation handling, touch optimizations
 - **Status**: Full PWA ready, installable on all platforms, ready for Phase 3 (iOS App)
 
+#### **Patch 1.0.7 - Defense Metrics Expansion (2025-09-30)**
+- ✅ **Defense Metrics Unlocked**: Enabled 18+ previously blocked metrics in defense MetricsSelector (turnovers forced, interceptions made, passing/rushing stats allowed)
+- ✅ **Context-Dependent Display**: Smart interpretation of same data for defense perspective ("turnovers committed" vs "turnovers forced")
+- ✅ **Enhanced Defense Analysis**: Defense metrics selector now shows ~26 metrics instead of ~8, matching offense richness
+- ✅ **Configuration Documentation**: Updated CLAUDE.md with comprehensive metrics system documentation
+- **Status**: Defense analysis significantly enhanced with full stat availability, ready for iOS development
+
 ---
 
 ### **Session Template (Copy for Future Updates)**
@@ -633,6 +551,115 @@ Based on comprehensive `Mobile_plan.md`, this 4-phase transformation will conver
 
 ---
 
-**✅ Status**: Phase 2 Complete (v1.0.6) | **📱 PWA**: Full Offline, Cross-Platform Installation Ready | **📊 Data**: Live 2025 NFL Stats | **🔧 Platform**: Next.js 15 + TypeScript + PM2
+**✅ Status**: Defense Metrics Enhanced (v1.0.7) | **📱 PWA**: Full Offline, Cross-Platform Installation Ready | **📊 Data**: Live 2025 NFL Stats with Enhanced Defense Analysis | **🔧 Platform**: Next.js 15 + TypeScript + PM2
 
-*Last Updated: 2025-09-26 | Single Source of Truth for Pare NFL Comparison Platform | Living Documentation System Active*
+*Last Updated: 2025-09-30 | Single Source of Truth for Pare NFL Comparison Platform | Living Documentation System Active*
+
+
+
+# 🚀 Comprehensive Roadmap — Web + Mobile + App Store
+
+## Phase 0: Foundations (Repo + Hosting)
+- Confirm CLAUDE.md as Source of Truth (rules + rituals)
+- Organize docs: move PROJECT_PLAN.md → docs/PROJECT_PLAN.md, Mobile_plan.md → docs/MOBILE_PLAN.md.
+- Repo hygiene: single lockfile (package-lock.json), add .cursorrules
+- Add MOBILE_NOTES.md (API contracts, caching, errors)
+- Add SECURITY.md (scope, no secrets)
+- Implement /api/health → { ok: true, version }
+- Manual push workflow: git pull + build on Mac mini
+- Domain + Cloudflare Tunnel setup (beta may use trycloudflare.com)
+
+**Check-in:** 
+- Do we attach domain now or test first with tunnel link?
+- Do you want me to also scaffold ADR templates + Dev Notes folders now?
+- Are you ready to attach your Cloudflare domain yet, or stick with trycloudflare.com first?
+
+---
+
+## Phase 1: Web Deploy (Beta Hosting)
+🔹 Goal: Public “beta” version running on your Mac mini with a clean domain.
+
+- Cloudflare Tunnel maps domain (pare.mydomain.com) → Mac mini
+- HTTPS access, marked “beta” in UI
+- Expose /compare?home=X&away=Y for deep linking (needed for Swift + share sheet).
+- Deep links (/compare?home=X&away=Y) for iOS integration
+- Continue manual pushes; optional deploy.sh script
+
+**Check-in:** Mac mini as long-term host or temporary until Vercel/Railway?
+
+---
+
+## Phase 2: Continuous Web Iteration
+🔹 Goal: Improve core web app UI + data contracts while live.
+
+- Improve UI polish: animations, responsive Tailwind, mobile layout
+- Lock API contracts: Team, Metric, CompareResult
+- Add caching headers (ETag/Cache-Control)
+- Expand metrics (flag advanced as “experimental”/“premium”)
+- Keep Dev Notes + CHANGELOG updated
+
+**Check-in:** 
+- Automate CSV ingestion now or after Swift work?
+- Do you want to start automating CSV ingestion now (cron/Python scraper), or hold until after Swift work begins?
+- Should we gate experimental stats behind a feature flag system in the API?
+
+---
+
+## Phase 3: Swift App Bootstrap (Companion)
+🔹 Goal: Build native SwiftUI app targeting iOS 17, consuming live API.
+
+- Create ios/ folder: README, QA.md, Config.xcconfig
+- Add StatsAPI.swift fetches API endpoints (fetch /api/compare, /api/teams, /api/metrics, /api/health etc.)
+- CompareView: team pickers, inward bars, live data
+- Persist last selections, error/retry UI
+- Internal TestFlight build
+
+**Check-in:** 
+- Do you want Swift app to mirror web UI exactly, or evolve a slightly different UX optimized for mobile?
+- Do you want to set portrait-only orientation for v1?
+
+---
+
+## Phase 4: Premium Layer + Mobile Features
+🔹 Goal: Begin paywall + iOS integrations (companion evolving toward replacement).
+
+- Identify premium features: advanced stats, historical data, alerts, future AI predictions on games
+- Feature flags in API for free vs premium
+- Settings screen (theme, refresh policy, defaults)
+- Share Sheet + universal links
+- Optional: Siri Shortcuts
+
+**Check-in:** In-App Purchases via App Store, or Stripe later?
+
+---
+
+## Phase 5: App Store Readiness
+🔹 Goal: Move from “companion beta” → polished replacement candidate.
+
+- Accessibility: VoiceOver, Dynamic Type
+- Performance: cold start, animations, caching
+- App icons, splash, Privacy manifest
+- QA matrix across devices (iOS 17+)
+- App Store metadata, screenshots, TestFlight → review
+
+**Check-in:** iPhone only or iPad support too?
+
+---
+
+## Phase 6: Expansion (Android + More)
+🔹 Goal: Reach all users + expand ecosystem.
+
+- Android build (Compose, Flutter, or React Native)
+- Push notifications (premium alerts)
+- Widgets (favorite teams, standings)
+- Continuous monetization tuning
+
+**Check-in:** Native Android vs cross-platform strategy?
+
+🎯 End State
+
+- Web app: hosted via Cloudflare → domain, stable API, continuously updated.
+- iOS app: SwiftUI native, polished, App Store-ready, premium features behind paywall.
+- Android app: follows iOS, powered by same backend API.
+- Docs: CLAUDE.md rules enforced, Dev Notes + ADRs cross-linked, CHANGELOG maintained.
+- Future: move hosting from Mac mini → managed infra (Vercel/Railway), automate CSV ingestion, scale features + premium.

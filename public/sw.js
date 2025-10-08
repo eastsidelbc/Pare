@@ -1,10 +1,10 @@
 // Pare NFL PWA Service Worker
-// Cache strategies: Stale-While-Revalidate for API, Cache First for assets
+// Cache strategies: Network-first for CSS (dev safety), Stale-While-Revalidate for API, Cache First for assets
 
-const CACHE_NAME = 'pare-nfl-v1.0.5';
-const STATIC_CACHE = 'pare-static-v1.0.5';
-const API_CACHE = 'pare-api-v1.0.5';
-const IMAGES_CACHE = 'pare-images-v1.0.5';
+const CACHE_NAME = 'pare-nfl-v1.0.6';
+const STATIC_CACHE = 'pare-static-v1.0.6';
+const API_CACHE = 'pare-api-v1.0.6';
+const IMAGES_CACHE = 'pare-images-v1.0.6';
 
 // Cache expiration times
 const CACHE_EXPIRATION = {
@@ -102,7 +102,15 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Strategy 2B: Other Static Assets - Cache First
+  // Strategy 2B: CSS Files - Network First in Dev, Cache First in Prod
+  if (url.pathname.includes('/_next/static/css/')) {
+    // Always fetch fresh CSS in development to catch Tailwind changes
+    // In production, CSS has content hashes so cacheFirst is safe
+    event.respondWith(networkFirstWithCache(request, STATIC_CACHE));
+    return;
+  }
+
+  // Strategy 2C: Other Static Assets - Cache First
   if (url.pathname.includes('/_next/static/') || 
       url.pathname.includes('/images/') ||
       url.pathname.endsWith('.png') ||
@@ -290,6 +298,35 @@ async function staleWhileRevalidate(request, cacheName) {
   return fetchPromise;
 }
 
+// Network First With Cache: Try network first, fallback to cache
+async function networkFirstWithCache(request, cacheName) {
+  const cache = await caches.open(cacheName);
+  
+  try {
+    console.log('🌐 [SW] Network-first for CSS:', request.url);
+    const response = await fetch(request);
+    
+    if (response.ok) {
+      // Cache the fresh response
+      cache.put(request, response.clone());
+      console.log('✅ [SW] Fresh CSS cached');
+    }
+    
+    return response;
+  } catch (error) {
+    console.log('❌ [SW] Network failed, checking cache for CSS');
+    
+    const cachedResponse = await cache.match(request);
+    if (cachedResponse) {
+      console.log('📦 [SW] Serving cached CSS as fallback');
+      return cachedResponse;
+    }
+    
+    // No cache available, re-throw error
+    throw error;
+  }
+}
+
 // Cache First: Check cache first, fallback to network
 async function cacheFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
@@ -391,7 +428,7 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'GET_VERSION') {
     event.ports[0].postMessage({
       type: 'VERSION', 
-      version: 'v1.0.5',
+      version: 'v1.0.6',
       caches: [CACHE_NAME, STATIC_CACHE, API_CACHE, IMAGES_CACHE]
     });
   }

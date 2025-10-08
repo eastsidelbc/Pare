@@ -265,7 +265,131 @@ if (!key.includes('pct') && !key.includes('per') && isNumeric(teamData[key])) {
 }
 ```
 
-### Metrics Configuration
+### Complete Metrics Configuration System
+
+The platform features a comprehensive metrics registry in `lib/metricsConfig.ts` supporting **44+ NFL statistics** with context-aware display for both offense and defense.
+
+#### **Metrics Architecture Overview**
+- **Universal Data Source**: Both offense and defense use identical CSV column structure from Pro Football Reference
+- **Context-Dependent Display**: Same raw data interpreted differently (e.g., "turnovers committed" vs "turnovers forced")
+- **Smart Availability Filtering**: Metrics marked `availableInOffense`/`availableInDefense` control UI display
+- **Ranking Context**: `higherIsBetter` flag handles context-dependent ranking logic
+- **Category Organization**: Metrics grouped by category (scoring, passing, rushing, efficiency, advanced)
+
+#### **Metric Definition Structure**
+```typescript
+interface MetricDefinition {
+  name: string;                    // Display name: "Passing Yards (Yds)"
+  field: string;                   // CSV field: "pass_yds" 
+  category: string;                // UI grouping: "passing"
+  higherIsBetter: boolean;         // Ranking direction
+  format: 'number'|'decimal'|'percentage'|'time'; // Display format
+  description: string;             // Tooltip text
+  availableInOffense: boolean;     // Show in offense metrics selector
+  availableInDefense: boolean;     // Show in defense metrics selector
+}
+```
+
+#### **Complete Metrics Inventory**
+
+**🏈 Basic Stats (Available Both)**
+- `g` - Games Played
+- `points` - Points For/Against (PF/PA)
+- `total_yards` - Total Yards Gained/Allowed
+- `first_down` - First Downs
+
+**⚡ Efficiency Metrics**
+- `plays_offense` - Offensive Plays Run/Allowed
+- `yds_per_play_offense` - Yards per Play
+- `turnovers` - **Context-dependent**: Committed (offense) vs Forced (defense) 
+- `fumbles_lost` - **Context-dependent**: Lost (offense) vs Forced (defense)
+
+**📡 Passing Stats (26 metrics total)**
+- `pass_cmp` - Completions Made/Allowed
+- `pass_att` - Pass Attempts 
+- `pass_yds` - Passing Yards
+- `pass_td` - Passing Touchdowns Scored/Allowed
+- `pass_int` - **Context-dependent**: Thrown (offense) vs Made (defense)
+- `pass_net_yds_per_att` - Net Yards per Attempt
+- `pass_first_down` - Passing First Downs
+
+**🏃 Rushing Stats**
+- `rush_att` - Rush Attempts Made/Faced
+- `rush_yds` - Rushing Yards  
+- `rush_td` - Rushing Touchdowns Scored/Allowed
+- `rush_yds_per_att` - Rushing Yards per Attempt
+- `rush_fd` - Rushing First Downs
+
+**🚫 Penalties (Both Sides)**
+- `penalties` - Penalties Committed
+- `penalties_yds` - Penalty Yards
+- `pen_fd` - Penalty First Downs
+
+**📊 Advanced Efficiency**
+- `third_down_pct` - 3rd Down Conversion %
+- `score_pct` - Scoring Percentage 
+- `turnover_pct` - **Context-dependent**: Drives ending in turnovers
+- `exp_pts_tot` - Expected Points For/Against
+
+#### **Context-Dependent Ranking Logic**
+
+**Offense Perspective (Higher = Better)**
+- More points, yards, touchdowns, completions = better performance
+- Fewer turnovers, interceptions, penalties = better performance
+
+**Defense Perspective (Interpretation Flip)**
+- **Good for Defense**: More turnovers forced, more interceptions = better defense
+- **Bad for Defense**: Fewer points/yards/touchdowns allowed = better defense
+
+**Example Context Handling:**
+```typescript
+'turnovers': {
+  name: 'Turnovers (TO)',
+  higherIsBetter: false, // Base setting
+  description: 'Turnovers per game (offense: committed, defense: forced)'
+  // UI shows: "Turnovers Committed" (offense) vs "Turnovers Forced" (defense)
+  // Ranking: Low rank good for offense, high rank good for defense
+}
+```
+
+#### **Default Metric Sets**
+```typescript
+DEFAULT_OFFENSE_METRICS = [
+  'points', 'total_yards', 'pass_yds', 'rush_yds', 'score_pct'
+];
+
+DEFAULT_DEFENSE_METRICS = [
+  'points',        // Points allowed
+  'total_yards',   // Yards allowed  
+  'pass_yds',      // Passing yards allowed
+  'rush_yds',      // Rushing yards allowed
+  'turnovers',     // Turnovers FORCED (good!)
+  'pass_int',      // Interceptions MADE (good!)
+  'score_pct',     // Opponent scoring %
+  'turnover_pct'   // Opponent turnover % (good for defense!)
+];
+```
+
+#### **Usage in UI Components**
+```typescript
+// Get available metrics for current panel type
+const availableMetrics = getAvailableMetrics(type); // 'offense' | 'defense'
+
+// Get metrics grouped by category for selector
+const groupedMetrics = getMetricsByCategory(type);
+
+// Format metric value for display  
+const displayValue = formatMetricValue(rawValue, metric.format);
+```
+
+#### **Adding New Metrics**
+1. **Add to CSV Column Mapping**: Update `CSV_COLUMN_MAPPING_BY_POSITION` in `lib/pfrCsv.ts`
+2. **Define Metric**: Add entry to `AVAILABLE_METRICS` in `lib/metricsConfig.ts`
+3. **Set Availability**: Mark `availableInOffense`/`availableInDefense` as needed
+4. **Configure Ranking**: Set `higherIsBetter` from offensive perspective
+5. **UI Ready**: Metric automatically appears in selectors and rankings
+
+### Legacy Metrics Configuration
 All NFL metrics are defined in `lib/metricsConfig.ts` with:
 - Display names and field mappings
 - Category groupings (scoring, passing, rushing, etc.)
@@ -857,6 +981,28 @@ If the app breaks:
 4. Restart PM2: `pm2 restart pare-nfl`
 5. Check PROJECT_PLAN.md for current status and known issues
 
+### **Service Worker Debugging**
+If CSS/Tailwind changes don't apply on refresh:
+
+```bash
+# Quick fix: Clean cache and restart dev server
+npm run dev:clean
+
+# Manual fix: Unregister SW in browser
+# Chrome DevTools → Application → Service Workers → Unregister
+# Then: Application → Storage → Clear site data
+```
+
+**Common SW Issues:**
+- **Stale CSS**: SW caches old CSS even after changes → Use `dev:clean` or hard reload
+- **SW persists after disabled**: Once registered, SW stays active until manually unregistered
+- **Check if SW is active**: DevTools → Application → Service Workers (should show none in dev)
+
+**Dev Mode Best Practice:**
+- Leave `NEXT_PUBLIC_ENABLE_SW` unset (defaults to disabled)
+- Only enable SW for production testing or PWA features
+- Use `npm run dev:clean` if encountering cache issues
+
 **This is a production-ready application with professional architecture, comprehensive error handling, and sophisticated data visualization capabilities. Always consult PROJECT_PLAN.md for current status and development context.**
 
 ---
@@ -976,6 +1122,31 @@ If the app breaks:
 - **Documentation**: ✅ Updated for iOS native development
 - **Current Phase**: 🍎 **Phase 0 - iOS Foundations** (Ready to start Swift development)
 - **Roadmap**: Complete 6-phase plan to App Store (Q1 2025 target)
+
+#### **Patch 1.0.8 - Defense Metrics Expansion & Configuration Documentation (2025-09-30)**
+**Session Summary**: Major expansion of defense metrics availability and comprehensive metrics system documentation
+
+**🔍 What Was Accomplished:**
+- ✅ **Defense Metrics Unlocked**: Enabled 18+ previously blocked metrics for defense display (turnovers forced, interceptions made, passing/rushing stats allowed, efficiency metrics)
+- ✅ **Context-Dependent Logic**: Implemented smart metric interpretation (same data, different perspective - "turnovers committed" vs "turnovers forced")
+- ✅ **Enhanced Default Metrics**: Updated `DEFAULT_DEFENSE_METRICS` to include key defensive stats (turnovers forced, interceptions made, turnover %)
+- ✅ **Configuration Documentation**: Added comprehensive "Complete Metrics Configuration System" section to CLAUDE.md with full metric inventory, context logic, and usage examples
+- ✅ **Availability Expansion**: Defense metrics selector now shows ~26 metrics instead of ~8, matching the richness of offense display
+
+**🔧 Technical Changes:**
+- **lib/metricsConfig.ts**: All blocked metrics now have `availableInDefense: true` with context-dependent descriptions
+- **Ranking Logic**: Preserved existing `higherIsBetter` flags with context-aware UI interpretation  
+- **Documentation**: Added 120+ lines detailing metrics architecture, inventory, context handling, and usage patterns
+
+**🎯 Next Session Priority:**
+- 🍎 **Phase 0 Continuation**: Repo hygiene, add MOBILE_NOTES.md, ios/README.md, SECURITY.md
+- 🔍 **User Testing**: Verify defense metrics display correctly with new expanded options
+
+**📊 Current Status:**
+- **Metrics System**: ✅ Comprehensive 44+ metrics available for both offense and defense with context-aware display
+- **Defense Analysis**: ✅ Significantly enhanced with full stat availability (turnovers forced, interceptions, efficiency metrics)
+- **Documentation**: ✅ Complete metrics system documented with examples and usage patterns
+- **Next Phase**: 🍎 **Phase 0 - iOS Foundations** (Ready to continue Swift development prep)
 
 ---
 

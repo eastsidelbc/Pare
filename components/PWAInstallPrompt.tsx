@@ -34,8 +34,8 @@ export default function PWAInstallPrompt({
   const [isVisible, setIsVisible] = useState(autoShow);
   const [isInstalling, setIsInstalling] = useState(false);
 
-  // Don't show if already installed or not installable
-  if (isStandalone || !canInstall || !isVisible) {
+  // Don't show if already installed, not installable, or not mobile device
+  if (isStandalone || !canInstall || !isVisible || (!isIOS && !isAndroid)) {
     return null;
   }
 

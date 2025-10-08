@@ -1,0 +1,76 @@
+# Cursor Rules for Pare
+
+## 🎯 Project Context
+- **Project**: Pare (NFL analytics app)
+- **Stack**: Next.js 15, TypeScript, Tailwind
+- **Source of Truth**: `CLAUDE.md` (all rules and rituals)
+- **Supporting Docs**: `CHANGELOG.md`, `docs/PROJECT_PLAN.md`, `docs/MOBILE_PLAN.md`, `docs/devnotes/`, `docs/adr/`
+
+---
+
+## 📖 Always Read First
+1. On session start:
+   - Read `CLAUDE.md` completely.
+   - Skim `CHANGELOG.md` ([Unreleased] section).
+   - Skim today’s `docs/devnotes/YYYY-MM-DD-*.md` (create one if missing).
+   - Skim any new `docs/adr/*.md`.
+
+2. Output three blocks before coding:
+   - **Rule Summary:** key bullets extracted from `CLAUDE.md` relevant to the task.
+   - **Ambiguities/Conflicts:** list or “None”.
+   - The confirmation line:  
+     `I will not duplicate CLAUDE.md content in Dev Notes; I will link to it.`
+
+---
+
+## 📝 Session Ritual
+
+- **Start of Session**
+  - Print Rule Summary, Ambiguities, and Confirmation.
+  - Create/update today’s Dev Note under `docs/devnotes/YYYY-MM-DD-<task>.md`.
+  - Propose a 3–5 step plan for the task.
+
+- **During Work**
+  - Keep changes small, atomic, and scoped.
+  - Use **Conventional Commits** (`feat:`, `fix:`, `docs:`, `chore:`).
+
+- **End of Session**
+  - Append to today’s Dev Note with:
+    - Context, Decisions, Implementation Notes, Testing, Performance, Follow-ups.
+    - “Graduated to CLAUDE” if rules were promoted.
+  - Update `CHANGELOG.md` under `[Unreleased]` with a bullet referencing the Dev Note.
+  - If architecture decision: create `docs/adr/YYYY-MM-DD-<task>.md` and cross-link.
+  - Run **CR LINT** checklist (below).
+
+---
+
+## ✅ CR LINT Checklist
+- [ ] Dev Note updated today
+- [ ] Dev Note links to CLAUDE.md (no duplication)
+- [ ] `CHANGELOG.md` updated ([Unreleased] or new version)
+- [ ] `CLAUDE.md` updated if reusable rule changed
+- [ ] ADR created if an architectural decision was made
+- [ ] Commit messages follow Conventional Commits
+- [ ] CLAUDE.md remains single source of truth
+
+Do not mark session “done” until all items pass.
+
+---
+
+## 📌 Norms (from CLAUDE.md)
+- **TypeScript**: Strict, no `any`, typed props/interfaces.
+- **React**: Hooks for logic, components are presentational. No DOM hacks.
+- **Tailwind**: Utility classes only, no inline styles. Extract reusable styles when needed.
+- **State**: Avoid duplicate global state, keep logic consistent across hooks.
+- **Data ingestion**: CSV → per-game stats, math only client-side.
+- **Docs**: Rules live in CLAUDE.md. Dev Notes = implementation rationale. ADRs = decisions.
+
+---
+
+## 🔗 Cross-Linking Rules
+- Dev Note ↔ CLAUDE.md
+- Dev Note ↔ ADR (if created)
+- CHANGELOG ↔ Dev Note
+- CLAUDE.md ↔ ADR (if promoted)
+
+---

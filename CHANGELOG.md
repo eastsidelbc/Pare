@@ -7,6 +7,28 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Added
+- **Special "Avg Tm/G" Team Support** (2025-10-08) ✅ ALL PHASES COMPLETE
+  - See: `docs/devnotes/2025-10-08-avg-team-support.md`
+  - **Phase 1**: Created utility functions (`utils/teamHelpers.ts`) for detecting league average special row
+  - **Phase 2**: TeamDropdown shows "📊 Avg (per game)" as last option with visual separator
+  - **Phase 3**: RankingDropdown shows "📊 Avg" badge (no rank number) after ranked teams (1-32)
+  - **Phase 4**: Comparison view shows "📊 Avg" badge when average team selected (no rank pill)
+  - **Fix #1**: RankingDropdown button shows "📊 Avg" when average selected (not "N/A")
+  - **Fix #2**: "Avg" badge in comparison view is clickable (opens RankingDropdown)
+  - Average team can be selected for benchmarking (e.g., "Cowboys 151 pts vs Avg 114.6 pts")
+  - 32 teams still get ranks 1-32 (average excluded from ranking calculations)
+  - Verified CSV contains "Avg Tm/G" row with per-game league averages
+
+### Fixed
+- **Service Worker CSS Caching** (2025-10-08)
+  - See: `docs/devnotes/2025-10-08-sw-css-cache-fix.md`
+  - Changed CSS caching from cache-first to network-first strategy
+  - Fixes Tailwind class changes not applying on normal refresh (only after hard reload)
+  - CSS now always fetches fresh, falls back to cache when offline
+  - Bumped SW version to v1.0.6 to invalidate old caches
+  - Added `npm run dev:clean` script for easy cache clearing
+
+### Added
 - Dev Note: Phases execution summary (2025-10-07)
   - See: `docs/devnotes/2025-10-07-phases-execution.md`
 
