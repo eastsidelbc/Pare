@@ -6,7 +6,74 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ## [Unreleased]
 
+### Fixed
+- **Mobile Dropdown Positioning - Floating UI Migration** (2025-10-09) ✅ COMPLETE
+  - See: `docs/devnotes/2025-10-09-floating-ui-migration.md`
+  - See: `docs/devnotes/2025-10-09-floating-ui-bugfix.md` (React setState fix)
+  - See: `docs/audits/2025-10-09-mobile-dropdown-audit.md`
+  - **Issue #1 Fixed**: Dropdowns no longer clipped by panel divider/overflow-hidden
+  - **Issue #2 Fixed**: Right-side (Team B) dropdowns stay within viewport  
+  - **Issue #3 Fixed**: Bottom row dropdowns auto-flip to render above when needed
+  - **Positioning Enhancement**: Smart side positioning - Team A dropdowns appear RIGHT, Team B dropdowns appear LEFT
+  - **Height Fix**: Shows 8-9 complete rows (416-468px) instead of 5.38 rows - no more mid-row cutoff (San Francisco issue)
+  - Migrated from manual absolute positioning to industry-standard **Floating UI** library
+  - Professional solution used by GitHub, Stripe, Vercel, Linear, Notion
+  - Added `@floating-ui/react` dependency (~10KB gzipped)
+  - Portal-based rendering escapes clipping containers
+  - Auto-flip, shift, and boundary detection middleware
+  - Works flawlessly across all screen sizes (320px-428px+)
+  - Handles device rotation, scroll, resize automatically
+  - Mobile touch-optimized with accessibility built-in
+  - Production-ready for iOS App Store deployment
+
 ### Added
+- **Mobile UI Transformation - Phase 4: Final Polish & Testing** (2025-10-09) ✅ COMPLETE
+  - See: `docs/devnotes/2025-10-09-phase4-final-polish.md`
+  - Added touch-optimized CSS utilities (`.touch-optimized`, `.focus-ring`)
+  - Comprehensive testing across viewport sizes (320px - 1024px)
+  - Verified all dropdowns, interactions, and state management
+  - Visual consistency audit (spacing, colors, typography)
+  - Performance verification (60fps scrolling, instant interactions)
+  - Complete mobile UI architecture documentation
+  - Production-ready mobile comparison interface
+  - **MOBILE TRANSFORMATION COMPLETE**: 9 new components, ~1,200 lines
+  - theScore's structure + Pare's style = Perfect balance
+
+- **Mobile UI Transformation - Phase 3: Team Logo Dropdown Integration** (2025-10-09) ✅ COMPLETE
+  - See: `docs/devnotes/2025-10-09-phase3-team-logo-selector.md`
+  - Implemented `CompactTeamSelector` dropdown (alphabetical team list)
+  - Responsive height: clamp(320px, 50vh, 420px)
+  - Tap team logo → Opens team selector with all 32 teams + "Avg" last
+  - Purple accents, Pare styling, average team emoji badge
+  - Added state management for team selector dropdowns (separate from ranking)
+  - Mutual exclusion: Only one dropdown open at a time per panel
+  - Complete team selection flow: Logo → Dropdown → Select → Update global state
+
+- **Mobile UI Transformation - Phase 2: Panel Headers & Comparison Rows** (2025-10-09) ✅ COMPLETE
+  - See: `docs/devnotes/2025-10-09-phase2-panel-rows.md`
+  - Implemented `CompactPanelHeader` (70px height, instant PER GAME/TOTAL toggle)
+  - Implemented `CompactComparisonRow` (two-line layout: data line + edge-to-edge bars)
+    - LINE 1: Values, ranks, metric name (with padding)
+    - LINE 2: Green/orange gradient bars (NO padding, touch panel edges)
+    - Bar height: 6px with glow effects
+    - Total row height: ~52px
+  - Implemented `CompactRankingDropdown` (responsive height clamp(280px, 40vh, 380px))
+  - Full integration with `useRanking`, `useBarCalculation`, `useDisplayMode` hooks
+  - Tap rank text `(30th)` to open dropdown with all teams sorted by rank
+  - theScore layout structure + Pare visual identity (green/orange bar colors from desktop)
+  - Average team support (`📊 Avg` badge in dropdowns)
+  - Fully functional comparison UI with real data
+
+- **Mobile UI Transformation - Phase 1: Foundation & Shell** (2025-10-09) ✅ COMPLETE
+  - See: `docs/devnotes/2025-10-09-phase1-mobile-foundation.md`
+  - Created `useIsMobile` hook for viewport detection (<1024px)
+  - Created mobile component directory (`components/mobile/`)
+  - Implemented `MobileCompareLayout` with conditional rendering
+  - Implemented `MobileTopBar` (56px fixed, safe area padding)
+  - Implemented `MobileBottomBar` (64px fixed, 3-tab placeholder)
+  - Pare-styled background gradient and borders
+  - Desktop layout preserved completely unchanged (≥1024px)
+
 - **Special "Avg Tm/G" Team Support** (2025-10-08) ✅ ALL PHASES COMPLETE
   - See: `docs/devnotes/2025-10-08-avg-team-support.md`
   - **Phase 1**: Created utility functions (`utils/teamHelpers.ts`) for detecting league average special row

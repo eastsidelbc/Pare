@@ -70,5 +70,22 @@ module.exports = {
   },
   plugins: [
     import('@tailwindcss/typography'),
+    function({ addUtilities }) {
+      addUtilities({
+        '.touch-optimized': {
+          '-webkit-tap-highlight-color': 'transparent',
+          '-webkit-touch-callout': 'none',
+          '-webkit-user-select': 'none',
+          'user-select': 'none',
+          'touch-action': 'manipulation',
+        },
+        '.focus-ring': {
+          '&:focus-visible': {
+            'outline': '2px solid rgba(139, 92, 246, 0.5)',
+            'outline-offset': '2px',
+          }
+        }
+      })
+    }
   ],
 };
