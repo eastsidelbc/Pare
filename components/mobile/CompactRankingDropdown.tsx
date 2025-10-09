@@ -28,7 +28,7 @@ interface CompactRankingDropdownProps {
   onTeamChange: (teamName: string) => void;
   isOpen: boolean;
   onToggle: () => void;
-  ranking: { rank: number; formattedRank: string } | null;
+  ranking: { rank: number; formattedRank: string; isTied: boolean } | null;
   position: 'left' | 'right'; // Team A = left (dropdown appears right), Team B = right (dropdown appears left)
 }
 
@@ -36,6 +36,8 @@ interface TeamWithRanking {
   team: TeamData;
   ranking: {
     rank: number;
+    formattedRank: string;
+    isTied: boolean;
   } | null;
   value: string;
   formattedValue: string;
@@ -208,9 +210,12 @@ export default function CompactRankingDropdown({
       );
     }
 
+    // Desktop pattern: Show amber color for ties
+    const textColor = ranking.isTied ? 'rgb(251, 191, 36)' : 'rgb(196, 181, 253)';
+    
     return (
-      <span className="text-[11px] text-purple-400/80 font-medium">
-        ({ranking.formattedRank})
+      <span className="text-[11px] font-medium" style={{ color: textColor }}>
+        {ranking.isTied && '🔸 '}({ranking.formattedRank})
       </span>
     );
   };
@@ -270,6 +275,7 @@ export default function CompactRankingDropdown({
                   const isAverage = isAverageTeam(item.team.team);
                   const emoji = getTeamEmoji(item.team.team);
                   const isCurrent = item.team.team === currentTeam;
+                  const isTied = item.ranking?.isTied || false;
                   
                   return (
                     <button
@@ -285,17 +291,23 @@ export default function CompactRankingDropdown({
                           : 'none'
                       }}
                     >
-                      {/* Rank or Emoji */}
+                      {/* Rank or Emoji - Desktop pattern: amber for ties */}
                       <div 
                         className="w-8 h-8 rounded flex items-center justify-center font-bold text-[11px] flex-shrink-0"
                         style={{
                           background: isAverage 
                             ? 'rgba(139, 92, 246, 0.3)' 
-                            : 'rgba(100, 116, 139, 0.3)',
-                          color: isAverage ? 'rgb(196, 181, 253)' : 'rgb(148, 163, 184)'
+                            : isTied 
+                              ? 'rgba(251, 191, 36, 0.2)'  // Amber for ties (desktop pattern)
+                              : 'rgba(100, 116, 139, 0.3)',
+                          color: isAverage 
+                            ? 'rgb(196, 181, 253)' 
+                            : isTied 
+                              ? 'rgb(251, 191, 36)'  // Amber text for ties
+                              : 'rgb(148, 163, 184)'
                         }}
                       >
-                        {isAverage ? emoji : item.ranking?.rank}
+                        {isAverage ? emoji : (isTied ? '🔸' : item.ranking?.rank)}
                       </div>
                       
                       {/* Logo */}

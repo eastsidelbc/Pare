@@ -124,7 +124,11 @@ export default function CompactComparisonRow({
             onTeamChange={onTeamAChange || (() => {})}
             isOpen={activeDropdownTeam === 'A'}
             onToggle={() => onDropdownToggle?.('A')}
-            ranking={teamARanking ? { rank: teamARanking.rank, formattedRank: formatRank(teamARanking.rank) } : null}
+            ranking={teamARanking ? { 
+              rank: teamARanking.rank, 
+              formattedRank: formatRank(teamARanking.rank),
+              isTied: teamARanking.isTied
+            } : null}
             position="left" // Team A on left → dropdown appears RIGHT
           />
         </div>
@@ -146,7 +150,11 @@ export default function CompactComparisonRow({
             onTeamChange={onTeamBChange || (() => {})}
             isOpen={activeDropdownTeam === 'B'}
             onToggle={() => onDropdownToggle?.('B')}
-            ranking={teamBRanking ? { rank: teamBRanking.rank, formattedRank: formatRank(teamBRanking.rank) } : null}
+            ranking={teamBRanking ? { 
+              rank: teamBRanking.rank, 
+              formattedRank: formatRank(teamBRanking.rank),
+              isTied: teamBRanking.isTied
+            } : null}
             position="right" // Team B on right → dropdown appears LEFT
           />
           <span className="text-[15px] font-semibold text-white">
