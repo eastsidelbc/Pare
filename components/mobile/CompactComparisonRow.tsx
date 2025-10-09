@@ -52,9 +52,9 @@ export default function CompactComparisonRow({
     return null;
   }
   
-  // Get raw values
-  const teamAValue = teamAData[metricField] || '0';
-  const teamBValue = teamBData[metricField] || '0';
+  // Get raw values (ensure string type)
+  const teamAValue = String(teamAData[metricField] || '0');
+  const teamBValue = String(teamBData[metricField] || '0');
   
   // Format values
   const formatValue = (value: string): string => {
@@ -79,12 +79,12 @@ export default function CompactComparisonRow({
   
   // Get rankings
   const teamARanking = useRanking(allData, metricField, teamA, {
-    panelType,
+    higherIsBetter: panelType === 'defense' ? !metricConfig.higherIsBetter : metricConfig.higherIsBetter,
     excludeSpecialTeams: true
   });
   
   const teamBRanking = useRanking(allData, metricField, teamB, {
-    panelType,
+    higherIsBetter: panelType === 'defense' ? !metricConfig.higherIsBetter : metricConfig.higherIsBetter,
     excludeSpecialTeams: true
   });
   
