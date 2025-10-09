@@ -16,7 +16,7 @@ import { useFloating, flip, shift, offset, autoUpdate, useClick, useDismiss, use
 import type { TeamData } from '@/lib/useNflStats';
 import { calculateBulkRanking, type RankingOptions } from '@/lib/useRanking';
 import { AVAILABLE_METRICS, formatMetricValue } from '@/lib/metricsConfig';
-import { isAverageTeam, getTeamEmoji } from '@/utils/teamHelpers';
+import { isAverageTeam, isNonSelectableSpecialTeam, getTeamEmoji } from '@/utils/teamHelpers';
 import TeamLogo from '@/components/TeamLogo';
 import { d, dumpBox, dumpFloatingState, firstClip, dumpMenuStyles } from '@/debug/traceDropdown';
 
@@ -141,7 +141,10 @@ export default function CompactRankingDropdown({
   // Sort teams by rank, append average last
   const sortedTeams: TeamWithRanking[] = useMemo(() => {
     const avgTeam = allData.find(t => isAverageTeam(t.team));
-    const regularTeams = allData.filter(t => !isAverageTeam(t.team));
+    const regularTeams = allData.filter(t => 
+      !isAverageTeam(t.team) &&
+      !isNonSelectableSpecialTeam(t.team)
+    );
     
     const sorted = regularTeams
       .map(team => {
@@ -157,7 +160,12 @@ export default function CompactRankingDropdown({
         };
       })
       .filter(item => item.ranking)
-      .sort((a, b) => (a.ranking?.rank || 999) - (b.ranking?.rank || 999));
+      .sort((a, b) => {
+        const rankDiff = (a.ranking?.rank || 999) - (b.ranking?.rank || 999);
+        if (rankDiff !== 0) return rankDiff;
+        // Same rank → alphabetical by team name
+        return a.team.team.localeCompare(b.team.team);
+      });
     
     // Add average team last
     if (avgTeam) {

@@ -14,7 +14,7 @@ import { useMemo, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useFloating, flip, shift, offset, autoUpdate, useClick, useDismiss, useInteractions, FloatingPortal, size, inline } from '@floating-ui/react';
 import type { TeamData } from '@/lib/useNflStats';
-import { isAverageTeam, getTeamEmoji, getTeamDisplayLabel } from '@/utils/teamHelpers';
+import { isAverageTeam, isNonSelectableSpecialTeam, getTeamEmoji, getTeamDisplayLabel } from '@/utils/teamHelpers';
 import TeamLogo from '@/components/TeamLogo';
 import { d, dumpBox, firstClip, dumpMenuStyles } from '@/debug/traceDropdown';
 
@@ -117,7 +117,10 @@ export default function CompactTeamSelector({
   // Sort teams alphabetically, append average last
   const sortedTeams = useMemo(() => {
     const avgTeam = allTeams.find(t => isAverageTeam(t.team));
-    const regularTeams = allTeams.filter(t => !isAverageTeam(t.team));
+    const regularTeams = allTeams.filter(t => 
+      !isAverageTeam(t.team) &&
+      !isNonSelectableSpecialTeam(t.team)
+    );
     
     // Sort alphabetically
     const sorted = regularTeams.sort((a, b) => a.team.localeCompare(b.team));

@@ -12,6 +12,22 @@
 import { useMemo } from 'react';
 import { TeamData } from './useNflStats';
 
+/**
+ * Compare two numeric values with floating-point tolerance
+ * 
+ * @param a - First value
+ * @param b - Second value
+ * @param epsilon - Tolerance (default: 0.001 for 3 decimal places)
+ * @returns true if values are equal within tolerance
+ * 
+ * @example
+ * areValuesEqual(5.7, 5.700001)  // true
+ * areValuesEqual(5.7, 5.8)       // false
+ */
+function areValuesEqual(a: number, b: number, epsilon = 0.001): boolean {
+  return Math.abs(a - b) < epsilon;
+}
+
 export interface RankingResult {
   rank: number;
   formattedRank: string; // "T-12th", "1st", etc.
@@ -90,7 +106,7 @@ export function useRanking(
       const teamValue = parseFloat(String(team[metricKey] || '0'));
       if (isNaN(teamValue)) return;
 
-      if (teamValue === targetValue) {
+      if (areValuesEqual(teamValue, targetValue)) {
         teamsWithSameValue++;
       } else if (higherIsBetter && teamValue > targetValue) {
         betterTeamsCount++;
@@ -179,7 +195,7 @@ export function calculateBulkRanking(
       const teamValue = parseFloat(String(team[metricKey] || '0'));
       if (isNaN(teamValue)) return;
 
-      if (teamValue === targetValue) {
+      if (areValuesEqual(teamValue, targetValue)) {
         teamsWithSameValue++;
       } else if (higherIsBetter && teamValue > targetValue) {
         betterTeamsCount++;
