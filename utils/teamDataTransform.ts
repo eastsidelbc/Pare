@@ -40,18 +40,28 @@ export function transformTeamDataByMode(
   mode: DisplayMode
 ): TeamData | null {
   if (!teamData) return null;
-  if (mode === 'total') return teamData; // No transformation needed for total mode
+  
+  const transformedData: TeamData = { ...teamData };
+  
+  // For total mode: Convert strings to numbers (no division)
+  if (mode === 'total') {
+    Object.keys(teamData).forEach(key => {
+      if (shouldConvertFieldToPerGame(key, teamData[key])) {
+        const numericValue = parseFloat(String(teamData[key])) || 0;
+        transformedData[key] = numericValue;  // Store as number, no division
+      }
+    });
+    return transformedData;
+  }
   
   // Per-game transformation
   const games = parseFloat(String(teamData.g)) || 1; // Games played, default to 1 to avoid division by zero
-  
-  const transformedData: TeamData = { ...teamData };
   
   // Convert specific metrics to per-game values
   Object.keys(teamData).forEach(key => {
     if (shouldConvertFieldToPerGame(key, teamData[key])) {
       const numericValue = parseFloat(String(teamData[key])) || 0;
-      transformedData[key] = (numericValue / games).toFixed(1);
+      transformedData[key] = numericValue / games;  // Store full precision; format in display layer
     }
   });
   

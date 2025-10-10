@@ -119,14 +119,14 @@ export default function DynamicComparisonRow({
   }
 
   // 🔧 FALLBACK: Original styling if theme fails
-  const fallbackPanelClasses = "py-4 bg-slate-900/90 rounded-xl border border-slate-700/50 shadow-lg mb-3 relative";
+  const fallbackPanelClasses = "py-2 bg-slate-900/90 rounded-xl border border-slate-700/50 shadow-lg mb-3 relative";
   const fallbackBarClasses = "relative w-full h-5 bg-slate-800 rounded-full overflow-hidden";
 
   return (
-    <div className={getPanelClasses ? `py-4 mb-3 relative ${getPanelClasses()}` : fallbackPanelClasses}>
+    <div className={getPanelClasses ? `py-2 mb-3 relative ${getPanelClasses()}` : fallbackPanelClasses}>
       {/* Removed heavy backdrop-blur, gradients, and motion for performance */}
       {/* Team Stats and Rankings */}
-      <div className="flex justify-between items-center mb-4 px-4">
+      <div className="flex justify-between items-center mb-2 px-4">
         {/* Team A Stats */}
         <div className="flex items-center gap-3">
           <div className={`font-semibold text-base ${getTeamAColor ? getTeamAColor() : 'text-green-400'}`}>

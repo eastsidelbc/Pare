@@ -1,10 +1,10 @@
 // Pare NFL PWA Service Worker
 // Cache strategies: Network-first for CSS (dev safety), Stale-While-Revalidate for API, Cache First for assets
 
-const CACHE_NAME = 'pare-nfl-v1.0.6';
-const STATIC_CACHE = 'pare-static-v1.0.6';
-const API_CACHE = 'pare-api-v1.0.6';
-const IMAGES_CACHE = 'pare-images-v1.0.6';
+const CACHE_NAME = 'pare-nfl-v1.0.7';
+const STATIC_CACHE = 'pare-static-v1.0.7';
+const API_CACHE = 'pare-api-v1.0.7';
+const IMAGES_CACHE = 'pare-images-v1.0.7';
 
 // Cache expiration times
 const CACHE_EXPIRATION = {
