@@ -41,13 +41,18 @@ export default function OffensePanel({
   const {
     mode: displayMode,
     setMode: setDisplayMode,
-    transformTeamData
+    transformTeamData,
+    transformAllData
   } = useDisplayMode('per-game');
 
   // No local metrics state - now controlled by parent
 
   console.log(`🏈 [OFFENSE-PANEL] Teams: ${selectedTeamA} vs ${selectedTeamB}, Mode: ${displayMode}, Metrics: ${selectedMetrics.length}`);
 
+  // Transform data based on display mode (rank by displayed values)
+  const transformedOffenseData = transformAllData(offenseData);
+  const transformedDefenseData = transformAllData(defenseData);
+  
   // Get team data with display mode transformation
   const teamAData = transformTeamData(offenseData.find(team => team.team === selectedTeamA) || null);
   const teamBData = transformTeamData(offenseData.find(team => team.team === selectedTeamB) || null);
@@ -127,8 +132,8 @@ export default function OffensePanel({
               teamAData={teamAData}
               teamBData={teamBData}
               type="offense"
-              allOffenseData={offenseData}
-              allDefenseData={defenseData}
+              allOffenseData={transformedOffenseData}
+              allDefenseData={transformedDefenseData}
               panelType="offense"
               onTeamAChange={onTeamAChange}
               onTeamBChange={onTeamBChange}

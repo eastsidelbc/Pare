@@ -68,6 +68,7 @@ export default function CompactPanel({
   const allData = type === 'offense' ? allOffenseData : allDefenseData;
   
   // Transform data based on display mode
+  // Rank by displayed values: per-game averages in per-game mode, totals in total mode
   const transformedAllData = transformAllData(allData);
   const transformedTeamAData = transformTeamData(teamAData);
   const transformedTeamBData = transformTeamData(teamBData);

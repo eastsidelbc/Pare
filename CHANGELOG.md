@@ -7,6 +7,17 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Fixed
+- **Critical: Per-Game Ranking Precision Fix** (2025-10-09) ✅ COMPLETE
+  - See: `docs/devnotes/2025-10-09-hooks-alignment-audit.md`
+  - See: `docs/audits/2025-10-cross-surface-hooks/findings.md`
+  - **Issue**: `.toFixed(1)` was rounding values BEFORE ranking computation
+  - **Root Cause**: `utils/teamDataTransform.ts:54` converted per-game values to strings (e.g., 38.888 → "38.9")
+  - **Impact**: Broke tie detection in per-game mode - Vikings showed "15th" instead of "T-13th"
+  - **Fix**: Removed `.toFixed(1)` from data transform layer
+  - **Result**: Full precision preserved for ranking, formatting only at display layer
+  - Affects both desktop AND mobile (shared bug)
+  - No other code changes needed (display components already format correctly)
+  - Per-game and Total modes now have identical tie detection precision
 - **Mobile Dropdown Positioning - Floating UI Migration** (2025-10-09) ✅ COMPLETE
   - See: `docs/devnotes/2025-10-09-floating-ui-migration.md`
   - See: `docs/devnotes/2025-10-09-floating-ui-bugfix.md` (React setState fix)

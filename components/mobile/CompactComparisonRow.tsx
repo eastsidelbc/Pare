@@ -88,6 +88,22 @@ export default function CompactComparisonRow({
     excludeSpecialTeams: true
   });
   
+  // DEBUG: Log ranking for Vikings
+  if (teamA === 'Minnesota Vikings' && metricField === 'points') {
+    console.log(`🔍 [MOBILE-ROW] Vikings ${displayMode} mode:`, {
+      metricField,
+      rawValue: teamAData?.[metricField],
+      valueType: typeof teamAData?.[metricField],
+      ranking: teamARanking,
+      allDataCount: allData.length,
+      sampleValues: allData.slice(0, 3).map(t => ({ 
+        team: t.team, 
+        value: t[metricField],
+        type: typeof t[metricField]
+      }))
+    });
+  }
+  
   // Calculate bar widths with amplification
   const { teamAPercentage, teamBPercentage } = useBarCalculation({
     teamAValue,

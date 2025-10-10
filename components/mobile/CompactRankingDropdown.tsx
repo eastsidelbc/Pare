@@ -210,12 +210,10 @@ export default function CompactRankingDropdown({
       );
     }
 
-    // Desktop pattern: Show amber color for ties
-    const textColor = ranking.isTied ? 'rgb(251, 191, 36)' : 'rgb(196, 181, 253)';
-    
+    // Same color for all ranks - no special styling for ties
     return (
-      <span className="text-[11px] font-medium" style={{ color: textColor }}>
-        {ranking.isTied && '🔸 '}({ranking.formattedRank})
+      <span className="text-[11px] font-medium" style={{ color: 'rgb(196, 181, 253)' }}>
+        ({ranking.formattedRank})
       </span>
     );
   };
@@ -307,7 +305,7 @@ export default function CompactRankingDropdown({
                               : 'rgb(148, 163, 184)'
                         }}
                       >
-                        {isAverage ? emoji : (isTied ? '🔸' : item.ranking?.rank)}
+                        {isAverage ? emoji : item.ranking?.rank}
                       </div>
                       
                       {/* Logo */}
