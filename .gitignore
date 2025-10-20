@@ -42,3 +42,21 @@ next-env.d.ts
 
 # old project notes
 /oldproject.md
+
+# iOS
+ios/*.xcodeproj
+ios/*.xcworkspace
+ios/**/*.xcuserstate
+ios/**/xcuserdata/
+ios/.DS_Store
+ios/**/.DS_Store
+ios/build/
+ios/DerivedData/
+ios/**/*.moved-aside
+ios/**/*.pbxuser
+ios/**/*.mode1v3
+ios/**/*.mode2v3
+ios/**/*.perspectivev3
+ios/**/*~.nib
+ios/**/*.swp
+ios/**/*.swo

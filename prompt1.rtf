@@ -1,0 +1,65 @@
+You are acting as a senior engineer inside the Pare repository to prepare for a documentation restructuring phase.
+
+### GOAL
+Create a safe parallel workspace (A/B style) for documentation refactor without touching the current main branch.
+
+---
+
+### TASKS
+
+1️⃣ **Verify current git state**
+- Run `git status` to confirm the working directory is clean.
+- Run `git branch` and note the active branch.
+- If there are uncommitted changes, stage and commit them with message:
+  "Save before doc restructuring".
+- Ensure `main` is fully up to date with remote: `git pull origin main`.
+
+2️⃣ **Create new documentation branches**
+- Make a frozen backup of current docs:
+git checkout -b docs-snapshot
+git push -u origin docs-snapshot
+
+css
+Copy code
+- Return to main:
+git checkout main
+
+diff
+Copy code
+- Create the active working branch for reorganization:
+git checkout -b docs-refactor
+git push -u origin docs-refactor
+
+markdown
+Copy code
+
+3️⃣ **Set active branch**
+- Confirm the active branch is now `docs-refactor` by running:
+git branch
+
+sql
+Copy code
+It should show:
+docs-refactor
+main
+docs-snapshot
+
+markdown
+Copy code
+
+4️⃣ **Lock intentions**
+- Do **not** modify code or configs yet.
+- This branch is strictly for moving and cleaning documentation files.
+- Record this setup in a short note at the top of `PROJECT_PLAN.md`:
+> **Branch Note:** Current branch `docs-refactor` is used for documentation reorganization (hierarchy alignment, no code changes). The prior structure is preserved in `docs-snapshot`.
+
+5️⃣ **Final verification**
+- Print confirmation: `Branch successfully created and ready for documentation restructuring.`
+
+---
+
+### RULES
+- Do not modify application code.
+- Do not change .env or any runtime configs.
+- Only confirm branch creation and ready state.
+- After confirmation, halt actions and wait for the next restructuring prompt.

@@ -6,6 +6,184 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ## [Unreleased]
 
+### Added
+- **iOS Wrapper Scaffold** (2025-10-14) ✅ PHASE C COMPLETE
+  - **Complete iOS Project**: `/ios/` directory with full SwiftUI + WKWebView implementation
+  - **20 Swift Files**: Models, App, Web, UI/Tabs, UI/Common layers
+  - **Key Components**:
+    - `PareApp.swift` - Main app entry with AppCoordinator
+    - `WebViewContainer.swift` - WKWebView wrapper with pull-to-refresh, progress, external links
+    - `WebViewModel.swift` - WebView state management (similar to React hooks)
+    - `PareBridge.swift` - JavaScript bridge for iOS ↔ Web communication
+    - `PareTabView.swift` - Bottom tab bar (Home, Settings, Debug)
+    - `SettingsTab.swift` - Native environment switcher, cache controls
+    - `DebugTab.swift` - Development tools, navigation controls
+    - `ProgressBar.swift` - Loading progress indicator
+  - **XcodeGen Configuration**: `project.yml` with Debug/Release schemes
+  - **Build Configs**: `Debug.xcconfig` (port 4000), `Release.xcconfig` (prod URL)
+  - **Info.plist**: ATS configured for localhost (Debug) and HTTPS (Release)
+  - **Assets**: AppIcon.appiconset, AccentColor.colorset (purple brand color)
+  - **Scripts**: `gen_xcode.sh`, `setup.sh` with first-time setup automation
+  - **Total Files Created**: 30+ files across 10 directories
+  - **Features**: Pull-to-refresh, progress bar, back/forward gestures, external link handling, cache management, environment switching
+  - **Next**: Run `ios/Scripts/setup.sh` to generate Xcode project and start development
+
+### Docs
+- **iOS Runbook** (2025-10-14) ✅ COMPLETE
+  - Created: `docs/mobile/IOS_RUNBOOK.md` (600+ lines)
+  - **Quick Start**: First-time setup, prerequisites, development workflow
+  - **Testing**: Complete checklist for basic, web integration, iOS features, edge cases
+  - **Troubleshooting**: 10+ common issues with solutions (server not running, localhost unreachable, build errors, crashes, etc.)
+  - **Console Output**: Expected logs, error diagnosis
+  - **Performance Tips**: Build time, runtime, app size optimization
+  - **Advanced Topics**: JS bridge usage, custom URL schemes, push notifications
+  - **Physical Device**: Setup instructions, local network configuration
+  - **Maintenance**: Update dependencies, clean up backups
+
+- **iOS Wrapper Plan** (2025-10-14) ✅ PHASE B COMPLETE
+  - Created: `docs/mobile/IOS_WRAPPER_PLAN.md` (600+ lines)
+  - **Architecture**: SwiftUI + WKWebView + XcodeGen
+  - **Bottom Tabs**: Home (WebView), Settings (Native), Debug (Native)
+  - **Features**: Pull-to-refresh, progress bar, external links → Safari, photo upload support, JS bridge
+  - **XcodeGen**: project.yml with Debug/Release schemes, deterministic generation
+  - **ATS**: localhost allowed in Debug, HTTPS required in Release
+  - **Config**: Debug.xcconfig (port 4000), Release.xcconfig (prod URL)
+  - **File Layout**: 20 Swift files, modular structure (App/, Web/, UI/, Models/)
+  - **Decision**: ✅ PROCEED_WITH_IOS_SCAFFOLD = true
+  - **Next**: Phase C - Scaffold iOS Project
+
+- **iOS Foundation Audit** (2025-10-14) ✅ PHASE A COMPLETE
+  - Created: `docs/mobile/AUDIT_iOS_FOUNDATION.md` (500+ lines)
+  - **Verdict**: ✅ Excellent candidate for iOS WKWebView wrapper
+  - **Strengths**: Zero external dependencies, port 4000 ready, mobile-first design, iOS-friendly PWA
+  - **Repo Analysis**: Next.js 15 App Router, React 19, TypeScript, 32 NFL logos, 8 mobile components
+  - **Network Surface**: All same-origin (CSV → API routes → Frontend), no external hosts
+  - **PWA/Cache**: Service worker excludes HTML precaching (perfect for iOS)
+  - **Assets**: Has 192x192 icon, needs 1024x1024 for iOS AppIcon
+  - **Risks**: None critical, minor cleanup needed (ios-backup folders)
+  - **Next**: Phase B - iOS Wrapper Plan
+
+### Fixed
+- **Swift Compilation Errors** (2025-10-10) ✅ COMPLETE
+  - Fixed: `StatsViewModel.swift` - Added missing `import Combine`
+  - Fixed: `ContentView.swift` - Corrected preview block syntax
+  - **Issue 1**: ObservableObject conformance required Combine import
+  - **Issue 2**: Preview blocks used explicit return statements (not allowed in ViewBuilder)
+  - **Issue 3**: Preview blocks tried to access private @StateObject
+  - **Result**: All 10 Xcode build errors resolved
+  - Status: ✅ Project now compiles successfully
+
+### Added
+- **Monorepo Reorganization** (2025-10-10) ✅ COMPLETE
+  - Created: `docs/devnotes/2025-10-10-monorepo-reorganization.md`
+  - **Action**: Consolidated iOS project into monorepo structure
+  - **From**: Split between `/Pare-iOS/` and `/Pare/ios/`
+  - **To**: All in `/Pare/ios/` (professional monorepo)
+  - **Moved**: Pare-iOS.xcodeproj → Pare/ios/Pare.xcodeproj
+  - **Organized**: Proper folder structure (Models, Services, ViewModels, Views)
+  - **Preserved**: All Swift files, Config.xcconfig, Info.plist, Assets
+  - **Next**: Open Pare.xcodeproj and fix file references in Xcode
+
+### Docs
+- **Comprehensive Session Summary** (2025-10-10) ✅ COMPLETE
+  - Created: `SESSION_SUMMARY_2025-10-10.md` (900+ lines)
+  - **Purpose**: Complete context for continuing work with fresh Claude instance
+  - **Coverage**: All work completed, files created/modified, current state, next steps
+  - **Sections**: Project context, work completed, files created, current state, key decisions, next steps, testing, commands, React→Swift patterns, success criteria
+  - **Use**: Provide to Claude on desktop to continue seamlessly
+  - **Status**: Ready for context window transfer
+
+### Added
+- **Swift API Client & Data Models** (2025-10-10) ✅ COMPLETE
+  - Created: `Pare-iOS/Pare/Models/TeamData.swift` - Data structures (Codable)
+  - Created: `Pare-iOS/Pare/Services/StatsAPI.swift` - API client with async/await
+  - Created: `Pare-iOS/Pare/Services/CacheManager.swift` - 6-hour cache manager
+  - Created: `Pare-iOS/Pare/ViewModels/StatsViewModel.swift` - State management
+  - Updated: `Pare-iOS/Pare/ContentView.swift` - Test UI with team list
+  - Created: `Pare-iOS/SWIFT_FILES_SETUP.md` - Step-by-step setup guide
+  - **Features**: Health check, offense/defense fetch, caching, error handling
+  - **React Equivalent**: Like useNflStats hook + TypeScript interfaces
+  - **Status**: ✅ Ready to add to Xcode project
+  - **Next**: Add files to Xcode, test data loading, build comparison UI
+
+- **Xcode Project Configuration Files** (2025-10-10) ✅ COMPLETE
+  - Created: `Pare-iOS/Config.xcconfig` - App configuration (like .env for iOS)
+  - Created: `Pare-iOS/Info.plist` - Complete with ATS, dark mode, bundle settings
+  - Created: `Pare-iOS/XCODE_SETUP_GUIDE.md` - Beginner-friendly setup instructions
+  - **Config.xcconfig**: API base URL (port 4000), version numbers, feature flags
+  - **Info.plist**: Dark mode forced, localhost networking enabled, bundle ID configured
+  - **Setup Guide**: Step-by-step Xcode instructions with React → Swift comparisons
+  - Status: ✅ Ready to add to Xcode project
+  - Next: Add files to Xcode, configure project settings, test configuration
+
+- **Port 4000 Migration** (2025-10-10) ✅ COMPLETE
+  - Updated: `package.json` - Dev server now runs on port 4000 (`-p 4000`)
+  - Updated: `config/constants.ts` - Added PORT: 4000 to API config
+  - Updated: `MOBILE_NOTES.md` - All examples use port 4000
+  - **Why**: iOS ContentView.swift already hardcoded to port 4000
+  - **Consistency**: Backend, docs, and iOS all use same port
+  - **Test**: `npm run dev` → `curl http://localhost:4000/api/health | jq`
+
+- **API Health Endpoint for iOS** (2025-10-10) ✅ COMPLETE
+  - Created: `app/api/health/route.ts`
+  - Returns: `{ ok: true, version: "1.0.0", timestamp, uptime, endpoints, environment }`
+  - Purpose: iOS App Store compliance + production monitoring
+  - Status: ✅ Ready (restart dev server to activate)
+  - Test: `curl http://localhost:4000/api/health | jq`
+
+### Docs
+- **API Audit for iOS Development** (2025-10-10) ✅ COMPLETE
+  - See: `docs/devnotes/2025-10-10-api-audit.md`
+  - See: `MOBILE_NOTES.md` (iOS API documentation)
+  - **Purpose**: Pre-iOS development API readiness assessment
+  - **Coverage**: All 3 existing endpoints + error handling + caching + data sources
+  - **Status**: ⚠️ 99% Ready (missing HTTPS production URL)
+  - **Key Findings**:
+    - ✅ 3 working endpoints (offense, defense, preferences)
+    - ✅ Excellent 6-hour in-memory caching with stale data fallback
+    - ✅ Comprehensive error handling (200 OK with stale flag, or 500 with details)
+    - ✅ Clean codebase (zero TODO/FIXME/HACK comments)
+    - ✅ Consistent JSON response format across all endpoints
+    - ❌ Missing `/api/health` endpoint → CREATED ✅
+    - ⚠️ No HTTPS production URL (required for iOS ATS compliance)
+  - **Deliverables**:
+    - Complete API audit report with status codes, response formats, cache strategies
+    - MOBILE_NOTES.md with iOS-specific documentation and Swift code examples
+    - `/api/health` endpoint implementation
+    - iOS readiness checklist (score: 9.5/10 after health endpoint)
+  - **Swift Examples**: Complete `StatsAPI` client with cache management, error handling, retry logic
+  - **Deployment**: Recommends Vercel for free HTTPS (zero config, automatic SSL)
+  - **Next**: Deploy to HTTPS production, then begin Phase 1 (iOS Project Bootstrap)
+
+- **Mobile Components Deep Dive** (2025-10-10) ✅ COMPLETE
+  - See: `docs/devnotes/2025-10-10-mobile-components-audit.md`
+  - **Purpose**: Surgical analysis of 9 mobile components for SwiftUI conversion
+  - **Focus**: State management, dropdown behavior, interaction patterns
+  - **Key Findings**:
+    - Two distinct dropdowns: Team selector (alphabetical) + Ranking dropdown (rank-sorted)
+    - Mutual exclusion pattern: Only one dropdown open at a time per panel
+    - Floating UI positioning: Professional portal-based rendering with auto-flip
+    - Instant display toggle: No dropdown, immediate mode switch
+    - Two-line row layout: Data line (padded) + bar line (edge-to-edge)
+  - **Detailed Flows**: 3 complete user interaction flows with visual examples
+  - **Dropdown Management**: Full documentation of positioning strategy and state control
+  - **SwiftUI Mappings**: Component-by-component conversion patterns
+  - **Next**: Phase 1 - iOS Project Bootstrap (create SwiftUI versions)
+
+- **Comprehensive iOS Conversion Audit** (2025-10-10) ✅ COMPLETE
+  - See: `docs/devnotes/2025-10-10-ios-conversion-audit.md`
+  - **Purpose**: Pre-iOS conversion analysis of entire codebase
+  - **Coverage**: 17 desktop components, 9 mobile components, 5 hooks, 44+ metrics
+  - **Deliverables**: Component tree, data flow diagrams, SwiftUI mappings, iOS checklist
+  - **Key Findings**:
+    - Clean modular architecture translates exceptionally well to iOS
+    - Zero external state libraries = easy SwiftUI conversion
+    - Client-side calculations = reusable Swift functions
+    - Estimated 3-4 weeks to App Store v1.0
+  - **Swift Patterns**: Provided SwiftUI code examples for all major patterns
+  - **iOS Checklist**: 6-phase roadmap with gate questions for each phase
+  - **Next**: Phase 0 - iOS Foundations (repo hygiene, MOBILE_NOTES.md, /health endpoint)
+
 ### Fixed
 - **Critical: Per-Game Ranking Precision Fix** (2025-10-09) ✅ COMPLETE
   - See: `docs/devnotes/2025-10-09-hooks-alignment-audit.md`

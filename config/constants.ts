@@ -17,7 +17,9 @@ export const APP_CONSTANTS = {
     ENDPOINTS: {
       OFFENSE: '/api/nfl-2025/offense',
       DEFENSE: '/api/nfl-2025/defense',
+      HEALTH: '/api/health',
     },
+    PORT: 4000, // iOS development port
   },
 
   // Special team identifiers
