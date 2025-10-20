@@ -2,6 +2,8 @@
 
 This file provides comprehensive guidance to Claude Code (claude.ai/code) when working with the Pare NFL Comparison Platform. **ALWAYS READ PROJECT_PLAN.md FIRST** for current status, rules, and context.
 
+> _**Documentation Note**: Documentation in this repository follows the hierarchy defined in `/docs/` and is actively maintained in the `docs-refactor` branch. See PROJECT_PLAN.md for the complete documentation structure._
+
 ## 🎯 Project Overview
 
 **Pare** is a production-ready, professional NFL team comparison platform built with Next.js 15 and TypeScript. It features:

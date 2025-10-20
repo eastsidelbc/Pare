@@ -1,5 +1,129 @@
-Yes, please provide the corrected versions of:
-1. StatsViewModel.swift (with import Combine added)
-2. ContentView.swift (with fixed preview blocks)
+🧩 Cursor AI Prompt: Documentation Reorganization (Safe Migration)
+You are a senior documentation engineer working in the `docs-refactor` branch of the Pare repository.
 
-Output the complete corrected code for both files.
+### GOAL
+Reorganize all documentation files into a clean, professional hierarchy while preserving every file’s content and linking them together logically.  
+Do not modify application code or configuration.
+
+---
+
+### ACTIONS
+
+1️⃣ **Verify branch**
+Confirm current branch:
+
+
+git branch
+
+If not on `docs-refactor`, switch:
+
+
+git checkout docs-refactor
+
+
+---
+
+2️⃣ **Create new folder structure**
+Reorganize docs exactly as follows:
+
+pare/
+├── CLAUDE.md
+├── PROJECT_PLAN.md
+├── docs/
+│   ├── specs/
+│   │   ├── layout-map.md
+│   │   ├── data-flow.md
+│   │   ├── ui-compact-spec.md
+│   │   ├── scoreboard-rail.md
+│   │   ├── header-and-insights.md
+│   │   └── port-to-react-native.md
+│   ├── audit/
+│   │   ├── EXECUTIVE_SUMMARY.md
+│   │   ├── risks-and-questions.md
+│   │   └── qa-checklist.md
+│   └── data/
+│       └── scrape-plan.md
+└── DevNotes/
+    ├── YYYY-MM-DD.md (existing daily notes)
+    └── CHANGELOG.md
+
+---
+
+3️⃣ **Move existing docs into new locations**
+Move, not copy, to avoid duplicates.
+
+- Move all `layout-map.md`, `data-flow.md`, `ui-compact-spec.md`, `port-to-react-native.md`, `EXECUTIVE_SUMMARY.md`, `risks-and-questions.md` into `/docs/specs/` and `/docs/audit/` per hierarchy above.
+- If other docs exist (e.g., `FEATURES_TO_ADD.md`, `ADR/`, `DevNotes/`), keep them under `/DevNotes/` unless they are live technical specs.
+- Ensure all moved files retain front-matter titles and date stamps if they exist.
+
+---
+
+4️⃣ **Add front-matter links**
+At the top of each moved file, add:
+
+source_of_truth: PROJECT_PLAN.md
+rules_reference: CLAUDE.md
+branch: docs-refactor
+last_moved: YYYY-MM-DD
+
+Below that, insert a single line:
+> “This document is maintained under `/docs-refactor` branch and aligns with CLAUDE.md and PROJECT_PLAN.md.”
+
+---
+
+5️⃣ **Update main docs with cross-links**
+
+- **In `CLAUDE.md`**, add a short note near the top:
+  > _Documentation in this repository follows the hierarchy defined in `/docs/` and is actively maintained in the `docs-refactor` branch._
+
+- **In `PROJECT_PLAN.md`**, add a section titled **“Documentation Hierarchy (as of current branch)”** listing:
+  - `/docs/specs/` — technical blueprints  
+  - `/docs/audit/` — engineering audits, QA, and risk logs  
+  - `/docs/data/` — data pipelines, scraping, or adapter references  
+  - `/DevNotes/` — day-by-day notes and changelogs  
+
+---
+
+6️⃣ **Archive any redundant or outdated files**
+If duplicates or superseded docs exist in root, move them to:
+
+
+/docs/archive/
+
+and prepend:
+> _Deprecated — kept for reference only. See PROJECT_PLAN.md for latest phase definitions._
+
+---
+
+7️⃣ **Verify and commit**
+Check file tree with:
+
+
+ls -R docs
+
+Once structure matches, stage and commit:
+
+
+git add .
+git commit -m "Reorganize documentation into /docs hierarchy (docs-refactor branch)"
+
+
+---
+
+8️⃣ **Push and confirm**
+
+
+git push
+
+Print success message:
+> ✅ Documentation successfully reorganized under /docs in docs-refactor branch.
+> No code changes made.
+> Ready for roadmap and phase updates.
+
+---
+
+### RULES
+- ❌ No code edits.
+- ❌ No deletions beyond moving/archiving.
+- ✅ Maintain file metadata and version history.
+- ✅ Keep links and references accurate.

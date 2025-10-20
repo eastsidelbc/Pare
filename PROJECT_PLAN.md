@@ -65,6 +65,34 @@ data/pfr/                     # Local data storage
 └── defense-2025.csv          # Current season defense stats
 ```
 
+## 📚 **Documentation Hierarchy (as of current branch)**
+
+All project documentation follows a standardized hierarchy under `/docs/`:
+
+### **`/docs/specs/`** — Technical Blueprints & Specifications
+- **`layout-map.md`** - Complete desktop + mobile component architecture with file/line references
+- **`data-flow.md`** - 3-tier caching strategy, API design, and live update integration slots
+- **`ui-compact-spec.md`** - Product direction, compact structure, and future feature slots
+- **`port-to-react-native.md`** - Complete React Native migration strategy with component mappings
+
+### **`/docs/audit/`** — Engineering Audits, QA, and Risk Logs
+- **`EXECUTIVE_SUMMARY.md`** - Top 10 findings, critical path, and recommended actions
+- **`risks-and-questions.md`** - 11 identified risks with severity ratings + 12 open questions
+
+### **`/docs/data/`** — Data Pipelines, Scraping, and Adapter References
+- _(Future): Scraping automation plans, data validation, API adapters)_
+
+### **`/DevNotes/`** — Day-by-Day Notes and Changelogs
+- **`CHANGELOG.md`** - Version history and release notes
+- **`YYYY-MM-DD-*.md`** - Daily development notes and decision logs
+
+### **`/docs/archive/`** — Historical References
+- **`audits/`** - Older audit documents (pre-2025-10-19 reorganization)
+- **`mobile/`** - Early iOS planning documents (superseded by specs)
+- **`adr/`** - Architecture Decision Records (legacy)
+
+> **Note**: All active specs include front-matter linking to `PROJECT_PLAN.md` (source of truth) and `CLAUDE.md` (rules reference).
+
 ## 📋 **Development Rules & Constraints**
 
 ### **Architecture Principles**

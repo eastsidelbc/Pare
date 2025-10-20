@@ -1,3 +1,12 @@
+---
+source_of_truth: PROJECT_PLAN.md
+rules_reference: CLAUDE.md
+branch: docs-refactor
+last_moved: 2025-10-19
+---
+
+> _This document is maintained under `/docs-refactor` branch and aligns with CLAUDE.md and PROJECT_PLAN.md._
+
 # Risk Register & Questions
 
 **Audit Date**: 2025-10-19  
