@@ -6,6 +6,15 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ## [Unreleased]
 
+### Changed
+- **Documentation Reorganization** (2025-10-20) — `docs-refactor` branch
+  - **New Hierarchy**: Established 4-tier structure (`/docs/specs/`, `/docs/audit/`, `/docs/data/`, `/docs/archive/`)
+  - **Moved 69 Files**: Specs to `/docs/specs/`, audits to `/docs/audit/`, dev notes to `/DevNotes/`, historical docs to `/docs/archive/`
+  - **Front-Matter Added**: YAML metadata linking to `PROJECT_PLAN.md` and `CLAUDE.md` in all active spec/audit docs
+  - **Cross-Links Updated**: `CLAUDE.md` and `PROJECT_PLAN.md` now document complete hierarchy
+  - **File History Preserved**: All movements tracked as git renames
+  - **Dev Note**: See [2025-10-20-docs-reorganization.md](./2025-10-20-docs-reorganization.md)
+
 ### Added
 - **iOS Wrapper Scaffold** (2025-10-14) ✅ PHASE C COMPLETE
   - **Complete iOS Project**: `/ios/` directory with full SwiftUI + WKWebView implementation
