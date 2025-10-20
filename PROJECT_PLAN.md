@@ -1,3 +1,5 @@
+> **Branch Note:** Current branch `docs-refactor` is used for documentation reorganization (hierarchy alignment, no code changes). The prior structure is preserved in `docs-snapshot`.
+
 # 🏈 Pare: NFL Team Comparison Platform
 
 ## 📋 **Project Overview**
