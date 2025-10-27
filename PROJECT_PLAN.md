@@ -587,109 +587,310 @@ Seamless, professional team selection experience ✨ COMPLETE!
 
 
 
-# 🚀 Comprehensive Roadmap — Web + Mobile + App Store
+## Current Active Phase: Phase 1 — UI Foundations
+Focus: Implementing the left scoreboard rail (double-row format, mock data).
 
-## Phase 0: Foundations (Repo + Hosting)
-- Confirm CLAUDE.md as Source of Truth (rules + rituals)
-- Organize docs: move PROJECT_PLAN.md → docs/PROJECT_PLAN.md, Mobile_plan.md → docs/MOBILE_PLAN.md.
-- Repo hygiene: single lockfile (package-lock.json), add .cursorrules
-- Add MOBILE_NOTES.md (API contracts, caching, errors)
-- Add SECURITY.md (scope, no secrets)
-- Implement /api/health → { ok: true, version }
-- Manual push workflow: git pull + build on Mac mini
-- Domain + Cloudflare Tunnel setup (beta may use trycloudflare.com)
+- Phase 1 underway: Building `ScoreboardRail` (double-row), pinned on desktop, drawer on mobile. Local mock data only.
 
-**Check-in:** 
-- Do we attach domain now or test first with tunnel link?
-- Do you want me to also scaffold ADR templates + Dev Notes folders now?
-- Are you ready to attach your Cloudflare domain yet, or stick with trycloudflare.com first?
+Pare Roadmap (Detailed, Update-as-we-go)
+Conventions (apply to every phase)
 
----
+Branch: work in docs-refactor. Open a PR to main only when a phase is “Done”.
 
-## Phase 1: Web Deploy (Beta Hosting)
-🔹 Goal: Public “beta” version running on your Mac mini with a clean domain.
+Docs to update each phase:
 
-- Cloudflare Tunnel maps domain (pare.mydomain.com) → Mac mini
-- HTTPS access, marked “beta” in UI
-- Expose /compare?home=X&away=Y for deep linking (needed for Swift + share sheet).
-- Deep links (/compare?home=X&away=Y) for iOS integration
-- Continue manual pushes; optional deploy.sh script
+PROJECT_PLAN.md → “Current Active Phase” + changelog entry
 
-**Check-in:** Mac mini as long-term host or temporary until Vercel/Railway?
+/docs/specs/* → keep specs accurate (rail, header, chips, compare)
 
----
+/docs/audit/qa-checklist.md → add tests you actually ran
 
-## Phase 2: Continuous Web Iteration
-🔹 Goal: Improve core web app UI + data contracts while live.
+/docs/audit/risks-and-questions.md → log new risks + answers
 
-- Improve UI polish: animations, responsive Tailwind, mobile layout
-- Lock API contracts: Team, Metric, CompareResult
-- Add caching headers (ETag/Cache-Control)
-- Expand metrics (flag advanced as “experimental”/“premium”)
-- Keep Dev Notes + CHANGELOG updated
+State tools: Zustand (UI state) + TanStack Query (data)
 
-**Check-in:** 
-- Automate CSV ingestion now or after Swift work?
-- Do you want to start automating CSV ingestion now (cron/Python scraper), or hold until after Swift work begins?
-- Should we gate experimental stats behind a feature flag system in the API?
+UI tools: Tailwind, shadcn/ui, Lucide, Recharts
 
----
+Cadence targets: scores 5s, odds 20–30s, season hourly (server-side polling)
 
-## Phase 3: Swift App Bootstrap (Companion)
-🔹 Goal: Build native SwiftUI app targeting iOS 17, consuming live API.
+Definition of Done (DoD) per phase: all acceptance criteria met, QA checklist updated, small demo notes in /DevNotes/<date>.md.
 
-- Create ios/ folder: README, QA.md, Config.xcconfig
-- Add StatsAPI.swift fetches API endpoints (fetch /api/compare, /api/teams, /api/metrics, /api/health etc.)
-- CompareView: team pickers, inward bars, live data
-- Persist last selections, error/retry UI
-- Internal TestFlight build
+Phase 1 — UI Foundations (Layout + Left Rail)
 
-**Check-in:** 
-- Do you want Swift app to mirror web UI exactly, or evolve a slightly different UX optimized for mobile?
-- Do you want to set portrait-only orientation for v1?
+Goal: Establish the compact layout and double-row scoreboard (desktop pinned, mobile drawer). No external data yet.
 
----
+Deliverables
 
-## Phase 4: Premium Layer + Mobile Features
-🔹 Goal: Begin paywall + iOS integrations (companion evolving toward replacement).
+ScoreboardRail component (double-row items)
 
-- Identify premium features: advanced stats, historical data, alerts, future AI predictions on games
-- Feature flags in API for free vs premium
-- Settings screen (theme, refresh policy, defaults)
-- Share Sheet + universal links
-- Optional: Siri Shortcuts
+Responsive layout shell (desktop rail pinned @ 320–360 px; mobile drawer @ 300–320 px)
 
-**Check-in:** In-App Purchases via App Store, or Stripe later?
+Grouping: LIVE → UPCOMING → FINAL headers
 
----
+Key Behaviors
 
-## Phase 5: App Store Readiness
-🔹 Goal: Move from “companion beta” → polished replacement candidate.
+No search UI; selecting a row emits {awayAbbr, homeAbbr} to app state
 
-- Accessibility: VoiceOver, Dynamic Type
-- Performance: cold start, animations, caching
-- App icons, splash, Privacy manifest
-- QA matrix across devices (iOS 17+)
-- App Store metadata, screenshots, TestFlight → review
+Typographic density: mono digits, one-line truncation, 8px rhythm
 
-**Check-in:** iPhone only or iPad support too?
+Acceptance Criteria
 
----
+Desktop: rail pinned; sections grouped; rows render exactly as spec
 
-## Phase 6: Expansion (Android + More)
-🔹 Goal: Reach all users + expand ecosystem.
+Mobile: drawer toggles; tapping a row selects and closes drawer
 
-- Android build (Compose, Flutter, or React Native)
-- Push notifications (premium alerts)
-- Widgets (favorite teams, standings)
-- Continuous monetization tuning
+No visual jank switching between items
 
-**Check-in:** Native Android vs cross-platform strategy?
+QA Checklist (add to docs)
 
-🎯 End State
+Verify grouping order, widths, line-breaks, and right-aligned odds/status
 
-- Web app: hosted via Cloudflare → domain, stable API, continuously updated.
-- iOS app: SwiftUI native, polished, App Store-ready, premium features behind paywall.
-- Android app: follows iOS, powered by same backend API.
-- Docs: CLAUDE.md rules enforced, Dev Notes + ADRs cross-linked, CHANGELOG maintained.
-- Future: move hosting from Mac mini → managed infra (Vercel/Railway), automate CSV ingestion, scale features + premium.
+Keyboard focus outline visible; items accessible by tab
+
+Risks & Mitigations
+
+Layout shifts → lock row heights, avoid content jumps
+
+Hydration mismatch → prefer CSS breakpoints; no isMobile branching at SSR
+
+Future Hooks
+
+Possession dot (•), pin favorites, compact team logos
+
+Phase 2 — Header Line + Mismatch Chips
+
+Goal: Show the compact header (AWAY @ HOME • status/clock • SPREAD • O/U • [Swap]) and rule-based chips under it.
+
+Deliverables
+
+CompareHeader with Swap (visual flip only)
+
+MismatchChips row: max 2 visible, horizontal scroll for extras
+
+Rules (V1)
+
+Show only when strong: rank gap ≥ 20, top/bottom bands (≤5 or ≥28), recent trend delta ≥10–15% (L3 vs season)
+
+Acceptance Criteria
+
+Header updates instantly on selection change
+
+Chips only appear when rules hit; copy is neutral, single line
+
+Swap flips columns visually; numbers keep meaning
+
+QA
+
+Toggle between 3+ games; verify header/odds change without flicker
+
+Long team names don’t overflow; chips scroll cleanly
+
+Risks
+
+Overcrowding → cap to 2 chips; keep copy short
+
+Future Hooks
+
+Chip tap opens mini explanation; add “why this matters” drawer
+
+Phase 3 — Compare View Wiring (Compact Rows)
+
+Goal: Wire selected teams into the Compare view; enforce compact defaults.
+
+Deliverables
+
+Compare view reads {awayAbbr, homeAbbr} from app state
+
+Mobile defaults: 5 rows per section (Scoring/Efficiency, Offense, Defense, ST) with “More” expander
+
+Bars “meet in the middle”; mono digits; consistent decimals
+
+Acceptance Criteria
+
+Switching games updates rows immediately
+
+No URL/search dependency; purely from rail selection
+
+One-line rows; numbers aligned; bars render symmetrically
+
+QA
+
+Expand/collapse “More”; ensure smooth layout
+
+Verify number formatting (ints vs 1-decimal; % where applicable)
+
+Risks
+
+Bar math inconsistencies → centralize helper; unit tests later
+
+Future Hooks
+
+Trend arrows (L3 vs season); per-section sort
+
+Phase 4 — Live Data (Mock)
+
+Goal: See the UI working end-to-end using mock endpoints (no scraping yet).
+
+Deliverables
+
+/api/mock/scoreboard with LIVE/UPCOMING/FINAL examples
+
+/api/mock/matchup?away=&home= returning header fields + chip flags
+
+Acceptance Criteria
+
+Rail, header, chips, compare all hydrate from mock routes
+
+Poll rail every 5s; odds every 20s (still mock)
+
+QA
+
+Verify silent updates (values change, no spinner)
+
+Simulate edge cases: PK spread, overtime label, missing scores
+
+Risks
+
+Mock drift → document schema in /docs/specs/* and reuse it later
+
+Future Hooks
+
+Add 1–2 “weird games” in mocks (weather, long team names)
+
+Phase 5 — Polling Service Layer (Adapters + Aggregator)
+
+Goal: Build the local service shape that will later scrape public pages.
+
+Deliverables
+
+/services/live-adapters/ with scoresAdapter.ts, oddsAdapter.ts (function signatures + TODOs)
+
+/services/live-aggregator.ts merges adapters, caches snapshot in memory
+
+Real endpoints: /api/scoreboard, /api/matchup mirror mock schema
+
+Acceptance Criteria
+
+UI switched from /api/mock/* → real /api/* with identical behavior
+
+Polling cadence enforced serverside (scores 5s; odds 20–30s)
+
+Clear comments on swap-in/out of adapter sources
+
+QA
+
+Network tab: only /api/* in use; no mock calls
+
+Aggregator handles partial data gracefully (missing odds or late scores)
+
+Risks
+
+Tight polling in dev → throttle or pause when tab hidden
+
+Future Hooks
+
+Redis/Edge KV cache; SSE/WS push later
+
+Phase 6 — Real Scraping & Odds (No Paid APIs)
+
+Goal: Implement actual scraping into the adapters, safely and swap-ably.
+
+Deliverables
+
+scoresAdapter.ts parses 1–2 public sources (primary + fallback)
+
+oddsAdapter.ts parses 1 source (fallback optional at first)
+
+/docs/data/scrape-plan.md updated with targets, cadence, fallback policy
+
+Acceptance Criteria
+
+Real live scores (5s) + odds (20–30s) flow to UI
+
+If primary breaks, toggling to fallback keeps UI alive with minimal edits
+
+QA
+
+Simulate one source failing; verify fallback works
+
+Confirm times are local; verify FINAL labeling; PK display
+
+Risks
+
+Scraper breakage → keep adapters small; add clear error logs
+
+Legal/ToS → note “testing/personal use”; revisit licensing if monetizing
+
+Future Hooks
+
+Consensus odds (avg across books); historical line movement
+
+Phase 7 — RN Parity (Later)
+
+Goal: Mirror the same structure in React Native; share logic.
+
+Deliverables
+
+Parity doc mapping web components → RN (FlashList, Reanimated, MMKV, Skia)
+
+Shared packages for models/formatting/math/fetchers
+
+Acceptance Criteria
+
+RN screens visually/behaviorally match web (rail as drawer, header, chips, compact rows)
+
+QA
+
+Snapshot comparisons web vs RN; interaction parity list
+
+Risks
+
+Over-customizing RN too early → keep RN simple; reuse logic, rebuild only the UI layer
+
+Phase 8 — UX Polish & QA
+
+Goal: Final pass to make it feel professional.
+
+Deliverables
+
+Subtle animations (value fades, chip slide), skeletons > spinners
+
+Sentry for error tracking; react-hot-toast for confirmations
+
+/docs/audit/qa-checklist.md fully exercised; /docs/audit/EXECUTIVE_SUMMARY.md snapshot
+
+Acceptance Criteria
+
+No layout shifts; smooth updates; clear errors logged
+
+Checklist green for desktop + mobile behaviors
+
+QA
+
+Resize/rotate tests; slow 3G simulation; throttled CPU
+
+Accessibility pass (focus order, color contrast)
+
+Risks
+
+Over-animation → keep it subtle; no blocking transitions
+
+Milestone Criteria (merge gates)
+
+M1 (after Phase 3): Layout + header + chips + compare wired with mocks
+
+M2 (after Phase 5): Live endpoints from local aggregator (no mocks)
+
+M3 (after Phase 6): Real live scores/odds via adapters; scrape plan documented
+
+M4 (after Phase 8): Polished UI; QA checklist complete; Sentry integrated
+
+Metrics We’ll Watch (lightweight)
+
+UI latency: rail → compare switch under ~150ms perceived
+
+Update smoothness: no visible flicker on 5s score changes
+
+Bundle health: keep initial JS in reasonable range; lazy-load heavy charts
+
+Errors: Sentry event rate low and actionable

@@ -107,7 +107,10 @@ export default function RootLayout({
         }} />
       </head>
       <body className="antialiased overflow-x-hidden">
-        {children}
+        {/* Phase 1 shell: pinned rail on desktop, drawer on mobile */}
+        {/* eslint-disable-next-line react/no-unknown-property */}
+        {/* @ts-expect-error Server Component wrapping Client Shell is supported */}
+        {React.createElement(require('../components/SiteLayoutShell').default, null, children)}
       </body>
     </html>
   );
