@@ -1193,3 +1193,10 @@ npm run dev:clean
 - **Major (X.0.0)**: Significant architecture changes or new major features
 - **Minor (1.X.0)**: New features or substantial improvements
 - **Patch (1.0.X)**: Bug fixes, documentation updates, minor enhancements
+```
+
+## 📚 Documentation Conventions (Source Locations)
+- Dev Notes live under `/docs/devnotes/` (one file per session/topic)
+- Changelog is at repository root: `/CHANGELOG.md`
+- ADRs live under `/docs/adr/` (create when architectural decisions are made)
+- Project plan is `/PROJECT_PLAN.md` (single source for phase status)
