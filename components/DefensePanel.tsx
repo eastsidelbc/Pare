@@ -6,6 +6,7 @@
  */
 
 'use client';
+import React from 'react';
 
 import { TeamData } from '@/lib/useNflStats';
 import { useDisplayMode } from '@/lib/useDisplayMode';
@@ -23,6 +24,7 @@ interface DefensePanelProps {
   className?: string;
   onTeamAChange?: (teamName: string) => void; // NEW: Team A selection callback
   onTeamBChange?: (teamName: string) => void; // NEW: Team B selection callback
+  swapVisual?: boolean; // Phase 3: visual left/right flip only
 }
 
 export default function DefensePanel({
@@ -34,7 +36,8 @@ export default function DefensePanel({
   isLoading = false,
   className = '',
   onTeamAChange,
-  onTeamBChange
+  onTeamBChange,
+  swapVisual = false
 }: DefensePanelProps) {
 
   // Display mode (per-game vs total)
@@ -60,11 +63,14 @@ export default function DefensePanel({
   // Check if we have valid team selection
   const isValidSelection = Boolean(selectedTeamA && selectedTeamB && selectedTeamA !== selectedTeamB);
 
+  const [showAll, setShowAll] = React.useState(false);
+  const metricsToRender = showAll ? selectedMetrics : selectedMetrics.slice(0, 5);
+
   return (
-    <div className={`bg-slate-900/90 rounded-xl border border-slate-700/50 shadow-2xl p-6 max-w-3xl mx-auto w-full ${className}`}>
+    <div className={`bg-slate-900/90 rounded-xl border border-slate-700/50 shadow-2xl p-4 max-w-3xl mx-auto w-full ${className}`}>
       
       {/* Panel Header with Team Logos, Title, and Display Mode */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         {/* Team A - Interactive Dropdown */}
         <div className="flex-shrink-0">
           {onTeamAChange ? (
@@ -81,7 +87,7 @@ export default function DefensePanel({
         </div>
 
         {/* Center: Title and Display Mode */}
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-2">
           <h2 className="text-2xl font-bold text-purple-400 text-center">
             Defense
           </h2>
@@ -125,8 +131,8 @@ export default function DefensePanel({
 
       {/* Comparison Metrics */}
       {!isLoading && isValidSelection && teamAData && teamBData && (
-        <div className="space-y-4">
-          {selectedMetrics.map((metricKey) => (
+        <div className="space-y-2">
+          {metricsToRender.map((metricKey) => (
             <DynamicComparisonRow
               key={metricKey}
               metricKey={metricKey}
@@ -138,8 +144,20 @@ export default function DefensePanel({
               panelType="defense"
               onTeamAChange={onTeamAChange}
               onTeamBChange={onTeamBChange}
+              swapVisual={swapVisual}
             />
           ))}
+          {selectedMetrics.length > 5 && (
+            <div className="text-right mt-1">
+              <button
+                type="button"
+                className="text-[12px] text-slate-300/90 hover:text-white underline"
+                onClick={() => setShowAll(v => !v)}
+              >
+                {showAll ? 'Less' : 'More'}
+              </button>
+            </div>
+          )}
           
           {selectedMetrics.length === 0 && (
             <div className="text-center py-8 text-slate-400">

@@ -26,6 +26,7 @@ interface DynamicComparisonRowProps {
   panelType: 'offense' | 'defense';
   onTeamAChange?: (teamName: string) => void; // NEW: Team A selection callback
   onTeamBChange?: (teamName: string) => void; // NEW: Team B selection callback
+  swapVisual?: boolean; // Phase 3: flip visual columns only
 }
 
 export default function DynamicComparisonRow({ 
@@ -37,7 +38,8 @@ export default function DynamicComparisonRow({
   allDefenseData,
   panelType,
   onTeamAChange,
-  onTeamBChange
+  onTeamBChange,
+  swapVisual = false
 }: DynamicComparisonRowProps) {
   // 🚀 PERFORMANCE: Move all hooks to top to fix React Hook violations
   const metric = AVAILABLE_METRICS[metricKey];
@@ -71,8 +73,12 @@ export default function DynamicComparisonRow({
 
   // 🚀 PERFORMANCE: Use memoized bar calculation hook (moved to top to fix React Hook violations)
   // 🔒 TYPE SAFETY: Improved type-safe value extraction
-  const teamAValue = String(teamAData?.[metricKey as keyof typeof teamAData] ?? '0');
-  const teamBValue = String(teamBData?.[metricKey as keyof typeof teamBData] ?? '0');
+  const aRaw = teamAData?.[metricKey as keyof typeof teamAData];
+  const bRaw = teamBData?.[metricKey as keyof typeof teamBData];
+  const aMissing = aRaw === undefined || aRaw === null;
+  const bMissing = bRaw === undefined || bRaw === null;
+  const teamAValue = String(aMissing ? '0' : aRaw);
+  const teamBValue = String(bMissing ? '0' : bRaw);
   
   const barCalculation = useBarCalculation({
     teamAValue,
@@ -102,8 +108,8 @@ export default function DynamicComparisonRow({
   }
 
   // Format values for display
-  const formattedTeamAValue = formatMetricValue(teamAValue, metric.format);
-  const formattedTeamBValue = formatMetricValue(teamBValue, metric.format);
+  const formattedTeamAValue = aMissing ? '—' : formatMetricValue(teamAValue, metric.format);
+  const formattedTeamBValue = bMissing ? '—' : formatMetricValue(teamBValue, metric.format);
 
   // teamABetter, teamBBetter, and higherIsBetterForComparison removed as they were unused
   
@@ -122,33 +128,63 @@ export default function DynamicComparisonRow({
   const fallbackPanelClasses = "py-2 bg-slate-900/90 rounded-xl border border-slate-700/50 shadow-lg mb-3 relative";
   const fallbackBarClasses = "relative w-full h-5 bg-slate-800 rounded-full overflow-hidden";
 
+  const rankPill = (rank?: number | null, colorClass?: string) => (
+    <span className={`text-[10px] ${colorClass || ''} bg-slate-800/70 border border-slate-700/60 rounded-full px-1.5 py-0.5`}>#{rank ?? '—'}</span>
+  );
+
+  // Visual bar widths (flip sides if swapVisual)
+  const leftWidth = swapVisual ? teamBPercentage : teamAPercentage;
+  const rightWidth = swapVisual ? teamAPercentage : teamBPercentage;
+
+  // Compose left/right blocks (flip values/controls visually only)
+  const LeftBlock = () => (
+    <div className="flex items-center gap-3">
+      <div className={`font-semibold text-base font-mono ${getTeamAColor ? getTeamAColor() : 'text-green-400'}`}>
+        {swapVisual ? formattedTeamBValue : formattedTeamAValue}
+      </div>
+      {onTeamAChange ? (
+        <RankingDropdown
+          allData={allData}
+          metricKey={metricKey}
+          currentTeam={(swapVisual ? teamBData?.team : teamAData?.team) || ''}
+          type={type}
+          side="teamA"
+          onTeamChange={onTeamAChange}
+          className="ml-1"
+        />
+      ) : (
+        rankPill(swapVisual ? teamBRanking?.rank : teamARanking?.rank, getTeamAColor ? getTeamAColor() : 'text-green-400')
+      )}
+    </div>
+  );
+
+  const RightBlock = () => (
+    <div className="flex items-center gap-3">
+      {onTeamBChange ? (
+        <RankingDropdown
+          allData={allData}
+          metricKey={metricKey}
+          currentTeam={(swapVisual ? teamAData?.team : teamBData?.team) || ''}
+          type={type}
+          side="teamB"
+          onTeamChange={onTeamBChange}
+          className="mr-1"
+        />
+      ) : (
+        rankPill(swapVisual ? teamARanking?.rank : teamBRanking?.rank, getTeamBColor ? getTeamBColor() : 'text-orange-400')
+      )}
+      <div className={`font-semibold text-base font-mono ${getTeamBColor ? getTeamBColor() : 'text-orange-400'}`}>
+        {swapVisual ? formattedTeamAValue : formattedTeamBValue}
+      </div>
+    </div>
+  );
+
   return (
     <div className={getPanelClasses ? `py-2 mb-3 relative ${getPanelClasses()}` : fallbackPanelClasses}>
       {/* Removed heavy backdrop-blur, gradients, and motion for performance */}
       {/* Team Stats and Rankings */}
       <div className="flex justify-between items-center mb-2 px-4">
-        {/* Team A Stats */}
-        <div className="flex items-center gap-3">
-          <div className={`font-semibold text-base ${getTeamAColor ? getTeamAColor() : 'text-green-400'}`}>
-            {formattedTeamAValue}
-          </div>
-          {/* Interactive Ranking Dropdown for Team A (shows "Avg" badge when average selected) */}
-          {onTeamAChange ? (
-            <RankingDropdown
-              allData={allData}
-              metricKey={metricKey}
-              currentTeam={teamAData?.team || ''}
-              type={type}
-              side="teamA"
-              onTeamChange={onTeamAChange}
-              className="ml-1"
-            />
-          ) : (
-            <div className={`text-xs ${getTeamAColor ? getTeamAColor() : 'text-green-400'} opacity-60`}>
-              ({teamARanking?.formattedRank || 'N/A'})
-            </div>
-          )}
-        </div>
+        <LeftBlock />
         
         {/* Metric Name (Center) */}
         <div className="text-center">
@@ -157,28 +193,7 @@ export default function DynamicComparisonRow({
           </div>
         </div>
         
-        {/* Team B Stats */}
-        <div className="flex items-center gap-3">
-          {/* Interactive Ranking Dropdown for Team B (shows "Avg" badge when average selected) */}
-          {onTeamBChange ? (
-            <RankingDropdown
-              allData={allData}
-              metricKey={metricKey}
-              currentTeam={teamBData?.team || ''}
-              type={type}
-              side="teamB"
-              onTeamChange={onTeamBChange}
-              className="mr-1"
-            />
-          ) : (
-            <div className={`text-xs ${getTeamBColor ? getTeamBColor() : 'text-orange-400'} opacity-60`}>
-              ({teamBRanking?.formattedRank || 'N/A'})
-            </div>
-          )}
-          <div className={`font-semibold text-base ${getTeamBColor ? getTeamBColor() : 'text-orange-400'}`}>
-            {formattedTeamBValue}
-          </div>
-        </div>
+        <RightBlock />
       </div>
       
       {/* Optimized theScore Style Bars */}
@@ -196,7 +211,7 @@ export default function DynamicComparisonRow({
           <div 
             className={`absolute left-0 top-0 h-full rounded-full ${theme?.animations ? 'transition-all duration-300 ease-out' : 'transition-all duration-300 ease-out'}`}
             style={{ 
-              width: `${teamAPercentage}%`,
+              width: `${leftWidth}%`,
               background: getTeamAGradient ? getTeamAGradient() : 'linear-gradient(90deg, #22c55e, #16a34a)',
               willChange: 'width'
             }}
@@ -205,14 +220,14 @@ export default function DynamicComparisonRow({
           {/* Center gap/separator - invisible background match */}
           <div 
             className="absolute top-0 h-full w-0.5 bg-slate-800 z-10"
-            style={{ left: `${teamAPercentage}%` }}
+            style={{ left: `${leftWidth}%` }}
           />
           
           {/* Team B Bar - Fully rounded orange pill */}
           <div 
             className={`absolute right-0 top-0 h-full rounded-full ${theme?.animations ? 'transition-all duration-300 ease-out' : 'transition-all duration-300 ease-out'}`}
             style={{ 
-              width: `${teamBPercentage}%`,
+              width: `${rightWidth}%`,
               background: getTeamBGradient ? getTeamBGradient() : 'linear-gradient(90deg, #f97316, #ea580c)',
               willChange: 'width'
             }}
