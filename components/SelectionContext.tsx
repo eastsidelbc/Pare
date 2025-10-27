@@ -1,3 +1,5 @@
+import { logDebug } from '@/lib/logger';
+
 'use client';
 
 import React from 'react';
@@ -22,6 +24,10 @@ export function SelectionProvider({ children }: { children: React.ReactNode }) {
   const [swap, setSwap] = React.useState(false);
 
   const toggleSwap = React.useCallback(() => setSwap(s => !s), []);
+
+  React.useEffect(() => {
+    logDebug('SelectionContext/update', { next: selectedGame });
+  }, [selectedGame]);
 
   const value = React.useMemo(() => ({ selectedGame, setSelectedGame, swap, toggleSwap }), [selectedGame, swap, toggleSwap]);
   return <SelectionContext.Provider value={value}>{children}</SelectionContext.Provider>;

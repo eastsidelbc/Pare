@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useSelection } from './SelectionContext';
+import { logDebug } from '@/lib/logger';
 
 interface Chip {
   id: string;
@@ -26,30 +27,39 @@ export default function MismatchChips() {
   const { selectedGame } = useSelection();
   const [chips, setChips] = React.useState<Chip[]>([]);
   const [loading, setLoading] = React.useState(false);
+
+  const away = selectedGame?.awayAbbr;
+  const home = selectedGame?.homeAbbr;
+
+  logDebug('MismatchChips/render', { key: `${away || ''}@${home || ''}`, loading, chipCount: chips.length });
+  if (chips.length) {
+    logDebug('MismatchChips/chips', chips.map(c => c.id));
+  }
+
   React.useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetchChips(selectedGame?.awayAbbr, selectedGame?.homeAbbr).then((res) => {
+    fetchChips(away, home).then((res) => {
       if (!cancelled) {
         setChips(res.slice(0, 2));
         setLoading(false);
       }
     }).catch(() => setLoading(false));
     return () => { cancelled = true; };
-  }, [selectedGame?.awayAbbr, selectedGame?.homeAbbr]);
+  }, [away, home]);
 
-  if (!selectedGame?.awayAbbr || !selectedGame?.homeAbbr) {
+  if (!away || !home) {
     return null;
   }
 
   return (
     <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-      {loading && (
+      {loading && (logDebug('MismatchChips/skeleton', { showSkeleton: true }), (
         <>
           <span className="inline-flex h-7 rounded-full px-6 bg-slate-800/70 animate-pulse" />
           <span className="inline-flex h-7 rounded-full px-10 bg-slate-800/70 animate-pulse" />
         </>
-      )}
+      ))}
       {chips.map((c) => (
         <span
           key={c.id}

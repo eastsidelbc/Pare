@@ -1,3 +1,5 @@
+import { logDebug } from '@/lib/logger';
+
 'use client';
 
 import React from 'react';
@@ -40,6 +42,8 @@ export default function CompareHeader() {
   const status = formatStatus(selectedGame || undefined);
   const spread = selectedGame?.spread !== undefined ? formatHomeSpread(rightAbbr, selectedGame.spread as any) : '';
   const total = selectedGame?.total !== undefined ? `O/U ${formatTotal(selectedGame.total as any)}` : '';
+
+  logDebug('CompareHeader/render', { awayAbbr, homeAbbr, showSkeleton, timestamp: Date.now() });
 
   if (showSkeleton) {
     return (
