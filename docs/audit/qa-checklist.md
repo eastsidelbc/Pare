@@ -84,6 +84,33 @@ Compact header line above compare view and two insight chips (mocked rules).
 - [ ] Real rules engine (mock texts only)
 - [ ] Deep links / URL params
 
+---
+
+# QA Checklist — Phase 3 (Compare Wiring + Compact Rows)
+
+## Scope
+Wire Compare to global selection (rail) with visual swap only; compact defaults with “More”.
+
+## Selection Wiring
+- [ ] Selecting rail items updates all sections immediately
+- [ ] Compare does not read from URL/search; selection is global store
+- [ ] Header [Swap] flips columns visually; values/ranks remain semantically correct
+
+## Compact Rows
+- [ ] Each section shows first 5 rows by default
+- [ ] “More” expands remaining rows without layout jump; “Less” collapses
+- [ ] Row height targets: ~32–36px desktop, ~36–40px mobile
+- [ ] No logos inside stat rows
+
+## Formatting & Badges
+- [ ] Integers/1-decimals/% follow spec; monospace digits render for values
+- [ ] Tiny rank pill (e.g., #3) present next to values where rank exists
+- [ ] Missing stats show `—` and zero-width bars
+
+## Bars
+- [ ] Bars continue to meet in the middle; math uses the shared helper
+
+
 - Sorting order: LIVE (as-is), UPCOMING by kickoff ascending, FINAL as-is
 - Mock covers LIVE, UPCOMING, FINAL sample games
 

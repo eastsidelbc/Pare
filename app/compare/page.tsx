@@ -20,10 +20,13 @@ import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import CompareHeader from '@/components/CompareHeader';
 import MismatchChips from '@/components/MismatchChips';
+import { useSelection } from '@/components/SelectionContext';
+import { abbrToName } from '@/utils/teamAbbr';
 
 export default function ComparePage() {
   // NEW: Mobile detection
   const isMobile = useIsMobile();
+  const { selectedGame, swap: swapVisual } = useSelection();
   
   const { 
     offenseData, 
@@ -50,6 +53,13 @@ export default function ComparePage() {
 
   const [selectedTeamA, setSelectedTeamA] = useState<string>(() => defaultTeams.a);
   const [selectedTeamB, setSelectedTeamB] = useState<string>(() => defaultTeams.b);
+
+  // Phase 3: Resolve teams from global selection (rail) if present
+  const resolvedFromSelection = React.useMemo(() => {
+    const away = selectedGame?.awayAbbr ? abbrToName(selectedGame.awayAbbr) : null;
+    const home = selectedGame?.homeAbbr ? abbrToName(selectedGame.homeAbbr) : null;
+    return { away, home };
+  }, [selectedGame]);
 
   // Global metrics selection state
   const [selectedOffenseMetrics, setSelectedOffenseMetrics] = useState<string[]>(DEFAULT_OFFENSE_METRICS);
@@ -163,6 +173,10 @@ export default function ComparePage() {
   );
   }
 
+  // Final teams used by panels (prefer global selection, otherwise local defaults)
+  const finalTeamA = resolvedFromSelection.away || selectedTeamA;
+  const finalTeamB = resolvedFromSelection.home || selectedTeamB;
+
   return (
     <>
       {/* NEW: Conditional rendering based on viewport */}
@@ -171,8 +185,8 @@ export default function ComparePage() {
         // MOBILE LAYOUT (NEW)
         // ========================================
         <MobileCompareLayout
-          selectedTeamA={selectedTeamA}
-          selectedTeamB={selectedTeamB}
+          selectedTeamA={finalTeamA}
+          selectedTeamB={finalTeamB}
           onTeamAChange={handleTeamAChange}
           onTeamBChange={handleTeamBChange}
           offenseData={offenseData}
@@ -224,12 +238,13 @@ export default function ComparePage() {
                     <OffensePanel
                       offenseData={offenseData}
                       defenseData={defenseData}
-                      selectedTeamA={selectedTeamA}
-                      selectedTeamB={selectedTeamB}
+                      selectedTeamA={finalTeamA}
+                      selectedTeamB={finalTeamB}
                       selectedMetrics={selectedOffenseMetrics}
                       isLoading={isLoadingOffense}
                       onTeamAChange={handleTeamAChange}
                       onTeamBChange={handleTeamBChange}
+                      swapVisual={swapVisual}
                     />
               </ErrorBoundary>
 
@@ -244,12 +259,13 @@ export default function ComparePage() {
                     <DefensePanel
                       defenseData={defenseData}
                       offenseData={offenseData}
-                      selectedTeamA={selectedTeamA}
-                      selectedTeamB={selectedTeamB}
+                      selectedTeamA={finalTeamA}
+                      selectedTeamB={finalTeamB}
                       selectedMetrics={selectedDefenseMetrics}
                       isLoading={isLoadingDefense}
                       onTeamAChange={handleTeamAChange}
                       onTeamBChange={handleTeamBChange}
+                      swapVisual={swapVisual}
                     />
               </ErrorBoundary>
             </div>
