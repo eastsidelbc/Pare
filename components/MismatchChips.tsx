@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useSelection } from './SelectionContext';
+import { logDebug } from '@/lib/logger';
 
 interface Chip {
   id: string;
@@ -25,40 +26,51 @@ async function fetchChips(awayAbbr?: string, homeAbbr?: string): Promise<Chip[]>
 export default function MismatchChips() {
   const { selectedGame } = useSelection();
   const [chips, setChips] = React.useState<Chip[]>([]);
-  const [loading, setLoading] = React.useState(false);
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+  const [fade, setFade] = React.useState(false);
 
   const away = selectedGame?.awayAbbr;
   const home = selectedGame?.homeAbbr;
+  const DEBUG = process.env.NEXT_PUBLIC_DEBUG_CHIPS === '1';
 
-  // logging removed
+  const idsKey = React.useMemo(() => chips.map(c => c.id).join('|'), [chips]);
 
   React.useEffect(() => {
     let cancelled = false;
-    // Clear previous chips so skeleton does not overlap
-    setChips([]);
-    setLoading(true);
+    setIsRefreshing(true);
+    if (DEBUG) logDebug('MismatchChips/refresh', { refreshing: true, key: `${away}@${home}`, beforeIds: idsKey });
     fetchChips(away, home).then((res) => {
       if (!cancelled) {
         setChips(res.slice(0, 2));
-        setLoading(false);
+        setIsRefreshing(false);
+        if (DEBUG) logDebug('MismatchChips/refresh', { refreshing: false, key: `${away}@${home}`, afterIds: res.slice(0,2).map(c=>c.id) });
       }
-    }).catch(() => setLoading(false));
+    }).catch(() => setIsRefreshing(false));
     return () => { cancelled = true; };
   }, [away, home]);
+
+  // Cross-fade on chips change
+  React.useEffect(() => {
+    if (!chips.length) return;
+    setFade(true);
+    const id = requestAnimationFrame(() => setFade(false));
+    return () => cancelAnimationFrame(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idsKey]);
 
   if (!away || !home) {
     return null;
   }
 
   return (
-    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-      {loading ? (
-        <>
-          <span className="inline-flex h-7 rounded-full px-6 bg-slate-800/70 animate-pulse" />
-          <span className="inline-flex h-7 rounded-full px-10 bg-slate-800/70 animate-pulse" />
-        </>
-      ) : (
-        chips.map((c) => (
+    <div className="relative flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+      {/* Overlay shimmer during refresh (no layout shift) */}
+      {isRefreshing && (
+        <div className="absolute inset-0 pointer-events-none animate-pulse bg-gradient-to-r from-transparent via-slate-100/10 to-transparent rounded" />
+      )}
+
+      <div className={`flex items-center gap-2 transition-opacity duration-200 ${fade ? 'opacity-0' : 'opacity-100'}`}>
+        {chips.map((c) => (
           <span
             key={c.id}
             className={
@@ -72,8 +84,8 @@ export default function MismatchChips() {
           >
             {c.text}
           </span>
-        ))
-      )}
+        ))}
+      </div>
     </div>
   );
 }

@@ -68,6 +68,7 @@ Links:
 ## Follow-ups
 - Optional: skeletons for compare panels on first mount.
 - Next: introduce live adapters and aggregator; swap mocks to real sources without UI changes.
+- Implement SWR-style refresh for MismatchChips: keep old chips visible with an overlay shimmer and cross-fade new content; avoid skeleton blanks.
 
 ---
 
