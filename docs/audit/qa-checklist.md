@@ -110,6 +110,36 @@ Wire Compare to global selection (rail) with visual swap only; compact defaults 
 ## Bars
 - [ ] Bars continue to meet in the middle; math uses the shared helper
 
+---
+
+# QA Checklist — Phase 4 (Mock API Integration)
+
+## Scope
+Use mock API endpoints for scoreboard, header, and chips with 5s polling; add skeletons; format spread/total/kickoff correctly.
+
+## Endpoints
+- [ ] /api/mock/scoreboard returns games array
+- [ ] /api/mock/matchup?away=&home= returns { chips: [] }
+
+## Rail
+- [ ] Rail fetches from /api/mock/scoreboard and polls every 5s
+- [ ] While first fetch pending (>300ms), skeleton placeholders show
+- [ ] Spread formats as home-based string (e.g., `BUF -2.5`, `PK` for 0)
+- [ ] O/U shows one decimal (e.g., `O/U 46.5`)
+- [ ] Kickoff time shows in America/Chicago (e.g., `3:25 PM`)
+
+## Header
+- [ ] Spread/Total use the same formatting as rail
+- [ ] Swap still flips visually only
+
+## Chips
+- [ ] Chips are fetched from /api/mock/matchup based on current selection
+- [ ] Max 2 visible; reasonable fallback if API errors
+
+## Notes
+- [ ] No URL/search dependency introduced
+- [ ] Future: move to real adapters without changing UI contract
+
 
 - Sorting order: LIVE (as-is), UPCOMING by kickoff ascending, FINAL as-is
 - Mock covers LIVE, UPCOMING, FINAL sample games

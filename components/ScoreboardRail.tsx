@@ -83,9 +83,23 @@ export default function ScoreboardRail({ onSelect, className = '' }: ScoreboardR
     <aside className={`w-full ${className}`} aria-label="Scoreboard Rail">
       <div className="text-slate-300 text-sm px-3 py-2 border-b border-slate-800/60">LIVE GAMES</div>
       <div className="py-2 text-slate-200">
-        <Section title="Live" games={live} />
-        <Section title="Upcoming" games={upcoming} />
-        <Section title="Final" games={final} />
+        {showSkeleton && (
+          <div className="px-3 py-2 space-y-2">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="h-4 bg-slate-800/70 rounded w-full mb-1" />
+                <div className="h-4 bg-slate-800/70 rounded w-5/6" />
+              </div>
+            ))}
+          </div>
+        )}
+        {!showSkeleton && (
+          <>
+            <Section title="Live" games={live} />
+            <Section title="Upcoming" games={upcoming} />
+            <Section title="Final" games={final} />
+          </>
+        )}
       </div>
     </aside>
   );
