@@ -358,4 +358,23 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - `lib/hooks/useScoreboardMock.ts` (5s polling)
   - Rail/Header/Chips wired to mocks with skeletons
 
+### Docs
+- 2025-10-27: Phase 4 wrap + flicker investigation Dev Note
+  - `docs/devnotes/2025-10-27-flicker-investigation-and-phase4-wrap.md`
+
+### Fixed
+- 2025-10-27: MismatchChips ghost pills on selection change
+  - Clear chips at fetch start, skeleton-or-chips gating (no overlap)
+  - Stable chip keys per selection (`${away}-${home}-${text}`)
+
+### Changed
+- 2025-10-27: Build/runtime hygiene for client modules
+  - Placed `'use client'` at top: `CompareHeader.tsx`, `SelectionContext.tsx`, `useScoreboardMock.ts`
+  - `lib/logger.ts`: browser-safe (server-only fs/path)
+
+### Chore
+- 2025-10-27: Temporary instrumentation added and then removed
+  - Added `logDebug` and logs (renders, API, polling) to isolate flicker
+  - Removed logging from components/hooks/routes after verification
+
 
