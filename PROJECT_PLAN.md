@@ -592,6 +592,22 @@ Focus: Implementing the left scoreboard rail (double-row format, mock data).
 
 - Phase 1 underway: Building `ScoreboardRail` (double-row), pinned on desktop, drawer on mobile. Local mock data only.
 
+### Phase 2 — Header Line + Mismatch Chips
+- Compact header above compare, shows: `AWAY @ HOME • STATUS/CLOCK • SPREAD • O/U • [Swap]`.
+- Mismatch chips (max 2), mock rule strings for now.
+
+### Phase 3 — Compare Wiring + Compact Rows
+- Compare view subscribes to global selection (rail); local URL/search removed.
+- `swapVisual` flips columns visually only; ranks/bars semantics preserved.
+- Default 5 rows per section with tiny “More/Less”; tighter vertical spacing; rank pills; missing stats show `—`.
+
+### Phase 4 — Mock API Integration (UNDERWAY)
+- Endpoints added: `/api/mock/scoreboard` (5s polling) and `/api/mock/matchup?away=&home=`.
+- Types: `ScoreboardGame`, `MatchupPayload` under `/types/matchup.ts`.
+- Utilities: Chicago kickoff time, home-based spread formatter, O/U formatter.
+- Rail/header/chips wired to mock APIs; skeletons for initial fetch.
+- No real scraping yet; this locks UI contracts before adapters.
+
 Pare Roadmap (Detailed, Update-as-we-go)
 Conventions (apply to every phase)
 
