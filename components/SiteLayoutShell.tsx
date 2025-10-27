@@ -1,18 +1,28 @@
 'use client';
 
 import React from 'react';
-import ScoreboardRail from './ScoreboardRail';
+import ScoreboardRail, { Game } from './ScoreboardRail';
+import { SelectionProvider, useSelection } from './SelectionContext';
 
 interface SiteLayoutShellProps {
   children: React.ReactNode;
 }
 
-export default function SiteLayoutShell({ children }: SiteLayoutShellProps) {
+function ShellInner({ children }: { children: React.ReactNode }) {
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
-  const [selected, setSelected] = React.useState<{ awayAbbr: string; homeAbbr: string } | null>(null);
+  const { selectedGame, setSelectedGame } = useSelection();
 
-  const handleSelect = (match: { awayAbbr: string; homeAbbr: string }) => {
-    setSelected(match);
+  const handleSelectFull = (game: Game) => {
+    setSelectedGame({
+      awayAbbr: game.away.abbr,
+      homeAbbr: game.home.abbr,
+      spread: game.spread,
+      total: game.total,
+      status: game.status,
+      quarter: game.quarter,
+      clock: game.clock,
+      kickoffIso: game.kickoffIso,
+    });
     setIsDrawerOpen(false);
   };
 
@@ -28,7 +38,7 @@ export default function SiteLayoutShell({ children }: SiteLayoutShellProps) {
           ☰
         </button>
         <div className="text-sm text-slate-300 truncate">
-          {selected ? `Selected: ${selected.awayAbbr} @ ${selected.homeAbbr}` : 'Selected: —'}
+          {selectedGame?.awayAbbr && selectedGame?.homeAbbr ? `Selected: ${selectedGame.awayAbbr} @ ${selectedGame.homeAbbr}` : 'Selected: —'}
         </div>
         <div className="w-8" />
       </div>
@@ -39,14 +49,14 @@ export default function SiteLayoutShell({ children }: SiteLayoutShellProps) {
           {/* Desktop Left Rail */}
           <div className="hidden md:block shrink-0" style={{ width: 340 }}>
             <div className="sticky top-0 max-h-screen-dynamic overflow-y-auto border-r border-slate-800/60 bg-slate-900/40">
-              <ScoreboardRail onSelect={handleSelect} />
+              <ScoreboardRail onSelect={(m) => handleSelectFull(m as any)} />
             </div>
           </div>
 
           {/* Main Content */}
           <div className="flex-1 min-w-0">
             <div className="hidden md:block text-sm text-slate-300 px-4 py-3 border-b border-slate-800/60">
-              {selected ? `Selected: ${selected.awayAbbr} @ ${selected.homeAbbr}` : 'Selected: —'}
+              {selectedGame?.awayAbbr && selectedGame?.homeAbbr ? `Selected: ${selectedGame.awayAbbr} @ ${selectedGame.homeAbbr}` : 'Selected: —'}
             </div>
             <div className="px-4 py-4">
               {children}
@@ -81,12 +91,20 @@ export default function SiteLayoutShell({ children }: SiteLayoutShellProps) {
               </button>
             </div>
             <div className="h-[calc(100%-3rem)] overflow-y-auto">
-              <ScoreboardRail onSelect={handleSelect} />
+              <ScoreboardRail onSelect={(m) => handleSelectFull(m as any)} />
             </div>
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+export default function SiteLayoutShell({ children }: SiteLayoutShellProps) {
+  return (
+    <SelectionProvider>
+      <ShellInner>{children}</ShellInner>
+    </SelectionProvider>
   );
 }
 

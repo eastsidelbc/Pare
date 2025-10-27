@@ -18,6 +18,8 @@ import FloatingMetricsButton from '@/components/FloatingMetricsButton';
 import OfflineStatusBanner from '@/components/OfflineStatusBanner';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import CompareHeader from '@/components/CompareHeader';
+import MismatchChips from '@/components/MismatchChips';
 
 export default function ComparePage() {
   // NEW: Mobile detection
@@ -204,6 +206,11 @@ export default function ComparePage() {
               <div className="absolute inset-0 opacity-[0.02] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMzAwdjMwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=')]"></div>
             </div>
             <div className="max-w-6xl mx-auto">
+            {/* Phase 2: Compact header + chips */}
+            <div className="mb-3 space-y-2">
+              <CompareHeader />
+              <MismatchChips />
+            </div>
             {/* Comparison Panels - Protected by Error Boundaries */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {/* Offense Panel */}

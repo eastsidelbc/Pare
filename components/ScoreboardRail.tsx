@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import TeamLogo from './TeamLogo';
+import { abbrToName } from '@/utils/teamAbbr';
 
 export type GameStatus = 'LIVE' | 'UPCOMING' | 'FINAL';
 
@@ -22,7 +24,7 @@ export interface Game {
 }
 
 export interface ScoreboardRailProps {
-  onSelect?: (matchup: { awayAbbr: string; homeAbbr: string }) => void;
+  onSelect?: (game: Game) => void;
   className?: string;
 }
 
@@ -126,12 +128,13 @@ export default function ScoreboardRail({ onSelect, className = '' }: ScoreboardR
         {games.map((game) => (
           <button
             key={game.id}
-            onClick={() => onSelect?.({ awayAbbr: game.away.abbr, homeAbbr: game.home.abbr })}
+            onClick={() => onSelect?.(game)}
             className="w-full text-left px-3 py-2 hover:bg-slate-800/50 focus:outline-none focus-ring"
           >
             {/* Line 1 */}
             <div className="flex items-center justify-between gap-3">
-              <div className="flex items-baseline gap-2">
+              <div className="flex items-center gap-2">
+                <TeamLogo teamName={abbrToName(game.away.abbr) || game.away.abbr} size="24" />
                 <span className="text-[13px] font-medium text-slate-200">{game.away.abbr}</span>
                 <span className="text-[14px] font-semibold text-white font-mono">{game.away.score ?? '\u2013'}</span>
               </div>
@@ -141,7 +144,8 @@ export default function ScoreboardRail({ onSelect, className = '' }: ScoreboardR
             </div>
             {/* Line 2 */}
             <div className="flex items-center justify-between gap-3 mt-0.5">
-              <div className="flex items-baseline gap-2">
+              <div className="flex items-center gap-2">
+                <TeamLogo teamName={abbrToName(game.home.abbr) || game.home.abbr} size="24" />
                 <span className="text-[13px] font-medium text-slate-200">{game.home.abbr}</span>
                 <span className="text-[14px] font-semibold text-white font-mono">{game.home.score ?? '\u2013'}</span>
               </div>

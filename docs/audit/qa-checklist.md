@@ -48,6 +48,42 @@ Left scoreboard rail with double-row items, pinned on desktop, drawer on mobile.
 - [ ] Compare page not wired
 
 ## Notes
+-
+---
+
+# QA Checklist — Phase 2 (Header + Mismatch Chips)
+
+## Scope
+Compact header line above compare view and two insight chips (mocked rules).
+
+## Header Line
+- [ ] Shows: `AWAY @ HOME • STATUS/CLOCK • SPREAD • O/U`
+- [ ] Swap button flips only the visual order (left/right labels) — values keep meaning
+- [ ] Status rendering: same rules as rail (LIVE/UPCOMING/FINAL)
+- [ ] Truncation: long team abbreviations/names don’t overflow
+
+## Logos
+- [ ] 24px logos render for both teams next to abbreviations
+- [ ] Good contrast on dark background
+
+## Chips
+- [ ] Max 2 chips visible
+- [ ] Horizontal scroll for extras (future; mock now still scrollable)
+- [ ] Different severities use distinct colors (extreme/high/moderate)
+
+## Integration
+- [ ] Header + chips render above compare panels on desktop
+- [ ] No layout shift when swapping
+- [ ] Works with selection from rail
+
+## Accessibility
+- [ ] Swap button is focusable and has label
+- [ ] Chips are readable with sufficient contrast
+
+## Out of Scope
+- [ ] Real rules engine (mock texts only)
+- [ ] Deep links / URL params
+
 - Sorting order: LIVE (as-is), UPCOMING by kickoff ascending, FINAL as-is
 - Mock covers LIVE, UPCOMING, FINAL sample games
 
