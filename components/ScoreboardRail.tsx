@@ -7,7 +7,6 @@ import type { ScoreboardGame } from '@/types/matchup';
 import { useScoreboardMock } from '@/lib/hooks/useScoreboardMock';
 import { formatKickoffChicago } from '@/utils/time';
 import { formatHomeSpread, formatTotal } from '@/utils/odds';
-import { logDebug } from '@/lib/logger';
 
 export interface ScoreboardRailProps {
   onSelect?: (game: ScoreboardGame) => void;
@@ -49,7 +48,7 @@ export default function ScoreboardRail({ onSelect, className = '' }: ScoreboardR
         {games.map((game) => (
           <button
             key={game.gameId}
-            onClick={() => { logDebug('GameRail/select', { awayAbbr: game.away.abbr, homeAbbr: game.home.abbr, time: new Date().toISOString() }); onSelect?.(game); }}
+            onClick={() => { onSelect?.(game); }}
             className="w-full text-left px-3 py-2 hover:bg-slate-800/50 focus:outline-none focus-ring"
           >
             {/* Line 1 */}

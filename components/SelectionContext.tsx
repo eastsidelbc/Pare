@@ -1,6 +1,5 @@
 'use client';
 
-import { logDebug } from '@/lib/logger';
 import React from 'react';
 import type { ScoreboardGame } from '@/types/matchup';
 
@@ -24,9 +23,7 @@ export function SelectionProvider({ children }: { children: React.ReactNode }) {
 
   const toggleSwap = React.useCallback(() => setSwap(s => !s), []);
 
-  React.useEffect(() => {
-    logDebug('SelectionContext/update', { next: selectedGame });
-  }, [selectedGame]);
+  // logging removed
 
   const value = React.useMemo(() => ({ selectedGame, setSelectedGame, swap, toggleSwap }), [selectedGame, swap, toggleSwap]);
   return <SelectionContext.Provider value={value}>{children}</SelectionContext.Provider>;

@@ -1,6 +1,5 @@
 'use client';
 
-import { logDebug } from '@/lib/logger';
 import React from 'react';
 import TeamLogo from './TeamLogo';
 import { useSelection } from './SelectionContext';
@@ -42,7 +41,7 @@ export default function CompareHeader() {
   const spread = selectedGame?.spread !== undefined ? formatHomeSpread(rightAbbr, selectedGame.spread as any) : '';
   const total = selectedGame?.total !== undefined ? `O/U ${formatTotal(selectedGame.total as any)}` : '';
 
-  logDebug('CompareHeader/render', { awayAbbr, homeAbbr, showSkeleton, timestamp: Date.now() });
+  // logging removed
 
   if (showSkeleton) {
     return (

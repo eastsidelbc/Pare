@@ -1,6 +1,5 @@
 'use client';
 
-import { logDebug } from '@/lib/logger';
 import React from 'react';
 import type { ScoreboardGame } from '@/types/matchup';
 
@@ -12,9 +11,7 @@ export function useScoreboardMock(pollMs: number = 5000) {
 
   const fetchOnce = React.useCallback(async () => {
     const url = '/api/mock/scoreboard';
-    const label = `[PollFetch] ${url}`;
-    console.time(label);
-    const t0 = performance.now();
+    // timing/logging removed
     try {
       const res = await fetch(url, { cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -22,14 +19,10 @@ export function useScoreboardMock(pollMs: number = 5000) {
       setGames(data);
       setError(null);
       setIsLoading(false);
-      const durationMs = performance.now() - t0;
-      logDebug('Polling/fetch', { url, count: data.length, durationMs: Math.round(durationMs) });
     } catch (e) {
-      logDebug('Polling/fetchError', { url, error: String(e) });
       setError(e);
       // keep isLoading true until first success
     } finally {
-      console.timeEnd(label);
     }
   }, []);
 
@@ -38,7 +31,6 @@ export function useScoreboardMock(pollMs: number = 5000) {
     fetchOnce();
     const id = setInterval(() => {
       if (!cancelled) {
-        logDebug('Polling/tick', { pollMs });
         fetchOnce();
       }
     }, pollMs);

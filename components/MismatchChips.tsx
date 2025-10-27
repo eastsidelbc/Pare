@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { useSelection } from './SelectionContext';
-import { logDebug } from '@/lib/logger';
 
 interface Chip {
   id: string;
@@ -31,10 +30,7 @@ export default function MismatchChips() {
   const away = selectedGame?.awayAbbr;
   const home = selectedGame?.homeAbbr;
 
-  logDebug('MismatchChips/render', { key: `${away || ''}@${home || ''}`, loading, chipCount: chips.length });
-  if (chips.length) {
-    logDebug('MismatchChips/chips', chips.map(c => c.id));
-  }
+  // logging removed
 
   React.useEffect(() => {
     let cancelled = false;
@@ -58,7 +54,6 @@ export default function MismatchChips() {
     <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
       {loading ? (
         <>
-          {logDebug('MismatchChips/skeleton', { showSkeleton: true })}
           <span className="inline-flex h-7 rounded-full px-6 bg-slate-800/70 animate-pulse" />
           <span className="inline-flex h-7 rounded-full px-10 bg-slate-800/70 animate-pulse" />
         </>
