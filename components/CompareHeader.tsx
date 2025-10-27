@@ -4,6 +4,7 @@ import React from 'react';
 import TeamLogo from './TeamLogo';
 import { useSelection } from './SelectionContext';
 import { abbrToName } from '@/utils/teamAbbr';
+import { formatHomeSpread, formatTotal } from '@/utils/odds';
 
 function formatStatus(selected?: { status?: string; quarter?: number; clock?: string; kickoffIso?: string | null }) {
   if (!selected) return '';
@@ -36,8 +37,8 @@ export default function CompareHeader() {
   const rightName = abbrToName(rightAbbr) || rightAbbr;
 
   const status = formatStatus(selectedGame || undefined);
-  const spread = selectedGame?.spread || '';
-  const total = selectedGame?.total ? `O/U ${selectedGame.total}` : '';
+  const spread = selectedGame?.spread !== undefined ? formatHomeSpread(rightAbbr, selectedGame.spread as any) : '';
+  const total = selectedGame?.total !== undefined ? `O/U ${formatTotal(selectedGame.total as any)}` : '';
 
   return (
     <div className="w-full bg-slate-900/60 border border-slate-800/60 rounded-xl px-3 py-2 flex items-center gap-3">

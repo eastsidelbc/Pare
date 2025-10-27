@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import type { Game } from './ScoreboardRail';
+import type { ScoreboardGame } from '@/types/matchup';
 
-export interface SelectedGameSnapshot extends Partial<Game> {
+export interface SelectedGameSnapshot extends Partial<ScoreboardGame> {
   awayAbbr?: string;
   homeAbbr?: string;
 }

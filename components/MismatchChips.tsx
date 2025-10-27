@@ -9,17 +9,25 @@ interface Chip {
   severity: 'extreme' | 'high' | 'moderate';
 }
 
-function mockRules(): Chip[] {
-  // Placeholder deterministic rules for Phase 2 visual
-  return [
-    { id: 'elite-offense-vs-poor-defense', text: 'Top-5 Offense vs Bottom-10 Defense', severity: 'extreme' },
-    { id: 'rz-gap', text: 'RZ TD%: 68% vs 44%', severity: 'high' },
-  ];
+async function fetchChips(awayAbbr?: string, homeAbbr?: string): Promise<Chip[]> {
+  if (!awayAbbr || !homeAbbr) return [];
+  try {
+    const res = await fetch(`/api/mock/matchup?away=${encodeURIComponent(awayAbbr)}&home=${encodeURIComponent(homeAbbr)}`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data: { chips: string[] } = await res.json();
+    // Map strings to medium severity by default
+    return (data.chips || []).map((t, i) => ({ id: `${i}`, text: t, severity: i === 0 ? 'high' : 'moderate' }));
+  } catch {
+    return [];
+  }
 }
 
 export default function MismatchChips() {
   const { selectedGame } = useSelection();
-  const chips = React.useMemo(() => mockRules().slice(0, 2), [selectedGame]);
+  const [chips, setChips] = React.useState<Chip[]>([]);
+  React.useEffect(() => {
+    fetchChips(selectedGame?.awayAbbr, selectedGame?.homeAbbr).then((res) => setChips(res.slice(0, 2)));
+  }, [selectedGame?.awayAbbr, selectedGame?.homeAbbr]);
 
   if (!selectedGame?.awayAbbr || !selectedGame?.homeAbbr) {
     return null;
