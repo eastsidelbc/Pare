@@ -135,9 +135,9 @@ Use mock API endpoints for scoreboard, header, and chips with 5s polling; add sk
 ## Chips
 - [ ] Chips are fetched from /api/mock/matchup based on current selection
 - [ ] Max 2 visible; reasonable fallback if API errors
-- [ ] SWR overlay: chips stay visible during refresh; overlay animates; no layout shift
-- [ ] Rapid-click 10 matchups: exactly 1 fetch per click; no empty pill flash
-- [ ] Pause ~6s to cross a poll tick: pills never blank; header/rail remain stable
+- [ ] Phase 3 UX restore: no skeleton/overlay during selection switches
+- [ ] Rapid-click 10 matchups: immediate pill updates; no empty/white glow
+- [ ] Poll tick does not blank or dim content mid-interaction
 
 ## Notes
 - [ ] No URL/search dependency introduced

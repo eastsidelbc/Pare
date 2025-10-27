@@ -1,8 +1,8 @@
+// PHASE3_UX: Keep previous chips visible during selection; no overlay/skeleton during switches.
 'use client';
 
 import React from 'react';
 import { useSelection } from './SelectionContext';
-import { logDebug } from '@/lib/logger';
 
 interface Chip {
   id: string;
@@ -26,51 +26,42 @@ async function fetchChips(awayAbbr?: string, homeAbbr?: string): Promise<Chip[]>
 export default function MismatchChips() {
   const { selectedGame } = useSelection();
   const [chips, setChips] = React.useState<Chip[]>([]);
-  const [isRefreshing, setIsRefreshing] = React.useState(false);
-  const [fade, setFade] = React.useState(false);
+  const hasLoadedOnceRef = React.useRef(false);
 
   const away = selectedGame?.awayAbbr;
   const home = selectedGame?.homeAbbr;
-  const DEBUG = process.env.NEXT_PUBLIC_DEBUG_CHIPS === '1';
-
   const idsKey = React.useMemo(() => chips.map(c => c.id).join('|'), [chips]);
 
   React.useEffect(() => {
     let cancelled = false;
-    setIsRefreshing(true);
-    if (DEBUG) logDebug('MismatchChips/refresh', { refreshing: true, key: `${away}@${home}`, beforeIds: idsKey });
     fetchChips(away, home).then((res) => {
       if (!cancelled) {
         setChips(res.slice(0, 2));
-        setIsRefreshing(false);
-        if (DEBUG) logDebug('MismatchChips/refresh', { refreshing: false, key: `${away}@${home}`, afterIds: res.slice(0,2).map(c=>c.id) });
+        hasLoadedOnceRef.current = true;
       }
-    }).catch(() => setIsRefreshing(false));
+    }).catch(() => {
+      // preserve existing chips on error; do not blank
+      hasLoadedOnceRef.current = true;
+    });
     return () => { cancelled = true; };
   }, [away, home]);
 
-  // Cross-fade on chips change
-  React.useEffect(() => {
-    if (!chips.length) return;
-    setFade(true);
-    const id = requestAnimationFrame(() => setFade(false));
-    return () => cancelAnimationFrame(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idsKey]);
+  // Initial skeleton allowed only before first successful load
+  const showInitialSkeleton = !hasLoadedOnceRef.current && chips.length === 0;
 
   if (!away || !home) {
     return null;
   }
 
   return (
-    <div className="relative flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-      {/* Overlay shimmer during refresh (no layout shift) */}
-      {isRefreshing && (
-        <div className="absolute inset-0 pointer-events-none animate-pulse bg-gradient-to-r from-transparent via-slate-100/10 to-transparent rounded" />
-      )}
-
-      <div className={`flex items-center gap-2 transition-opacity duration-200 ${fade ? 'opacity-0' : 'opacity-100'}`}>
-        {chips.map((c) => (
+    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+      {showInitialSkeleton ? (
+        <>
+          <span className="inline-flex h-7 rounded-full px-6 bg-slate-800/70 animate-pulse" />
+          <span className="inline-flex h-7 rounded-full px-10 bg-slate-800/70 animate-pulse" />
+        </>
+      ) : (
+        chips.map((c) => (
           <span
             key={c.id}
             className={
@@ -84,8 +75,8 @@ export default function MismatchChips() {
           >
             {c.text}
           </span>
-        ))}
-      </div>
+        ))
+      )}
     </div>
   );
 }
