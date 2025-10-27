@@ -25,8 +25,17 @@ async function fetchChips(awayAbbr?: string, homeAbbr?: string): Promise<Chip[]>
 export default function MismatchChips() {
   const { selectedGame } = useSelection();
   const [chips, setChips] = React.useState<Chip[]>([]);
+  const [loading, setLoading] = React.useState(false);
   React.useEffect(() => {
-    fetchChips(selectedGame?.awayAbbr, selectedGame?.homeAbbr).then((res) => setChips(res.slice(0, 2)));
+    let cancelled = false;
+    setLoading(true);
+    fetchChips(selectedGame?.awayAbbr, selectedGame?.homeAbbr).then((res) => {
+      if (!cancelled) {
+        setChips(res.slice(0, 2));
+        setLoading(false);
+      }
+    }).catch(() => setLoading(false));
+    return () => { cancelled = true; };
   }, [selectedGame?.awayAbbr, selectedGame?.homeAbbr]);
 
   if (!selectedGame?.awayAbbr || !selectedGame?.homeAbbr) {
@@ -35,6 +44,12 @@ export default function MismatchChips() {
 
   return (
     <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+      {loading && (
+        <>
+          <span className="inline-flex h-7 rounded-full px-6 bg-slate-800/70 animate-pulse" />
+          <span className="inline-flex h-7 rounded-full px-10 bg-slate-800/70 animate-pulse" />
+        </>
+      )}
       {chips.map((c) => (
         <span
           key={c.id}

@@ -30,6 +30,7 @@ export default function CompareHeader() {
 
   const awayAbbr = selectedGame?.awayAbbr || '';
   const homeAbbr = selectedGame?.homeAbbr || '';
+  const showSkeleton = !awayAbbr || !homeAbbr;
   const leftAbbr = swap ? homeAbbr : awayAbbr;
   const rightAbbr = swap ? awayAbbr : homeAbbr;
 
@@ -39,6 +40,17 @@ export default function CompareHeader() {
   const status = formatStatus(selectedGame || undefined);
   const spread = selectedGame?.spread !== undefined ? formatHomeSpread(rightAbbr, selectedGame.spread as any) : '';
   const total = selectedGame?.total !== undefined ? `O/U ${formatTotal(selectedGame.total as any)}` : '';
+
+  if (showSkeleton) {
+    return (
+      <div className="w-full bg-slate-900/60 border border-slate-800/60 rounded-xl px-3 py-2">
+        <div className="animate-pulse space-y-2">
+          <div className="h-4 bg-slate-800/70 rounded w-1/2" />
+          <div className="h-3 bg-slate-800/70 rounded w-1/3" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full bg-slate-900/60 border border-slate-800/60 rounded-xl px-3 py-2 flex items-center gap-3">
