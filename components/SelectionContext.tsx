@@ -1,7 +1,6 @@
-import { logDebug } from '@/lib/logger';
-
 'use client';
 
+import { logDebug } from '@/lib/logger';
 import React from 'react';
 import type { ScoreboardGame } from '@/types/matchup';
 
