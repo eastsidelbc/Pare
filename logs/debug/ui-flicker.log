@@ -1,0 +1,662 @@
+[2025-10-27T20:43:12.506Z] [CompareHeader/render]
+{
+  "awayAbbr": "",
+  "homeAbbr": "",
+  "showSkeleton": true,
+  "timestamp": 1761597792506
+}
+[2025-10-27T20:43:12.511Z] [MismatchChips/render]
+{
+  "key": "@",
+  "loading": false,
+  "chipCount": 0
+}
+[2025-10-27T20:43:22.106Z] [API/mock/matchup]
+{
+  "away": "SF",
+  "home": "SEA",
+  "timestamp": 1761597802106
+}
+[2025-10-27T20:43:22.715Z] [API/mock/matchup]
+{
+  "away": "KC",
+  "home": "BUF",
+  "timestamp": 1761597802715
+}
+[2025-10-27T20:43:25.171Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761597805171
+}
+[2025-10-27T20:43:27.226Z] [API/mock/matchup]
+{
+  "away": "DAL",
+  "home": "NYG",
+  "timestamp": 1761597807226
+}
+[2025-10-27T20:43:28.089Z] [API/mock/matchup]
+{
+  "away": "GB",
+  "home": "CHI",
+  "timestamp": 1761597808089
+}
+[2025-10-27T20:43:29.664Z] [API/mock/matchup]
+{
+  "away": "KC",
+  "home": "BUF",
+  "timestamp": 1761597809664
+}
+[2025-10-27T20:43:31.532Z] [API/mock/matchup]
+{
+  "away": "GB",
+  "home": "CHI",
+  "timestamp": 1761597811532
+}
+[2025-10-27T20:43:32.049Z] [API/mock/matchup]
+{
+  "away": "DAL",
+  "home": "NYG",
+  "timestamp": 1761597812049
+}
+[2025-10-27T20:43:32.578Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761597812578
+}
+[2025-10-27T20:43:32.948Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761597812948
+}
+[2025-10-27T20:44:26.003Z] [API/mock/matchup]
+{
+  "away": "DAL",
+  "home": "NYG",
+  "timestamp": 1761597866003
+}
+[2025-10-27T20:45:31.536Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761597931536
+}
+[2025-10-27T20:45:33.723Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761597933723
+}
+[2025-10-27T20:45:35.649Z] [API/mock/matchup]
+{
+  "away": "KC",
+  "home": "BUF",
+  "timestamp": 1761597935649
+}
+[2025-10-27T20:45:36.049Z] [API/mock/matchup]
+{
+  "away": "SF",
+  "home": "SEA",
+  "timestamp": 1761597936049
+}
+[2025-10-27T20:45:36.590Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761597936590
+}
+[2025-10-27T20:45:37.163Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761597937163
+}
+[2025-10-27T20:45:37.520Z] [API/mock/matchup]
+{
+  "away": "GB",
+  "home": "CHI",
+  "timestamp": 1761597937520
+}
+[2025-10-27T20:45:37.736Z] [API/mock/matchup]
+{
+  "away": "DAL",
+  "home": "NYG",
+  "timestamp": 1761597937736
+}
+[2025-10-27T20:45:38.165Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761597938165
+}
+[2025-10-27T20:45:38.605Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761597938605
+}
+[2025-10-27T20:45:38.955Z] [API/mock/matchup]
+{
+  "away": "SF",
+  "home": "SEA",
+  "timestamp": 1761597938955
+}
+[2025-10-27T20:45:39.228Z] [API/mock/matchup]
+{
+  "away": "KC",
+  "home": "BUF",
+  "timestamp": 1761597939228
+}
+[2025-10-27T20:45:39.522Z] [API/mock/matchup]
+{
+  "away": "SF",
+  "home": "SEA",
+  "timestamp": 1761597939522
+}
+[2025-10-27T20:45:39.899Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761597939899
+}
+[2025-10-27T20:45:40.125Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761597940125
+}
+[2025-10-27T20:45:40.490Z] [API/mock/matchup]
+{
+  "away": "DAL",
+  "home": "NYG",
+  "timestamp": 1761597940490
+}
+[2025-10-27T20:45:40.938Z] [API/mock/matchup]
+{
+  "away": "GB",
+  "home": "CHI",
+  "timestamp": 1761597940938
+}
+[2025-10-27T20:47:26.580Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761598046580
+}
+[2025-10-27T20:47:27.268Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761598047268
+}
+[2025-10-27T20:47:28.326Z] [API/mock/matchup]
+{
+  "away": "KC",
+  "home": "BUF",
+  "timestamp": 1761598048326
+}
+[2025-10-27T20:47:28.962Z] [API/mock/matchup]
+{
+  "away": "SF",
+  "home": "SEA",
+  "timestamp": 1761598048962
+}
+[2025-10-27T20:47:29.813Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761598049813
+}
+[2025-10-27T20:47:30.469Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761598050469
+}
+[2025-10-27T20:47:32.022Z] [API/mock/matchup]
+{
+  "away": "DAL",
+  "home": "NYG",
+  "timestamp": 1761598052022
+}
+[2025-10-27T20:47:49.452Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761598069452
+}
+[2025-10-27T20:47:49.941Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761598069941
+}
+[2025-10-27T20:47:50.764Z] [API/mock/matchup]
+{
+  "away": "GB",
+  "home": "CHI",
+  "timestamp": 1761598070764
+}
+[2025-10-27T20:47:51.215Z] [API/mock/matchup]
+{
+  "away": "DAL",
+  "home": "NYG",
+  "timestamp": 1761598071215
+}
+[2025-10-27T20:47:51.809Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761598071809
+}
+[2025-10-27T20:47:52.550Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761598072550
+}
+[2025-10-27T20:47:52.872Z] [API/mock/matchup]
+{
+  "away": "KC",
+  "home": "BUF",
+  "timestamp": 1761598072872
+}
+[2025-10-27T20:47:53.327Z] [API/mock/matchup]
+{
+  "away": "SF",
+  "home": "SEA",
+  "timestamp": 1761598073327
+}
+[2025-10-27T20:47:55.026Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761598075026
+}
+[2025-10-27T20:47:56.063Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761598076063
+}
+[2025-10-27T20:47:57.891Z] [API/mock/matchup]
+{
+  "away": "DAL",
+  "home": "NYG",
+  "timestamp": 1761598077891
+}
+[2025-10-27T20:47:58.313Z] [API/mock/matchup]
+{
+  "away": "GB",
+  "home": "CHI",
+  "timestamp": 1761598078313
+}
+[2025-10-27T20:47:59.367Z] [API/mock/matchup]
+{
+  "away": "SF",
+  "home": "SEA",
+  "timestamp": 1761598079367
+}
+[2025-10-27T20:48:00.726Z] [API/mock/matchup]
+{
+  "away": "KC",
+  "home": "BUF",
+  "timestamp": 1761598080726
+}
+[2025-10-27T20:48:05.069Z] [API/mock/matchup]
+{
+  "away": "GB",
+  "home": "CHI",
+  "timestamp": 1761598085069
+}
+[2025-10-27T20:48:05.711Z] [API/mock/matchup]
+{
+  "away": "DAL",
+  "home": "NYG",
+  "timestamp": 1761598085711
+}
+[2025-10-27T20:48:06.364Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761598086364
+}
+[2025-10-27T20:48:09.207Z] [API/mock/matchup]
+{
+  "away": "KC",
+  "home": "BUF",
+  "timestamp": 1761598089207
+}
+[2025-10-27T20:48:09.547Z] [API/mock/matchup]
+{
+  "away": "SF",
+  "home": "SEA",
+  "timestamp": 1761598089547
+}
+[2025-10-27T20:48:09.904Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761598089904
+}
+[2025-10-27T20:48:10.519Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761598090519
+}
+[2025-10-27T20:48:10.882Z] [API/mock/matchup]
+{
+  "away": "DAL",
+  "home": "NYG",
+  "timestamp": 1761598090882
+}
+[2025-10-27T20:48:11.101Z] [API/mock/matchup]
+{
+  "away": "GB",
+  "home": "CHI",
+  "timestamp": 1761598091101
+}
+[2025-10-27T20:48:11.336Z] [API/mock/matchup]
+{
+  "away": "DAL",
+  "home": "NYG",
+  "timestamp": 1761598091336
+}
+[2025-10-27T20:48:11.636Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761598091636
+}
+[2025-10-27T20:48:11.895Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761598091895
+}
+[2025-10-27T20:48:12.324Z] [API/mock/matchup]
+{
+  "away": "SF",
+  "home": "SEA",
+  "timestamp": 1761598092324
+}
+[2025-10-27T20:48:12.522Z] [API/mock/matchup]
+{
+  "away": "KC",
+  "home": "BUF",
+  "timestamp": 1761598092522
+}
+[2025-10-27T20:48:13.151Z] [API/mock/matchup]
+{
+  "away": "SF",
+  "home": "SEA",
+  "timestamp": 1761598093151
+}
+[2025-10-27T20:48:13.556Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761598093556
+}
+[2025-10-27T20:48:13.933Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761598093933
+}
+[2025-10-27T20:48:14.172Z] [API/mock/matchup]
+{
+  "away": "DAL",
+  "home": "NYG",
+  "timestamp": 1761598094172
+}
+[2025-10-27T20:48:14.477Z] [API/mock/matchup]
+{
+  "away": "GB",
+  "home": "CHI",
+  "timestamp": 1761598094477
+}
+[2025-10-27T20:48:14.740Z] [API/mock/matchup]
+{
+  "away": "DAL",
+  "home": "NYG",
+  "timestamp": 1761598094740
+}
+[2025-10-27T20:48:15.005Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761598095005
+}
+[2025-10-27T20:48:15.224Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761598095224
+}
+[2025-10-27T20:48:15.477Z] [API/mock/matchup]
+{
+  "away": "SF",
+  "home": "SEA",
+  "timestamp": 1761598095477
+}
+[2025-10-27T20:48:15.919Z] [API/mock/matchup]
+{
+  "away": "KC",
+  "home": "BUF",
+  "timestamp": 1761598095919
+}
+[2025-10-27T20:48:53.363Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761598133363
+}
+[2025-10-27T20:48:54.935Z] [API/mock/matchup]
+{
+  "away": "SF",
+  "home": "SEA",
+  "timestamp": 1761598134935
+}
+[2025-10-27T20:48:55.578Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761598135578
+}
+[2025-10-27T20:48:56.427Z] [API/mock/matchup]
+{
+  "away": "KC",
+  "home": "BUF",
+  "timestamp": 1761598136427
+}
+[2025-10-27T20:48:57.243Z] [API/mock/matchup]
+{
+  "away": "SF",
+  "home": "SEA",
+  "timestamp": 1761598137243
+}
+[2025-10-27T20:48:57.722Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761598137722
+}
+[2025-10-27T20:48:59.437Z] [API/mock/matchup]
+{
+  "away": "GB",
+  "home": "CHI",
+  "timestamp": 1761598139437
+}
+[2025-10-27T20:49:01.499Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761598141499
+}
+[2025-10-27T20:49:01.939Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761598141939
+}
+[2025-10-27T20:49:03.379Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761598143379
+}
+[2025-10-27T20:49:04.843Z] [API/mock/matchup]
+{
+  "away": "SF",
+  "home": "SEA",
+  "timestamp": 1761598144843
+}
+[2025-10-27T20:49:05.314Z] [API/mock/matchup]
+{
+  "away": "KC",
+  "home": "BUF",
+  "timestamp": 1761598145314
+}
+[2025-10-27T20:49:29.928Z] [API/mock/matchup]
+{
+  "away": "DAL",
+  "home": "NYG",
+  "timestamp": 1761598169928
+}
+[2025-10-27T20:49:30.348Z] [API/mock/matchup]
+{
+  "away": "GB",
+  "home": "CHI",
+  "timestamp": 1761598170348
+}
+[2025-10-27T20:49:31.009Z] [API/mock/matchup]
+{
+  "away": "SF",
+  "home": "SEA",
+  "timestamp": 1761598171009
+}
+[2025-10-27T20:49:32.082Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761598172082
+}
+[2025-10-27T20:49:32.918Z] [API/mock/matchup]
+{
+  "away": "SF",
+  "home": "SEA",
+  "timestamp": 1761598172918
+}
+[2025-10-27T20:49:33.675Z] [API/mock/matchup]
+{
+  "away": "KC",
+  "home": "BUF",
+  "timestamp": 1761598173675
+}
+[2025-10-27T20:50:51.011Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761598251011
+}
+[2025-10-27T20:50:52.007Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761598252007
+}
+[2025-10-27T20:52:28.986Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761598348986
+}
+[2025-10-27T20:52:29.904Z] [API/mock/matchup]
+{
+  "away": "DAL",
+  "home": "NYG",
+  "timestamp": 1761598349904
+}
+[2025-10-27T20:52:31.039Z] [API/mock/matchup]
+{
+  "away": "SF",
+  "home": "SEA",
+  "timestamp": 1761598351039
+}
+[2025-10-27T20:52:31.599Z] [API/mock/matchup]
+{
+  "away": "KC",
+  "home": "BUF",
+  "timestamp": 1761598351599
+}
+[2025-10-27T20:53:03.872Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761598383872
+}
+[2025-10-27T20:53:05.522Z] [API/mock/matchup]
+{
+  "away": "KC",
+  "home": "BUF",
+  "timestamp": 1761598385522
+}
+[2025-10-27T20:53:07.561Z] [API/mock/matchup]
+{
+  "away": "SF",
+  "home": "SEA",
+  "timestamp": 1761598387561
+}
+[2025-10-27T20:53:09.000Z] [API/mock/matchup]
+{
+  "away": "BAL",
+  "home": "MIA",
+  "timestamp": 1761598389000
+}
+[2025-10-27T20:53:09.390Z] [API/mock/matchup]
+{
+  "away": "DAL",
+  "home": "NYG",
+  "timestamp": 1761598389390
+}
+[2025-10-27T20:54:36.767Z] [CompareHeader/render]
+{
+  "awayAbbr": "",
+  "homeAbbr": "",
+  "showSkeleton": true,
+  "timestamp": 1761598476767
+}
+[2025-10-27T20:54:36.768Z] [MismatchChips/render]
+{
+  "key": "@",
+  "loading": false,
+  "chipCount": 0
+}
+[2025-10-27T20:54:42.046Z] [API/mock/matchup]
+{
+  "away": "DAL",
+  "home": "NYG",
+  "timestamp": 1761598482046
+}
+[2025-10-27T20:54:43.509Z] [API/mock/matchup]
+{
+  "away": "KC",
+  "home": "BUF",
+  "timestamp": 1761598483509
+}
+[2025-10-27T20:54:44.919Z] [API/mock/matchup]
+{
+  "away": "SF",
+  "home": "SEA",
+  "timestamp": 1761598484919
+}
+[2025-10-27T20:54:46.639Z] [API/mock/matchup]
+{
+  "away": "MIN",
+  "home": "DET",
+  "timestamp": 1761598486639
+}

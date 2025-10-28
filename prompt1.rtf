@@ -1,65 +1,45 @@
-You are acting as a senior engineer inside the Pare repository to prepare for a documentation restructuring phase.
+Goal: Make Insight/Highlight pills feel instant and smooth on GameRail clicks.
+Do NOT remove the Phase 4 fixes for stable keys. Replace “clear-on-fetch” with a
+stale-while-revalidate pattern + overlay shimmer. Keep layout identical (no push).
 
-### GOAL
-Create a safe parallel workspace (A/B style) for documentation refactor without touching the current main branch.
+Scope:
+- components/MismatchChips.tsx  (primary)
+- Minimal CSS/utility class additions if needed
 
----
+Requirements:
+1) Keep previous chips visible while fetching new chips.
+   - Remove any logic that clears chips at fetch start.
+   - Introduce `isRefreshing` state that becomes true on fetch start and false on settle.
 
-### TASKS
+2) Add a non-intrusive overlay to indicate refresh (NO layout shift):
+   - Container: `relative`
+   - Overlay: `absolute inset-0 pointer-events-none` + subtle shimmer/pulse
+   - Overlay must not affect width/height (do not render as a sibling row).
 
-1️⃣ **Verify current git state**
-- Run `git status` to confirm the working directory is clean.
-- Run `git branch` and note the active branch.
-- If there are uncommitted changes, stage and commit them with message:
-  "Save before doc restructuring".
-- Ensure `main` is fully up to date with remote: `git pull origin main`.
+3) Smooth content swap:
+   - On new chips, cross-fade text/content (200–250ms). Framer Motion OR CSS opacity is fine.
+   - Keys remain stable (`${away}-${home}-${text}` or server `chip.id`).
 
-2️⃣ **Create new documentation branches**
-- Make a frozen backup of current docs:
-git checkout -b docs-snapshot
-git push -u origin docs-snapshot
+4) No skeleton “dark/empty pill” flashes:
+   - Do not render empty pill placeholders when `isRefreshing` is true.
+   - Only use the overlay to signal refresh.
 
-css
-Copy code
-- Return to main:
-git checkout main
+5) Telemetry (temporary; guarded by DEBUG flag):
+   - Log `isRefreshing` true/false and chip ids before/after swap via `logDebug("MismatchChips/refresh", {...})`.
+   - Keep existing logger import; do not change runtime behavior.
 
-diff
-Copy code
-- Create the active working branch for reorganization:
-git checkout -b docs-refactor
-git push -u origin docs-refactor
+6) QA (add to docs/audit/qa-checklist.md):
+   - Rapid-click 10 matchups: pills remain visible; overlay animates; new chips fade in.
+   - Pause ~6s to cross a poll tick; no “dark/empty” moment.
+   - React Profiler: MismatchChips re-renders (no unmount/remount).
+   - Network: exactly one matchup fetch per click; polling does not blank pills.
 
-markdown
-Copy code
+Deliverables:
+- MismatchChips.tsx updated per above.
+- Short note appended to docs/devnotes/2025-10-27-phases-1-4-ui-mock-api.md under “Follow-ups”.
+- No other component logic changes.
 
-3️⃣ **Set active branch**
-- Confirm the active branch is now `docs-refactor` by running:
-git branch
-
-sql
-Copy code
-It should show:
-docs-refactor
-main
-docs-snapshot
-
-markdown
-Copy code
-
-4️⃣ **Lock intentions**
-- Do **not** modify code or configs yet.
-- This branch is strictly for moving and cleaning documentation files.
-- Record this setup in a short note at the top of `PROJECT_PLAN.md`:
-> **Branch Note:** Current branch `docs-refactor` is used for documentation reorganization (hierarchy alignment, no code changes). The prior structure is preserved in `docs-snapshot`.
-
-5️⃣ **Final verification**
-- Print confirmation: `Branch successfully created and ready for documentation restructuring.`
-
----
-
-### RULES
-- Do not modify application code.
-- Do not change .env or any runtime configs.
-- Only confirm branch creation and ready state.
-- After confirmation, halt actions and wait for the next restructuring prompt.
+Guardrails:
+- Zero layout shift.
+- No change to polling cadence or API contracts.
+- Keep stable keys.
