@@ -1,81 +1,45 @@
+// utils/logger.ts
 /**
- * Centralized logging utility with structured context, emoji prefixes, and log levels
+ * Centralized logger with environment-aware gating.
+ * Blocks noisy logs in production and respects LOG_LEVEL.
  */
 
-export type LogLevel = 'minimal' | 'verbose';
+export const LOG_LEVEL = (process.env.LOG_LEVEL ??
+  (process.env.NODE_ENV === 'production' ? 'warn' : 'debug')) as
+  'debug' | 'info' | 'warn' | 'error';
 
-export interface LogContext {
-  context: string;
-  requestId?: string;
-  timestamp?: string;
+export function log(level: 'debug' | 'info' | 'warn' | 'error', ...args: any[]) {
+  const order = { debug: 0, info: 1, warn: 2, error: 3 };
+  const current = order[LOG_LEVEL];
+  if (order[level] < current) return;
+  // eslint-disable-next-line no-console
+  console[level](...args);
 }
 
-// Environment-based log level configuration
-const getLogLevel = (): LogLevel => {
-  // In production or when explicitly set, use minimal logging
-  if (process.env.NODE_ENV === 'production' || process.env.LOG_LEVEL === 'minimal') {
-    return 'minimal';
-  }
-  // Default to verbose for development
-  return process.env.LOG_LEVEL as LogLevel || 'verbose';
-};
+/** Example usage:
+ * import { log } from '@/utils/logger';
+ * log('debug', 'ranking inputs', { metricKey, teamA, teamB });
+ */
 
-const LOG_LEVEL = getLogLevel();
-
+// Compatibility shim for code that imports `{ logger }`
+// Keeps existing call sites working without changing their code
 export const logger = {
-  debug: (context: LogContext, message: string, data?: unknown) => {
-    // Only show debug logs in verbose mode
-    if (LOG_LEVEL !== 'verbose') return;
-    
-    const { context: ctx, requestId, timestamp } = context;
-    const timeStr = timestamp || new Date().toISOString();
-    const prefix = requestId ? `[${ctx}-${requestId}]` : `[${ctx}]`;
-    
-    console.log(`🏈 ${prefix} [${timeStr}] ${message}`);
-    if (data) {
-      console.log(`🏈 ${prefix} Data:`, data);
-    }
+  cache(ctx: any, msg: string, meta?: any) {
+    log('debug', '[CACHE]', ctx, msg, meta);
   },
-  performance: (context: LogContext, message: string, timing?: { duration: number; operation: string }) => {
-    // Always show performance logs (minimal requirement)
-    const { context: ctx, requestId } = context;
-    const prefix = requestId ? `[${ctx}-${requestId}]` : `[${ctx}]`;
-    
-    if (timing) {
-      console.log(`⚡ ${prefix} ${timing.operation}: ${timing.duration}ms`);
-    } else {
-      console.log(`⚡ ${prefix} ${message}`);
-    }
+  performance(ctx: any, msg: string, meta?: any) {
+    log('info', '[PERF]', ctx, msg, meta);
   },
-  cache: (context: LogContext, message: string, data?: unknown) => {
-    // Only show cache logs in verbose mode
-    if (LOG_LEVEL !== 'verbose') return;
-    
-    const { context: ctx, requestId } = context;
-    const prefix = requestId ? `[${ctx}-${requestId}]` : `[${ctx}]`;
-    
-    console.log(`💾 ${prefix} ${message}`);
-    if (data) {
-      console.log(`💾 ${prefix} Cache info:`, data);
-    }
+  debug(...args: any[]) {
+    log('debug', ...args);
   },
-  error: (context: LogContext, message: string, error?: unknown) => {
-    // Always show errors (minimal requirement)
-    const { context: ctx, requestId } = context;
-    const prefix = requestId ? `[${ctx}-${requestId}]` : `[${ctx}]`;
-    
-    console.error(`❌ ${prefix} ${message}`);
-    if (error) {
-      console.error(`❌ ${prefix} Error details:`, error);
-    }
+  info(...args: any[]) {
+    log('info', ...args);
   },
-  success: (context: LogContext, message: string) => {
-    // Only show success logs in verbose mode
-    if (LOG_LEVEL !== 'verbose') return;
-    
-    const { context: ctx, requestId } = context;
-    const prefix = requestId ? `[${ctx}-${requestId}]` : `[${ctx}]`;
-    
-    console.log(`✅ ${prefix} ${message}`);
+  warn(...args: any[]) {
+    log('warn', ...args);
   },
-};
+  error(...args: any[]) {
+    log('error', ...args);
+  },
+} as const;

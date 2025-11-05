@@ -6,6 +6,9 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ## [Unreleased]
 
+### Docs
+- Architecture Audit (2025-11-05) — See `docs/AUDIT_ARCHITECTURE_2025-11-05.md` — micro: verified client-side ranking, mocks present, mobile layout parity.
+
 ### Changed
 - **Documentation Reorganization** (2025-10-20) — `docs-refactor` branch
   - **New Hierarchy**: Established 4-tier structure (`/docs/specs/`, `/docs/audit/`, `/docs/data/`, `/docs/archive/`)
@@ -49,6 +52,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - **Physical Device**: Setup instructions, local network configuration
   - **Maintenance**: Update dependencies, clean up backups
 
+### Docs
 - **iOS Wrapper Plan** (2025-10-14) ✅ PHASE B COMPLETE
   - Created: `docs/mobile/IOS_WRAPPER_PLAN.md` (600+ lines)
   - **Architecture**: SwiftUI + WKWebView + XcodeGen
@@ -61,6 +65,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - **Decision**: ✅ PROCEED_WITH_IOS_SCAFFOLD = true
   - **Next**: Phase C - Scaffold iOS Project
 
+### Docs
 - **iOS Foundation Audit** (2025-10-14) ✅ PHASE A COMPLETE
   - Created: `docs/mobile/AUDIT_iOS_FOUNDATION.md` (500+ lines)
   - **Verdict**: ✅ Excellent candidate for iOS WKWebView wrapper
@@ -90,7 +95,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - **To**: All in `/Pare/ios/` (professional monorepo)
   - **Moved**: Pare-iOS.xcodeproj → Pare/ios/Pare.xcodeproj
   - **Organized**: Proper folder structure (Models, Services, ViewModels, Views)
-  - **Preserved**: All Swift files, Config.xcconfig, Info.plist, Assets
+  - **Preserved**: All Swift files, Config.xcconfig, Info.plist
   - **Next**: Open Pare.xcodeproj and fix file references in Xcode
 
 ### Docs
@@ -115,6 +120,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - **Status**: ✅ Ready to add to Xcode project
   - **Next**: Add files to Xcode, test data loading, build comparison UI
 
+### Added
 - **Xcode Project Configuration Files** (2025-10-10) ✅ COMPLETE
   - Created: `Pare-iOS/Config.xcconfig` - App configuration (like .env for iOS)
   - Created: `Pare-iOS/Info.plist` - Complete with ATS, dark mode, bundle settings
@@ -125,6 +131,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Status: ✅ Ready to add to Xcode project
   - Next: Add files to Xcode, configure project settings, test configuration
 
+### Added
 - **Port 4000 Migration** (2025-10-10) ✅ COMPLETE
   - Updated: `package.json` - Dev server now runs on port 4000 (`-p 4000`)
   - Updated: `config/constants.ts` - Added PORT: 4000 to API config
@@ -133,6 +140,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - **Consistency**: Backend, docs, and iOS all use same port
   - **Test**: `npm run dev` → `curl http://localhost:4000/api/health | jq`
 
+### Added
 - **API Health Endpoint for iOS** (2025-10-10) ✅ COMPLETE
   - Created: `app/api/health/route.ts`
   - Returns: `{ ok: true, version: "1.0.0", timestamp, uptime, endpoints, environment }`
@@ -164,6 +172,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - **Deployment**: Recommends Vercel for free HTTPS (zero config, automatic SSL)
   - **Next**: Deploy to HTTPS production, then begin Phase 1 (iOS Project Bootstrap)
 
+### Docs
 - **Mobile Components Deep Dive** (2025-10-10) ✅ COMPLETE
   - See: `docs/devnotes/2025-10-10-mobile-components-audit.md`
   - **Purpose**: Surgical analysis of 9 mobile components for SwiftUI conversion
@@ -179,6 +188,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - **SwiftUI Mappings**: Component-by-component conversion patterns
   - **Next**: Phase 1 - iOS Project Bootstrap (create SwiftUI versions)
 
+### Docs
 - **Comprehensive iOS Conversion Audit** (2025-10-10) ✅ COMPLETE
   - See: `docs/devnotes/2025-10-10-ios-conversion-audit.md`
   - **Purpose**: Pre-iOS conversion analysis of entire codebase

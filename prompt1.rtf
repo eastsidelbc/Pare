@@ -1,45 +1,106 @@
-Goal: Make Insight/Highlight pills feel instant and smooth on GameRail clicks.
-Do NOT remove the Phase 4 fixes for stable keys. Replace “clear-on-fetch” with a
-stale-while-revalidate pattern + overlay shimmer. Keep layout identical (no push).
+Goal: Fix two build errors:
+1) "Export logger doesn't exist in target module" when importing from '@/utils/logger'
+2) "Property 'get' does not exist on type Promise<ReadonlyHeaders>" for `headers().get(...)` in API routes
 
-Scope:
-- components/MismatchChips.tsx  (primary)
-- Minimal CSS/utility class additions if needed
+Make surgical changes only. Do not alter behavior.
 
-Requirements:
-1) Keep previous chips visible while fetching new chips.
-   - Remove any logic that clears chips at fetch start.
-   - Introduce `isRefreshing` state that becomes true on fetch start and false on settle.
+FILES TO EDIT
+- utils/logger.ts
+- app/api/nfl-2025/offense/route.ts
+- app/api/nfl-2025/defense/route.ts
 
-2) Add a non-intrusive overlay to indicate refresh (NO layout shift):
-   - Container: `relative`
-   - Overlay: `absolute inset-0 pointer-events-none` + subtle shimmer/pulse
-   - Overlay must not affect width/height (do not render as a sibling row).
+CONTEXT
+- We currently export { log, LOG_LEVEL } from utils/logger.ts (no 'logger' object).
+- Some routes import `{ logger }` and call `logger.cache(...)` and `logger.performance(...)`.
+- Next.js 15’s `next/headers` can be async; our code assumed sync `.get()`. We will use the Request parameter instead.
 
-3) Smooth content swap:
-   - On new chips, cross-fade text/content (200–250ms). Framer Motion OR CSS opacity is fine.
-   - Keys remain stable (`${away}-${home}-${text}` or server `chip.id`).
+TASKS
 
-4) No skeleton “dark/empty pill” flashes:
-   - Do not render empty pill placeholders when `isRefreshing` is true.
-   - Only use the overlay to signal refresh.
+A) utils/logger.ts — add a tiny compatibility shim export
+1. Keep existing exports `LOG_LEVEL` and `log` as-is.
+2. Add a new named export `logger` that preserves current call sites:
+   - `logger.cache(ctx, msg, meta)` → internally call `log('debug', '[CACHE]', ctx, msg, meta)`
+   - `logger.performance(ctx, msg, meta)` → `log('info', '[PERF]', ctx, msg, meta)`
+   - Also include passthrough helpers: `logger.debug`, `logger.info`, `logger.warn`, `logger.error` that call `log(...)`
 
-5) Telemetry (temporary; guarded by DEBUG flag):
-   - Log `isRefreshing` true/false and chip ids before/after swap via `logDebug("MismatchChips/refresh", {...})`.
-   - Keep existing logger import; do not change runtime behavior.
+Code to append at bottom of utils/logger.ts:
+```ts
+export const logger = {
+  cache(ctx: any, msg: string, meta?: any) {
+    log('debug', '[CACHE]', ctx, msg, meta);
+  },
+  performance(ctx: any, msg: string, meta?: any) {
+    log('info', '[PERF]', ctx, msg, meta);
+  },
+  debug(...args: any[]) {
+    log('debug', ...args);
+  },
+  info(...args: any[]) {
+    log('info', ...args);
+  },
+  warn(...args: any[]) {
+    log('warn', ...args);
+  },
+  error(...args: any[]) {
+    log('error', ...args);
+  },
+} as const;
+B) offense/route.ts and defense/route.ts — fix If-None-Match access and ETag flow
 
-6) QA (add to docs/audit/qa-checklist.md):
-   - Rapid-click 10 matchups: pills remain visible; overlay animates; new chips fade in.
-   - Pause ~6s to cross a poll tick; no “dark/empty” moment.
-   - React Profiler: MismatchChips re-renders (no unmount/remount).
-   - Network: exactly one matchup fetch per click; polling does not blank pills.
+Change the GET signatures to accept the Request parameter:
 
-Deliverables:
-- MismatchChips.tsx updated per above.
-- Short note appended to docs/devnotes/2025-10-27-phases-1-4-ui-mock-api.md under “Follow-ups”.
-- No other component logic changes.
+ts
+Copy code
+export async function GET(request: Request) { ... }
+Remove any import { headers } from 'next/headers' usage in these two files.
 
-Guardrails:
-- Zero layout shift.
-- No change to polling cadence or API contracts.
-- Keep stable keys.
+Read the request header directly:
+
+ts
+Copy code
+const ifNoneMatch = request.headers.get('if-none-match') || undefined;
+Keep the rest of the logic same (cache HIT/MISS handling, stale fallback, logging).
+
+Ensure we continue to set an ETag header on 200/304 responses.
+
+(If present) Update any references that assumed headers() to instead use the local ifNoneMatch string variable.
+
+C) Type check + behavior checks
+
+pnpm typecheck (or npm run typecheck) must pass with 0 errors.
+
+pnpm dev runs without build errors.
+
+Manual test:
+
+GET /api/nfl-2025/offense → returns 200 + ETag "abc..."
+
+GET again with If-None-Match: "abc..." → returns 304 Not Modified
+
+Same for /defense
+
+D) Do NOT change any public response shapes, cache max-age values, or logs content beyond using the shim. Keep all headers like X-Cache, X-Request-ID etc.
+
+After changes, print a short summary of what changed.
+
+At end of your reply, add:
+
+Microlearning
+Explain why using a Request parameter for headers is safer in Next.js 15 and how a logger shim preserves API compatibility while centralizing logging.
+
+markdown
+Copy code
+
+---
+
+### Why this works
+
+- **logger error:** We add a **compatibility shim** export so your existing `import { logger }` and calls like `logger.cache(...)` continue to compile, without touching multiple files.
+- **headers().get error:** We use the **Request parameter** (`export async function GET(request: Request)`) and `request.headers.get(...)`, which works across Next 15 and avoids confusion about whether `headers()` is sync or async.
+- Keeps your **existing cache + stale-serve logic** intact.
+
+If you want, after Cursor runs this, paste back the summary and I’ll double-check the diffs.
+
+
+
+

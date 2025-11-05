@@ -11,6 +11,7 @@
  */
 
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { fetchAndParseCSV, type TeamStats } from '@/lib/pfrCsv';
 import { APP_CONSTANTS } from '@/config/constants';
 import { logger } from '@/utils/logger';
@@ -41,9 +42,14 @@ let cache: CacheEntry = {
 
 // ✅ Server-side ranking removed - now handled client-side by useRanking hook
 
-export async function GET() {
+function makeEtag(obj: unknown) {
+  return `"${crypto.createHash('sha1').update(JSON.stringify(obj)).digest('hex')}"`;
+}
+
+export async function GET(request: Request) {
   const requestId = generateRequestId();
   const timestamp = new Date().toISOString();
+  const ifNoneMatch = request.headers.get('if-none-match') || undefined;
   
   // API request start (verbose only) 
   // Environment info (verbose only)
@@ -53,10 +59,23 @@ export async function GET() {
     const now = Date.now();
     if (cache.data && cache.timestamp && (now - cache.timestamp) < cache.maxAge) {
       const cacheAgeMinutes = Math.round((now - cache.timestamp) / 1000 / 60);
+      const etag = makeEtag(cache.data);
+      if (ifNoneMatch && ifNoneMatch === etag) {
+        return new NextResponse(null, {
+          status: 304,
+          headers: {
+            'ETag': etag,
+            'Cache-Control': 'public, max-age=300',
+            'X-Cache': 'HIT-304',
+            'X-Request-ID': requestId,
+          },
+        });
+      }
       // Cached data info (verbose only)
       
       return NextResponse.json(cache.data, {
         headers: {
+          'ETag': etag,
           'Cache-Control': 'public, max-age=300',
           'Content-Type': 'application/json',
           'X-Cache': 'HIT',
@@ -106,8 +125,10 @@ export async function GET() {
       operation: `Processed ${rows.length} teams`
     });
 
+    const etag = makeEtag(response);
     return NextResponse.json(response, {
       headers: {
+        'ETag': etag,
         'Cache-Control': 'public, max-age=300',
         'Content-Type': 'application/json',
         'X-Cache': 'MISS',
@@ -137,8 +158,10 @@ export async function GET() {
         error: errorMessage
       };
 
+      const etag = makeEtag(staleResponse);
       return NextResponse.json(staleResponse, {
         headers: {
+          'ETag': etag,
           'Cache-Control': 'public, max-age=60',
           'Content-Type': 'application/json',
           'X-Cache': 'STALE',

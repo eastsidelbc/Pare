@@ -1,16 +1,15 @@
 /**
  * NFL 2025 Offense Stats API Route Handler
- * 
+ *
  * Scrapes team offense stats from Pro Football Reference and returns ranked JSON data.
- * 
  * Source: https://www.pro-football-reference.com/years/2025/#team_stats
- * 
+ *
  * Returns offense stats where higher values are generally better (points, yards, TDs).
- * 
  * WARNING: Do not rename data-stat keys without updating UI consumption accordingly.
  */
 
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';                         // ⬅️ added for ETag hashing
 import { fetchAndParseCSV, type TeamStats } from '@/lib/pfrCsv';
 import { APP_CONSTANTS } from '@/config/constants';
 import { logger } from '@/utils/logger';
@@ -36,32 +35,52 @@ interface CacheEntry {
 let cache: CacheEntry = {
   data: null,
   timestamp: 0,
-  maxAge: process.env.NODE_ENV === 'production' ? APP_CONSTANTS.CACHE.PRODUCTION_MAX_AGE : APP_CONSTANTS.CACHE.DEBUG_MAX_AGE
+  maxAge:
+    process.env.NODE_ENV === 'production'
+      ? APP_CONSTANTS.CACHE.PRODUCTION_MAX_AGE
+      : APP_CONSTANTS.CACHE.DEBUG_MAX_AGE,
 };
 
-// ✅ Server-side ranking removed - now handled client-side by useRanking hook
+// Small helper: stable ETag from a JSON-able object
+function makeEtag(obj: unknown) {
+  // quotes are customary for weak/strong tags; here we use a strong tag with quotes
+  return `"${crypto.createHash('sha1').update(JSON.stringify(obj)).digest('hex')}"`;
+}
 
-export async function GET() {
+// ✅ Server-side ranking removed - now handled client-side by useRanking hook
+export async function GET(request: Request) {
   const requestId = generateRequestId();
-  const timestamp = new Date().toISOString();
-  
-  // API request start (verbose only) 
-  // Environment info (verbose only)
-  
-  // Process info (verbose only)
-  
+  const ifNoneMatch = request.headers.get('if-none-match') || undefined;
+
   try {
-    // Check cache first
     const now = Date.now();
-    // Cache checking (verbose only)
-    
-    if (cache.data && cache.timestamp && (now - cache.timestamp) < cache.maxAge) {
-      logger.cache({ context: 'OFFENSE', requestId }, `Serving cached data (${getCacheAgeMinutes(cache.timestamp)} min old)`, {
-        teamCount: cache.data.rows.length
+
+    // ---------- Fast path: valid cache present ----------
+    if (cache.data && cache.timestamp && now - cache.timestamp < cache.maxAge) {
+      // If client sent If-None-Match and it matches our cached payload, short-circuit with 304
+      const cachedEtag = makeEtag(cache.data);
+      if (ifNoneMatch && ifNoneMatch === cachedEtag) {
+        // 304: Not Modified (no body)
+        return new NextResponse(null, {
+          status: 304,
+          headers: {
+            ETag: cachedEtag,
+            'Cache-Control': 'public, max-age=300',
+            'X-Cache': 'HIT-304',
+            'X-Request-ID': requestId,
+          },
+        });
+      }
+
+      // Otherwise, serve cached JSON
+      logger.cache?.({ context: 'OFFENSE', requestId }, `Serving cached data (${getCacheAgeMinutes(cache.timestamp)} min old)`, {
+        teamCount: cache.data.rows.length,
       });
-      
+
+      const etag = cachedEtag; // same as above
       return NextResponse.json(cache.data, {
         headers: {
+          ETag: etag,
           'Cache-Control': 'public, max-age=300',
           'Content-Type': 'application/json',
           'X-Cache': 'HIT',
@@ -70,80 +89,86 @@ export async function GET() {
       });
     }
 
-    // Fetch fresh data from local CSV file
-    // CSV file reading (verbose only)
-    
-    const startTime = Date.now();
-    // About to fetch CSV (verbose only)
-    const { updatedAt, rows } = await fetchAndParseCSV({
-      type: 'offense'
-    });
-    // CSV fetch completed (verbose only)
-    const fetchTime = Date.now() - startTime;
-    
-    if (rows.length === 0) {
+    // ---------- No valid cache → fetch fresh ----------
+    const fetchStart = Date.now();
+    const { updatedAt, rows } = await fetchAndParseCSV({ type: 'offense' });
+    const fetchTime = Date.now() - fetchStart;
+
+    if (!rows || rows.length === 0) {
       throw new Error('No team data found in PFR response');
     }
 
-    // Sample data logging (verbose only)
-
-    // Compute rankings
-    // ✅ Rankings now computed client-side using useRanking hook for better performance
-    // Client-side ranking info (verbose only)
-
-    // Build response object
+    // Build response (no server-side ranking)
     const response: ApiResponse = {
       season: 2025,
       type: 'offense',
       updatedAt,
-      rows: rows  // Raw data without server-side rankings
+      rows,
     };
 
     // Update cache
     cache = {
       data: response,
-      timestamp: now,
-      maxAge: cache.maxAge
+      timestamp: Date.now(),
+      maxAge: cache.maxAge,
     };
 
-    logger.performance({ context: 'OFFENSE', requestId }, 'API Processing Complete', {
-      duration: Date.now() - startTime,
-      operation: `Processed ${rows.length} teams`
+    // Compute ETag for the fresh payload
+    const etag = makeEtag(response);
+
+    // If the client already has this exact version, return 304
+    if (ifNoneMatch && ifNoneMatch === etag) {
+      return new NextResponse(null, {
+        status: 304,
+        headers: {
+          ETag: etag,
+          'Cache-Control': 'public, max-age=300',
+          'X-Cache': 'MISS-304',
+          'X-Request-ID': requestId,
+        },
+      });
+    }
+
+    logger.performance?.({ context: 'OFFENSE', requestId }, 'API Processing Complete', {
+      duration: Date.now() - fetchStart,
+      fetchTime,
+      operation: `Processed ${rows.length} teams`,
     });
 
     return NextResponse.json(response, {
       headers: {
+        ETag: etag,
         'Cache-Control': 'public, max-age=300',
         'Content-Type': 'application/json',
         'X-Cache': 'MISS',
         'X-Request-ID': requestId,
-        'X-Processing-Time': `${Date.now() - startTime}ms`,
+        'X-Processing-Time': `${Date.now() - fetchStart}ms`,
       },
     });
-
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : 'No stack trace';
-    
+
+    // Keep your existing error logs
     console.error(`❌ [OFFENSE-${requestId}] Error processing request:`, {
       error: errorMessage,
       stack: errorStack,
       type: error instanceof Error ? error.constructor.name : typeof error,
-      url: 'https://www.pro-football-reference.com/years/2025/#team_stats'
+      url: 'https://www.pro-football-reference.com/years/2025/#team_stats',
     });
 
-    // If we have stale cache data, serve it with a warning
+    // Serve stale if available
     if (cache.data) {
-      // Stale cache info (verbose only)
-      
       const staleResponse: ApiResponse = {
         ...cache.data,
         stale: true,
-        error: errorMessage
+        error: errorMessage,
       };
+      const etag = makeEtag(staleResponse);
 
       return NextResponse.json(staleResponse, {
         headers: {
+          ETag: etag,
           'Cache-Control': 'public, max-age=60',
           'Content-Type': 'application/json',
           'X-Cache': 'STALE',
@@ -153,9 +178,9 @@ export async function GET() {
       });
     }
 
-    // No cache available, return detailed error
+    // No cache → return detailed error
     console.error(`💥 [OFFENSE-${requestId}] No cache available, returning error to client`);
-    
+
     return NextResponse.json(
       {
         error: 'Failed to fetch offense data',
@@ -165,10 +190,10 @@ export async function GET() {
         details: {
           url: 'https://www.pro-football-reference.com/years/2025/#team_stats',
           cacheStatus: 'UNAVAILABLE',
-          errorType: error instanceof Error ? error.constructor.name : typeof error
-        }
+          errorType: error instanceof Error ? error.constructor.name : typeof error,
+        },
       },
-      { 
+      {
         status: 500,
         headers: {
           'Content-Type': 'application/json',
