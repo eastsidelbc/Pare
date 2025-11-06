@@ -6,6 +6,11 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ## [Unreleased]
 
+ - feat(compare): latest-wins team selection; pinned rail; smaller selects [microlearning: local SoT + latest-wins prevents state wars]
+   ↳ /docs/devnotes/2025-11/2025-11-05-latest-wins-team-selection.md
+ - Session Summary: 2025-11-05
+   ↳ /docs/sessionsummary/2025-11/2025-11-05-SessionSummary.md
+
 ### Docs
 - Architecture Audit (2025-11-05) — See `docs/AUDIT_ARCHITECTURE_2025-11-05.md` — micro: verified client-side ranking, mocks present, mobile layout parity.
 

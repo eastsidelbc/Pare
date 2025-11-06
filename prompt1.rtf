@@ -1,106 +1,109 @@
-Goal: Fix two build errors:
-1) "Export logger doesn't exist in target module" when importing from '@/utils/logger'
-2) "Property 'get' does not exist on type Promise<ReadonlyHeaders>" for `headers().get(...)` in API routes
+You are auditing the Pare app codebase to confirm readiness for Phase 5 (real data integration).
 
-Make surgical changes only. Do not alter behavior.
+Most team and metric data already come from a CSV file.
+The only remaining mock data appears in:
 
-FILES TO EDIT
-- utils/logger.ts
-- app/api/nfl-2025/offense/route.ts
-- app/api/nfl-2025/defense/route.ts
+MismatchChips component (the stat-comparison “pills”)
 
-CONTEXT
-- We currently export { log, LOG_LEVEL } from utils/logger.ts (no 'logger' object).
-- Some routes import `{ logger }` and call `logger.cache(...)` and `logger.performance(...)`.
-- Next.js 15’s `next/headers` can be async; our code assumed sync `.get()`. We will use the Request parameter instead.
+Scoreboard rail (mock schedule, scores, and betting lines)
 
-TASKS
+Your job is to verify that these mocks can be replaced cleanly with the new /api/teams and /api/schedule endpoints, and that the rest of the UI already aligns with the canonical schema.
 
-A) utils/logger.ts — add a tiny compatibility shim export
-1. Keep existing exports `LOG_LEVEL` and `log` as-is.
-2. Add a new named export `logger` that preserves current call sites:
-   - `logger.cache(ctx, msg, meta)` → internally call `log('debug', '[CACHE]', ctx, msg, meta)`
-   - `logger.performance(ctx, msg, meta)` → `log('info', '[PERF]', ctx, msg, meta)`
-   - Also include passthrough helpers: `logger.debug`, `logger.info`, `logger.warn`, `logger.error` that call `log(...)`
+Audit Targets
+1. Mock usage
 
-Code to append at bottom of utils/logger.ts:
-```ts
-export const logger = {
-  cache(ctx: any, msg: string, meta?: any) {
-    log('debug', '[CACHE]', ctx, msg, meta);
-  },
-  performance(ctx: any, msg: string, meta?: any) {
-    log('info', '[PERF]', ctx, msg, meta);
-  },
-  debug(...args: any[]) {
-    log('debug', ...args);
-  },
-  info(...args: any[]) {
-    log('info', ...args);
-  },
-  warn(...args: any[]) {
-    log('warn', ...args);
-  },
-  error(...args: any[]) {
-    log('error', ...args);
-  },
-} as const;
-B) offense/route.ts and defense/route.ts — fix If-None-Match access and ETag flow
+Locate where the mismatch-chip and scoreboard mocks are defined or imported.
 
-Change the GET signatures to accept the Request parameter:
+Note file paths and line ranges.
 
-ts
-Copy code
-export async function GET(request: Request) { ... }
-Remove any import { headers } from 'next/headers' usage in these two files.
+Identify which props they pass down (e.g., teamA, teamB, line, favoredBy, statName).
 
-Read the request header directly:
+2. Data flow
 
-ts
-Copy code
-const ifNoneMatch = request.headers.get('if-none-match') || undefined;
-Keep the rest of the logic same (cache HIT/MISS handling, stale fallback, logging).
+Trace how CSV-based team metrics currently enter the app (which hook, context, or store).
 
-Ensure we continue to set an ETag header on 200/304 responses.
+Confirm the shape matches the canonical schema:
 
-(If present) Update any references that assumed headers() to instead use the local ifNoneMatch string variable.
+{ team_id, team_name, season, rankings: {}, metrics: {} }
 
-C) Type check + behavior checks
+3. Dropdown + compare logic
 
-pnpm typecheck (or npm run typecheck) must pass with 0 errors.
+Find where team selections (left vs. right) are stored and updated.
 
-pnpm dev runs without build errors.
+Verify that the selected team objects come from the CSV source, not residual mocks.
 
-Manual test:
+Note any assumptions about property names (e.g., fgPercent vs. fg_pct).
 
-GET /api/nfl-2025/offense → returns 200 + ETag "abc..."
+4. Scoreboard rail
 
-GET again with If-None-Match: "abc..." → returns 304 Not Modified
+Check how mock schedule entries are structured (home, away, score_home, score_away, line).
 
-Same for /defense
+Compare this shape to the proposed canonical GameSchema:
 
-D) Do NOT change any public response shapes, cache max-age values, or logs content beyond using the shim. Keep all headers like X-Cache, X-Request-ID etc.
-
-After changes, print a short summary of what changed.
-
-At end of your reply, add:
-
-Microlearning
-Explain why using a Request parameter for headers is safer in Next.js 15 and how a logger shim preserves API compatibility while centralizing logging.
-
-markdown
-Copy code
-
----
-
-### Why this works
-
-- **logger error:** We add a **compatibility shim** export so your existing `import { logger }` and calls like `logger.cache(...)` continue to compile, without touching multiple files.
-- **headers().get error:** We use the **Request parameter** (`export async function GET(request: Request)`) and `request.headers.get(...)`, which works across Next 15 and avoids confusion about whether `headers()` is sync or async.
-- Keeps your **existing cache + stale-serve logic** intact.
-
-If you want, after Cursor runs this, paste back the summary and I’ll double-check the diffs.
+{ game_id, season, week, date, home_id, away_id, score_home?, score_away?, final, status?, spread_home?, total? }
 
 
+Determine if swapping in loadScheduleFromCsv() or /api/schedule would work without refactor.
+
+5. MismatchChips
+
+Confirm what data drives the “pills.”
+
+Determine whether they read from the same team metrics array or a separate mock.
+
+Identify if the component expects normalized numeric values (0–1) or formatted strings (“48.1 %”).
+
+6. Refresh integration
+
+Locate a persistent component (layout, header, or dev panel) suitable for a dev-only <DevRefreshButton /> that calls:
+
+fetch('/api/teams?refresh=true', { cache: 'no-store' });
 
 
+and then reloads the UI.
+
+Note if NODE_ENV gating is already used to hide dev tools.
+
+7. Type definitions
+
+Locate any existing Team, Game, or TeamStats types/interfaces.
+
+Report mismatches between these and the canonical schemas (TeamSchema, GameSchema).
+
+Suggest minimal adapter code if needed.
+
+8. Compatibility verdict
+
+Label each area as one of:
+
+✅ Fully Compatible – no refactor needed
+
+⚙️ Minor Adapter Needed – small field rename or type cast
+
+🔧 Refactor Required – incompatible shape or hard-coded mock coupling
+
+Deliverables
+
+Return a structured list:
+
+File	Role	Lines	Compatibility	Notes / Mapping suggestions
+
+Also include:
+
+Recommended file to place <DevRefreshButton />.
+
+Any additional hooks or contexts that must re-fetch on refresh.
+
+Context Reminder
+
+Real metrics already come from CSV → state/store.
+
+Only the scoreboard rail and mismatch chips still depend on mock objects.
+
+After this audit, we’ll proceed with the Phase 5 build prompt that:
+
+Adds /api/teams and /api/schedule routes
+
+Integrates Zod schemas
+
+Implements the DevRefreshButton component

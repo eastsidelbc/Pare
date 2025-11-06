@@ -43,16 +43,16 @@ export default function ScoreboardRail({ onSelect, className = '' }: ScoreboardR
 
   const Section: React.FC<{ title: string; games: ScoreboardGame[] }> = ({ title, games }) => (
     <div className="mb-3">
-      <div className="px-3 py-1 text-xs tracking-wider text-slate-400/90 uppercase">{title}</div>
+      <div className="px-2 py-1 text-xs tracking-wider text-slate-400/90 uppercase">{title}</div>
       <div className="divide-y divide-slate-800/60">
         {games.map((game) => (
           <button
             key={game.gameId}
             onClick={() => { onSelect?.(game); }}
-            className="w-full text-left px-3 py-2 hover:bg-slate-800/50 focus:outline-none focus-ring"
+            className="w-full text-left px-2 py-1 hover:bg-slate-800/50 focus:outline-none focus-ring"
           >
             {/* Line 1 */}
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <TeamLogo teamName={abbrToName(game.away.abbr) || game.away.abbr} size="24" />
                 <span className="text-[13px] font-medium text-slate-200">{game.away.abbr}</span>
@@ -63,7 +63,7 @@ export default function ScoreboardRail({ onSelect, className = '' }: ScoreboardR
               </div>
             </div>
             {/* Line 2 */}
-            <div className="flex items-center justify-between gap-3 mt-0.5">
+            <div className="flex items-center justify-between gap-2 mt-0.5">
               <div className="flex items-center gap-2">
                 <TeamLogo teamName={abbrToName(game.home.abbr) || game.home.abbr} size="24" />
                 <span className="text-[13px] font-medium text-slate-200">{game.home.abbr}</span>
@@ -81,10 +81,10 @@ export default function ScoreboardRail({ onSelect, className = '' }: ScoreboardR
 
   return (
     <aside className={`w-full ${className}`} aria-label="Scoreboard Rail">
-      <div className="text-slate-300 text-sm px-3 py-2 border-b border-slate-800/60">LIVE GAMES</div>
+      <div className="text-slate-300 text-xs px-2 py-1 border-b border-slate-800/60">LIVE GAMES</div>
       <div className="py-2 text-slate-200">
         {showSkeleton && (
-          <div className="px-3 py-2 space-y-2">
+          <div className="px-2 py-1 space-y-2">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="animate-pulse">
                 <div className="h-4 bg-slate-800/70 rounded w-full mb-1" />

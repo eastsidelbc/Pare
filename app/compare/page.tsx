@@ -22,6 +22,7 @@ import CompareHeader from '@/components/CompareHeader';
 import MismatchChips from '@/components/MismatchChips';
 import { useSelection } from '@/components/SelectionContext';
 import { abbrToName } from '@/utils/teamAbbr';
+import { logger } from '@/utils/logger';
 
 export default function ComparePage() {
   // NEW: Mobile detection
@@ -53,13 +54,21 @@ export default function ComparePage() {
 
   const [selectedTeamA, setSelectedTeamA] = useState<string>(() => defaultTeams.a);
   const [selectedTeamB, setSelectedTeamB] = useState<string>(() => defaultTeams.b);
+  const [lastSource, setLastSource] = useState<'rail' | 'manual' | null>(null);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<number>(0);
 
-  // Phase 3: Resolve teams from global selection (rail) if present
-  const resolvedFromSelection = React.useMemo(() => {
-    const away = selectedGame?.awayAbbr ? abbrToName(selectedGame.awayAbbr) : null;
-    const home = selectedGame?.homeAbbr ? abbrToName(selectedGame.homeAbbr) : null;
-    return { away, home };
-  }, [selectedGame]);
+  // Latest-wins: ALWAYS seed from rail when a game is picked
+  React.useEffect(() => {
+    if (!selectedGame) return;
+    const away = selectedGame.awayAbbr ? abbrToName(selectedGame.awayAbbr) : null;
+    const home = selectedGame.homeAbbr ? abbrToName(selectedGame.homeAbbr) : null;
+    const now = Date.now();
+    if (away) setSelectedTeamA(away);
+    if (home) setSelectedTeamB(home);
+    setLastSource('rail');
+    setLastUpdatedAt(now);
+    logger.info('[teams:update]', { source: 'rail', A: away, B: home, at: now });
+  }, [selectedGame?.awayAbbr, selectedGame?.homeAbbr]);
 
   // Global metrics selection state
   const [selectedOffenseMetrics, setSelectedOffenseMetrics] = useState<string[]>(DEFAULT_OFFENSE_METRICS);
@@ -79,12 +88,20 @@ export default function ComparePage() {
   // Individual team change handlers for dropdowns
   const handleTeamAChange = (newTeamA: string) => {
     console.log(`🚀 [COMPARE-PAGE] handleTeamAChange called with: ${newTeamA}`);
+    const now = Date.now();
     setSelectedTeamA(newTeamA);
+    setLastSource('manual');
+    setLastUpdatedAt(now);
+    logger.info('[teams:update]', { source: 'manual', A: newTeamA, B: selectedTeamB, at: now });
   };
 
   const handleTeamBChange = (newTeamB: string) => {
     console.log(`🚀 [COMPARE-PAGE] handleTeamBChange called with: ${newTeamB}`);
+    const now = Date.now();
     setSelectedTeamB(newTeamB);
+    setLastSource('manual');
+    setLastUpdatedAt(now);
+    logger.info('[teams:update]', { source: 'manual', A: selectedTeamA, B: newTeamB, at: now });
   };
 
   console.log('🏈 [COMPARE-PAGE] Data loaded:', {
@@ -173,9 +190,14 @@ export default function ComparePage() {
   );
   }
 
-  // Final teams used by panels (prefer global selection, otherwise local defaults)
-  const finalTeamA = resolvedFromSelection.away || selectedTeamA;
-  const finalTeamB = resolvedFromSelection.home || selectedTeamB;
+  // Final teams: always use local state as source of truth
+  const finalTeamA = selectedTeamA;
+  const finalTeamB = selectedTeamB;
+
+  // Sanity: verify latest-wins model
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[COMPARE-PAGE] Final teams (render):', { finalTeamA, finalTeamB, lastSource, lastUpdatedAt });
+  }
 
   return (
     <>

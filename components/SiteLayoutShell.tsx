@@ -37,27 +37,22 @@ function ShellInner({ children }: { children: React.ReactNode }) {
         >
           ☰
         </button>
-        <div className="text-sm text-slate-300 truncate">
-          {selectedGame?.awayAbbr && selectedGame?.homeAbbr ? `Selected: ${selectedGame.awayAbbr} @ ${selectedGame.homeAbbr}` : 'Selected: —'}
-        </div>
+        
         <div className="w-8" />
       </div>
 
       {/* Layout */}
-      <div className="mx-auto w-full max-w-7xl">
+      <div className="mx-auto w-full max-w-7xl md:pl-[280px]">
         <div className="flex">
-          {/* Desktop Left Rail */}
-          <div className="hidden md:block shrink-0" style={{ width: 340 }}>
-            <div className="sticky top-0 max-h-screen-dynamic overflow-y-auto border-r border-slate-800/60 bg-slate-900/40">
+          {/* Desktop Left Rail - fixed to left edge */}
+          <div className="hidden md:block fixed left-0 top-0 h-screen shrink-0" style={{ width: 280 }}>
+            <div className="h-full max-h-screen-dynamic overflow-y-auto border-r border-slate-800/60 bg-slate-900/40">
               <ScoreboardRail onSelect={(m) => handleSelectFull(m as any)} />
             </div>
           </div>
 
           {/* Main Content */}
           <div className="flex-1 min-w-0">
-            <div className="hidden md:block text-sm text-slate-300 px-4 py-3 border-b border-slate-800/60">
-              {selectedGame?.awayAbbr && selectedGame?.homeAbbr ? `Selected: ${selectedGame.awayAbbr} @ ${selectedGame.homeAbbr}` : 'Selected: —'}
-            </div>
             <div className="px-4 py-4">
               {children}
             </div>
