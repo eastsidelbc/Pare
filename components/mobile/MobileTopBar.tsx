@@ -11,18 +11,15 @@
 export default function MobileTopBar() {
   return (
     <div 
-      className="fixed top-0 left-0 right-0 z-50"
-      style={{ paddingTop: 'env(safe-area-inset-top)' }}
+      className="flex-none z-10 border-b"
+      style={{ 
+        paddingTop: 'env(safe-area-inset-top)',
+        background: 'rgba(15, 23, 42, 0.95)',
+        backdropFilter: 'blur(10px)',
+        borderColor: 'rgba(139, 92, 246, 0.2)'
+      }}
     >
-      <div 
-        className="h-14 px-4 flex items-center justify-between border-b"
-        style={{
-          // PARE STYLING
-          background: 'rgba(15, 23, 42, 0.95)',
-          backdropFilter: 'blur(10px)',
-          borderColor: 'rgba(139, 92, 246, 0.2)' // Purple border
-        }}
-      >
+      <div className="h-14 px-4 flex items-center justify-between">
         {/* Left: Pare Branding */}
         <h1 className="text-lg font-bold">
           <span className="text-white">Pare</span>

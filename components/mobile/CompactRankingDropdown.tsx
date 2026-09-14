@@ -18,7 +18,6 @@ import { calculateBulkRanking, type RankingOptions } from '@/lib/useRanking';
 import { AVAILABLE_METRICS, formatMetricValue } from '@/lib/metricsConfig';
 import { isAverageTeam, isNonSelectableSpecialTeam, getTeamEmoji } from '@/utils/teamHelpers';
 import TeamLogo from '@/components/TeamLogo';
-import { d, dumpBox, dumpFloatingState, firstClip, dumpMenuStyles } from '@/debug/traceDropdown';
 
 interface CompactRankingDropdownProps {
   allData: TeamData[];
@@ -105,25 +104,6 @@ export default function CompactRankingDropdown({
     return () => { document.body.style.overflow = prev; };
   }, [isOpen]);
 
-  // DEBUG: Trace dropdown open/close
-  useEffect(() => {
-    if (isOpen) {
-      const side = position === 'left' ? 'teamA' : 'teamB';
-      d('dropdown:open', { side, currentTeam, metricKey, placement: context.placement });
-      dumpFloatingState(context, refs, floatingStyles, context.placement, side);
-      firstClip(refs.reference.current as HTMLElement | null);
-      
-      // Check menu styles after render
-      requestAnimationFrame(() => {
-        if (refs.floating.current) {
-          dumpMenuStyles(refs.floating.current as HTMLElement, `menu-styles:${side}`);
-        }
-      });
-    } else {
-      d('dropdown:close', { currentTeam, metricKey });
-    }
-  }, [isOpen, context, refs, floatingStyles, position, currentTeam, metricKey]);
-  
   // Calculate rankings for all teams
   const allTeamRankings = useMemo(() => {
     if (!allData || allData.length === 0 || !metricKey) return {};

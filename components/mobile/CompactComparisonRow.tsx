@@ -88,22 +88,6 @@ export default function CompactComparisonRow({
     excludeSpecialTeams: true
   });
   
-  // DEBUG: Log ranking for Vikings
-  if (teamA === 'Minnesota Vikings' && metricField === 'points') {
-    console.log(`🔍 [MOBILE-ROW] Vikings ${displayMode} mode:`, {
-      metricField,
-      rawValue: teamAData?.[metricField],
-      valueType: typeof teamAData?.[metricField],
-      ranking: teamARanking,
-      allDataCount: allData.length,
-      sampleValues: allData.slice(0, 3).map(t => ({ 
-        team: t.team, 
-        value: t[metricField],
-        type: typeof t[metricField]
-      }))
-    });
-  }
-  
   // Calculate bar widths with amplification
   const { teamAPercentage, teamBPercentage } = useBarCalculation({
     teamAValue,
@@ -122,14 +106,14 @@ export default function CompactComparisonRow({
   };
   
   return (
-    <div className="relative mb-2">
+    <div className="relative">
       
-      {/* LINE 1: Data + Ranks + Metric Name (WITH PADDING) */}
-      <div className="px-3 py-2 flex items-center justify-between">
+      {/* LINE 1: Data + Ranks + Metric Name — 3-column grid, perfectly balanced */}
+      <div className="px-3 py-2 grid grid-cols-[1fr_auto_1fr] items-center gap-1">
         
-        {/* Team A: Value + Rank Dropdown */}
+        {/* Team A: Value + Rank (left-aligned) */}
         <div className="flex items-baseline gap-1">
-          <span className="text-[15px] font-semibold text-white">
+          <span className="text-[15px] font-semibold text-white tabular-nums">
             {formattedA}
           </span>
           <CompactRankingDropdown
@@ -145,19 +129,19 @@ export default function CompactComparisonRow({
               formattedRank: formatRank(teamARanking.rank),
               isTied: teamARanking.isTied
             } : null}
-            position="left" // Team A on left → dropdown appears RIGHT
+            position="left"
           />
         </div>
         
-        {/* Center: Metric Name */}
-        <div className="flex-1 text-center px-2">
-          <span className="text-[13px] font-medium text-slate-300 uppercase tracking-wide">
+        {/* Center: Metric Name — fixed-width, never stretches */}
+        <div className="text-center px-1">
+          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">
             {metricConfig.name}
           </span>
         </div>
         
-        {/* Team B: Rank Dropdown + Value */}
-        <div className="flex items-baseline gap-1">
+        {/* Team B: Rank + Value (right-aligned) */}
+        <div className="flex items-baseline gap-1 justify-end">
           <CompactRankingDropdown
             allData={allData}
             metricKey={metricField}
@@ -171,9 +155,9 @@ export default function CompactComparisonRow({
               formattedRank: formatRank(teamBRanking.rank),
               isTied: teamBRanking.isTied
             } : null}
-            position="right" // Team B on right → dropdown appears LEFT
+            position="right"
           />
-          <span className="text-[15px] font-semibold text-white">
+          <span className="text-[15px] font-semibold text-white tabular-nums">
             {formattedB}
           </span>
         </div>

@@ -8,15 +8,13 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { TeamData } from '@/lib/useNflStats';
 import { useDisplayMode } from '@/lib/useDisplayMode';
 import CompactPanelHeader from './CompactPanelHeader';
 import CompactComparisonRow from './CompactComparisonRow';
 import CompactRankingDropdown from './CompactRankingDropdown';
 import CompactTeamSelector from './CompactTeamSelector';
-import { d, traceStateChange } from '@/debug/traceDropdown';
-
 interface CompactPanelProps {
   type: 'offense' | 'defense';
   teamA: string;
@@ -55,15 +53,6 @@ export default function CompactPanel({
   // Team selector dropdown state management
   const [activeTeamSelector, setActiveTeamSelector] = useState<'A' | 'B' | null>(null);
 
-  // DEBUG: Trace state changes
-  useEffect(() => {
-    d(`CompactPanel[${type}]:activeDropdown`, activeDropdown);
-  }, [activeDropdown, type]);
-
-  useEffect(() => {
-    d(`CompactPanel[${type}]:activeTeamSelector`, activeTeamSelector);
-  }, [activeTeamSelector, type]);
-  
   // Select correct dataset
   const allData = type === 'offense' ? allOffenseData : allDefenseData;
   
@@ -132,8 +121,8 @@ export default function CompactPanel({
         allData={allData}
       />
       
-      {/* Metric Rows - 48px each */}
-      <div>
+      {/* Metric Rows - tight, theScore-style density with subtle dividers */}
+      <div className="divide-y divide-white/5">
         {selectedMetrics.map((metricKey, index) => (
           <CompactComparisonRow
             key={metricKey}

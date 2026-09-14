@@ -53,38 +53,38 @@ export default function CompactPanelHeader({
   
   return (
     <>
-      <div className="h-[70px] px-3 flex items-center justify-between">
-        {/* Team A Logo - Tappable, NO border */}
+      {/* 3-column grid: logo | center | logo — guarantees title is always pixel-perfect centered */}
+      <div className="h-[70px] px-3 grid grid-cols-[44px_1fr_44px] items-center gap-2">
+        {/* Team A Logo - Tappable */}
         <button 
           ref={teamALogoRef}
           onClick={onTeamAClick}
-          className="transition-opacity active:opacity-50 touch-optimized"
+          className="flex items-center justify-center transition-opacity active:opacity-50 touch-optimized"
           aria-label={`Change ${teamA}`}
         >
           <TeamLogo teamName={teamA} size="40" />
         </button>
         
-        {/* Center Section */}
-        <div className="text-center flex-1">
-          <h2 className="text-[18px] font-bold text-purple-400 capitalize">
+        {/* Center Section — always perfectly centered between equal-width columns */}
+        <div className="text-center">
+          <h2 className="text-[18px] font-bold text-purple-400 capitalize leading-tight">
             {type}
           </h2>
-          
-          {/* Display Mode Toggle - Instant Switch, NO dropdown */}
+          {/* Display Mode Toggle - Instant Switch */}
           <button
             onClick={handleToggleMode}
-            className="text-[12px] font-medium text-slate-400 tracking-wider transition-opacity active:opacity-50 uppercase"
+            className="text-[11px] font-semibold text-slate-400 tracking-widest transition-colors active:text-purple-400 uppercase mt-0.5"
             aria-label={`Switch to ${displayMode === 'per-game' ? 'total' : 'per game'}`}
           >
             {displayMode === 'per-game' ? 'PER GAME' : 'TOTAL'}
           </button>
         </div>
         
-        {/* Team B Logo - Tappable, NO border */}
+        {/* Team B Logo - Tappable */}
         <button 
           ref={teamBLogoRef}
           onClick={onTeamBClick}
-          className="transition-opacity active:opacity-50 touch-optimized"
+          className="flex items-center justify-center transition-opacity active:opacity-50 touch-optimized"
           aria-label={`Change ${teamB}`}
         >
           <TeamLogo teamName={teamB} size="40" />

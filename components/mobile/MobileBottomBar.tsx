@@ -11,18 +11,15 @@
 export default function MobileBottomBar() {
   return (
     <div 
-      className="fixed bottom-0 left-0 right-0 z-50"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      className="flex-none z-10 border-t"
+      style={{ 
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        background: 'rgba(15, 23, 42, 0.95)',
+        backdropFilter: 'blur(10px)',
+        borderColor: 'rgba(139, 92, 246, 0.2)'
+      }}
     >
-      <div 
-        className="h-16 px-4 flex justify-around items-center border-t"
-        style={{
-          // PARE STYLING
-          background: 'rgba(15, 23, 42, 0.95)',
-          backdropFilter: 'blur(10px)',
-          borderColor: 'rgba(139, 92, 246, 0.2)' // Purple border
-        }}
-      >
+      <div className="h-16 px-4 flex justify-around items-center">
         {/* Tab 1: Stats (placeholder) */}
         <button className="flex flex-col items-center gap-1 transition-opacity active:opacity-50">
           <div 

@@ -56,32 +56,25 @@ export default function MobileCompareLayout({
   const teamBDefense = defenseData.find(t => t.team === selectedTeamB) || null;
   
   return (
+    /* Root: full-viewport flex column. Top/bottom bars are flex siblings — no fixed positioning, no calc() hacks. */
     <div 
-      className="min-h-screen text-white"
+      className="flex flex-col text-white"
       style={{
-        // PARE STYLING: Steel-blue gradient background
+        height: '100dvh',
         background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)'
       }}
     >
-      {/* Fixed Top Bar - Pare Branded */}
+      {/* Top Bar — flex-none, sticks at top naturally */}
       <MobileTopBar />
       
-      {/* Scrollable Content */}
-      <div 
-        className="overflow-y-auto"
-        style={{
-          // Account for top bar (56px) and safe area
-          paddingTop: 'calc(56px + env(safe-area-inset-top))',
-          paddingBottom: 'calc(64px + env(safe-area-inset-bottom))',
-          minHeight: '100dvh'
-        }}
-      >
+      {/* Scrollable Content — flex-1 fills all remaining space between bars */}
+      <div className="flex-1 overflow-y-auto min-h-0">
         {isLoading ? (
-          <div className="h-[600px] flex items-center justify-center">
+          <div className="h-full flex items-center justify-center">
             <div className="text-slate-400">Loading NFL data...</div>
           </div>
         ) : (
-          <div className="space-y-2 px-3 py-2">
+          <div className="px-3 py-3 space-y-3">
             {/* Offense Panel */}
             <CompactPanel
               type="offense"
@@ -94,12 +87,6 @@ export default function MobileCompareLayout({
               allDefenseData={defenseData}
               onTeamAChange={onTeamAChange}
               onTeamBChange={onTeamBChange}
-            />
-            
-            {/* Panel Separator - PARE STYLE (purple accent) */}
-            <div 
-              className="h-px mx-4"
-              style={{ background: 'rgba(139, 92, 246, 0.2)' }}
             />
             
             {/* Defense Panel */}
@@ -119,7 +106,7 @@ export default function MobileCompareLayout({
         )}
       </div>
       
-      {/* Fixed Bottom Bar - Pare Branded */}
+      {/* Bottom Bar — flex-none, sticks at bottom naturally */}
       <MobileBottomBar />
     </div>
   );

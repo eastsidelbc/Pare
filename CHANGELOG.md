@@ -6,6 +6,30 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ## [Unreleased]
 
+### Fixed
+- **Mobile Layout Fundamentals** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-mobile-layout-fundamentals.md`
+  - Removed broken `@/debug/traceDropdown` imports from 4 mobile components (build blocker from deleted file)
+  - Replaced `position: fixed` bars + `calc()` padding anti-pattern with `flex flex-col h-[100dvh]` flex-column layout
+  - Content area: `flex-1 overflow-y-auto min-h-0` — no pixel math, scroll works on all devices
+  - `MobileTopBar` + `MobileBottomBar`: changed from `fixed` to `flex-none`, safe-area insets preserved
+  - `CompactPanelHeader`: `grid-cols-[44px_1fr_44px]` for guaranteed pixel-perfect centering
+  - `CompactComparisonRow`: removed `mb-2` gaps, `grid-cols-[1fr_auto_1fr]` balanced layout, `tabular-nums` on values
+  - `CompactPanel`: `divide-y divide-white/5` for tight theScore-style row separators
+  - `DEFAULT_DEFENSE_METRICS`: restored to 8-metric intended design (was copy-paste of offense); defense now shows Turnovers, Interceptions, Scoring %, Turnover %
+
+### Changed
+- **Repo Janitor Pass** (cleanup, no code touched)
+  - Repo `CLAUDE.md` rewritten: ~1000 → ~470 lines. Removed 8 documented stale facts (wrong port 3000→4000, ghost RankingDropdown issue, dead refs to `PROJECT_PLAN.md` / `Mobile_plan.md`, obsolete Phase 1 Swift bootstrap samples, Q1 2025 launch date, etc.). Now points to vault as master brain doc.
+  - Vault brain doc created: `D:\Programs\Obsidian\Vault\Me\Projects\Pare\CLAUDE.md` (lean, BatterBot-style, ~85 lines).
+  - Master Active Projects table updated: Pare row added.
+  - `docs/` consolidated: empty folders (`audit/`, `archive/`, `specs/`, `port/`) and root `debug/` swept into `docs/_to-delete/`.
+  - `public/` cleaned: 5 unused `create-next-app` boilerplate SVGs (`next.svg`, `vercel.svg`, `file.svg`, `globe.svg`, `window.svg`) moved to `_to-delete/`.
+  - `data/pfr/` cleaned: raw `.html` scrape duplicates moved to `_to-delete/`.
+  - `debug/` root folder: `rankingDebug.ts` and `traceDropdown.ts` verified unused, moved to `_to-delete/`.
+  - `.gitignore` updated: added `ios/**/Preview Content/`, removed dead `/oldproject.md` rule.
+  - **Action required:** delete `docs/_to-delete/` via Windows Explorer when confident nothing valuable is in it.
+
 ### Added
 - **iOS Wrapper Scaffold** (2025-10-14) ✅ PHASE C COMPLETE
   - **Complete iOS Project**: `/ios/` directory with full SwiftUI + WKWebView implementation

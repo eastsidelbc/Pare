@@ -16,7 +16,6 @@ import { useFloating, flip, shift, offset, autoUpdate, useClick, useDismiss, use
 import type { TeamData } from '@/lib/useNflStats';
 import { isAverageTeam, isNonSelectableSpecialTeam, getTeamEmoji, getTeamDisplayLabel } from '@/utils/teamHelpers';
 import TeamLogo from '@/components/TeamLogo';
-import { d, dumpBox, firstClip, dumpMenuStyles } from '@/debug/traceDropdown';
 
 interface CompactTeamSelectorProps {
   allTeams: TeamData[];
@@ -85,35 +84,6 @@ export default function CompactTeamSelector({
     return () => { document.body.style.overflow = prev; };
   }, [isOpen]);
 
-  // DEBUG: Trace team selector open/close and ref state
-  useEffect(() => {
-    if (isOpen) {
-      d('team-selector:open', { 
-        currentTeam, 
-        triggerElement: triggerElement ? 'present' : 'NULL',
-        placement: context.placement 
-      });
-      
-      if (triggerElement) {
-        dumpBox(triggerElement, 'team-selector:trigger');
-      } else {
-        d('team-selector:ERROR', 'triggerElement is NULL - Floating UI cannot position!');
-      }
-      
-      firstClip(triggerElement);
-      
-      // Check menu styles after render
-      requestAnimationFrame(() => {
-        if (refs.floating.current) {
-          dumpMenuStyles(refs.floating.current as HTMLElement, 'team-selector:menu-styles');
-          dumpBox(refs.floating.current, 'team-selector:menu-after-update');
-        }
-      });
-    } else {
-      d('team-selector:close', { currentTeam });
-    }
-  }, [isOpen, triggerElement, context, refs, currentTeam]);
-  
   // Sort teams alphabetically, append average last
   const sortedTeams = useMemo(() => {
     const avgTeam = allTeams.find(t => isAverageTeam(t.team));
