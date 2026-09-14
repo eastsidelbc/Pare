@@ -14,43 +14,42 @@ export default function MobileBottomBar() {
       className="flex-none z-10 border-t"
       style={{ 
         paddingBottom: 'env(safe-area-inset-bottom)',
-        background: 'rgba(15, 23, 42, 0.95)',
-        backdropFilter: 'blur(10px)',
-        borderColor: 'rgba(139, 92, 246, 0.2)'
+        background: 'var(--surface)',
+        borderColor: 'var(--border)'
       }}
     >
       <div className="h-16 px-4 flex justify-around items-center">
-        {/* Tab 1: Stats (placeholder) */}
-        <button className="flex flex-col items-center gap-1 transition-opacity active:opacity-50">
+        {/* Tab 1: Stats (placeholder — inactive) */}
+        <button className="flex flex-col items-center gap-1 touch-optimized active:opacity-60">
           <div 
-            className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold"
-            style={{ background: 'rgba(100, 116, 139, 0.3)' }}
+            className="w-6 h-6 rounded flex items-center justify-center text-xs"
+            style={{ background: 'rgba(107,114,128,0.15)' }}
           >
             📊
           </div>
-          <span className="text-xs text-slate-400">Stats</span>
+          <span style={{ fontSize: '10px', fontWeight: 500, color: 'var(--muted)' }}>Stats</span>
         </button>
         
-        {/* Tab 2: Compare (active) */}
-        <button className="flex flex-col items-center gap-1">
+        {/* Tab 2: Compare (active — gold) */}
+        <button className="flex flex-col items-center gap-1 touch-optimized">
           <div 
-            className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold"
-            style={{ background: 'rgba(139, 92, 246, 0.5)' }} // Purple active
+            className="w-6 h-6 rounded flex items-center justify-center text-xs"
+            style={{ background: 'rgba(245,200,66,0.18)' }}
           >
             ⚖️
           </div>
-          <span className="text-xs font-semibold text-purple-400">Compare</span>
+          <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--gold)' }}>Compare</span>
         </button>
         
-        {/* Tab 3: Settings (placeholder) */}
-        <button className="flex flex-col items-center gap-1 transition-opacity active:opacity-50">
+        {/* Tab 3: Settings (placeholder — inactive) */}
+        <button className="flex flex-col items-center gap-1 touch-optimized active:opacity-60">
           <div 
-            className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold"
-            style={{ background: 'rgba(100, 116, 139, 0.3)' }}
+            className="w-6 h-6 rounded flex items-center justify-center text-xs"
+            style={{ background: 'rgba(107,114,128,0.15)' }}
           >
             ⚙️
           </div>
-          <span className="text-xs text-slate-400">Settings</span>
+          <span style={{ fontSize: '10px', fontWeight: 500, color: 'var(--muted)' }}>Settings</span>
         </button>
       </div>
     </div>

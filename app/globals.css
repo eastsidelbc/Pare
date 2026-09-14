@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   GLOBAL DESIGN SYSTEM — from styleguide.md
+   Apply to ALL web and mobile views
+   ============================================================ */
+:root {
+  --bg:      #0a0e1a;   /* Page background — near black, blue tint */
+  --surface: #111827;   /* Slightly lighter surface */
+  --card:    #1a2235;   /* Card background */
+  --border:  #2a3450;   /* Borders and dividers */
+  --gold:    #f5c842;   /* Primary accent — active, rankings, important */
+  --green:   #22c55e;   /* Success, wins, Team A bars */
+  --red:     #ef4444;   /* Errors, losses, live */
+  --blue:    #3b82f6;   /* Info, scores */
+  --muted:   #6b7280;   /* Tertiary text, disabled */
+  --text:    #f1f5f9;   /* Primary text */
+  --subtext: #94a3b8;   /* Secondary text */
+  --fire:    #ff6b35;   /* Hot/featured — Team B bars */
+}
+
 /* Mobile-first responsive typography */
 @layer base {
   html {

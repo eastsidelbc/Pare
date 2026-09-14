@@ -14,21 +14,19 @@ export default function MobileTopBar() {
       className="flex-none z-10 border-b"
       style={{ 
         paddingTop: 'env(safe-area-inset-top)',
-        background: 'rgba(15, 23, 42, 0.95)',
-        backdropFilter: 'blur(10px)',
-        borderColor: 'rgba(139, 92, 246, 0.2)'
+        background: 'var(--surface)',
+        borderColor: 'var(--border)'
       }}
     >
       <div className="h-14 px-4 flex items-center justify-between">
         {/* Left: Pare Branding */}
-        <h1 className="text-lg font-bold">
-          <span className="text-white">Pare</span>
-          {' '}
-          <span className="text-purple-400">NFL</span>
+        <h1 className="font-black tracking-tight" style={{ fontSize: '20px', color: 'var(--text)' }}>
+          Pare
+          <span className="ml-1.5 font-bold" style={{ fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)' }}>NFL</span>
         </h1>
         
         {/* Right: Season Info */}
-        <div className="text-sm text-slate-400">
+        <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--subtext)' }}>
           2025 Season
         </div>
       </div>

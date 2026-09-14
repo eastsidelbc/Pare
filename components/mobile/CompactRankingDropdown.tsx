@@ -176,7 +176,7 @@ export default function CompactRankingDropdown({
     
     if (isAverage && emoji) {
       return (
-        <span className="text-[11px] font-medium" style={{ color: 'rgb(196, 181, 253)' }}>
+        <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--muted)' }}>
           {emoji} Avg
         </span>
       );
@@ -184,15 +184,15 @@ export default function CompactRankingDropdown({
 
     if (!ranking) {
       return (
-        <span className="text-[11px] text-purple-400/80 font-medium">
+        <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--muted)' }}>
           N/A
         </span>
       );
     }
 
-    // Same color for all ranks - no special styling for ties
+    // Gold rank badge — styleguide: gold = rankings, anything important
     return (
-      <span className="text-[11px] font-medium" style={{ color: 'rgb(196, 181, 253)' }}>
+      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--gold)' }}>
         ({ranking.formattedRank})
       </span>
     );
@@ -243,9 +243,8 @@ export default function CompactRankingDropdown({
               >
                 <div
                   style={{
-                    background: 'rgba(15, 23, 42, 0.98)',
-                    backdropFilter: 'blur(10px)',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
+                    background: 'var(--card)',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)'
                   }}
                 >
                   {/* Scrollable Team List */}
@@ -262,27 +261,25 @@ export default function CompactRankingDropdown({
                       className="w-full px-4 py-3 flex items-center gap-3 transition-all active:opacity-50"
                       style={{
                         background: isCurrent 
-                          ? 'rgba(139, 92, 246, 0.2)' 
+                          ? 'rgba(245,200,66,0.1)' 
                           : 'transparent',
-                        borderTop: index > 0 && isAverage 
-                          ? '1px solid rgba(139, 92, 246, 0.2)' 
+                        borderTop: index > 0 
+                          ? `1px solid var(--border)` 
                           : 'none'
                       }}
                     >
-                      {/* Rank or Emoji - Desktop pattern: amber for ties */}
+                      {/* Rank badge — gold for all, slightly different shade for ties */}
                       <div 
                         className="w-8 h-8 rounded flex items-center justify-center font-bold text-[11px] flex-shrink-0"
                         style={{
-                          background: isAverage 
-                            ? 'rgba(139, 92, 246, 0.3)' 
-                            : isTied 
-                              ? 'rgba(251, 191, 36, 0.2)'  // Amber for ties (desktop pattern)
-                              : 'rgba(100, 116, 139, 0.3)',
-                          color: isAverage 
-                            ? 'rgb(196, 181, 253)' 
-                            : isTied 
-                              ? 'rgb(251, 191, 36)'  // Amber text for ties
-                              : 'rgb(148, 163, 184)'
+                          background: isAverage
+                            ? 'rgba(107,114,128,0.15)'
+                            : isTied
+                              ? 'rgba(245,200,66,0.15)'
+                              : 'rgba(245,200,66,0.1)',
+                          color: isAverage
+                            ? 'var(--muted)'
+                            : 'var(--gold)'
                         }}
                       >
                         {isAverage ? emoji : item.ranking?.rank}
@@ -293,17 +290,17 @@ export default function CompactRankingDropdown({
                       
                       {/* Team Name */}
                       <div className="flex-1 text-left">
-                        <div className="text-[13px] font-semibold text-white">
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>
                           {item.team.team}
                         </div>
-                        <div className="text-[11px] text-slate-400">
+                        <div style={{ fontSize: '11px', color: 'var(--subtext)' }}>
                           {item.formattedValue}
                         </div>
                       </div>
                       
-                      {/* Selected Indicator */}
+                      {/* Selected Indicator — gold dot */}
                       {isCurrent && (
-                        <div className="w-2 h-2 rounded-full" style={{ background: 'rgb(139, 92, 246)' }} />
+                        <div className="w-2 h-2 rounded-full" style={{ background: 'var(--gold)' }} />
                       )}
                     </button>
                   );

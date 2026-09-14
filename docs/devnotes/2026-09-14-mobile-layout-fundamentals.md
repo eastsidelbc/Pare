@@ -75,6 +75,32 @@ flex flex-col h-[100dvh]
 
 ## Follow-ups (future)
 - Sticky panel headers when scrolling (section headers don't scroll away)
-- Ordinal suffix bug: "21th" should be "21st" (ranks 21, 31, etc.)
 - Tablet-first layout pass (768px-1023px breakpoint)
 - Game header line, mismatch chips, scoreboard rail (see `docs/audits/2025-10-ui-compact-spec.md`)
+
+---
+
+## Part 2: Styleguide Retheme (same session)
+
+Applied the global design system from `styleguide.md` to the entire mobile UI.  
+Switched from steel-blue/purple aesthetic to the gold/dark-navy sports-app palette.
+
+### Changes
+- `app/globals.css` — Added `:root` CSS variable block (--bg, --surface, --card, --border, --gold, --green, --fire, --muted, --text, --subtext, --red, --blue)
+- `MobileCompareLayout.tsx` — Background `var(--bg)` (#0a0e1a), no gradient noise
+- `MobileTopBar.tsx` — `var(--surface)` bg, `var(--border)` border, "Pare" bold white + "NFL" gold section label (10px/700/2px tracking/uppercase)
+- `MobileBottomBar.tsx` — `var(--surface)` bg, gold active tab, muted inactive tabs, `var(--border)` border-top
+- `CompactPanel.tsx` — `var(--card)` bg, `var(--border)` border, no opacity hack
+- `CompactPanelHeader.tsx` — "OFFENSE"/"DEFENSE" gold section labels (10px/700/uppercase), PG|TOT dual toggle (both visible, gold = active, --muted = inactive)
+- `CompactComparisonRow.tsx` — Ordinal suffix fix (21st/22nd/23rd, not 21th), metric labels in `--subtext`, bars updated to `#22c55e` (green) + `#ff6b35` (fire orange), removed box-shadow glow
+- `CompactRankingDropdown.tsx` — Gold rank badges in trigger + list rows, `var(--card)` dropdown bg, `var(--border)` row dividers, gold selected dot, no purple
+- `CompactTeamSelector.tsx` — Gold "Select Team" header, `var(--card)` bg, `var(--border)` dividers, gold selected row + dot, no purple
+
+### Self-check results (browser screenshots)
+- ✅ All colors match styleguide — gold primary, dark navy layering
+- ✅ PG|TOT toggle active state correct (gold/muted per state)
+- ✅ Panel independence confirmed (offense TOT, defense PG simultaneously)
+- ✅ Ordinals: 21st, 22nd, 31st all correct
+- ✅ Ranking dropdown gold badges, clean card bg
+- ✅ Team selector gold header + selected indicator
+- ✅ All 8 defense metrics present

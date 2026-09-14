@@ -102,8 +102,8 @@ export default function CompactPanel({
     <div 
       className="rounded-xl overflow-hidden"
       style={{
-        background: 'rgba(15, 23, 42, 0.6)',
-        border: '1px solid rgba(139, 92, 246, 0.2)'
+        background: 'var(--card)',
+        border: '1px solid var(--border)'
       }}
     >
       {/* Panel Header - 70px */}

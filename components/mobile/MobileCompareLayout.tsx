@@ -59,10 +59,7 @@ export default function MobileCompareLayout({
     /* Root: full-viewport flex column. Top/bottom bars are flex siblings — no fixed positioning, no calc() hacks. */
     <div 
       className="flex flex-col text-white"
-      style={{
-        height: '100dvh',
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)'
-      }}
+      style={{ height: '100dvh', background: 'var(--bg)' }}
     >
       {/* Top Bar — flex-none, sticks at top naturally */}
       <MobileTopBar />

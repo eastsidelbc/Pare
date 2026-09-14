@@ -7,6 +7,18 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Fixed
+- **Mobile Styleguide Retheme** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-mobile-layout-fundamentals.md` (Part 2)
+  - Applied global design system from `styleguide.md` to all 7 mobile components
+  - Color palette: steel-blue/purple → gold/dark-navy sports-app (`--bg` #0a0e1a, `--card` #1a2235, `--gold` #f5c842)
+  - CSS variables added to `globals.css` as `:root` block (single source of truth)
+  - `MobileTopBar`: "NFL" now gold section label, surface bg, `--border` divider
+  - `MobileBottomBar`: Compare tab = gold active, Stats/Settings = muted inactive
+  - `CompactPanelHeader`: OFFENSE/DEFENSE gold section labels; PG|TOT dual toggle (both always visible; gold = active, muted = inactive)
+  - `CompactComparisonRow`: **Ordinal suffix fixed** (21st/22nd/23rd not 21th); bars = `#22c55e` green + `#ff6b35` fire, no glow
+  - `CompactRankingDropdown` + `CompactTeamSelector`: gold rank badges, `--card` bg, `--border` dividers, gold selected dot — all purple removed
+  - Self-checked: browser screenshots confirmed layout, toggle, dropdown, ordinals, panel independence
+
 - **Mobile Layout Fundamentals** (2026-09-14)
   - See: `docs/devnotes/2026-09-14-mobile-layout-fundamentals.md`
   - Removed broken `@/debug/traceDropdown` imports from 4 mobile components (build blocker from deleted file)

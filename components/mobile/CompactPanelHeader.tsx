@@ -67,17 +67,38 @@ export default function CompactPanelHeader({
         
         {/* Center Section — always perfectly centered between equal-width columns */}
         <div className="text-center">
-          <h2 className="text-[18px] font-bold text-purple-400 capitalize leading-tight">
+          {/* Section label — styleguide: 10px, 700, letter-spacing 2px, uppercase, gold */}
+          <h2 style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)', lineHeight: 1.2 }}>
             {type}
           </h2>
-          {/* Display Mode Toggle - Instant Switch */}
-          <button
-            onClick={handleToggleMode}
-            className="text-[11px] font-semibold text-slate-400 tracking-widest transition-colors active:text-purple-400 uppercase mt-0.5"
-            aria-label={`Switch to ${displayMode === 'per-game' ? 'total' : 'per game'}`}
-          >
-            {displayMode === 'per-game' ? 'PER GAME' : 'TOTAL'}
-          </button>
+          {/* Display Mode Toggle — shows BOTH states, active = gold, inactive = muted */}
+          <div className="flex items-center justify-center gap-0.5 mt-1">
+            <button
+              onClick={() => displayMode !== 'per-game' && handleToggleMode()}
+              className="touch-optimized px-1.5 py-0.5"
+              style={{
+                fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase',
+                color: displayMode === 'per-game' ? 'var(--gold)' : 'var(--muted)',
+                transition: 'color 0.15s'
+              }}
+              aria-label="Switch to per-game"
+            >
+              PG
+            </button>
+            <span style={{ color: 'var(--border)', fontSize: '9px' }}>|</span>
+            <button
+              onClick={() => displayMode !== 'total' && handleToggleMode()}
+              className="touch-optimized px-1.5 py-0.5"
+              style={{
+                fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase',
+                color: displayMode === 'total' ? 'var(--gold)' : 'var(--muted)',
+                transition: 'color 0.15s'
+              }}
+              aria-label="Switch to total"
+            >
+              TOT
+            </button>
+          </div>
         </div>
         
         {/* Team B Logo - Tappable */}

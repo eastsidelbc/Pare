@@ -146,17 +146,16 @@ export default function CompactTeamSelector({
               >
                 <div
                   style={{
-                    background: 'rgba(15, 23, 42, 0.98)',
-                    backdropFilter: 'blur(10px)',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
+                    background: 'var(--card)',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)'
                   }}
                 >
                   {/* Header */}
                   <div 
                     className="px-4 py-3 border-b"
-                    style={{ borderColor: 'rgba(139, 92, 246, 0.2)' }}
+                    style={{ borderColor: 'var(--border)' }}
                   >
-                    <h3 className="text-[13px] font-semibold text-slate-300 uppercase tracking-wide">
+                    <h3 style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)' }}>
                       Select Team
                     </h3>
                   </div>
@@ -179,10 +178,10 @@ export default function CompactTeamSelector({
                       className="w-full px-4 py-3 flex items-center gap-3 transition-all active:opacity-50"
                       style={{
                         background: isCurrent 
-                          ? 'rgba(139, 92, 246, 0.2)' 
+                          ? 'rgba(245,200,66,0.1)' 
                           : 'transparent',
-                        borderTop: index > 0 && isAverage 
-                          ? '1px solid rgba(139, 92, 246, 0.2)' 
+                        borderTop: index > 0 
+                          ? `1px solid var(--border)` 
                           : 'none'
                       }}
                     >
@@ -191,8 +190,8 @@ export default function CompactTeamSelector({
                         <div 
                           className="w-10 h-10 rounded flex items-center justify-center font-bold text-[16px] flex-shrink-0"
                           style={{
-                            background: 'rgba(139, 92, 246, 0.3)',
-                            color: 'rgb(196, 181, 253)'
+                            background: 'rgba(107,114,128,0.15)',
+                            color: 'var(--muted)'
                           }}
                         >
                           {emoji}
@@ -205,14 +204,14 @@ export default function CompactTeamSelector({
                       
                       {/* Team Name */}
                       <div className="flex-1 text-left">
-                        <div className="text-[14px] font-semibold text-white">
+                        <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)' }}>
                           {displayLabel}
                         </div>
                       </div>
                       
-                      {/* Selected Indicator */}
+                      {/* Selected Indicator — gold dot */}
                       {isCurrent && (
-                        <div className="w-2 h-2 rounded-full" style={{ background: 'rgb(139, 92, 246)' }} />
+                        <div className="w-2 h-2 rounded-full" style={{ background: 'var(--gold)' }} />
                       )}
                     </button>
                   );

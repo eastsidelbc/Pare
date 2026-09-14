@@ -98,10 +98,18 @@ export default function CompactComparisonRow({
     metricName: metricConfig.name
   });
   
-  // Format ranking for display
+  // Format ranking for display — correct ordinal (21st, 22nd, 23rd, not 21th)
   const formatRank = (rank: number | null): string => {
     if (!rank) return '';
-    const suffix = rank === 1 ? 'st' : rank === 2 ? 'nd' : rank === 3 ? 'rd' : 'th';
+    const lastTwo = rank % 100;
+    const lastOne = rank % 10;
+    let suffix = 'th';
+    // 11, 12, 13 are exceptions — always "th"
+    if (lastTwo < 11 || lastTwo > 13) {
+      if (lastOne === 1) suffix = 'st';
+      else if (lastOne === 2) suffix = 'nd';
+      else if (lastOne === 3) suffix = 'rd';
+    }
     return `${rank}${suffix}`;
   };
   
@@ -135,7 +143,7 @@ export default function CompactComparisonRow({
         
         {/* Center: Metric Name — fixed-width, never stretches */}
         <div className="text-center px-1">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">
+          <span className="uppercase whitespace-nowrap" style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', color: 'var(--subtext)' }}>
             {metricConfig.name}
           </span>
         </div>
@@ -167,23 +175,21 @@ export default function CompactComparisonRow({
       {/* LINE 2: Bars (NO PADDING - EDGE TO EDGE) */}
       <div className="h-[6px] flex">
         
-        {/* Team A Bar - GREEN (Pare Style) */}
+        {/* Team A Bar — styleguide green */}
         <div 
           className="h-full transition-all duration-300 ease-out"
           style={{ 
             width: `${teamAPercentage}%`,
-            background: 'linear-gradient(90deg, #10B981 0%, #059669 100%)',
-            boxShadow: '0 0 10px rgba(16, 185, 129, 0.3)'
+            background: 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)'
           }}
         />
         
-        {/* Team B Bar - ORANGE (Pare Style) */}
+        {/* Team B Bar — styleguide fire/orange */}
         <div 
           className="h-full transition-all duration-300 ease-out"
           style={{ 
             width: `${teamBPercentage}%`,
-            background: 'linear-gradient(90deg, #F97316 0%, #EA580C 100%)',
-            boxShadow: '0 0 10px rgba(249, 115, 22, 0.3)'
+            background: 'linear-gradient(90deg, #ff6b35 0%, #ea580c 100%)'
           }}
         />
         
