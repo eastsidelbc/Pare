@@ -384,10 +384,7 @@ export const DEFAULT_DEFENSE_METRICS = [
   'total_yards',  // yards allowed
   'pass_yds',     // pass yards allowed
   'rush_yds',     // rush yards allowed
-  'turnovers',    // turnovers forced (good for defense)
-  'pass_int',     // interceptions made (good for defense)
   'score_pct',    // opponent scoring %
-  'turnover_pct', // opponent turnover % (good for defense)
 ];
 
 /**
