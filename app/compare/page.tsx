@@ -7,9 +7,13 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { ChevronLeft } from 'lucide-react';
 import { useNflStats } from '@/lib/useNflStats';
 import { DEFAULT_OFFENSE_METRICS, DEFAULT_DEFENSE_METRICS } from '@/lib/metricsConfig';
+import { abbrToTeamName } from '@/lib/teams';
 import { useIsMobile } from '@/lib/hooks/useIsMobile';
 import MobileCompareLayout from '@/components/mobile/MobileCompareLayout';
 import OffensePanel from '@/components/OffensePanel';
@@ -19,9 +23,28 @@ import OfflineStatusBanner from '@/components/OfflineStatusBanner';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
+/**
+ * Page shell — wraps the client view in Suspense because it reads
+ * `useSearchParams` (required by Next 15 to avoid full client de-opt).
+ */
 export default function ComparePage() {
-  // NEW: Mobile detection
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100dvh', background: 'var(--bg)' }} />}>
+      <CompareView />
+    </Suspense>
+  );
+}
+
+function CompareView() {
+  // Mobile detection
   const isMobile = useIsMobile();
+
+  // Preload teams from URL query params: /compare?away=XXX&home=YYY
+  // away → Team A (left), home → Team B (right). Feeds the existing global
+  // selection state below — no duplicate state store.
+  const searchParams = useSearchParams();
+  const queryTeamA = abbrToTeamName(searchParams.get('away'));
+  const queryTeamB = abbrToTeamName(searchParams.get('home'));
   
   const { 
     offenseData, 
@@ -46,8 +69,10 @@ export default function ComparePage() {
     return { a, b };
   }, [offenseData]);
 
-  const [selectedTeamA, setSelectedTeamA] = useState<string>(() => defaultTeams.a);
-  const [selectedTeamB, setSelectedTeamB] = useState<string>(() => defaultTeams.b);
+  // Query params take priority as the initial selection (known synchronously
+  // from the URL, before async stats load). Falls back to deterministic defaults.
+  const [selectedTeamA, setSelectedTeamA] = useState<string>(() => queryTeamA || defaultTeams.a);
+  const [selectedTeamB, setSelectedTeamB] = useState<string>(() => queryTeamB || defaultTeams.b);
 
   // Global metrics selection state
   const [selectedOffenseMetrics, setSelectedOffenseMetrics] = useState<string[]>(DEFAULT_OFFENSE_METRICS);
@@ -204,6 +229,15 @@ export default function ComparePage() {
               <div className="absolute inset-0 opacity-[0.02] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMzAwdjMwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=')]"></div>
             </div>
             <div className="max-w-6xl mx-auto">
+            {/* Back to schedule */}
+            <div className="mb-4">
+              <Link
+                href="/"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-300 transition-colors hover:text-white"
+              >
+                <ChevronLeft size={18} /> Schedule
+              </Link>
+            </div>
             {/* Comparison Panels - Protected by Error Boundaries */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {/* Offense Panel */}

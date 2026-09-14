@@ -40,12 +40,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# old project notes
-/oldproject.md
-
 # iOS
 ios/*.xcodeproj
 ios/*.xcworkspace
+ios/**/Preview Content/
 ios/**/*.xcuserstate
 ios/**/xcuserdata/
 ios/.DS_Store

@@ -6,6 +6,37 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ## [Unreleased]
 
+### Added
+- **Schedule-first home + Sleeper-style UI pass** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-schedule-first-redesign.md`
+  - **New entry point**: `app/page.tsx` rewritten from API-docs marketing page into
+    a mobile-first schedule of the current NFL week — compact tappable matchup
+    cards grouped by day, with loading (skeleton), empty, and error states.
+  - **Data seam**: `lib/schedule.ts` exports `getCurrentWeekMatchups()` returning
+    a typed `Matchup[]` (currently a hardcoded 16-game mock, all 32 teams). Real
+    source can drop in behind the function without UI changes.
+  - **Team registry**: `lib/teams.ts` — single source for abbr ↔ full-name ↔
+    location/nickname, used by the schedule, cards, and compare query params.
+  - **Deep-link preload**: `/compare?away=XXX&home=YYY` preloads both teams into
+    the existing global selection (away→Team A, home→Team B). Wrapped in `Suspense`
+    for `useSearchParams` (Next 15). No new state store.
+  - **Components**: `components/schedule/{MatchupCard,ScheduleList,MatchupCardSkeleton}.tsx`,
+    `components/ui/RankBadge.tsx` (custom tiered rank badge, top-3 filled gold).
+  - **Design system**: loaded Inter via `next/font` (was referenced but never
+    loaded); added radius/elevation tokens, `.skeleton` shimmer + `.no-scrollbar`
+    utilities to `globals.css`; wired the Inter var into `tailwind.config.js`.
+  - **Motion**: Framer Motion for card entrance/tap feedback and spring-animated
+    theScore inward bars in `CompactComparisonRow` (proportional meeting point
+    preserved — 2% center gap, rounded outer ends).
+  - **No emoji in UI**: replaced bottom-bar + avg-team emoji with lucide icons
+    (`CalendarDays`, `GitCompareArrows`, `Settings`, `BarChart3`, `ChevronLeft`/
+    `ChevronRight`) and the custom `RankBadge`. `MobileTopBar` now shows a back-to-
+    schedule affordance + current matchup; `MobileBottomBar` "Schedule" tab links home.
+  - Verified: home → tap matchup → compare preloaded → back nav, at phone + desktop
+    widths (browser screenshots).
+  - Follow-up: swap schedule mock for a live source; bring desktop compare shell
+    fully onto the new token system (still uses the older gradient/purple styling).
+
 ### Fixed
 - **Mobile Styleguide Retheme** (2026-09-14)
   - See: `docs/devnotes/2026-09-14-mobile-layout-fundamentals.md` (Part 2)

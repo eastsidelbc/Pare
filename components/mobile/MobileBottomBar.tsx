@@ -1,58 +1,70 @@
 /**
  * Mobile Bottom Bar
- * 
- * Simple Pare-branded bottom tabs
- * LAYOUT: theScore compact structure
- * STYLE: Pare visual design (purple for active, slate for inactive)
+ *
+ * Tab bar with real (lucide) icons — no emoji. "Schedule" navigates home;
+ * "Compare" is the active view; "Settings" is a placeholder.
  */
 
 'use client';
 
+import Link from 'next/link';
+import { CalendarDays, GitCompareArrows, Settings, type LucideIcon } from 'lucide-react';
+
+function Tab({
+  icon: Icon,
+  label,
+  active,
+  href,
+}: {
+  icon: LucideIcon;
+  label: string;
+  active?: boolean;
+  href?: string;
+}) {
+  const color = active ? 'var(--gold)' : 'var(--muted)';
+  const content = (
+    <>
+      <div
+        className="flex h-7 w-7 items-center justify-center rounded-lg"
+        style={{ background: active ? 'rgba(245,200,66,0.15)' : 'transparent' }}
+      >
+        <Icon size={18} style={{ color }} strokeWidth={active ? 2.4 : 2} />
+      </div>
+      <span style={{ fontSize: '10px', fontWeight: active ? 700 : 500, color }}>{label}</span>
+    </>
+  );
+
+  const className = 'flex flex-1 flex-col items-center gap-0.5 py-1 touch-optimized active:opacity-60';
+
+  if (href) {
+    return (
+      <Link href={href} className={className} aria-label={label}>
+        {content}
+      </Link>
+    );
+  }
+  return (
+    <button className={className} aria-label={label}>
+      {content}
+    </button>
+  );
+}
+
 export default function MobileBottomBar() {
   return (
-    <div 
+    <div
       className="flex-none z-10 border-t"
-      style={{ 
+      style={{
         paddingBottom: 'env(safe-area-inset-bottom)',
         background: 'var(--surface)',
-        borderColor: 'var(--border)'
+        borderColor: 'var(--border)',
       }}
     >
-      <div className="h-16 px-4 flex justify-around items-center">
-        {/* Tab 1: Stats (placeholder — inactive) */}
-        <button className="flex flex-col items-center gap-1 touch-optimized active:opacity-60">
-          <div 
-            className="w-6 h-6 rounded flex items-center justify-center text-xs"
-            style={{ background: 'rgba(107,114,128,0.15)' }}
-          >
-            📊
-          </div>
-          <span style={{ fontSize: '10px', fontWeight: 500, color: 'var(--muted)' }}>Stats</span>
-        </button>
-        
-        {/* Tab 2: Compare (active — gold) */}
-        <button className="flex flex-col items-center gap-1 touch-optimized">
-          <div 
-            className="w-6 h-6 rounded flex items-center justify-center text-xs"
-            style={{ background: 'rgba(245,200,66,0.18)' }}
-          >
-            ⚖️
-          </div>
-          <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--gold)' }}>Compare</span>
-        </button>
-        
-        {/* Tab 3: Settings (placeholder — inactive) */}
-        <button className="flex flex-col items-center gap-1 touch-optimized active:opacity-60">
-          <div 
-            className="w-6 h-6 rounded flex items-center justify-center text-xs"
-            style={{ background: 'rgba(107,114,128,0.15)' }}
-          >
-            ⚙️
-          </div>
-          <span style={{ fontSize: '10px', fontWeight: 500, color: 'var(--muted)' }}>Settings</span>
-        </button>
+      <div className="mx-auto flex h-16 max-w-[600px] items-center justify-around px-4">
+        <Tab icon={CalendarDays} label="Schedule" href="/" />
+        <Tab icon={GitCompareArrows} label="Compare" active />
+        <Tab icon={Settings} label="Settings" />
       </div>
     </div>
   );
 }
-

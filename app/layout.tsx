@@ -1,5 +1,12 @@
 import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
   title: "Pare: NFL Team Comparison",
@@ -62,7 +69,7 @@ export default function RootLayout({
   // Gate SW registration using public env var evaluated at build time
   const enableSW = process.env.NEXT_PUBLIC_ENABLE_SW === 'true';
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
@@ -106,7 +113,7 @@ export default function RootLayout({
           `
         }} />
       </head>
-      <body className="antialiased overflow-x-hidden">
+      <body className="font-sans antialiased overflow-x-hidden">
         {children}
       </body>
     </html>

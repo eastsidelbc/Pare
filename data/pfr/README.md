@@ -1,31 +1,60 @@
-# 📁 Local Pro Football Reference Data
+# 📊 How to Export CSV Data from Pro Football Reference
 
-## How to Update Data
+## 🎯 Much Better Than HTML!
+- **90% smaller files** (5KB vs 80KB)
+- **Faster processing** (no HTML parsing)
+- **More reliable** (no DOM structure changes)
+- **Easier to edit** (open in Excel)
 
-### **Step 1: Download Offense Data**
-1. Go to: https://www.pro-football-reference.com/years/2025/#team_stats
-2. Right-click → "Save Page As" → Save as `offense-2025.html`
-3. Place in this directory: `data/pfr/offense-2025.html`
+## 📝 Step-by-Step Instructions:
 
-### **Step 2: Download Defense Data**  
-1. Go to: https://www.pro-football-reference.com/years/2025/opp.htm#team_stats
-2. Right-click → "Save Page As" → Save as `defense-2025.html`
-3. Place in this directory: `data/pfr/defense-2025.html`
-
-### **Step 3: Restart Your Server**
+### **1. For Offense Data:**
 ```bash
-npm run dev
+# Go to: https://www.pro-football-reference.com/years/2025/#team_stats
+# Look for this button: "Get table as CSV (for Excel)"
+# Click it and copy the CSV text
+# Save as: data/pfr/offense-2025.csv
 ```
 
-## Files in this Directory
-- `offense-2025.html` - Current season offense stats from PFR
-- `defense-2025.html` - Current season defense stats from PFR
-- `README.md` - This instruction file
+### **2. For Defense Data:**
+```bash
+# Go to: https://www.pro-football-reference.com/years/2025/opp.htm#team_stats  
+# Look for this button: "Get table as CSV (for Excel)"
+# Click it and copy the CSV text
+# Save as: data/pfr/defense-2025.csv
+```
 
-## Update Frequency
-**Recommended**: Update 1-2 times per week during season, or after big games
+## 🔍 What to Look For:
 
-## Backup Strategy
-Keep previous versions:
-- `offense-2025-backup.html`
-- `defense-2025-backup.html`
+**CSV Header should look like:**
+```csv
+Team,G,Pts,Tot Yds,Ply,Y/P,TO,FL,1stD,Cmp,Att,Yds,TD,Int,NY/A,1stD,Att,Yds,TD,Y/A,1stD,Pen,Yds,1stPy,Sc%,TO%,EXP
+```
+
+**First few data rows:**
+```csv
+Baltimore Ravens,3,111,992,157,6.3,2,2,54,54,76,624,9,0,7.1,32,69,368,2,5.3,19,15,110,3,80.0,14.3,+11.8
+Buffalo Bills,3,102,1041,180,5.8,4,3,65,67,91,619,11,1,6.6,41,80,422,3,5.3,21,23,135,3,78.3,21.7,-0.7
+```
+
+## 🛠️ File Size Comparison:
+- **HTML**: ~80KB (complex parsing needed)
+- **CSV**: ~5KB (simple split by commas)
+
+## ⚡ Performance Benefits:
+- **10x faster parsing**
+- **No HTML complexity** 
+- **Easier debugging**
+- **Manual editing possible**
+
+## 🔧 Implementation:
+Once you have the CSV files, update the API routes to use:
+```typescript
+import { fetchAndParseCSV, computeRanks } from '@/lib/pfrCsv';
+
+// In API route:
+const { rows } = await fetchAndParseCSV({ type: 'offense' });
+const rankedRows = computeRanks(rows, OFFENSE_RANK_BASIS);
+```
+
+**Result:** Same JSON output, much better performance! 🚀

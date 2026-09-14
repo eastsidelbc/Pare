@@ -14,7 +14,8 @@ import { useMemo, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useFloating, flip, shift, offset, autoUpdate, useClick, useDismiss, useInteractions, FloatingPortal, size, inline } from '@floating-ui/react';
 import type { TeamData } from '@/lib/useNflStats';
-import { isAverageTeam, isNonSelectableSpecialTeam, getTeamEmoji, getTeamDisplayLabel } from '@/utils/teamHelpers';
+import { isAverageTeam, isNonSelectableSpecialTeam, getTeamDisplayLabel } from '@/utils/teamHelpers';
+import { BarChart3 } from 'lucide-react';
 import TeamLogo from '@/components/TeamLogo';
 
 interface CompactTeamSelectorProps {
@@ -167,7 +168,6 @@ export default function CompactTeamSelector({
                   >
                 {sortedTeams.map((team, index) => {
                   const isAverage = isAverageTeam(team.team);
-                  const emoji = getTeamEmoji(team.team);
                   const displayLabel = isAverage ? getTeamDisplayLabel(team.team) : team.team;
                   const isCurrent = team.team === currentTeam;
                   
@@ -185,16 +185,16 @@ export default function CompactTeamSelector({
                           : 'none'
                       }}
                     >
-                      {/* Logo or Emoji */}
-                      {isAverage && emoji ? (
+                      {/* Logo or average icon */}
+                      {isAverage ? (
                         <div 
-                          className="w-10 h-10 rounded flex items-center justify-center font-bold text-[16px] flex-shrink-0"
+                          className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0"
                           style={{
                             background: 'rgba(107,114,128,0.15)',
                             color: 'var(--muted)'
                           }}
                         >
-                          {emoji}
+                          <BarChart3 size={18} />
                         </div>
                       ) : (
                         <div className="flex-shrink-0">

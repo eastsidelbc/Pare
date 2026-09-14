@@ -1,72 +1,78 @@
-import { APP_CONSTANTS } from '@/config/constants';
+/**
+ * Home — schedule-first entry point.
+ *
+ * The front door of the app: a mobile-first list of THIS WEEK's NFL matchups as
+ * compact tappable cards. Tapping a card deep-links into the compare view with
+ * both teams preloaded (`/compare?away=XXX&home=YYY`).
+ *
+ * Schedule data comes from the `getCurrentWeekMatchups()` seam (currently a mock).
+ * State is owned here so it works unchanged when that seam becomes async.
+ */
+
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+import { getCurrentWeekMatchups, getCurrentWeekNumber, type Matchup } from '@/lib/schedule';
+import ScheduleList, { type ScheduleStatus } from '@/components/schedule/ScheduleList';
 
 export default function Home() {
+  const [status, setStatus] = useState<ScheduleStatus>('loading');
+  const [matchups, setMatchups] = useState<Matchup[]>([]);
+  const week = getCurrentWeekNumber();
+
+  const load = useCallback(() => {
+    setStatus('loading');
+    try {
+      const games = getCurrentWeekMatchups();
+      setMatchups(games);
+      setStatus(games.length > 0 ? 'ready' : 'empty');
+    } catch {
+      setMatchups([]);
+      setStatus('error');
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
   return (
-    <div className="min-h-screen w-screen bg-gradient-to-br from-[#0b1120] via-[#0f172a] to-[#1e293b] text-white flex items-center justify-center px-6 py-12">
-      <div className="w-full max-w-6xl space-y-10">
-        <h1 className="text-center text-5xl md:text-6xl font-extrabold tracking-tight font-sans text-slate-100 drop-shadow-[0_1px_8px_rgba(255,255,255,0.05)]">
-          Pare: <span className="text-blue-400">Sports Stats Platform</span>
-        </h1>
-        
-        <div className="text-center space-y-6">
-          <p className="text-xl text-slate-300 max-w-2xl mx-auto">
-            Professional sports statistics comparison platform with real-time data from authoritative sources.
-          </p>
-          
-          <div className="space-y-4">
-            <div className="bg-white/5 backdrop-blur-2xl border border-blue-400/20 rounded-2xl p-6">
-              <h2 className="text-2xl font-bold text-blue-400 mb-4">NFL Team Comparison</h2>
-              <div className="space-y-4">
-                <p className="text-slate-300">
-                  Comprehensive team analysis with dual-section offense and defense comparison.
-                </p>
-                <a 
-                  href="/compare" 
-                  className="inline-block bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors"
-                >
-                  Compare Teams →
-                </a>
-              </div>
-            </div>
-            
-            <div className="bg-white/5 backdrop-blur-2xl border border-green-400/20 rounded-2xl p-6">
-              <h2 className="text-2xl font-bold text-green-400 mb-4">API Endpoints</h2>
-              <div className="space-y-3 text-left">
-                <div className="bg-slate-800/50 rounded-lg p-3">
-                  <code className="text-green-400">GET {APP_CONSTANTS.API.ENDPOINTS.OFFENSE}</code>
-                  <p className="text-sm text-slate-400 mt-1">NFL team offense statistics with rankings</p>
-                </div>
-                <div className="bg-slate-800/50 rounded-lg p-3">
-                  <code className="text-green-400">GET {APP_CONSTANTS.API.ENDPOINTS.DEFENSE}</code>
-                  <p className="text-sm text-slate-400 mt-1">NFL team defense statistics with rankings</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white/5 backdrop-blur-2xl border border-purple-400/20 rounded-2xl p-6">
-              <h2 className="text-2xl font-bold text-purple-400 mb-4">Features</h2>
-              <div className="grid md:grid-cols-2 gap-4 text-left">
-                <div>
-                  <h3 className="font-semibold text-white">Real-time Data</h3>
-                  <p className="text-sm text-slate-400">Live scraping from Pro Football Reference</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-white">Smart Caching</h3>
-                  <p className="text-sm text-slate-400">6-hour cache with stale data fallbacks</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-white">TypeScript API</h3>
-                  <p className="text-sm text-slate-400">Fully typed responses and error handling</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-white">PM2 Optimized</h3>
-                  <p className="text-sm text-slate-400">Built for 24/7 self-hosted deployment</p>
-                </div>
-              </div>
-            </div>
+    <div className="flex flex-col" style={{ minHeight: '100dvh', background: 'var(--bg)' }}>
+      {/* Top bar */}
+      <header
+        className="flex-none border-b"
+        style={{ background: 'var(--surface)', borderColor: 'var(--border)', paddingTop: 'env(safe-area-inset-top)' }}
+      >
+        <div className="mx-auto flex h-14 w-full max-w-[600px] items-center justify-between px-4">
+          <h1 className="font-black tracking-tight" style={{ fontSize: '20px', color: 'var(--text)' }}>
+            Pare
+            <span
+              className="ml-1.5 font-bold"
+              style={{ fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)' }}
+            >
+              NFL
+            </span>
+          </h1>
+          <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--subtext)' }}>2025 Season</div>
+        </div>
+      </header>
+
+      {/* Content */}
+      <main className="mx-auto w-full max-w-[600px] flex-1 px-4 pb-10 pt-4">
+        <div className="mb-4">
+          <div
+            className="font-black tracking-tight"
+            style={{ fontSize: '22px', color: 'var(--text)', lineHeight: 1.1 }}
+          >
+            This Week
+          </div>
+          <div className="mt-1" style={{ fontSize: '12px', color: 'var(--subtext)' }}>
+            Week {week} · Tap a matchup to compare
           </div>
         </div>
-      </div>
+
+        <ScheduleList status={status} matchups={matchups} onRetry={load} />
+      </main>
     </div>
   );
 }

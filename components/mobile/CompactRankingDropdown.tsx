@@ -16,8 +16,10 @@ import { useFloating, flip, shift, offset, autoUpdate, useClick, useDismiss, use
 import type { TeamData } from '@/lib/useNflStats';
 import { calculateBulkRanking, type RankingOptions } from '@/lib/useRanking';
 import { AVAILABLE_METRICS, formatMetricValue } from '@/lib/metricsConfig';
-import { isAverageTeam, isNonSelectableSpecialTeam, getTeamEmoji } from '@/utils/teamHelpers';
+import { isAverageTeam, isNonSelectableSpecialTeam } from '@/utils/teamHelpers';
+import { BarChart3 } from 'lucide-react';
 import TeamLogo from '@/components/TeamLogo';
+import RankBadge from '@/components/ui/RankBadge';
 
 interface CompactRankingDropdownProps {
   allData: TeamData[];
@@ -172,12 +174,14 @@ export default function CompactRankingDropdown({
   // Render rank badge (trigger button)
   const renderRankBadge = () => {
     const isAverage = isAverageTeam(currentTeam);
-    const emoji = getTeamEmoji(currentTeam);
-    
-    if (isAverage && emoji) {
+
+    if (isAverage) {
       return (
-        <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--muted)' }}>
-          {emoji} Avg
+        <span
+          className="inline-flex items-center gap-1 font-bold"
+          style={{ fontSize: '11px', color: 'var(--muted)' }}
+        >
+          <BarChart3 size={11} /> AVG
         </span>
       );
     }
@@ -190,12 +194,8 @@ export default function CompactRankingDropdown({
       );
     }
 
-    // Gold rank badge — styleguide: gold = rankings, anything important
-    return (
-      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--gold)' }}>
-        ({ranking.formattedRank})
-      </span>
-    );
+    // Custom tiered rank badge (no emoji)
+    return <RankBadge rank={ranking.rank} isTied={ranking.isTied} />;
   };
   
   return (
@@ -250,7 +250,6 @@ export default function CompactRankingDropdown({
                   {/* Scrollable Team List */}
                 {sortedTeams.map((item, index) => {
                   const isAverage = isAverageTeam(item.team.team);
-                  const emoji = getTeamEmoji(item.team.team);
                   const isCurrent = item.team.team === currentTeam;
                   const isTied = item.ranking?.isTied || false;
                   
@@ -282,7 +281,7 @@ export default function CompactRankingDropdown({
                             : 'var(--gold)'
                         }}
                       >
-                        {isAverage ? emoji : item.ranking?.rank}
+                        {isAverage ? <BarChart3 size={14} /> : item.ranking?.rank}
                       </div>
                       
                       {/* Logo */}

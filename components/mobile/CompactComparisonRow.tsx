@@ -9,10 +9,10 @@
 
 'use client';
 
+import { motion } from 'framer-motion';
 import { AVAILABLE_METRICS } from '@/lib/metricsConfig';
 import { useRanking } from '@/lib/useRanking';
 import { useBarCalculation } from '@/lib/useBarCalculation';
-import { isAverageTeam, getTeamEmoji } from '@/utils/teamHelpers';
 import type { TeamData } from '@/lib/useNflStats';
 import CompactRankingDropdown from './CompactRankingDropdown';
 
@@ -172,27 +172,30 @@ export default function CompactComparisonRow({
         
       </div>
       
-      {/* LINE 2: Bars (NO PADDING - EDGE TO EDGE) */}
-      <div className="h-[6px] flex">
-        
-        {/* Team A Bar — styleguide green */}
-        <div 
-          className="h-full transition-all duration-300 ease-out"
-          style={{ 
-            width: `${teamAPercentage}%`,
-            background: 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)'
-          }}
-        />
-        
-        {/* Team B Bar — styleguide fire/orange */}
-        <div 
-          className="h-full transition-all duration-300 ease-out"
-          style={{ 
-            width: `${teamBPercentage}%`,
-            background: 'linear-gradient(90deg, #ff6b35 0%, #ea580c 100%)'
-          }}
-        />
-        
+      {/* LINE 2: theScore-style inward bars — proportional meeting point,
+          animated into place, rounded outer ends. teamA% + teamB% ≈ 98 (2%
+          reserved as the center gap), preserving the sacred bar math. */}
+      <div className="px-3 pb-2 pt-0.5">
+        <div className="flex h-[7px] w-full items-stretch">
+          {/* Team A bar — grows inward from the left (green) */}
+          <motion.div
+            className="h-full rounded-l-full"
+            style={{ background: 'linear-gradient(90deg, #16a34a 0%, #22c55e 100%)' }}
+            initial={false}
+            animate={{ width: `${teamAPercentage}%` }}
+            transition={{ type: 'spring', stiffness: 220, damping: 30 }}
+          />
+          {/* Center gap */}
+          <div className="h-full" style={{ width: '2%' }} />
+          {/* Team B bar — grows inward from the right (fire) */}
+          <motion.div
+            className="ml-auto h-full rounded-r-full"
+            style={{ background: 'linear-gradient(90deg, #ff6b35 0%, #ea580c 100%)' }}
+            initial={false}
+            animate={{ width: `${teamBPercentage}%` }}
+            transition={{ type: 'spring', stiffness: 220, damping: 30 }}
+          />
+        </div>
       </div>
       
     </div>
