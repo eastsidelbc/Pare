@@ -14,6 +14,7 @@
 
 'use client';
 
+import { memo } from 'react';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import type { TeamData } from '@/lib/useNflStats';
@@ -44,7 +45,7 @@ export interface ComparePaneProps {
   onDefenseMetricsChange: (metrics: string[]) => void;
 }
 
-export default function ComparePane({
+function ComparePane({
   isMobile,
   inline = false,
   teamA,
@@ -186,3 +187,7 @@ export default function ComparePane({
     </div>
   );
 }
+
+// Memoized: props are stable per comparison (teams/metrics/data + handlers keyed
+// by id), so an unrelated `setActive` won't re-render other panes.
+export default memo(ComparePane);

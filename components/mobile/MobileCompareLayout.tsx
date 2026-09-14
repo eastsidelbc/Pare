@@ -8,6 +8,7 @@
 
 'use client';
 
+import { memo } from 'react';
 import CompactPanel from './CompactPanel';
 import { DEFAULT_OFFENSE_METRICS, DEFAULT_DEFENSE_METRICS } from '@/lib/metricsConfig';
 import type { TeamData } from '@/lib/useNflStats';
@@ -32,7 +33,7 @@ interface MobileCompareLayoutProps {
   variant?: 'full' | 'inline';
 }
 
-export default function MobileCompareLayout({
+function MobileCompareLayout({
   selectedTeamA,
   selectedTeamB,
   onTeamAChange,
@@ -119,6 +120,8 @@ export default function MobileCompareLayout({
     </div>
   );
 }
+
+export default memo(MobileCompareLayout);
 
 /** Skeleton mirroring a CompactPanel's header + rows to avoid layout shift. */
 function PanelSkeleton({ rows }: { rows: number }) {

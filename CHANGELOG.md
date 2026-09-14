@@ -6,6 +6,41 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ## [Unreleased]
 
+### Performance
+- **Compare render-path perf — Batch 2 (pane windowing + memo + stable handlers)** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-perf-batch2.md`
+  - `#3` Windowing: `CompareWorkspace` now mounts only the active pane and its
+    immediate neighbors (active ±1); panes ≥2 away render as empty same-width cells
+    (track layout + drag constraints preserved). Neighbors stay mounted so a swipe
+    reveals a ready page with no blank flash. Non-adjacent tab taps snap instantly
+    (avoids sliding the track past unmounted cells); adjacent moves still spring.
+  - Wrapped in `React.memo`: `ComparePane`, `OffensePanel`, `DefensePanel`,
+    `CompactPanel`, `MobileCompareLayout`, `DynamicComparisonRow`,
+    `CompactComparisonRow`. To make the row memo effective, per-team transforms
+    (`transformTeamData`) are now memoized in the panels, and `CompactPanel`'s
+    team-change handlers are `useCallback`-stable.
+  - Stabilized the handlers passed to each pane: a per-comparison-id handler cache
+    (`getPaneHandlers`) reads `updateComparison` through a ref, so handler identity
+    never changes → memoized panes don't re-render on unrelated `setActive`.
+  - No displayed values / behavior changed (distant panes' transient local display
+    mode resets on remount — inherent to virtualization). `npm run build` clean.
+  - Deferred to next batch: `#1` data caching.
+- **Compare render-path perf — Batch 1 (logs, ranking memo, transform memo)** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-perf-batch1.md`
+  - `#4` Gated hot-path diagnostic logs behind `process.env.NODE_ENV !== 'production'`
+    (`useRanking`, `useDisplayMode`, `OffensePanel`/`DefensePanel`,
+    `DynamicComparisonRow`, `CompareWorkspace`, and the `useNflStats` fetch hooks —
+    `console.error` kept). Removes hundreds of synchronous console calls per swipe.
+  - `#2` `useRanking` now depends on the primitive options (`higherIsBetter`,
+    `excludeSpecialTeams`) instead of the caller's fresh `options` object literal,
+    so its `useMemo` is actually effective (was recomputing every render → also
+    cascaded through `useBarCalculation`).
+  - `#5` Wrapped `transformAllData(...)` results in `useMemo` (keyed by
+    `[transformAllData, data]`) in `OffensePanel`, `DefensePanel`, and
+    `CompactPanel` so per-game math over all 32 teams no longer re-runs every render.
+  - Pure perf/logging — no displayed values or behavior changed. `npm run build` clean.
+  - Deferred to later batches: `#1` data caching, `#3` pane windowing/memo.
+
 ### Fixed
 - **Production build — ESLint errors blocking `next build`** (2026-09-14)
   - See: `docs/devnotes/2026-09-14-build-eslint-fixes.md`

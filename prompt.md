@@ -1,24 +1,12 @@
-# Pare — Fix production build (ESLint errors blocking `next build`)
-
-`npm run build` fails on these ESLint ERRORS. Fix ONLY the errors below (warnings/unused-vars
-don't block the build — leave or clean at your discretion). Surgical, preserve behavior.
-
-## The real one (fix carefully)
-- components/mobile/CompactComparisonRow.tsx (lines ~93, 98, 104): `useRanking` and
-  `useBarCalculation` are called CONDITIONALLY / after an early return — violates rules-of-hooks.
-  Fix by moving these hook calls ABOVE any early return so they always run in the same order
-  every render; guard the *logic/values* inside instead of skipping the hook call. Do not change
-  what the row displays.
-
-## Type + escape errors (replace `any` with a proper type — or `unknown` + narrowing — not a blind cast)
-- components/FloatingMetricsButton.tsx: lines 51, 57, 109
-- components/RankingDropdown.tsx: line 169
-- lib/metricsSelectorPreload.ts: lines 8, 16
-- lib/useOfflineStatus.ts: lines 40, 41, 42
-- lib/usePWA.ts: line 60
-- components/OfflineStatusBanner.tsx: line 38 — escape the apostrophe (&apos;).
-
-## Verify (cheap only)
-1. `npm run build` completes with NO errors (warnings OK).
-2. Confirm CompactComparisonRow renders the same as before (hooks now unconditional).
-List files changed.
+BATCH 2 now (#3 from the audit). Cheap verification only (no browser), preserve all behavior
+and displayed values.
+- Windowing: render only the ACTIVE pane and its immediate neighbors (active ±1) in the
+  CompareWorkspace, instead of all N panes. Keep the ±1 neighbors mounted so a swipe reveals
+  a ready page (no blank flash mid-swipe); virtualize the rest.
+- Wrap ComparePane and the panels (OffensePanel, DefensePanel, CompactPanel,
+  MobileCompareLayout, DynamicComparisonRow/CompactComparisonRow) in React.memo.
+- Stabilize the handlers passed to each pane with useCallback, keyed by comparison id, so
+  memoized panes don't re-render on unrelated setActive changes.
+Do NOT touch data caching (#1) — that's the next batch.
+Verify: npm run build clean; confirm swipe still reveals neighbors with no blank, tab
+switch/close still works and shows correct teams. List files changed.

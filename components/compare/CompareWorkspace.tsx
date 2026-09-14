@@ -28,6 +28,14 @@ import CompareTabBar from '@/components/compare/CompareTabBar';
 import FloatingMetricsButton from '@/components/FloatingMetricsButton';
 import OfflineStatusBanner from '@/components/OfflineStatusBanner';
 
+/** Stable handler set for one pane (kept identity-constant per comparison id). */
+interface PaneHandlers {
+  onTeamAChange: (t: string) => void;
+  onTeamBChange: (t: string) => void;
+  onOffenseMetricsChange: (m: string[]) => void;
+  onDefenseMetricsChange: (m: string[]) => void;
+}
+
 export default function CompareWorkspace() {
   const isMobile = useIsMobile();
 
@@ -129,7 +137,17 @@ export default function CompareWorkspace() {
 
   // Snap the track to the active page whenever active/width/count changes
   // (but not mid-drag — this only reacts to committed state).
+  const prevIndexRef = useRef(activeIndex);
   useEffect(() => {
+    const distance = Math.abs(activeIndex - prevIndexRef.current);
+    prevIndexRef.current = activeIndex;
+    // Non-adjacent jump (tab tap across >1 page): snap instantly. Windowing only
+    // mounts active ±1, so animating a long slide would scroll past empty cells.
+    // Adjacent moves (swipe / neighbor tap) still spring smoothly.
+    if (distance > 1) {
+      x.set(-activeIndex * width);
+      return;
+    }
     const controls = animate(x, -activeIndex * width, {
       type: 'spring',
       stiffness: 320,
@@ -175,15 +193,42 @@ export default function CompareWorkspace() {
     [updateComparison, activeId],
   );
 
-  console.log('🏈 [COMPARE-WORKSPACE] Render:', {
-    comparisons: comparisons.length,
-    activeIndex,
-    activeTeams: `${activeComparison.teamA} vs ${activeComparison.teamB}`,
-    offenseTeams: offenseData.length,
-    defenseTeams: defenseData.length,
-    isLoading,
-    hasErrors: !!(offenseError || defenseError),
-  });
+  // Stable per-comparison handler sets (keyed by id) so memoized <ComparePane>s
+  // don't re-render when an unrelated `setActive` changes. `updateComparison` is
+  // read through a ref, so the cached closures never need to change identity.
+  const updateRef = useRef(updateComparison);
+  useEffect(() => {
+    updateRef.current = updateComparison;
+  }, [updateComparison]);
+  const paneHandlersRef = useRef<Map<string, PaneHandlers>>(new Map());
+  const getPaneHandlers = useCallback((id: string): PaneHandlers => {
+    const cache = paneHandlersRef.current;
+    let h = cache.get(id);
+    if (!h) {
+      h = {
+        onTeamAChange: (t: string) => updateRef.current(id, { teamA: t }),
+        onTeamBChange: (t: string) => updateRef.current(id, { teamB: t }),
+        onOffenseMetricsChange: (m: string[]) =>
+          updateRef.current(id, { settings: { offenseMetrics: m } }),
+        onDefenseMetricsChange: (m: string[]) =>
+          updateRef.current(id, { settings: { defenseMetrics: m } }),
+      };
+      cache.set(id, h);
+    }
+    return h;
+  }, []);
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('🏈 [COMPARE-WORKSPACE] Render:', {
+      comparisons: comparisons.length,
+      activeIndex,
+      activeTeams: `${activeComparison.teamA} vs ${activeComparison.teamB}`,
+      offenseTeams: offenseData.length,
+      defenseTeams: defenseData.length,
+      isLoading,
+      hasErrors: !!(offenseError || defenseError),
+    });
+  }
 
   // ── Error state (shared data failed) ────────────────────────────────────────
   if (offenseError || defenseError) {
@@ -289,30 +334,40 @@ export default function CompareWorkspace() {
           dragElastic={0.12}
           onDragEnd={handleDragEnd}
         >
-          {comparisons.map((c) => (
-            <div
-              key={c.id}
-              className="shrink-0 h-full overflow-y-auto relative"
-              style={{ width: width || '100%' }}
-            >
-              <ComparePane
-                isMobile={isMobile}
-                teamA={c.teamA}
-                teamB={c.teamB}
-                offenseData={offenseData}
-                defenseData={defenseData}
-                selectedOffenseMetrics={c.settings.offenseMetrics}
-                selectedDefenseMetrics={c.settings.defenseMetrics}
-                isLoading={isLoading}
-                isLoadingOffense={isLoadingOffense}
-                isLoadingDefense={isLoadingDefense}
-                onTeamAChange={(t) => updateComparison(c.id, { teamA: t })}
-                onTeamBChange={(t) => updateComparison(c.id, { teamB: t })}
-                onOffenseMetricsChange={(m) => updateComparison(c.id, { settings: { offenseMetrics: m } })}
-                onDefenseMetricsChange={(m) => updateComparison(c.id, { settings: { defenseMetrics: m } })}
-              />
-            </div>
-          ))}
+          {comparisons.map((c, i) => {
+            // Windowing: only mount the active pane and its immediate neighbors
+            // (active ±1). Neighbors stay mounted so a swipe reveals a ready page
+            // (no blank flash); panes ≥2 away are virtualized (empty cell of the
+            // same width, preserving the track layout + drag constraints).
+            const isWindowed = Math.abs(i - activeIndex) <= 1;
+            const h = getPaneHandlers(c.id);
+            return (
+              <div
+                key={c.id}
+                className="shrink-0 h-full overflow-y-auto relative"
+                style={{ width: width || '100%' }}
+              >
+                {isWindowed ? (
+                  <ComparePane
+                    isMobile={isMobile}
+                    teamA={c.teamA}
+                    teamB={c.teamB}
+                    offenseData={offenseData}
+                    defenseData={defenseData}
+                    selectedOffenseMetrics={c.settings.offenseMetrics}
+                    selectedDefenseMetrics={c.settings.defenseMetrics}
+                    isLoading={isLoading}
+                    isLoadingOffense={isLoadingOffense}
+                    isLoadingDefense={isLoadingDefense}
+                    onTeamAChange={h.onTeamAChange}
+                    onTeamBChange={h.onTeamBChange}
+                    onOffenseMetricsChange={h.onOffenseMetricsChange}
+                    onDefenseMetricsChange={h.onDefenseMetricsChange}
+                  />
+                ) : null}
+              </div>
+            );
+          })}
         </motion.div>
       </div>
 

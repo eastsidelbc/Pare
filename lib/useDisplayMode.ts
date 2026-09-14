@@ -38,11 +38,11 @@ export function useDisplayMode(initialMode: DisplayMode = 'per-game'): UseDispla
   
   const [mode, setMode] = useState<DisplayMode>(initialMode);
 
-  console.log(`📊 [USE-DISPLAY-MODE] Current mode: ${mode}`);
-
   const toggleMode = useCallback(() => {
     const newMode = mode === 'per-game' ? 'total' : 'per-game';
-    console.log(`📊 [USE-DISPLAY-MODE] Toggling from ${mode} to ${newMode}`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`📊 [USE-DISPLAY-MODE] Toggling from ${mode} to ${newMode}`);
+    }
     setMode(newMode);
   }, [mode]);
 

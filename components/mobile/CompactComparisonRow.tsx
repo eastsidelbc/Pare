@@ -9,6 +9,7 @@
 
 'use client';
 
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { AVAILABLE_METRICS } from '@/lib/metricsConfig';
 import { useRanking } from '@/lib/useRanking';
@@ -31,7 +32,7 @@ interface CompactComparisonRowProps {
   onDropdownToggle?: (team: 'A' | 'B') => void;  // Toggle dropdown
 }
 
-export default function CompactComparisonRow({
+function CompactComparisonRow({
   metricField,
   teamA,
   teamB,
@@ -228,4 +229,6 @@ export default function CompactComparisonRow({
     </div>
   );
 }
+
+export default memo(CompactComparisonRow);
 

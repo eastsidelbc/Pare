@@ -7,6 +7,7 @@
 
 'use client';
 
+import { memo, useMemo } from 'react';
 import { TeamData } from '@/lib/useNflStats';
 import { useDisplayMode } from '@/lib/useDisplayMode';
 import DynamicComparisonRow from '@/components/DynamicComparisonRow';
@@ -25,7 +26,7 @@ interface OffensePanelProps {
   onTeamBChange?: (teamName: string) => void; // NEW: Team B selection callback
 }
 
-export default function OffensePanel({
+function OffensePanel({
   offenseData,
   defenseData,
   selectedTeamA,
@@ -47,15 +48,32 @@ export default function OffensePanel({
 
   // No local metrics state - now controlled by parent
 
-  console.log(`🏈 [OFFENSE-PANEL] Teams: ${selectedTeamA} vs ${selectedTeamB}, Mode: ${displayMode}, Metrics: ${selectedMetrics.length}`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`🏈 [OFFENSE-PANEL] Teams: ${selectedTeamA} vs ${selectedTeamB}, Mode: ${displayMode}, Metrics: ${selectedMetrics.length}`);
+  }
 
-  // Transform data based on display mode (rank by displayed values)
-  const transformedOffenseData = transformAllData(offenseData);
-  const transformedDefenseData = transformAllData(defenseData);
+  // Transform data based on display mode (rank by displayed values).
+  // Memoized so per-game math over all 32 teams doesn't re-run every render.
+  const transformedOffenseData = useMemo(
+    () => transformAllData(offenseData),
+    [transformAllData, offenseData],
+  );
+  const transformedDefenseData = useMemo(
+    () => transformAllData(defenseData),
+    [transformAllData, defenseData],
+  );
   
-  // Get team data with display mode transformation
-  const teamAData = transformTeamData(offenseData.find(team => team.team === selectedTeamA) || null);
-  const teamBData = transformTeamData(offenseData.find(team => team.team === selectedTeamB) || null);
+  // Get team data with display mode transformation (memoized so the row memo
+  // below is effective — otherwise teamAData/teamBData get a new identity every
+  // render and force every DynamicComparisonRow to re-render).
+  const teamAData = useMemo(
+    () => transformTeamData(offenseData.find(team => team.team === selectedTeamA) || null),
+    [transformTeamData, offenseData, selectedTeamA],
+  );
+  const teamBData = useMemo(
+    () => transformTeamData(offenseData.find(team => team.team === selectedTeamB) || null),
+    [transformTeamData, offenseData, selectedTeamB],
+  );
 
   // Check if we have valid team selection
   const isValidSelection = Boolean(selectedTeamA && selectedTeamB && selectedTeamA !== selectedTeamB);
@@ -157,3 +175,5 @@ export default function OffensePanel({
     </div>
   );
 }
+
+export default memo(OffensePanel);

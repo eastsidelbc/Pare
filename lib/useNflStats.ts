@@ -12,6 +12,9 @@ import { APP_CONSTANTS } from '@/config/constants';
 import { TeamStatsWithRanks } from './pfr';
 import { transformApiResponseToTeamData } from '@/utils/teamDataTransform';
 
+/** Dev-only diagnostic logging (errors always log; info/warn are gated). */
+const STATS_DEBUG = process.env.NODE_ENV !== 'production';
+
 // API Response structure
 export interface NflApiResponse {
   season: number;
@@ -86,7 +89,7 @@ export function useNflStats(): UseNflStatsReturn {
    */
   const fetchOffenseData = useCallback(async () => {
     const requestId = Math.random().toString(36).substr(2, 9);
-    console.log(`🏈 [HOOK-${requestId}] Fetching offense data...`);
+    if (STATS_DEBUG) console.log(`🏈 [HOOK-${requestId}] Fetching offense data...`);
     
     try {
       setIsLoadingOffense(true);
@@ -98,7 +101,7 @@ export function useNflStats(): UseNflStatsReturn {
       const cacheStatus = response.headers.get('sw-cache-status');
       const cachedDate = response.headers.get('sw-cached-date');
       
-      console.log(`🏈 [HOOK-${requestId}] Response status: ${response.status}`, {
+      if (STATS_DEBUG) console.log(`🏈 [HOOK-${requestId}] Response status: ${response.status}`, {
         ok: response.ok,
         cacheStatus,
         cachedDate,
@@ -116,7 +119,7 @@ export function useNflStats(): UseNflStatsReturn {
       }
       
       const apiData: NflApiResponse = await response.json();
-      console.log(`🏈 [HOOK-${requestId}] API response:`, {
+      if (STATS_DEBUG) console.log(`🏈 [HOOK-${requestId}] API response:`, {
         type: apiData.type,
         season: apiData.season,
         updatedAt: apiData.updatedAt,
@@ -142,9 +145,9 @@ export function useNflStats(): UseNflStatsReturn {
         setOffenseDataFreshness('fresh');
       }
       
-      console.log(`✅ [HOOK-${requestId}] Successfully loaded offense data for ${transformedData.length} teams`);
+      if (STATS_DEBUG) console.log(`✅ [HOOK-${requestId}] Successfully loaded offense data for ${transformedData.length} teams`);
       
-      if (apiData.stale) {
+      if (apiData.stale && STATS_DEBUG) {
         console.warn(`⚠️ [HOOK-${requestId}] Data is stale: ${apiData.error}`);
       }
       
@@ -167,7 +170,7 @@ export function useNflStats(): UseNflStatsReturn {
    */
   const fetchDefenseData = useCallback(async () => {
     const requestId = Math.random().toString(36).substr(2, 9);
-    console.log(`🛡️ [HOOK-${requestId}] Fetching defense data...`);
+    if (STATS_DEBUG) console.log(`🛡️ [HOOK-${requestId}] Fetching defense data...`);
     
     try {
       setIsLoadingDefense(true);
@@ -179,7 +182,7 @@ export function useNflStats(): UseNflStatsReturn {
       const cacheStatus = response.headers.get('sw-cache-status');
       const cachedDate = response.headers.get('sw-cached-date');
       
-      console.log(`🛡️ [HOOK-${requestId}] Response status: ${response.status}`, {
+      if (STATS_DEBUG) console.log(`🛡️ [HOOK-${requestId}] Response status: ${response.status}`, {
         ok: response.ok,
         cacheStatus,
         cachedDate,
@@ -197,7 +200,7 @@ export function useNflStats(): UseNflStatsReturn {
       }
       
       const apiData: NflApiResponse = await response.json();
-      console.log(`🛡️ [HOOK-${requestId}] API response:`, {
+      if (STATS_DEBUG) console.log(`🛡️ [HOOK-${requestId}] API response:`, {
         type: apiData.type,
         season: apiData.season,
         updatedAt: apiData.updatedAt,
@@ -222,9 +225,9 @@ export function useNflStats(): UseNflStatsReturn {
         setDefenseDataFreshness('fresh');
       }
       
-      console.log(`✅ [HOOK-${requestId}] Successfully loaded defense data for ${transformedData.length} teams`);
+      if (STATS_DEBUG) console.log(`✅ [HOOK-${requestId}] Successfully loaded defense data for ${transformedData.length} teams`);
       
-      if (apiData.stale) {
+      if (apiData.stale && STATS_DEBUG) {
         console.warn(`⚠️ [HOOK-${requestId}] Data is stale: ${apiData.error}`);
       }
       

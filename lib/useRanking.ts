@@ -12,6 +12,9 @@
 import { useMemo } from 'react';
 import { TeamData } from './useNflStats';
 
+/** Dev-only diagnostic logging (stripped from production hot paths). */
+const RANKING_DEBUG = process.env.NODE_ENV !== 'production';
+
 /**
  * Compare two numeric values with floating-point tolerance
  * 
@@ -50,29 +53,31 @@ export function useRanking(
   targetTeamName: string,
   options: RankingOptions = {}
 ): RankingResult | null {
-  
+  // Destructure primitives up front so the memo below depends on stable values.
+  // Callers pass a fresh `options` object literal each render — depending on the
+  // object directly would defeat memoization and recompute ranking every render.
+  const { higherIsBetter = true, excludeSpecialTeams = true } = options;
+
   return useMemo(() => {
     // 🔒 TYPE SAFETY: Improved error handling with logging
     if (!allData || allData.length === 0) {
-      console.warn(`[useRanking] No data provided for ranking calculation (metric: ${metricKey})`);
+      if (RANKING_DEBUG) console.warn(`[useRanking] No data provided for ranking calculation (metric: ${metricKey})`);
       return null;
     }
     
     if (!metricKey) {
-      console.warn(`[useRanking] No metric key provided for ranking calculation`);
+      if (RANKING_DEBUG) console.warn(`[useRanking] No metric key provided for ranking calculation`);
       return null;
     }
     
     if (!targetTeamName) {
-      console.warn(`[useRanking] No target team name provided for ranking calculation (metric: ${metricKey})`);
+      if (RANKING_DEBUG) console.warn(`[useRanking] No target team name provided for ranking calculation (metric: ${metricKey})`);
       return null;
     }
 
-    console.log(`🏆 [USE-RANKING] Computing rank for ${targetTeamName} - ${metricKey}`);
+    if (RANKING_DEBUG) console.log(`🏆 [USE-RANKING] Computing rank for ${targetTeamName} - ${metricKey}`);
 
     // Filter out special teams if requested
-    const { higherIsBetter = true, excludeSpecialTeams = true } = options;
-    
     let filteredData = allData;
     if (excludeSpecialTeams) {
       filteredData = allData.filter(team => 
@@ -80,23 +85,23 @@ export function useRanking(
       );
     }
 
-    console.log(`🏆 [USE-RANKING] Filtered data: ${filteredData.length} teams`);
+    if (RANKING_DEBUG) console.log(`🏆 [USE-RANKING] Filtered data: ${filteredData.length} teams`);
 
     // Get the target team's value
     const targetTeam = filteredData.find(team => team.team === targetTeamName);
     if (!targetTeam) {
-      console.log(`🏆 [USE-RANKING] Target team not found: ${targetTeamName}`);
+      if (RANKING_DEBUG) console.log(`🏆 [USE-RANKING] Target team not found: ${targetTeamName}`);
       return null;
     }
 
     // Get numeric value for the metric
     const targetValue = parseFloat(String(targetTeam[metricKey] || '0'));
     if (isNaN(targetValue)) {
-      console.log(`🏆 [USE-RANKING] Invalid metric value for ${targetTeamName}: ${targetTeam[metricKey]}`);
+      if (RANKING_DEBUG) console.log(`🏆 [USE-RANKING] Invalid metric value for ${targetTeamName}: ${targetTeam[metricKey]}`);
       return null;
     }
 
-    console.log(`🏆 [USE-RANKING] Target value: ${targetValue}`);
+    if (RANKING_DEBUG) console.log(`🏆 [USE-RANKING] Target value: ${targetValue}`);
 
     // Count teams with better values
     let betterTeamsCount = 0;
@@ -119,7 +124,7 @@ export function useRanking(
     const rank = betterTeamsCount + 1;
     const isTied = teamsWithSameValue > 1;
 
-    console.log(`🏆 [USE-RANKING] Results:`, {
+    if (RANKING_DEBUG) console.log(`🏆 [USE-RANKING] Results:`, {
       betterTeamsCount,
       rank,
       isTied,
@@ -147,7 +152,7 @@ export function useRanking(
       teamsWithSameValue
     };
 
-  }, [allData, metricKey, targetTeamName, options]);
+  }, [allData, metricKey, targetTeamName, higherIsBetter, excludeSpecialTeams]);
 }
 
 /**

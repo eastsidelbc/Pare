@@ -7,6 +7,7 @@
 
 'use client';
 
+import { memo } from 'react';
 import { AVAILABLE_METRICS, formatMetricValue } from '@/lib/metricsConfig';
 import { TeamData } from '@/lib/useNflStats';
 import { useRanking } from '@/lib/useRanking';
@@ -28,7 +29,7 @@ interface DynamicComparisonRowProps {
   onTeamBChange?: (teamName: string) => void; // NEW: Team B selection callback
 }
 
-export default function DynamicComparisonRow({ 
+function DynamicComparisonRow({ 
   metricKey, 
   teamAData, 
   teamBData, 
@@ -87,12 +88,12 @@ export default function DynamicComparisonRow({
 
   // Early return for invalid data AFTER hooks
   if (!metric) {
-    console.warn(`Unknown metric: ${metricKey}`);
+    if (process.env.NODE_ENV !== 'production') console.warn(`Unknown metric: ${metricKey}`);
     return null;
   }
 
-  // 🐛 DEBUGGING: Log new ranking system results
-  if (metricKey === 'points' && (
+  // 🐛 DEBUGGING: Log new ranking system results (dev only)
+  if (process.env.NODE_ENV !== 'production' && metricKey === 'points' && (
     (teamAData?.team === 'Pittsburgh Steelers' || teamAData?.team === 'Tampa Bay Buccaneers') ||
     (teamBData?.team === 'Pittsburgh Steelers' || teamBData?.team === 'Tampa Bay Buccaneers')
   )) {
@@ -248,3 +249,5 @@ export default function DynamicComparisonRow({
     </div>
   );
 }
+
+export default memo(DynamicComparisonRow);

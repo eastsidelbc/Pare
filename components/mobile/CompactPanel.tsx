@@ -8,7 +8,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import type { TeamData } from '@/lib/useNflStats';
 import { useDisplayMode } from '@/lib/useDisplayMode';
 import CompactPanelHeader from './CompactPanelHeader';
@@ -28,7 +28,7 @@ interface CompactPanelProps {
   onTeamBChange?: (team: string) => void;
 }
 
-export default function CompactPanel({
+function CompactPanel({
   type,
   teamA,
   teamB,
@@ -56,24 +56,35 @@ export default function CompactPanel({
   // Select correct dataset
   const allData = type === 'offense' ? allOffenseData : allDefenseData;
   
-  // Transform data based on display mode
-  // Rank by displayed values: per-game averages in per-game mode, totals in total mode
-  const transformedAllData = transformAllData(allData);
-  const transformedTeamAData = transformTeamData(teamAData);
-  const transformedTeamBData = transformTeamData(teamBData);
+  // Transform data based on display mode.
+  // Rank by displayed values: per-game averages in per-game mode, totals in total
+  // mode. Memoized so per-game math over all 32 teams doesn't re-run every render.
+  const transformedAllData = useMemo(
+    () => transformAllData(allData),
+    [transformAllData, allData],
+  );
+  const transformedTeamAData = useMemo(
+    () => transformTeamData(teamAData),
+    [transformTeamData, teamAData],
+  );
+  const transformedTeamBData = useMemo(
+    () => transformTeamData(teamBData),
+    [transformTeamData, teamBData],
+  );
   
-  // Handle team change from ranking dropdown
-  const handleTeamAChange = (teamName: string) => {
+  // Handle team change from ranking dropdown (stable identity so memoized rows
+  // don't re-render on unrelated local state changes).
+  const handleTeamAChange = useCallback((teamName: string) => {
     if (onTeamAChange) onTeamAChange(teamName);
     setActiveDropdown(null);
     setActiveTeamSelector(null);
-  };
+  }, [onTeamAChange]);
   
-  const handleTeamBChange = (teamName: string) => {
+  const handleTeamBChange = useCallback((teamName: string) => {
     if (onTeamBChange) onTeamBChange(teamName);
     setActiveDropdown(null);
     setActiveTeamSelector(null);
-  };
+  }, [onTeamBChange]);
   
   // Handle rank click to open dropdown
   const handleRankClick = (metricKey: string, team: 'A' | 'B') => {
@@ -151,4 +162,6 @@ export default function CompactPanel({
     </div>
   );
 }
+
+export default memo(CompactPanel);
 
