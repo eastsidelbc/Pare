@@ -41,10 +41,15 @@ This fully powers the schedule-first home page (matchup pills + times).
 | Pare metric | ESPN field | category | offense |
 |---|---|---|---|
 | points | `totalPoints` (+ `totalPointsPerGame`) | scoring | ✅ |
-| total_yards | `totalYards` (+ `yardsPerGame`) | passing/rushing | ✅ |
-| pass_yds | `passingYards` (+ `passingYardsPerGame`) | passing | ✅ |
+| total_yards | `netTotalYards` (NET — sack yds removed) | passing/rushing | ✅ |
+| pass_yds | `netPassingYards` (NET — sack yds removed) | passing | ✅ |
 | rush_yds | `rushingYards` (+ `rushingYardsPerGame`) | rushing | ✅ |
-| score_pct (Sc%) | ⚠️ no exact match | — | see gaps |
+| score_pct (Sc%) | ⚠️ no exact match — replaced by `third_down_pct` (`thirdDownConvPct`) | miscellaneous | ✅ |
+
+> **NET vs GROSS (fixed 2026-09-14):** offense must map `netTotalYards` /
+> `netPassingYards`, NOT `totalYards` / `passingYards`. Gross values include sack
+> yardage (`gross − net = sackYardsLost`) and would not match the box-score /
+> defense-allowed / official convention. Rushing is unaffected.
 
 ---
 

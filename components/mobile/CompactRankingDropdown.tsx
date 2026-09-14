@@ -12,7 +12,7 @@
 
 import { useMemo, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useFloating, flip, shift, offset, autoUpdate, useClick, useDismiss, useInteractions, FloatingPortal, size, inline } from '@floating-ui/react';
+import { useFloating, flip, shift, offset, autoUpdate, useDismiss, useInteractions, FloatingPortal, size, inline } from '@floating-ui/react';
 import type { TeamData } from '@/lib/useNflStats';
 import { calculateBulkRanking, type RankingOptions } from '@/lib/useRanking';
 import { AVAILABLE_METRICS, formatMetricValue } from '@/lib/metricsConfig';
@@ -61,7 +61,7 @@ export default function CompactRankingDropdown({
   // Floating UI setup with smart positioning
   // Team A (left) → dropdown appears RIGHT of badge
   // Team B (right) → dropdown appears LEFT of badge
-  const { refs, floatingStyles, context, x, y, strategy: floatingStrategy } = useFloating({
+  const { refs, context, x, y, strategy: floatingStrategy } = useFloating({
     strategy: 'fixed',  // Phase 2B: Use viewport positioning
     open: isOpen,
     onOpenChange: onToggle,
@@ -94,7 +94,7 @@ export default function CompactRankingDropdown({
     escapeKey: true
   });
 
-  const { getReferenceProps, getFloatingProps } = useInteractions([
+  const { getFloatingProps } = useInteractions([
     dismiss  // Removed useClick - we control state externally with isOpen/onToggle
   ]);
 
@@ -194,8 +194,11 @@ export default function CompactRankingDropdown({
       );
     }
 
-    // Custom tiered rank badge (no emoji)
-    return <RankBadge rank={ranking.rank} isTied={ranking.isTied} />;
+    // Custom tiered rank badge (no emoji). `totalTeams` = the actual ranked
+    // field size (may be < 32 while data is still loading) so the bottom-5 tier
+    // is based on the real count, not a hard-coded 32.
+    const totalTeams = allTeamRankings[currentTeam]?.totalTeams;
+    return <RankBadge rank={ranking.rank} isTied={ranking.isTied} totalTeams={totalTeams} />;
   };
   
   return (

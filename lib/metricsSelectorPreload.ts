@@ -5,7 +5,10 @@
  * Uses singleton pattern to prevent duplicate network requests
  */
 
-let _preloadPromise: Promise<any> | null = null;
+/** The lazily-imported MetricsSelector module (typed, not `any`). */
+type MetricsSelectorModule = typeof import('@/components/MetricsSelector');
+
+let _preloadPromise: Promise<MetricsSelectorModule> | null = null;
 
 /**
  * Preload MetricsSelector component chunk
@@ -13,7 +16,7 @@ let _preloadPromise: Promise<any> | null = null;
  * 
  * @returns Promise that resolves when component is loaded and parsed
  */
-export const preloadMetricsSelector = (): Promise<any> => {
+export const preloadMetricsSelector = (): Promise<MetricsSelectorModule> => {
   if (!_preloadPromise) {
     _preloadPromise = import(
       /* webpackPrefetch: true */

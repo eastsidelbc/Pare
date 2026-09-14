@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { ComparisonsProvider } from "@/components/ComparisonsProvider";
+import BottomNav from "@/components/BottomNav";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -114,7 +116,12 @@ export default function RootLayout({
         }} />
       </head>
       <body className="font-sans antialiased overflow-x-hidden">
-        {children}
+        <ComparisonsProvider>
+          {children}
+          {/* Single persistent footer — rendered once, outside every route and
+              outside the compare swipe container, so it never re-mounts. */}
+          <BottomNav />
+        </ComparisonsProvider>
       </body>
     </html>
   );

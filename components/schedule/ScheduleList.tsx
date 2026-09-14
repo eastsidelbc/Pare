@@ -7,9 +7,10 @@
 
 import { motion } from 'framer-motion';
 import { CalendarX2, AlertTriangle, RotateCw } from 'lucide-react';
-import MatchupCard from './MatchupCard';
+import MatchupAccordion from './MatchupAccordion';
 import MatchupCardSkeleton from './MatchupCardSkeleton';
 import { type Matchup } from '@/lib/schedule';
+import type { TeamData } from '@/lib/useNflStats';
 
 export type ScheduleStatus = 'loading' | 'ready' | 'empty' | 'error';
 
@@ -17,6 +18,14 @@ interface ScheduleListProps {
   status: ScheduleStatus;
   matchups: Matchup[];
   onRetry?: () => void;
+  /** Accordion (single-open) + shared stats for the inline compare peek. */
+  openId: string | null;
+  onToggle: (id: string) => void;
+  offenseData: TeamData[];
+  defenseData: TeamData[];
+  statsLoading: boolean;
+  offenseLoading: boolean;
+  defenseLoading: boolean;
 }
 
 function DayLabel({ children }: { children: React.ReactNode }) {
@@ -42,7 +51,18 @@ function groupByDay(matchups: Matchup[]): { label: string; games: Matchup[] }[] 
   return groups;
 }
 
-export default function ScheduleList({ status, matchups, onRetry }: ScheduleListProps) {
+export default function ScheduleList({
+  status,
+  matchups,
+  onRetry,
+  openId,
+  onToggle,
+  offenseData,
+  defenseData,
+  statsLoading,
+  offenseLoading,
+  defenseLoading,
+}: ScheduleListProps) {
   if (status === 'loading') {
     return (
       <div className="space-y-2.5">
@@ -123,7 +143,18 @@ export default function ScheduleList({ status, matchups, onRetry }: ScheduleList
           <DayLabel>{group.label}</DayLabel>
           <div className="space-y-2.5">
             {group.games.map((m) => (
-              <MatchupCard key={m.id} matchup={m} index={runningIndex++} />
+              <MatchupAccordion
+                key={m.id}
+                matchup={m}
+                index={runningIndex++}
+                isOpen={openId === m.id}
+                onToggle={() => onToggle(m.id)}
+                offenseData={offenseData}
+                defenseData={defenseData}
+                isLoading={statsLoading}
+                isLoadingOffense={offenseLoading}
+                isLoadingDefense={defenseLoading}
+              />
             ))}
           </div>
         </section>

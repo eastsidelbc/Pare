@@ -373,18 +373,18 @@ export const DEFAULT_OFFENSE_METRICS = [
   'total_yards', 
   'pass_yds',
   'rush_yds',
-  'score_pct'
+  'third_down_pct'
 ];
 
 /**
  * Default metrics for defense comparison  
  */
 export const DEFAULT_DEFENSE_METRICS = [
-  'points',       // points allowed
-  'total_yards',  // yards allowed
-  'pass_yds',     // pass yards allowed
-  'rush_yds',     // rush yards allowed
-  'score_pct',    // opponent scoring %
+  'points',          // points allowed
+  'total_yards',     // yards allowed
+  'pass_yds',        // pass yards allowed
+  'rush_yds',        // rush yards allowed
+  'third_down_pct',  // opponent 3rd-down % (lower = better, via defense context)
 ];
 
 /**

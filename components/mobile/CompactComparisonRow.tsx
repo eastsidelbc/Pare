@@ -47,19 +47,59 @@ export default function CompactComparisonRow({
 }: CompactComparisonRowProps) {
   
   const metricConfig = AVAILABLE_METRICS[metricField];
-  
+
+  // Detect presence — a metric may be intentionally unpopulated (e.g. defense
+  // yards-allowed in 2026), in which case we render "—" instead of a fake 0.
+  // Null-safe: the early return below runs AFTER the hooks (rules-of-hooks).
+  const rawA = teamAData?.[metricField];
+  const rawB = teamBData?.[metricField];
+  const isPresent = (v: unknown): boolean =>
+    v !== undefined && v !== null && String(v).trim() !== '';
+  const hasA = isPresent(rawA);
+  const hasB = isPresent(rawB);
+
+  // Values used only for bar/ranking math (never for display when missing).
+  const teamAValue = hasA ? String(rawA) : '0';
+  const teamBValue = hasB ? String(rawB) : '0';
+
+  // Ranking direction: offense uses the metric default, defense inverts. Neutral
+  // fallback keeps the hook call valid even when metricConfig is missing.
+  const higherIsBetter = metricConfig
+    ? panelType === 'defense'
+      ? !metricConfig.higherIsBetter
+      : metricConfig.higherIsBetter
+    : true;
+
+  // ── Hooks: ALWAYS called, same order every render, BEFORE any early return
+  //    (rules-of-hooks). Results are simply unused if we bail out below. ──
+  const teamARanking = useRanking(allData, metricField, teamA, {
+    higherIsBetter,
+    excludeSpecialTeams: true,
+  });
+
+  const teamBRanking = useRanking(allData, metricField, teamB, {
+    higherIsBetter,
+    excludeSpecialTeams: true,
+  });
+
+  const { teamAPercentage, teamBPercentage } = useBarCalculation({
+    teamAValue,
+    teamBValue,
+    teamARanking,
+    teamBRanking,
+    panelType,
+    metricName: metricConfig?.name ?? '',
+  });
+
+  // Nothing to render without config/data (the hooks above have already run).
   if (!metricConfig || !teamAData || !teamBData) {
     return null;
   }
-  
-  // Get raw values (ensure string type)
-  const teamAValue = String(teamAData[metricField] || '0');
-  const teamBValue = String(teamBData[metricField] || '0');
-  
+
   // Format values
   const formatValue = (value: string): string => {
     const num = parseFloat(value);
-    if (isNaN(num)) return '0';
+    if (isNaN(num)) return '—';
     
     switch (metricConfig.format) {
       case 'percentage':
@@ -74,29 +114,11 @@ export default function CompactComparisonRow({
     }
   };
   
-  const formattedA = formatValue(teamAValue);
-  const formattedB = formatValue(teamBValue);
-  
-  // Get rankings
-  const teamARanking = useRanking(allData, metricField, teamA, {
-    higherIsBetter: panelType === 'defense' ? !metricConfig.higherIsBetter : metricConfig.higherIsBetter,
-    excludeSpecialTeams: true
-  });
-  
-  const teamBRanking = useRanking(allData, metricField, teamB, {
-    higherIsBetter: panelType === 'defense' ? !metricConfig.higherIsBetter : metricConfig.higherIsBetter,
-    excludeSpecialTeams: true
-  });
-  
-  // Calculate bar widths with amplification
-  const { teamAPercentage, teamBPercentage } = useBarCalculation({
-    teamAValue,
-    teamBValue,
-    teamARanking,
-    teamBRanking,
-    panelType,
-    metricName: metricConfig.name
-  });
+  const formattedA = hasA ? formatValue(teamAValue) : '—';
+  const formattedB = hasB ? formatValue(teamBValue) : '—';
+
+  // Bars only make sense when BOTH sides have a real value.
+  const barsVisible = hasA && hasB;
   
   // Format ranking for display — correct ordinal (21st, 22nd, 23rd, not 21th)
   const formatRank = (rank: number | null): string => {
@@ -132,7 +154,7 @@ export default function CompactComparisonRow({
             onTeamChange={onTeamAChange || (() => {})}
             isOpen={activeDropdownTeam === 'A'}
             onToggle={() => onDropdownToggle?.('A')}
-            ranking={teamARanking ? { 
+            ranking={hasA && teamARanking ? { 
               rank: teamARanking.rank, 
               formattedRank: formatRank(teamARanking.rank),
               isTied: teamARanking.isTied
@@ -158,7 +180,7 @@ export default function CompactComparisonRow({
             onTeamChange={onTeamBChange || (() => {})}
             isOpen={activeDropdownTeam === 'B'}
             onToggle={() => onDropdownToggle?.('B')}
-            ranking={teamBRanking ? { 
+            ranking={hasB && teamBRanking ? { 
               rank: teamBRanking.rank, 
               formattedRank: formatRank(teamBRanking.rank),
               isTied: teamBRanking.isTied
@@ -176,26 +198,31 @@ export default function CompactComparisonRow({
           animated into place, rounded outer ends. teamA% + teamB% ≈ 98 (2%
           reserved as the center gap), preserving the sacred bar math. */}
       <div className="px-3 pb-2 pt-0.5">
-        <div className="flex h-[7px] w-full items-stretch">
-          {/* Team A bar — grows inward from the left (green) */}
-          <motion.div
-            className="h-full rounded-l-full"
-            style={{ background: 'linear-gradient(90deg, #16a34a 0%, #22c55e 100%)' }}
-            initial={false}
-            animate={{ width: `${teamAPercentage}%` }}
-            transition={{ type: 'spring', stiffness: 220, damping: 30 }}
-          />
-          {/* Center gap */}
-          <div className="h-full" style={{ width: '2%' }} />
-          {/* Team B bar — grows inward from the right (fire) */}
-          <motion.div
-            className="ml-auto h-full rounded-r-full"
-            style={{ background: 'linear-gradient(90deg, #ff6b35 0%, #ea580c 100%)' }}
-            initial={false}
-            animate={{ width: `${teamBPercentage}%` }}
-            transition={{ type: 'spring', stiffness: 220, damping: 30 }}
-          />
-        </div>
+        {barsVisible ? (
+          <div className="flex h-[7px] w-full items-stretch">
+            {/* Team A bar — grows inward from the left (green) */}
+            <motion.div
+              className="h-full rounded-l-full"
+              style={{ background: 'linear-gradient(90deg, #16a34a 0%, #22c55e 100%)' }}
+              initial={false}
+              animate={{ width: `${teamAPercentage}%` }}
+              transition={{ type: 'spring', stiffness: 220, damping: 30 }}
+            />
+            {/* Center gap */}
+            <div className="h-full" style={{ width: '2%' }} />
+            {/* Team B bar — grows inward from the right (fire) */}
+            <motion.div
+              className="ml-auto h-full rounded-r-full"
+              style={{ background: 'linear-gradient(90deg, #ff6b35 0%, #ea580c 100%)' }}
+              initial={false}
+              animate={{ width: `${teamBPercentage}%` }}
+              transition={{ type: 'spring', stiffness: 220, damping: 30 }}
+            />
+          </div>
+        ) : (
+          /* No live data for one/both sides — neutral track, no fake bars. */
+          <div className="h-[7px] w-full rounded-full bg-white/5" />
+        )}
       </div>
       
     </div>

@@ -11,6 +11,19 @@ interface OfflineStatus {
   rtt: number | null;
 }
 
+/** Subset of the (non-standard) Network Information API we read. */
+interface NetworkInformation extends EventTarget {
+  type?: string;
+  effectiveType?: string;
+  downlink?: number;
+  rtt?: number;
+}
+type NavigatorWithConnection = Navigator & {
+  connection?: NetworkInformation;
+  mozConnection?: NetworkInformation;
+  webkitConnection?: NetworkInformation;
+};
+
 /**
  * Hook to monitor online/offline status and connection quality
  * Provides real-time network status for PWA functionality
@@ -37,9 +50,8 @@ export function useOfflineStatus(): OfflineStatus {
     setIsOnline(navigator.onLine);
 
     // Get connection info if available
-    const connection = (navigator as any).connection || 
-                      (navigator as any).mozConnection || 
-                      (navigator as any).webkitConnection;
+    const nav = navigator as NavigatorWithConnection;
+    const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
 
     const updateConnectionInfo = () => {
       if (connection) {

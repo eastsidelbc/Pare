@@ -124,6 +124,15 @@ export default function RankingDropdown({
   const currentTeamRanking = allTeamRankings[currentTeam];
   const isCurrentTeamAverage = isAverageTeam(currentTeam);
 
+  // A metric may be intentionally unpopulated (e.g. 2026 defense yards-allowed).
+  // In that case show "—" for the rank instead of a misleading value-0 tie.
+  const currentTeamRaw = allData.find(t => t.team === currentTeam)?.[metricKey as keyof TeamData];
+  const currentTeamHasValue =
+    currentTeamRaw !== undefined && currentTeamRaw !== null && String(currentTeamRaw).trim() !== '';
+  const currentRankLabel = currentTeamHasValue
+    ? (currentTeamRanking?.formattedRank || 'N/A')
+    : '—';
+
   // Team-specific styling based on side
   const sideColors = {
     teamA: {
@@ -157,7 +166,7 @@ export default function RankingDropdown({
     try {
       const swControlled = typeof navigator !== 'undefined' && !!navigator.serviceWorker?.controller;
       const isStandalone = typeof window !== 'undefined' && (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-      const viewport = typeof window !== 'undefined' ? { w: window.innerWidth, h: window.innerHeight, vv: (window as any).visualViewport?.height } : null;
+      const viewport = typeof window !== 'undefined' ? { w: window.innerWidth, h: window.innerHeight, vv: window.visualViewport?.height } : null;
 
       const container = menuRef.current;
       const rect = container ? container.getBoundingClientRect() : null;
@@ -216,7 +225,7 @@ export default function RankingDropdown({
         `}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.98 }}
-        aria-label={isCurrentTeamAverage ? `League average selected. Click to see rankings.` : `Ranked ${currentTeamRanking?.formattedRank || 'N/A'}. Click to change team.`}
+        aria-label={isCurrentTeamAverage ? `League average selected. Click to see rankings.` : `Ranked ${currentRankLabel}. Click to change team.`}
       >
         {isCurrentTeamAverage ? (
           <span className="flex items-center gap-1">
@@ -224,7 +233,7 @@ export default function RankingDropdown({
             <span>Avg</span>
           </span>
         ) : (
-          <span>{currentTeamRanking?.formattedRank || 'N/A'}</span>
+          <span>{currentRankLabel}</span>
         )}
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0 }}

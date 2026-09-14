@@ -11,10 +11,12 @@
  */
 
 import { NextResponse } from 'next/server';
-import { fetchAndParseCSV, type TeamStats } from '@/lib/pfrCsv';
+import { type TeamStats } from '@/lib/pfrCsv';
+import { fetchDefenseStatsFromESPN, fetchDefenseYardsAllowed } from '@/lib/espnStats';
+import { NFL_TEAMS } from '@/lib/teams';
 import { APP_CONSTANTS } from '@/config/constants';
 import { logger } from '@/utils/logger';
-import { generateRequestId, getCacheAgeMinutes } from '@/utils/helpers';
+import { generateRequestId } from '@/utils/helpers';
 
 // API Response interface
 interface ApiResponse {
@@ -43,7 +45,6 @@ let cache: CacheEntry = {
 
 export async function GET() {
   const requestId = generateRequestId();
-  const timestamp = new Date().toISOString();
   
   // API request start (verbose only) 
   // Environment info (verbose only)
@@ -52,7 +53,6 @@ export async function GET() {
     // Check cache first
     const now = Date.now();
     if (cache.data && cache.timestamp && (now - cache.timestamp) < cache.maxAge) {
-      const cacheAgeMinutes = Math.round((now - cache.timestamp) / 1000 / 60);
       // Cached data info (verbose only)
       
       return NextResponse.json(cache.data, {
@@ -65,45 +65,116 @@ export async function GET() {
       });
     }
 
-    // Fetch fresh data from local CSV file
-    // CSV file reading (verbose only)
-    
+    // Fetch fresh data — PRIMARY: live ESPN standings (points allowed only).
+    // Yards-allowed stays "—" (Step 4). We NEVER serve 2025 CSV for defense now,
+    // to avoid mixing 2026 points with stale 2025 yards.
     const startTime = Date.now();
-    const { updatedAt, rows } = await fetchAndParseCSV({
-      type: 'defense'
-    });
-    const fetchTime = Date.now() - startTime;
-    
-    // CSV fetch completed (verbose only)
-    
-    if (rows.length === 0) {
-      throw new Error('No team data found in PFR response');
+
+    let updatedAt: string;
+    let rows: TeamStats[];
+    let source: 'ESPN-STANDINGS' | 'EMPTY-FALLBACK';
+
+    try {
+      // 🛡️ Live 2026 points-allowed for all 32 teams from ESPN standings.
+      ({ updatedAt, rows } = await fetchDefenseStatsFromESPN());
+      source = 'ESPN-STANDINGS';
+      logger.performance(
+        { context: 'DEFENSE', requestId },
+        `Served ${rows.length} teams from ESPN standings (${APP_CONSTANTS.SEASON})`
+      );
+
+      // Step 4 — best-effort: enrich with yards-allowed via opponent aggregation.
+      // If it fails, we keep Step-3 behaviour (yards render as "—"); never crash.
+      try {
+        const yards = await fetchDefenseYardsAllowed();
+        let enriched = 0;
+        rows = rows.map((r) => {
+          const y = yards.get(r.team);
+          if (!y || y.games === 0) return r;
+          enriched++;
+          const merged: TeamStats = {
+            ...r,
+            total_yards: String(Math.round(y.total_yards)),
+            pass_yds: String(Math.round(y.pass_yds)),
+            rush_yds: String(Math.round(y.rush_yds)),
+          };
+          // Attempts-weighted opponent 3rd-down %: Σconv / Σatt × 100.
+          if (y.td3Att > 0) {
+            merged.third_down_pct = String((y.td3Conv / y.td3Att) * 100);
+          }
+          return merged;
+        });
+        logger.performance(
+          { context: 'DEFENSE', requestId },
+          `Enriched yards-allowed for ${enriched}/${rows.length} teams`
+        );
+      } catch (aggError) {
+        const aggMsg = aggError instanceof Error ? aggError.message : String(aggError);
+        logger.error(
+          { context: 'DEFENSE', requestId },
+          `Yards aggregation failed (keeping "—"): ${aggMsg}`
+        );
+      }
+    } catch (espnError) {
+      const msg = espnError instanceof Error ? espnError.message : String(espnError);
+      logger.error({ context: 'DEFENSE', requestId }, `ESPN standings fetch failed: ${msg}`);
+
+      // RESILIENCE 1: serve stale cache if we have any.
+      if (cache.data) {
+        logger.performance(
+          { context: 'DEFENSE', requestId },
+          'Serving STALE cache after ESPN failure'
+        );
+        const staleResponse: ApiResponse = { ...cache.data, stale: true, error: msg };
+        return NextResponse.json(staleResponse, {
+          headers: {
+            'Cache-Control': 'public, max-age=60',
+            'Content-Type': 'application/json',
+            'X-Cache': 'STALE',
+            'X-Source': 'ESPN-STANDINGS-STALE',
+            'X-Request-ID': requestId,
+          },
+        });
+      }
+
+      // RESILIENCE 2: no cache — return 32 team rows with NO stats so the UI
+      // shows "—" for points rather than crashing (never the 2025 CSV).
+      logger.performance(
+        { context: 'DEFENSE', requestId },
+        'No cache — serving empty (—) defense rows'
+      );
+      updatedAt = new Date().toISOString();
+      rows = NFL_TEAMS.map((t) => ({ team: t.name }));
+      source = 'EMPTY-FALLBACK';
     }
 
-    // Log sample of raw data
-    // Sample data logging (verbose only)
+    if (rows.length === 0) {
+      throw new Error('No team data found (ESPN standings empty)');
+    }
 
-    // ✅ Rankings now computed client-side using useRanking hook for better performance
-    // Client-side ranking info (verbose only)
-
-    // Build response object
+    // ✅ Rankings computed client-side via useRanking hook (unchanged).
     const response: ApiResponse = {
-      season: 2025,
+      season: APP_CONSTANTS.SEASON,
       type: 'defense',
       updatedAt,
-      rows: rows  // Raw data without server-side rankings
+      rows,
+      ...(source === 'EMPTY-FALLBACK'
+        ? { stale: true, error: 'served-empty-defense-fallback' }
+        : {}),
     };
 
-    // Update cache
-    cache = {
-      data: response,
-      timestamp: now,
-      maxAge: cache.maxAge
-    };
+    // Only cache a full, live standings result.
+    if (source === 'ESPN-STANDINGS') {
+      cache = {
+        data: response,
+        timestamp: now,
+        maxAge: cache.maxAge,
+      };
+    }
 
     logger.performance({ context: 'DEFENSE', requestId }, 'API Processing Complete', {
       duration: Date.now() - startTime,
-      operation: `Processed ${rows.length} teams`
+      operation: `Processed ${rows.length} teams via ${source}`
     });
 
     return NextResponse.json(response, {
@@ -111,6 +182,7 @@ export async function GET() {
         'Cache-Control': 'public, max-age=300',
         'Content-Type': 'application/json',
         'X-Cache': 'MISS',
+        'X-Source': source,
         'X-Request-ID': requestId,
         'X-Processing-Time': `${Date.now() - startTime}ms`,
       },

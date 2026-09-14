@@ -12,6 +12,7 @@
 
 import { NextResponse } from 'next/server';
 import { fetchAndParseCSV, type TeamStats } from '@/lib/pfrCsv';
+import { fetchOffenseStatsFromESPN } from '@/lib/espnStats';
 import { APP_CONSTANTS } from '@/config/constants';
 import { logger } from '@/utils/logger';
 import { generateRequestId, getCacheAgeMinutes } from '@/utils/helpers';
@@ -70,45 +71,80 @@ export async function GET() {
       });
     }
 
-    // Fetch fresh data from local CSV file
-    // CSV file reading (verbose only)
-    
+    // Fetch fresh data — PRIMARY: live ESPN offense totals; FALLBACK: 2025 CSV.
     const startTime = Date.now();
-    // About to fetch CSV (verbose only)
-    const { updatedAt, rows } = await fetchAndParseCSV({
-      type: 'offense'
-    });
-    // CSV fetch completed (verbose only)
-    const fetchTime = Date.now() - startTime;
-    
-    if (rows.length === 0) {
-      throw new Error('No team data found in PFR response');
+
+    let updatedAt: string;
+    let rows: TeamStats[];
+    let source: 'ESPN' | 'CSV-FALLBACK';
+
+    try {
+      // 🏈 Live 2026 offense season totals from ESPN (all 32 teams in parallel).
+      ({ updatedAt, rows } = await fetchOffenseStatsFromESPN());
+      source = 'ESPN';
+      logger.performance(
+        { context: 'OFFENSE', requestId },
+        `Served ${rows.length} teams from ESPN (${APP_CONSTANTS.SEASON})`
+      );
+    } catch (espnError) {
+      const msg = espnError instanceof Error ? espnError.message : String(espnError);
+      logger.error({ context: 'OFFENSE', requestId }, `ESPN offense fetch failed: ${msg}`);
+
+      // RESILIENCE 1: serve stale cache if we have any.
+      if (cache.data) {
+        logger.performance(
+          { context: 'OFFENSE', requestId },
+          'Serving STALE cache after ESPN failure'
+        );
+        const staleResponse: ApiResponse = { ...cache.data, stale: true, error: msg };
+        return NextResponse.json(staleResponse, {
+          headers: {
+            'Cache-Control': 'public, max-age=60',
+            'Content-Type': 'application/json',
+            'X-Cache': 'STALE',
+            'X-Source': 'ESPN-STALE',
+            'X-Request-ID': requestId,
+          },
+        });
+      }
+
+      // RESILIENCE 2: no cache — fall back to the existing 2025 offense CSV so the
+      // app never blanks. (Throws → outer catch → 500 if the CSV is also gone.)
+      logger.performance(
+        { context: 'OFFENSE', requestId },
+        'No cache — falling back to 2025 offense CSV'
+      );
+      ({ updatedAt, rows } = await fetchAndParseCSV({ type: 'offense' }));
+      source = 'CSV-FALLBACK';
     }
 
-    // Sample data logging (verbose only)
+    if (rows.length === 0) {
+      throw new Error('No team data found (ESPN + CSV both empty)');
+    }
 
-    // Compute rankings
-    // ✅ Rankings now computed client-side using useRanking hook for better performance
-    // Client-side ranking info (verbose only)
-
-    // Build response object
+    // ✅ Rankings computed client-side via useRanking hook (unchanged).
     const response: ApiResponse = {
-      season: 2025,
+      season: APP_CONSTANTS.SEASON,
       type: 'offense',
       updatedAt,
-      rows: rows  // Raw data without server-side rankings
+      rows,
+      ...(source === 'CSV-FALLBACK'
+        ? { stale: true, error: 'served-2025-csv-fallback' }
+        : {}),
     };
 
-    // Update cache
-    cache = {
-      data: response,
-      timestamp: now,
-      maxAge: cache.maxAge
-    };
+    // Only cache a full, live ESPN result — never cache the CSV fallback as if fresh.
+    if (source === 'ESPN') {
+      cache = {
+        data: response,
+        timestamp: now,
+        maxAge: cache.maxAge,
+      };
+    }
 
     logger.performance({ context: 'OFFENSE', requestId }, 'API Processing Complete', {
       duration: Date.now() - startTime,
-      operation: `Processed ${rows.length} teams`
+      operation: `Processed ${rows.length} teams via ${source}`
     });
 
     return NextResponse.json(response, {
@@ -116,6 +152,7 @@ export async function GET() {
         'Cache-Control': 'public, max-age=300',
         'Content-Type': 'application/json',
         'X-Cache': 'MISS',
+        'X-Source': source,
         'X-Request-ID': requestId,
         'X-Processing-Time': `${Date.now() - startTime}ms`,
       },

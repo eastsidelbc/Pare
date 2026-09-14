@@ -6,7 +6,250 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ## [Unreleased]
 
+### Fixed
+- **Production build — ESLint errors blocking `next build`** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-build-eslint-fixes.md`
+  - `components/mobile/CompactComparisonRow.tsx`: moved `useRanking`/`useBarCalculation`
+    ABOVE the early return so hooks run unconditionally in a stable order
+    (rules-of-hooks); logic/values guarded instead of skipping the calls. Render
+    output unchanged.
+  - Replaced `any` with proper types / `unknown` + narrowing (no blind casts):
+    `FloatingMetricsButton.tsx` (idle-callback + `visualViewport`),
+    `RankingDropdown.tsx` (`visualViewport`), `lib/metricsSelectorPreload.ts`
+    (typed dynamic-import module), `lib/useOfflineStatus.ts` (Network Information
+    API), `lib/usePWA.ts` (iOS `navigator.standalone`).
+  - `components/OfflineStatusBanner.tsx`: escaped the apostrophe (`&apos;`).
+  - Installed missing `critters` dep (required by `experimental.optimizeCss`) —
+    a latent prerender blocker exposed once ESLint passed; behavior preserved.
+  - `npm run build` now completes with NO errors (warnings only).
+- **Home schedule card — scores/odds in center, tighter layout** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-schedule-card-scores-odds.md`
+  - `Matchup` extended with `state`/`completed`/`statusDetail`/`awayScore`/
+    `homeScore`/`winner`/`odds`, parsed from the ESPN scoreboard we already fetch
+    (`status.type`, `competitors[].score`/`winner`, `odds[0].details`/`overUnder`).
+  - `MatchupCard` layout: abbreviations on the outer edges, each score just inboard,
+    status-driven center — upcoming shows day/time + `<spread> · O/U <total>` (omitted
+    gracefully when no odds); final shows both scores (winner highlighted) + "Final";
+    live shows scores + short status.
+  - Per request: kept the expand chevron (not removed) and tightened the card
+    (smaller logos/gaps/padding) so scores + odds fit and still look good.
+  - `tsc --noEmit` + `eslint` clean; verified against live ESPN (our parser):
+    completed games → final scores + winner; upcoming → spread + O/U; no-odds omit.
+- **Compare create flow — "+" on tab row + blank-tab inline team pick** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-blank-tab-team-pick.md`
+  - Removed the standalone "+" from the Home header entirely.
+  - The "+" now lives at the FAR RIGHT of the compare tab row (larger, gold, easy
+    thumb tap; disabled at `MAX_COMPARISONS`).
+  - Tapping "+" no longer opens a bottom sheet: it `addComparison('', '')` (a BLANK
+    tab, labeled "New") and activates it. The blank tab renders a new
+    `BlankComparePicker` empty state — two "Pick team" slots that open a COMPACT
+    INLINE DROPDOWN anchored at the slot (reuses `CompactTeamSelector`, the same
+    Floating-UI team list from the panel headers). Filling both renders the
+    comparison normally.
+  - Removed the old drawer/sheet picker (`NewComparisonButton` deleted).
+  - Workspace validation now repairs only STALE (non-empty invalid) team names —
+    empty teams stay blank so the "+" empty state persists until picked.
+  - `tsc --noEmit` + `eslint` clean on changed files.
+- **Visual refinements — floating pill nav + compare reorder** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-visual-refinements.md`
+  - `BottomNav` restyled into a floating, centered rounded capsule (blur backdrop,
+    soft shadow, side margins, floats above the bottom edge) — still the SAME
+    single persistent instance mounted once in `app/layout.tsx` (no behavior
+    change). New `--nav-pill-h` token; `--nav-h` (reserved footprint) 64 → 76px.
+  - Compare screen reordered: shared title row (back + "Compare" + the "+" new-
+    comparison button, now shown on Compare too) → comparison-tabs pill → cards.
+    The per-pane `MobileTopBar` was removed (workspace now owns the single header;
+    file deleted). Swipe/tab behavior unchanged.
+  - `tsc --noEmit` + `eslint` clean on changed files.
+
 ### Added
+- **Persist comparisons across sessions — localStorage (Vision Step 6)** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-comparisons-persistence.md`
+  - New client-only `lib/comparisons/persist.ts` (key `pare:comparisons`, schema
+    `version: 1`): `loadComparisons(max)` / `saveComparisons()`, all `window`-guarded
+    + try/catch. Corrupt/old/missing → seed cleanly; trims to `MAX_COMPARISONS`
+    and repairs a dangling `activeId`.
+  - `ComparisonsProvider` hydrates **post-mount** (initial state = seed on server
+    + first client render → no hydration mismatch), exposes a `hydrated` flag, and
+    **persists on any change (debounced 150ms)**, gated on `hydrated`.
+  - Deep link now waits for hydration then opens the matchup on top of restored
+    tabs (dedupe/`setActive` or `addComparison`) — deep link wins for active.
+  - `tsc --noEmit` + `eslint` clean on changed files.
+- **Persistent bottom nav — Home ↔ Compare (Vision Step 5)** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-persistent-bottom-nav.md`
+  - New `components/BottomNav.tsx` mounted **once** in `app/layout.tsx` (shell
+    level, outside every route and outside the compare swipe container) so it
+    never unmounts/re-animates on navigation or tab swipes. Active state from
+    `usePathname`; fixed + iOS safe-area aware (new `--nav-h` token).
+  - Unified the duplicate footer: removed the per-pane `MobileBottomBar` from
+    `MobileCompareLayout` and **deleted** it. Content reserves nav height
+    (`CompareWorkspace` root padding, Home `main` padding).
+  - `tsc --noEmit` + `eslint` clean on changed files.
+- **Home accordion → inline compare + "Open full" (Vision Step 4)** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-home-accordion.md`
+  - Schedule rows are now accordions: tap to expand an inline head-to-head peek
+    (Framer Motion height animation) rendering the SAME Compare component via a
+    new `ComparePane inline` / `MobileCompareLayout variant="inline"` (panels
+    only) — editable in place, single-open (only one row at a time).
+  - The peek uses an **ephemeral local draft** (teams seeded from the matchup),
+    not added to `comparisons[]` just by expanding. Stats fetched **once** in
+    `ScheduleBoard` (`useNflStats`) and shared to all rows — instant expand.
+  - **"Open full"** promotes to a tab: dedupes to an existing tab for the same
+    (unordered) pair (`setActive`, carrying inline edits) or `addComparison`
+    (respecting `MAX_COMPARISONS`), then navigates to `/compare`.
+  - New `components/schedule/MatchupAccordion.tsx`; `MatchupCard` is now the
+    tappable header (button + chevron). No duplicate compare UI or data hooks.
+  - `tsc --noEmit` + `eslint` clean on changed files.
+- **"+" create-comparison flow (Vision Step 3)** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-plus-create-flow.md`
+  - Top-right "+" on the Home header (`components/compare/NewComparisonButton.tsx`,
+    styled like the week stepper) → bottom-sheet picker with two existing
+    `<TeamSelector>`s fed from `NFL_TEAMS` (no new picker/registry) → on confirm
+    `addComparison(teamA, teamB)` + `setActive` + navigate to `/compare` so it
+    opens as its own tab.
+  - Respects `MAX_COMPARISONS`: "+" disabled/greyed at the cap (`addComparison`
+    also returns `null` as a backstop). Cancel / overlay / Escape = no change;
+    Compare disabled until two different teams are chosen.
+  - `tsc --noEmit` + `eslint` clean on changed files.
+- **Compare workspace shell — swipeable tabs (Vision Step 2)** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-compare-workspace-shell.md`
+  - `/compare` is now a **swipeable multi-comparison workspace** driven by the
+    Step-1 store: one page per comparison, swipe/tab to change `activeId`, each
+    tab closable (`removeComparison`), active-close reassigns to a neighbor,
+    last-close keeps one seeded default.
+  - New `components/compare/`: `CompareWorkspace` (Framer Motion pager +
+    tab bar + shared data), `ComparePane` (reusable per-comparison Compare UI,
+    extracted from the old page — no logic changes), `CompareTabBar`
+    (`ABBR · ABBR` chips, gold active, `×` close, `+` affordance wired for Step 3).
+  - **No refetch on swipe:** `useNflStats()` runs once in the workspace; panes
+    read shared data via props. Single-compare behavior + `?home=&away=` deep
+    link preserved. Ranking/bar math/panels untouched.
+  - Minimal layout tweaks: `MobileCompareLayout` height `100dvh→100%`;
+    `ComparePane` desktop background `fixed→absolute` (both for pager embedding).
+  - `tsc --noEmit` + `eslint` clean on changed files.
+
+### Changed
+- **Comparisons collection store — Vision Step 1 (pure plumbing)** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-comparisons-store.md`,
+    ADR `docs/adr/2026-09-14-comparisons-store.md`
+  - New Context store `components/ComparisonsProvider.tsx` + `useComparisons()`
+    (backed by pure, unit-tested logic in `lib/comparisons/store.ts`) holding
+    `comparisons[]` + `activeId`. Mounted in `app/layout.tsx`.
+  - `Comparison = { id, teamA, teamB, settings:{offenseMetrics,defenseMetrics} }`;
+    `MAX_COMPARISONS=8` in `config/constants.ts`, enforced in `addComparison`.
+  - `app/compare/page.tsx` now reads/writes the **active** comparison instead of
+    local `useState` for team pair + metric selections. Deep link
+    `?home=&away=` still sets the active teams. **No UI/behavior change** (one
+    seeded default: Minnesota Vikings vs Detroit Lions).
+  - Supersedes CLAUDE.md "global team state at ComparePage only, props-only" for
+    comparison selection (see ADR). Data/ranking/bar-math/panels/schedule untouched.
+  - `tsc --noEmit` + `eslint` clean on changed files.
+- **RankBadge 3-tier system (dark mode)** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-rankbadge-tiers.md`
+  - `components/ui/RankBadge.tsx`: tiers by rank across the ranked field —
+    Top 5 GOLD (#1 filled "crown" w/ glow, 2–5 gold outline), middle SLATE
+    (neutral outline), bottom 5 RED (worst filled w/ glow, others red outline).
+    Consistent pill shape/size; unranked → neutral "—".
+  - Proper ordinal helper (1st/2nd/3rd/21st/31st/32nd — no more "31th").
+    Tie-aware (tied teams share rank → same tier). Bottom-5 based on the **actual
+    ranked count** (`totalTeams`, may be <32 while loading), threaded from the
+    dropdown's ranking data — no ranking-math or data-layer changes.
+  - Sanity (n=32): 1→gold crown, 2/5→gold, 6/15/27→slate, 28/31→red, 32→red worst.
+  - `npm run lint` clean on changed files (`RankBadge.tsx`,
+    `CompactRankingDropdown.tsx`).
+
+### Fixed
+- **Offense yards now NET (match defense-allowed) + Week-1/18 arrows** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-net-yards-and-week-arrow.md`
+  - **Fix A**: offense mapping switched `total_yards ← netTotalYards` and
+    `pass_yds ← netPassingYards` (were gross `totalYards`/`passingYards`, which
+    include sack yardage). Confirmed `gross − net = sackYardsLost` (GB: 34).
+    Rushing unchanged; defense untouched. GB offense now 419/353/66 = Vikings'
+    allowed; HOU=BUF-allowed, NE=SEA-allowed. League consistency exact:
+    total 10094/10094, pass 6524/6524, rush 3570/3570. `DATA_SOURCES.md` mapping
+    table updated to NET.
+  - **Fix B**: week stepper `‹`/`›` are now unambiguously disabled at the bounds
+    (native `disabled` + `onClick` gated + `pointer-events:none` + `not-allowed`
+    cursor + greyed) — no tap/active feedback at Week 1 (‹) or Week 18 (›).
+
+### Changed
+- **Default metric: Sc% → 3rd-down %, live for 2026** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-third-down-swap.md`
+  - `lib/metricsConfig.ts`: `DEFAULT_OFFENSE_METRICS` + `DEFAULT_DEFENSE_METRICS`
+    now use `third_down_pct` instead of `score_pct` (Sc% stays defined/available,
+    just not a default). Ranking context unchanged (offense higher = better;
+    defense inverts → lower opponent % = better).
+  - **Offense (direct)**: `third_down_pct ← thirdDownConvPct` from the Step-2
+    team-statistics feed (miscellaneous category).
+  - **Defense (aggregated)**: extended the Step-4 game-summary loop to also read
+    each opponent's `thirdDownEff` ("conv-att"); attempts-weighted
+    `Σopp conv / Σopp att × 100` (not a per-game average).
+  - **Acceptance gate (live 2026)**: MIN offense `53.333%` (≈53.3 ✓); MIN defense
+    `25%` (lone opponent GB 3/12 ✓). Offense populated 32/32, defense 30/32
+    (DEN/KC unplayed → "—"). `npm run lint` clean on changed files.
+- **DEFENSE yards-allowed via opponent-aggregation (2026)** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-espn-defense-yards.md`
+  - **Opponent aggregation**: `lib/espnStats.ts` → `fetchDefenseYardsAllowed()`
+    loops completed regular-season games (scoreboard `STATUS_FINAL`), pulls each
+    game's box score (`summary` endpoint), and sums each team's OPPONENTS'
+    offensive yards → total / net-pass / rush yards allowed. Summaries fetched in
+    parallel batches of 8; a failing game is skipped (logged), not fatal.
+  - **Defense route enriched**: `app/api/nfl-2025/defense/route.ts` merges the
+    aggregated yards onto the Step-3 points/`g` rows (best-effort — if aggregation
+    fails the yards stay "—"). Cached in the existing 6h cache; not recomputed per
+    request.
+  - **Fills the Step-3 "—"**: `total_yards`, `pass_yds`, `rush_yds` now populated
+    for every team with ≥1 completed game. Teams that haven't played yet (Week-1
+    MNF: DEN, KC) stay "—" — real, not a bug.
+  - **Internal consistency check** (no external source): Σ yards allowed === Σ
+    yards gained across all box scores — total 10094/10094, pass 6524/6524, rush
+    3570/3570 (all MATCH). Bills allowed 381/257/124 = their lone opponent (HOU)
+    offense.
+  - Offense, schedule, and Step-3 points-allowed untouched. `npm run lint` clean
+    on changed files.
+  - Follow-up: `pass_yds` here is ESPN **net** passing (box score), while the
+    offense endpoint reports **gross** — fine within each panel; noted for later.
+- **Live DEFENSE points-allowed from ESPN standings (2026)** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-espn-defense-points.md`
+  - **Standings fetch**: `lib/espnStats.ts` → `fetchDefenseStatsFromESPN()` reads
+    ESPN's standings tree for `SEASON`, mapping each team's `pointsAgainst` →
+    `points` and `wins+losses+ties` → `g`. All other defense "allowed" metrics are
+    intentionally left off the row (yards-allowed is Step 4).
+  - **Defense route switched**: `app/api/nfl-2025/defense/route.ts` now serves live
+    2026 points-allowed (was 2025 CSV). It **no longer reads the CSV** — avoids
+    mixing 2026 points with stale 2025 yards. Resilience: standings fail → stale
+    cache → (no cache) 32 empty (—) rows. `X-Source` header reports the path.
+  - **Graceful "—" render**: `CompactComparisonRow` (mobile) + `DynamicComparisonRow`
+    /`RankingDropdown` (desktop) now show `—` for unpopulated metrics (no fake `0`),
+    hide the comparison bars, and suppress the rank badge. This also cleans up the
+    offense `score_pct` cell (now `—` until the Sc% step).
+  - **Ranking correctness preserved**: defense still ranks fewest points allowed =
+    best (existing panel invert logic untouched).
+  - Verified: defense `rows.length` = 32, `season` = 2026; points match ESPN
+    standings (BAL 23, BUF 31, PHI 22, DET 30) with `g` matching; compare defense
+    panel shows real points + ranks and `—` for yards (browser); offense + schedule
+    untouched; standings-failure simulation → `EMPTY-FALLBACK`, no crash.
+  - Follow-up: yards-allowed (total/pass/rush) is still a gap — Step 4.
+- **2026 season switch + live OFFENSE stats from ESPN** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-espn-offense-2026.md`
+  - **Season constant**: `APP_CONSTANTS.SEASON = 2026` in `config/constants.ts` —
+    single source of truth for the season year (no scattered literals).
+  - **ESPN team IDs**: added `espnId` to every team in `lib/teams.ts` (ESPN
+    franchise id map from `DATA_SOURCES.md`) so we can loop all 32 by id.
+  - **Live offense fetch**: `lib/espnStats.ts` → `fetchOffenseStatsFromESPN()`
+    pulls season-TOTAL offense stats for all 32 teams in parallel from ESPN's
+    core stats endpoint and maps them into the existing `TeamStats` shape
+    (values as strings). Ranking / display-mode / bar hooks + UI untouched.
+  - **Offense route switched**: `app/api/nfl-2025/offense/route.ts` now serves
+    ESPN 2026 data (was 2025 CSV). Resilience: ESPN fail → stale cache →
+    (no cache) 2025 offense CSV fallback. `X-Source` header reports the path.
+  - **Defense untouched**: `defense/route.ts` still reads the 2025 CSV as before.
+  - Verified: offense `rows.length` = 32, `season` = 2026; Bills totals match ESPN
+    (36 pts / 420 total / 334 pass / 86 rush, 1 game); CSV fallback exercised via a
+    bad-URL simulation (no crash). Small numbers are real — early 2026 season.
+  - Follow-ups (noted in devnote): map `score_pct` (Sc% has no clean ESPN source —
+    shows `0.0%` for now, no crash); wire live DEFENSE (yards-allowed gap); rename
+    the `nfl-2025` route folder (cosmetic, later).
 - **Schedule-first home + Sleeper-style UI pass** (2026-09-14)
   - See: `docs/devnotes/2026-09-14-schedule-first-redesign.md`
   - **New entry point**: `app/page.tsx` rewritten from API-docs marketing page into

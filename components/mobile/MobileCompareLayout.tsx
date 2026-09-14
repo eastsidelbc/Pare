@@ -8,8 +8,6 @@
 
 'use client';
 
-import MobileTopBar from './MobileTopBar';
-import MobileBottomBar from './MobileBottomBar';
 import CompactPanel from './CompactPanel';
 import { DEFAULT_OFFENSE_METRICS, DEFAULT_DEFENSE_METRICS } from '@/lib/metricsConfig';
 import type { TeamData } from '@/lib/useNflStats';
@@ -26,6 +24,12 @@ interface MobileCompareLayoutProps {
   onOffenseMetricsChange: (metrics: string[]) => void;
   onDefenseMetricsChange: (metrics: string[]) => void;
   isLoading?: boolean;
+  /**
+   * 'full' (default) = standalone viewport layout with top/bottom bars, used by
+   * the Compare workspace. 'inline' = just the panels (no chrome, auto height)
+   * for the Home accordion peek. Same compare UI either way — no duplication.
+   */
+  variant?: 'full' | 'inline';
 }
 
 export default function MobileCompareLayout({
@@ -37,7 +41,8 @@ export default function MobileCompareLayout({
   defenseData,
   selectedOffenseMetrics,
   selectedDefenseMetrics,
-  isLoading
+  isLoading,
+  variant = 'full',
 }: MobileCompareLayoutProps) {
   
   // Use default 5 metrics if none selected
@@ -54,58 +59,63 @@ export default function MobileCompareLayout({
   const teamBOffense = offenseData.find(t => t.team === selectedTeamB) || null;
   const teamADefense = defenseData.find(t => t.team === selectedTeamA) || null;
   const teamBDefense = defenseData.find(t => t.team === selectedTeamB) || null;
-  
+
+  // Shared body: skeleton while loading, else the two compact panels.
+  const body = isLoading ? (
+    <div className="px-3 py-3 space-y-3">
+      <PanelSkeleton rows={offenseMetrics.length || 5} />
+      <PanelSkeleton rows={defenseMetrics.length || 8} />
+    </div>
+  ) : (
+    <div className="px-3 py-3 space-y-3">
+      {/* Offense Panel */}
+      <CompactPanel
+        type="offense"
+        teamA={selectedTeamA}
+        teamB={selectedTeamB}
+        teamAData={teamAOffense}
+        teamBData={teamBOffense}
+        selectedMetrics={offenseMetrics}
+        allOffenseData={offenseData}
+        allDefenseData={defenseData}
+        onTeamAChange={onTeamAChange}
+        onTeamBChange={onTeamBChange}
+      />
+
+      {/* Defense Panel */}
+      <CompactPanel
+        type="defense"
+        teamA={selectedTeamA}
+        teamB={selectedTeamB}
+        teamAData={teamADefense}
+        teamBData={teamBDefense}
+        selectedMetrics={defenseMetrics}
+        allOffenseData={offenseData}
+        allDefenseData={defenseData}
+        onTeamAChange={onTeamAChange}
+        onTeamBChange={onTeamBChange}
+      />
+    </div>
+  );
+
+  // Inline (Home accordion peek): just the panels, no chrome, natural height.
+  if (variant === 'inline') {
+    return <div className="text-white" style={{ background: 'var(--bg)' }}>{body}</div>;
+  }
+
   return (
-    /* Root: full-viewport flex column. Top/bottom bars are flex siblings — no fixed positioning, no calc() hacks. */
-    <div 
+    /* Root: fills its container (the workspace pager cell) as a flex column.
+       The shared title row + tabs pill live at the workspace level now, so this
+       is just the scrollable cards area. height:100% (not 100dvh) so it slots
+       under the workspace header/tab bar. */
+    <div
       className="flex flex-col text-white"
-      style={{ height: '100dvh', background: 'var(--bg)' }}
+      style={{ height: '100%', background: 'var(--bg)' }}
     >
-      {/* Top Bar — flex-none, sticks at top naturally */}
-      <MobileTopBar teamA={selectedTeamA} teamB={selectedTeamB} />
-      
-      {/* Scrollable Content — flex-1 fills all remaining space between bars */}
-      <div className="flex-1 overflow-y-auto min-h-0">
-        {isLoading ? (
-          <div className="px-3 py-3 space-y-3">
-            <PanelSkeleton rows={offenseMetrics.length || 5} />
-            <PanelSkeleton rows={defenseMetrics.length || 8} />
-          </div>
-        ) : (
-          <div className="px-3 py-3 space-y-3">
-            {/* Offense Panel */}
-            <CompactPanel
-              type="offense"
-              teamA={selectedTeamA}
-              teamB={selectedTeamB}
-              teamAData={teamAOffense}
-              teamBData={teamBOffense}
-              selectedMetrics={offenseMetrics}
-              allOffenseData={offenseData}
-              allDefenseData={defenseData}
-              onTeamAChange={onTeamAChange}
-              onTeamBChange={onTeamBChange}
-            />
-            
-            {/* Defense Panel */}
-            <CompactPanel
-              type="defense"
-              teamA={selectedTeamA}
-              teamB={selectedTeamB}
-              teamAData={teamADefense}
-              teamBData={teamBDefense}
-              selectedMetrics={defenseMetrics}
-              allOffenseData={offenseData}
-              allDefenseData={defenseData}
-              onTeamAChange={onTeamAChange}
-              onTeamBChange={onTeamBChange}
-            />
-          </div>
-        )}
-      </div>
-      
-      {/* Bottom Bar — flex-none, sticks at bottom naturally */}
-      <MobileBottomBar />
+      {/* Scrollable Content — flex-1 fills remaining space. The persistent app
+          BottomNav lives at the shell level now; the workspace root reserves its
+          height so this content clears it. */}
+      <div className="flex-1 overflow-y-auto min-h-0">{body}</div>
     </div>
   );
 }

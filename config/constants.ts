@@ -4,6 +4,12 @@
  */
 
 export const APP_CONSTANTS = {
+  // Active NFL season year (single source of truth — don't scatter literals)
+  SEASON: 2026,
+
+  // Max number of open comparisons (tabs) in the Compare workspace (Vision v1).
+  MAX_COMPARISONS: 8,
+
   // Cache configuration
   CACHE: {
     PRODUCTION_MAX_AGE: 6 * 60 * 60 * 1000, // 6 hours in milliseconds

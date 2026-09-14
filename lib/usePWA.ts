@@ -57,7 +57,8 @@ export function usePWA(): PWAStatus & {
       }
 
       // Method 2: Check window.navigator.standalone (iOS Safari specific)
-      if ((window.navigator as any).standalone === true) {
+      const iosNav = window.navigator as Navigator & { standalone?: boolean };
+      if (iosNav.standalone === true) {
         setIsStandalone(true);
         setDisplayMode('standalone');
         console.log('📱 [PWA] Running in standalone mode (navigator.standalone)');

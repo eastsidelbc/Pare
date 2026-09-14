@@ -101,9 +101,17 @@ export default function DynamicComparisonRow({
     console.log(`   Team B (${teamBData?.team}): value=${teamBValue}, ranking=`, teamBRanking);
   }
 
+  // Detect presence — intentionally-unpopulated metrics (e.g. defense
+  // yards-allowed in 2026) render as "—" instead of a fake 0.
+  const isPresent = (v: unknown): boolean =>
+    v !== undefined && v !== null && String(v).trim() !== '';
+  const hasA = isPresent(teamAData?.[metricKey as keyof typeof teamAData]);
+  const hasB = isPresent(teamBData?.[metricKey as keyof typeof teamBData]);
+  const barsVisible = hasA && hasB;
+
   // Format values for display
-  const formattedTeamAValue = formatMetricValue(teamAValue, metric.format);
-  const formattedTeamBValue = formatMetricValue(teamBValue, metric.format);
+  const formattedTeamAValue = hasA ? formatMetricValue(teamAValue, metric.format) : '—';
+  const formattedTeamBValue = hasB ? formatMetricValue(teamBValue, metric.format) : '—';
 
   // teamABetter, teamBBetter, and higherIsBetterForComparison removed as they were unused
   
@@ -192,27 +200,29 @@ export default function DynamicComparisonRow({
           aria-valuemax={100}
           aria-describedby={`comparison-${metricKey}`}
         >
-          {/* Team A Bar - Fully rounded green pill */}
+          {/* Team A Bar - Fully rounded green pill (hidden when no live data) */}
           <div 
             className={`absolute left-0 top-0 h-full rounded-full ${theme?.animations ? 'transition-all duration-300 ease-out' : 'transition-all duration-300 ease-out'}`}
             style={{ 
-              width: `${teamAPercentage}%`,
+              width: `${barsVisible ? teamAPercentage : 0}%`,
               background: getTeamAGradient ? getTeamAGradient() : 'linear-gradient(90deg, #22c55e, #16a34a)',
               willChange: 'width'
             }}
           />
           
           {/* Center gap/separator - invisible background match */}
-          <div 
-            className="absolute top-0 h-full w-0.5 bg-slate-800 z-10"
-            style={{ left: `${teamAPercentage}%` }}
-          />
+          {barsVisible && (
+            <div 
+              className="absolute top-0 h-full w-0.5 bg-slate-800 z-10"
+              style={{ left: `${teamAPercentage}%` }}
+            />
+          )}
           
-          {/* Team B Bar - Fully rounded orange pill */}
+          {/* Team B Bar - Fully rounded orange pill (hidden when no live data) */}
           <div 
             className={`absolute right-0 top-0 h-full rounded-full ${theme?.animations ? 'transition-all duration-300 ease-out' : 'transition-all duration-300 ease-out'}`}
             style={{ 
-              width: `${teamBPercentage}%`,
+              width: `${barsVisible ? teamBPercentage : 0}%`,
               background: getTeamBGradient ? getTeamBGradient() : 'linear-gradient(90deg, #f97316, #ea580c)',
               willChange: 'width'
             }}

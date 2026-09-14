@@ -35,7 +35,7 @@ export default function OfflineStatusBanner({ className = '' }: OfflineStatusBan
           <div className="flex items-center justify-center gap-2 max-w-6xl mx-auto">
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 bg-amber-600 rounded-full animate-pulse"></div>
-              <span>📱 You're offline</span>
+              <span>📱 You&apos;re offline</span>
             </div>
             
             <span className="hidden sm:inline text-amber-700">•</span>

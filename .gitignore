@@ -58,3 +58,7 @@ ios/**/*.perspectivev3
 ios/**/*~.nib
 ios/**/*.swp
 ios/**/*.swo
+
+# Claude/Cowork delivered-file drops (not part of the app)
+Claude outputs/
+.cursorrules.bak

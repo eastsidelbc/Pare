@@ -30,6 +30,12 @@ interface FloatingMetricsButtonProps {
   onDefenseMetricsChange: (metrics: string[]) => void;
 }
 
+/** Window with the (not-everywhere-typed) idle-callback API. */
+interface IdleWindow {
+  requestIdleCallback?: (cb: () => void, opts?: { timeout?: number }) => number;
+  cancelIdleCallback?: (id: number) => void;
+}
+
 // Phase 3: Memoize component to prevent re-renders when parent updates but props haven't changed
 // Saves ~10-20 wasted re-renders per session (50% reduction)
 function FloatingMetricsButton({
@@ -47,14 +53,15 @@ function FloatingMetricsButton({
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    if ('requestIdleCallback' in window) {
-      const idleId = (window as any).requestIdleCallback(() => {
+    const idleWindow = window as unknown as IdleWindow;
+    if (idleWindow.requestIdleCallback) {
+      const idleId = idleWindow.requestIdleCallback(() => {
         preloadMetricsSelector();
         if (process.env.NODE_ENV !== 'production') {
           console.log('[Preload] MetricsSelector via idle');
         }
       }, { timeout: 2000 });
-      return () => (window as any).cancelIdleCallback(idleId);
+      return () => idleWindow.cancelIdleCallback?.(idleId);
     } else {
       // Fallback for Safari/older browsers
       const timer = setTimeout(() => {
@@ -106,7 +113,7 @@ function FloatingMetricsButton({
       const isStandalone = typeof window !== 'undefined' && (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
       const viewport = typeof window !== 'undefined' ? {
         inner: { w: window.innerWidth, h: window.innerHeight },
-        visual: { h: (window as any).visualViewport?.height }
+        visual: { h: window.visualViewport?.height }
       } : null;
 
       const container = document.getElementById('metrics-panel');
