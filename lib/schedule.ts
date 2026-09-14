@@ -11,6 +11,7 @@
  */
 
 import { getTeamByAbbr, type NflTeam } from './teams';
+import { APP_CONSTANTS } from '@/config/constants';
 
 /** Game lifecycle, mirrors ESPN `status.type.state`. */
 export type GameState = 'pre' | 'in' | 'post';
@@ -261,7 +262,7 @@ function getFallbackMatchups(): Matchup[] {
 
 /** Fetch + parse an ESPN scoreboard payload (throws on HTTP error). */
 async function fetchScoreboard(url: string): Promise<EspnScoreboard> {
-  const res = await fetch(url, { next: { revalidate: 3600 } });
+  const res = await fetch(url, { next: { revalidate: APP_CONSTANTS.CACHE.REVALIDATE_SECONDS } });
   if (!res.ok) throw new Error(`ESPN scoreboard HTTP ${res.status}`);
   return (await res.json()) as EspnScoreboard;
 }

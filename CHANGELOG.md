@@ -7,6 +7,26 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Performance
+- **Data caching — Batch 3 (Next.js Data Cache + unstable_cache, no more cold aggregation)** (2026-09-14)
+  - See: `docs/devnotes/2026-09-14-perf-batch3.md`
+  - `REVALIDATE_SECONDS: 3600` added to `config/constants.ts` as the single
+    tunable for the Next.js Data Cache window (all ESPN fetches + aggregation).
+  - Removed all `cache: 'no-store'` from `lib/espnStats.ts` (3 fetch sites: team
+    stats, standings, scoreboard/summary); replaced with `next: { revalidate: REVALIDATE_SECONDS }`.
+    Results are now persisted in Vercel's Data Cache across serverless invocations.
+  - Wrapped `fetchDefenseYardsAllowed` in `unstable_cache` (tag `defense-yards-allowed`,
+    key includes season). The entire computed aggregation (80+ ESPN summary fetches
+    → `Record<string, YardsAllowed>`) is cached as a single JSON blob; only the
+    Map reconstruction runs on cache hits. Public signature unchanged.
+  - `export const revalidate = 3600` added to `app/api/nfl-2025/offense/route.ts`
+    and `app/api/nfl-2025/defense/route.ts` — build table shows both routes as
+    `○ Static · Revalidate: 1h, Expire: 1y`, confirming Vercel pre-renders and
+    serves them without running the handler on cold requests.
+  - `/api/schedule` stays `ƒ Dynamic` (reads `week` query param); fetch-level
+    `next.revalidate` in `lib/schedule.ts` already handled caching there.
+  - `lib/schedule.ts` hardcoded `3600` tied to `APP_CONSTANTS.CACHE.REVALIDATE_SECONDS`.
+  - Verification: build exit 0; no `cache:'no-store'` remains; defense endpoint
+    responds 38ms / 35ms on first/second curl (no re-aggregation). REVALIDATE = 3600s.
 - **Compare render-path perf — Batch 2 (pane windowing + memo + stable handlers)** (2026-09-14)
   - See: `docs/devnotes/2026-09-14-perf-batch2.md`
   - `#3` Windowing: `CompareWorkspace` now mounts only the active pane and its

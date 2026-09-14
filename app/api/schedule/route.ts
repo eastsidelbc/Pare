@@ -9,6 +9,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getMatchupsForWeek, MIN_WEEK, MAX_WEEK } from '@/lib/schedule';
+// Note: this route is fully dynamic (reads `week` query param) so route-level
+// `export const revalidate` is not applicable. Caching is handled at the fetch
+// level inside getMatchupsForWeek / lib/schedule.ts (next.revalidate: 3600).
 
 export async function GET(req: NextRequest) {
   const weekParam = req.nextUrl.searchParams.get('week');

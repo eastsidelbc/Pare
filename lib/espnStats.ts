@@ -12,6 +12,7 @@
  * CSV path (yards-allowed is a gap in this endpoint) — do not route defense here.
  */
 
+import { unstable_cache } from 'next/cache';
 import type { TeamStats, ParseResult } from '@/lib/pfrCsv';
 import { NFL_TEAMS, getTeamByAbbr } from '@/lib/teams';
 import { getCurrentWeekInfo } from '@/lib/schedule';
@@ -96,7 +97,10 @@ async function fetchOneTeam(
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
   try {
-    const res = await fetch(url, { cache: 'no-store', signal: controller.signal });
+    const res = await fetch(url, {
+      next: { revalidate: APP_CONSTANTS.CACHE.REVALIDATE_SECONDS },
+      signal: controller.signal,
+    });
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}`);
     }
@@ -213,7 +217,10 @@ export async function fetchDefenseStatsFromESPN(): Promise<ParseResult> {
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
   try {
-    const res = await fetch(url, { cache: 'no-store', signal: controller.signal });
+    const res = await fetch(url, {
+      next: { revalidate: APP_CONSTANTS.CACHE.REVALIDATE_SECONDS },
+      signal: controller.signal,
+    });
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}`);
     }
@@ -332,7 +339,10 @@ async function fetchJsonWithTimeout<T>(url: string): Promise<T> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
-    const res = await fetch(url, { cache: 'no-store', signal: controller.signal });
+    const res = await fetch(url, {
+      next: { revalidate: APP_CONSTANTS.CACHE.REVALIDATE_SECONDS },
+      signal: controller.signal,
+    });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return (await res.json()) as T;
   } finally {
@@ -424,8 +434,11 @@ async function getGameYards(eventId: string): Promise<GameTeamYards[] | null> {
  *
  * Throws only if it can't compute anything, so the route can keep serving the
  * Step-3 points-allowed with "—" yards.
+ *
+ * Internal: returns a plain object (JSON-serializable for `unstable_cache`).
+ * Public API wraps it back into a Map — call site in defense/route.ts unchanged.
  */
-export async function fetchDefenseYardsAllowed(): Promise<Map<string, YardsAllowed>> {
+async function _fetchDefenseYardsAllowed(): Promise<Record<string, YardsAllowed>> {
   // Upper bound = current week (completed games only live at or before it).
   let currentWeek: number;
   try {
@@ -546,5 +559,29 @@ export async function fetchDefenseYardsAllowed(): Promise<Map<string, YardsAllow
       `rush=${aRush}/${gRush} (${aRush === gRush ? 'MATCH' : 'MISMATCH'})`,
   );
 
-  return allowed;
+  // Convert Map → plain object so unstable_cache can JSON-serialize the result.
+  return Object.fromEntries(allowed);
+}
+
+/**
+ * Cached wrapper — persists the aggregated yards-allowed across serverless
+ * invocations via Next.js unstable_cache (Vercel KV / file-system cache).
+ * Revalidates every REVALIDATE_SECONDS. On cache miss the full aggregation runs;
+ * on cache hit only the in-memory Map reconstruction executes.
+ */
+const _cachedFetchDefenseYardsAllowed = unstable_cache(
+  _fetchDefenseYardsAllowed,
+  ['defense-yards-allowed', String(APP_CONSTANTS.SEASON)],
+  {
+    revalidate: APP_CONSTANTS.CACHE.REVALIDATE_SECONDS,
+    tags: ['defense-yards-allowed'],
+  },
+);
+
+/**
+ * Public API — unchanged signature so defense/route.ts needs no update.
+ */
+export async function fetchDefenseYardsAllowed(): Promise<Map<string, YardsAllowed>> {
+  const obj = await _cachedFetchDefenseYardsAllowed();
+  return new Map(Object.entries(obj));
 }

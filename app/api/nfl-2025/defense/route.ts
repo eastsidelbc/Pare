@@ -18,6 +18,11 @@ import { APP_CONSTANTS } from '@/config/constants';
 import { logger } from '@/utils/logger';
 import { generateRequestId } from '@/utils/helpers';
 
+// Cache the full route response on Vercel's Data Cache so cold serverless
+// invocations get the cached JSON without re-running the ESPN aggregation.
+// Value must be a literal for Next.js static analysis (keep in sync with REVALIDATE_SECONDS).
+export const revalidate = 3600; // 1 hour
+
 // API Response interface
 interface ApiResponse {
   season: number;

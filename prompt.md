@@ -1,12 +1,19 @@
-BATCH 2 now (#3 from the audit). Cheap verification only (no browser), preserve all behavior
-and displayed values.
-- Windowing: render only the ACTIVE pane and its immediate neighbors (active ±1) in the
-  CompareWorkspace, instead of all N panes. Keep the ±1 neighbors mounted so a swipe reveals
-  a ready page (no blank flash mid-swipe); virtualize the rest.
-- Wrap ComparePane and the panels (OffensePanel, DefensePanel, CompactPanel,
-  MobileCompareLayout, DynamicComparisonRow/CompactComparisonRow) in React.memo.
-- Stabilize the handlers passed to each pane with useCallback, keyed by comparison id, so
-  memoized panes don't re-render on unrelated setActive changes.
-Do NOT touch data caching (#1) — that's the next batch.
-Verify: npm run build clean; confirm swipe still reveals neighbors with no blank, tab
-switch/close still works and shows correct teams. List files changed.
+BATCH 3 now (#1 from the audit) — data caching for Vercel/serverless. Preserve the existing
+fallback + timeout behavior and displayed values. Cheap verification only (no browser).
+
+- Remove `cache: 'no-store'` from the ESPN fetches in lib/espnStats.ts (scoreboard, standings,
+  summary, team stats). Use `fetch(url, { next: { revalidate: REVALIDATE } })` so Vercel's
+  Data Cache PERSISTS them across serverless invocations (this is the whole point).
+- Wrap the heavy defense aggregation (yards + third-down) in `unstable_cache` with a tag/key,
+  and/or set `export const revalidate = REVALIDATE` on the nfl-2025/offense, nfl-2025/defense,
+  and schedule API routes, so the computed result is cached and NOT recomputed on cold requests.
+- Add a REVALIDATE constant in config/constants.ts (default 3600 = 1h) so freshness is tunable;
+  keep schedule on ~1h too. (Data still updates on its own each revalidate window.)
+- Keep the existing graceful fallback (stale/CSV) and 8s timeouts intact — don't remove them.
+
+Verify (cheap):
+1. npm run build clean; confirm NO `cache:'no-store'` remains on ESPN calls and the aggregation
+   is wrapped in a persisted cache (unstable_cache and/or route revalidate).
+2. curl the defense endpoint twice — second response is fast (served from cache), not a full
+   re-aggregation. Note the REVALIDATE value used.
+List files changed and results.

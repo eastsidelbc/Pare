@@ -15,6 +15,10 @@ export const APP_CONSTANTS = {
     PRODUCTION_MAX_AGE: 6 * 60 * 60 * 1000, // 6 hours in milliseconds
     DEBUG_MAX_AGE: 10 * 1000, // 10 seconds for debugging
     STALE_THRESHOLD: 24 * 60 * 60 * 1000, // 24 hours before cache is considered stale
+    /** Next.js Data Cache / unstable_cache revalidation window (seconds).
+     *  Controls how long Vercel persists ESPN fetch results and computed
+     *  aggregations across serverless invocations. Tunable in one place. */
+    REVALIDATE_SECONDS: 3600, // 1 hour
   },
 
   // API endpoints
