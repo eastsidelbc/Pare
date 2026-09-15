@@ -282,3 +282,10 @@ select:focus-visible,
 @media (prefers-reduced-motion: reduce) {
   .skeleton::after { animation: none; }
 }
+
+/* Header usage-ticker: slide the duplicated track by exactly one copy so the
+   loop is seamless (CSS handles the wrap with no reset jump). */
+@keyframes ticker-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}

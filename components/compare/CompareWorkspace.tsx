@@ -14,6 +14,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import CompareTicker from './CompareTicker';
 import { motion, useMotionValue, animate, type PanInfo } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -301,12 +302,7 @@ export default function CompareWorkspace() {
           >
             <ChevronLeft size={22} />
           </Link>
-          <h1
-            className="text-center font-black tracking-tight"
-            style={{ fontSize: '15px', color: 'var(--text)' }}
-          >
-            Compare
-          </h1>
+          <CompareTicker />
           {/* Right spacer keeps the title centered — the "+" now lives on the
               tab row (far right) per the new create flow. */}
           <div />
