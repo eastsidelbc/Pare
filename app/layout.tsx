@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ComparisonsProvider } from "@/components/ComparisonsProvider";
 import BottomNav from "@/components/BottomNav";
+import { ScheduleProvider } from "@/components/schedule/ScheduleProvider";
+import { getCurrentWeekInfo, getCurrentWeekMatchups } from "@/lib/schedule";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -63,13 +65,22 @@ export const viewport: Viewport = {
   minimumScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   // Gate SW registration using public env var evaluated at build time
   const enableSW = process.env.NEXT_PUBLIC_ENABLE_SW === 'true';
+
+  // Fetch the current week + its games server-side, and seed the persistent
+  // ScheduleProvider. Living in the (never-unmounting) layout is what makes
+  // the schedule survive Home↔Compare navigation without a refetch.
+  const [{ week: currentNflWeek }, initialMatchups] = await Promise.all([
+    getCurrentWeekInfo(),
+    getCurrentWeekMatchups(),
+  ]);
+  const initialWeek = initialMatchups[0]?.week ?? currentNflWeek;
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
@@ -117,10 +128,16 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased overflow-x-hidden">
         <ComparisonsProvider>
-          {children}
-          {/* Single persistent footer — rendered once, outside every route and
-              outside the compare swipe container, so it never re-mounts. */}
-          <BottomNav />
+          <ScheduleProvider
+            initialWeek={initialWeek}
+            initialMatchups={initialMatchups}
+            currentNflWeek={currentNflWeek}
+          >
+            {children}
+            {/* Single persistent footer — rendered once, outside every route and
+                outside the compare swipe container, so it never re-mounts. */}
+            <BottomNav />
+          </ScheduleProvider>
         </ComparisonsProvider>
       </body>
     </html>
