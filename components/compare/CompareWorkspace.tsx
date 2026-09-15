@@ -292,7 +292,7 @@ export default function CompareWorkspace() {
           borderColor: 'var(--border)',
         }}
       >
-        <div className="mx-auto grid h-14 w-full max-w-[600px] grid-cols-[44px_1fr_44px] items-center px-2">
+        <div className="mx-auto grid h-12 w-full max-w-[600px] grid-cols-[44px_1fr_44px] items-center px-2">
           <Link
             href="/"
             aria-label="Back to schedule"
@@ -303,7 +303,7 @@ export default function CompareWorkspace() {
           </Link>
           <h1
             className="text-center font-black tracking-tight"
-            style={{ fontSize: '18px', color: 'var(--text)' }}
+            style={{ fontSize: '15px', color: 'var(--text)' }}
           >
             Compare
           </h1>

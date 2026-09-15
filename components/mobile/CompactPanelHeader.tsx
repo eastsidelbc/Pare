@@ -62,7 +62,7 @@ export default function CompactPanelHeader({
           className="flex items-center justify-center transition-opacity active:opacity-50 touch-optimized"
           aria-label={`Change ${teamA}`}
         >
-          <TeamLogo teamName={teamA} size="40" />
+          <TeamLogo teamName={teamA} size="44" />
         </button>
         
         {/* Center Section — always perfectly centered between equal-width columns */}
@@ -108,7 +108,7 @@ export default function CompactPanelHeader({
           className="flex items-center justify-center transition-opacity active:opacity-50 touch-optimized"
           aria-label={`Change ${teamB}`}
         >
-          <TeamLogo teamName={teamB} size="40" />
+          <TeamLogo teamName={teamB} size="44" />
         </button>
       </div>
 

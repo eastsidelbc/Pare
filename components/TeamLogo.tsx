@@ -53,17 +53,18 @@ export default function TeamLogo({ teamName, size = "40" }: TeamLogoProps) {
   }
 
   if (logoFile) {
-    // Render actual team logo
+    // Render actual team logo — transparent background so it reads as a clean,
+    // seamless element on whatever surface it sits on.
     return (
-      <div 
-        className="flex items-center justify-center rounded-lg bg-slate-900/90"
+      <div
+        className="flex items-center justify-center"
         style={{ width: `${sizeNum}px`, height: `${sizeNum}px` }}
       >
         <Image
           src={`/images/nfl-logos/${logoFile}`}
           alt={`${teamName} logo`}
-          width={sizeNum - 4}
-          height={sizeNum - 4}
+          width={sizeNum}
+          height={sizeNum}
           className="object-contain"
           sizes={`(max-width: 768px) ${Math.min(sizeNum, 60)}px, ${sizeNum}px`}
           priority={sizeNum >= 60}
@@ -72,11 +73,15 @@ export default function TeamLogo({ teamName, size = "40" }: TeamLogoProps) {
       </div>
     );
   } else {
-    // Render placeholder for teams without logos
+    // Render initials placeholder — subtle border so it's recognisable as a slot.
     return (
-      <div 
-        className="flex items-center justify-center rounded-lg bg-slate-900/90 text-slate-300"
-        style={{ width: `${sizeNum}px`, height: `${sizeNum}px` }}
+      <div
+        className="flex items-center justify-center rounded-lg text-slate-400"
+        style={{
+          width: `${sizeNum}px`,
+          height: `${sizeNum}px`,
+          border: '1px solid var(--border)',
+        }}
       >
         <div className="text-xs font-bold text-center leading-tight">
           {teamName.split(' ').map(word => word.charAt(0)).join('').slice(0, 3)}

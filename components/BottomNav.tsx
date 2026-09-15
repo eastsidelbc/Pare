@@ -43,7 +43,7 @@ export default function BottomNav() {
     >
       <nav
         aria-label="Primary"
-        className="pointer-events-auto flex items-center gap-1 rounded-full p-1.5"
+        className="pointer-events-auto flex items-center gap-1 rounded-full p-1"
         style={{
           height: 'var(--nav-pill-h)',
           background: 'color-mix(in srgb, var(--surface) 88%, transparent)',
@@ -63,7 +63,7 @@ export default function BottomNav() {
               href={item.href}
               aria-label={item.label}
               aria-current={active ? 'page' : undefined}
-              className="flex h-full items-center gap-2 rounded-full px-4 touch-optimized transition-colors active:opacity-70"
+              className="flex h-full items-center gap-2 rounded-full px-3 touch-optimized transition-colors active:opacity-70"
               style={{ background: active ? 'rgba(245,200,66,0.15)' : 'transparent' }}
             >
               <Icon size={19} style={{ color }} strokeWidth={active ? 2.4 : 2} />

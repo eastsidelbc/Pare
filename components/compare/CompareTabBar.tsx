@@ -49,7 +49,7 @@ export default function CompareTabBar({
 
   return (
     <div
-      className="flex-none flex items-center gap-1.5 overflow-x-auto px-2 py-1.5 no-scrollbar"
+      className="flex-none flex items-center gap-1.5 overflow-x-auto px-2 py-1 no-scrollbar"
       style={{ background: 'var(--card)', borderBottom: '1px solid var(--border)' }}
       role="tablist"
       aria-label="Comparisons"
