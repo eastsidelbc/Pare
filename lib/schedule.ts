@@ -124,6 +124,33 @@ function toMatchup(raw: RawMatchup, week: number): Matchup | null {
 export const MIN_WEEK = 1;
 export const MAX_WEEK = 18;
 
+/**
+ * Static regular-season week date ranges (game span, Central time), shown under
+ * each week in the dropdown. Baked from the 2026 ESPN schedule so the dropdown
+ * needs no per-week fetch. Week 18 is a single placeholder day until the NFL
+ * sets its exact dates.
+ */
+export const WEEK_DATE_RANGES: Readonly<Record<number, string>> = {
+  1: '9/9 – 9/14',
+  2: '9/17 – 9/21',
+  3: '9/24 – 9/28',
+  4: '10/1 – 10/5',
+  5: '10/8 – 10/12',
+  6: '10/15 – 10/19',
+  7: '10/22 – 10/26',
+  8: '10/29 – 11/2',
+  9: '11/5 – 11/9',
+  10: '11/12 – 11/16',
+  11: '11/19 – 11/23',
+  12: '11/25 – 11/30',
+  13: '12/3 – 12/7',
+  14: '12/10 – 12/14',
+  15: '12/17 – 12/21',
+  16: '12/24 – 12/28',
+  17: '12/31 – 1/4',
+  18: '1/9',
+};
+
 /** Build the hardcoded fallback week as `Matchup[]`. */
 function getFallbackMatchups(): Matchup[] {
   return FALLBACK_WEEK.map((raw) => toMatchup(raw, CURRENT_WEEK))

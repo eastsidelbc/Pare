@@ -15,7 +15,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
-import { MIN_WEEK, MAX_WEEK } from '@/lib/schedule';
+import { MIN_WEEK, MAX_WEEK, WEEK_DATE_RANGES } from '@/lib/schedule';
 
 interface WeekControlProps {
   activeWeek: number;
@@ -96,7 +96,7 @@ export default function WeekControl({ activeWeek, onStep, onJump }: WeekControlP
           className="absolute right-0 z-50 overflow-y-auto"
           style={{
             top: 'calc(100% + 6px)',
-            width: 132,
+            width: 150,
             maxHeight: 264,
             background: 'var(--surface)',
             border: '1px solid var(--border)',
@@ -116,14 +116,20 @@ export default function WeekControl({ activeWeek, onStep, onJump }: WeekControlP
                 role="option"
                 aria-selected={isActive}
                 onClick={() => pick(w)}
-                className="flex w-full items-center rounded-md px-3 py-2 text-left font-semibold tabular-nums touch-optimized active:opacity-70"
-                style={{
-                  fontSize: '13px',
-                  color: isActive ? 'var(--gold)' : 'var(--text)',
-                  background: isActive ? 'rgba(212,168,67,0.14)' : 'transparent',
-                }}
+                className="flex w-full flex-col items-start gap-0.5 rounded-md px-3 py-2 text-left touch-optimized active:opacity-70"
+                style={{ background: isActive ? 'rgba(212,168,67,0.14)' : 'transparent' }}
               >
-                Week {w}
+                <span
+                  className="font-semibold tabular-nums"
+                  style={{ fontSize: '13px', color: isActive ? 'var(--gold)' : 'var(--text)' }}
+                >
+                  Week {w}
+                </span>
+                {WEEK_DATE_RANGES[w] && (
+                  <span className="tabular-nums" style={{ fontSize: '9px', color: 'var(--muted)' }}>
+                    {WEEK_DATE_RANGES[w]}
+                  </span>
+                )}
               </button>
             );
           })}
