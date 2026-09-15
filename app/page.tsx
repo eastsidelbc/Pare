@@ -24,8 +24,13 @@ export default async function Home() {
   const week = initialMatchups[0]?.week ?? currentWeek;
 
   return (
-    <div className="flex flex-col" style={{ minHeight: '100dvh', background: 'var(--bg)' }}>
-      {/* Top bar */}
+    /* Fixed-height shell: header stays put; only main content scrolls.
+       overflow:hidden clips anything that escapes (shouldn't happen). */
+    <div
+      className="flex flex-col overflow-hidden"
+      style={{ height: '100dvh', background: 'var(--bg)' }}
+    >
+      {/* Top bar — flex-none keeps it out of the scroll flow. */}
       <header
         className="flex-none border-b"
         style={{ background: 'var(--surface)', borderColor: 'var(--border)', paddingTop: 'env(safe-area-inset-top)' }}
@@ -44,12 +49,21 @@ export default async function Home() {
         </div>
       </header>
 
-      {/* Content — bottom padding clears the persistent app BottomNav. */}
+      {/* Scroll region — the ONLY part of the home screen that scrolls.
+          min-h-0 is required for overflow-y:auto to work inside a flex column.
+          touch-action:pan-y lets the browser own vertical swipes natively.
+          overscroll:contain stops scroll chaining to the document (no bounce). */}
       <main
-        className="mx-auto w-full max-w-[600px] flex-1 px-4 pt-4"
-        style={{ paddingBottom: 'calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px)' }}
+        className="flex-1 min-h-0 overflow-y-auto"
+        style={{
+          touchAction: 'pan-y',
+          overscrollBehavior: 'contain',
+          paddingBottom: 'calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px)',
+        }}
       >
-        <ScheduleBoard currentWeek={week} initialMatchups={initialMatchups} />
+        <div className="mx-auto w-full max-w-[600px] px-4 pt-4">
+          <ScheduleBoard currentWeek={week} initialMatchups={initialMatchups} />
+        </div>
       </main>
     </div>
   );

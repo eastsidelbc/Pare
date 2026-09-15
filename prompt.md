@@ -1,19 +1,40 @@
-BATCH 3 now (#1 from the audit) — data caching for Vercel/serverless. Preserve the existing
-fallback + timeout behavior and displayed values. Cheap verification only (no browser).
+# Pare — Global app-shell scroll: fixed chrome, only content scrolls
 
-- Remove `cache: 'no-store'` from the ESPN fetches in lib/espnStats.ts (scoreboard, standings,
-  summary, team stats). Use `fetch(url, { next: { revalidate: REVALIDATE } })` so Vercel's
-  Data Cache PERSISTS them across serverless invocations (this is the whole point).
-- Wrap the heavy defense aggregation (yards + third-down) in `unstable_cache` with a tag/key,
-  and/or set `export const revalidate = REVALIDATE` on the nfl-2025/offense, nfl-2025/defense,
-  and schedule API routes, so the computed result is cached and NOT recomputed on cold requests.
-- Add a REVALIDATE constant in config/constants.ts (default 3600 = 1h) so freshness is tunable;
-  keep schedule on ~1h too. (Data still updates on its own each revalidate window.)
-- Keep the existing graceful fallback (stale/CSV) and 8s timeouts intact — don't remove them.
+Layout/CSS fix, applied consistently across screens. Dark mode, mobile-first. Don't touch
+data/ranking. NO browser/screenshot verification — Kobe checks it.
 
-Verify (cheap):
-1. npm run build clean; confirm NO `cache:'no-store'` remains on ESPN calls and the aggregation
-   is wrapped in a persisted cache (unstable_cache and/or route revalidate).
-2. curl the defense endpoint twice — second response is fast (served from cache), not a full
-   re-aggregation. Note the REVALIDATE value used.
-List files changed and results.
+## Goal
+Make the app behave like a native shell: header and footer are FIXED; only the middle
+content scrolls. Fixes the current bug where the compare content (defense) is cut off and
+unreachable, and pulling down triggers a full-page refresh/bounce instead of scrolling.
+
+## Rules
+- App is a fixed-height column at 100dvh. The page/body itself does NOT scroll: set
+  `overflow: hidden` on the shell and `overscroll-behavior-y: none` on html/body to kill
+  browser pull-to-refresh/bounce.
+- FIXED header (title row + comparison-tabs pill on Compare; schedule header on Home) at top.
+- FIXED footer nav (the floating pill) at bottom.
+- The ONLY scrollable region is the content between them:
+  `flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+   -webkit-overflow-scrolling: touch;`
+  - On Compare: the offense/defense comparison cards. EACH compare tab/pane owns its own
+    vertical scroll container (so defense is reachable and scroll position is per-tab).
+  - On Home: the schedule list scrolls; its header + the footer stay fixed.
+- Add bottom padding to the scroll region equal to the floating footer height + safe-area
+  inset so the last card (defense) isn't hidden behind the footer; offset the top below the
+  fixed header.
+
+## Horizontal swipe vs vertical scroll (do NOT break the swipe)
+- The tab pager drags on the X axis only — use Framer Motion `drag="x"` with
+  `dragDirectionLock` (axis lock) so a mostly-vertical gesture scrolls the content and a
+  mostly-horizontal gesture swipes tabs.
+- Set `touch-action: pan-y` on the vertical scroll container so vertical scrolling is native
+  and smooth; the pager owns horizontal. Both gestures must work.
+
+## Verify (cheap only — no browser)
+1. npm run build clean.
+2. Confirm structurally: body/html not scrollable (overscroll-behavior none), a single
+   flex column with fixed header + footer, and one `overflow-y:auto` content region per
+   compare pane (and on Home). List the files/classes changed.
+Kobe will confirm on device: full defense reachable by scrolling, header/footer stay put,
+tab swipe still works, no page bounce/pull-to-refresh.

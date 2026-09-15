@@ -63,12 +63,18 @@ function MobileCompareLayout({
 
   // Shared body: skeleton while loading, else the two compact panels.
   const body = isLoading ? (
-    <div className="px-3 py-3 space-y-3">
+    <div
+      className="px-3 py-3 space-y-3"
+      style={{ paddingBottom: 'calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px)' }}
+    >
       <PanelSkeleton rows={offenseMetrics.length || 5} />
       <PanelSkeleton rows={defenseMetrics.length || 8} />
     </div>
   ) : (
-    <div className="px-3 py-3 space-y-3">
+    <div
+      className="px-3 py-3 space-y-3"
+      style={{ paddingBottom: 'calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px)' }}
+    >
       {/* Offense Panel */}
       <CompactPanel
         type="offense"
@@ -115,8 +121,16 @@ function MobileCompareLayout({
     >
       {/* Scrollable Content — flex-1 fills remaining space. The persistent app
           BottomNav lives at the shell level now; the workspace root reserves its
-          height so this content clears it. */}
-      <div className="flex-1 overflow-y-auto min-h-0">{body}</div>
+          height so this content clears it.
+          touch-action:pan-y lets the browser own vertical scroll; the pager's
+          dragDirectionLock owns horizontal. overscroll:contain prevents any
+          leftover scroll momentum from leaking to the document. */}
+      <div
+        className="flex-1 overflow-y-auto min-h-0"
+        style={{ touchAction: 'pan-y', overscrollBehavior: 'contain' }}
+      >
+        {body}
+      </div>
     </div>
   );
 }

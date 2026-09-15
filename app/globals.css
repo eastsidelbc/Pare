@@ -48,6 +48,15 @@ body {
   color: var(--text);
   font-size: 15px;
   -webkit-font-smoothing: antialiased;
+  /* Native-app shell: the page/document must NEVER scroll.
+     Content scrolls inside designated overflow-y:auto scroll regions.
+     Prevents browser pull-to-refresh and rubber-band bounce on iOS. */
+  overscroll-behavior-y: none;
+}
+
+/* Prevent the document body from scrolling — only inner scroll regions scroll. */
+body {
+  overflow: hidden;
 }
 
 /* Consistent, thin scrollbars (styleguide) */
@@ -64,9 +73,7 @@ body {
   }
   
   body {
-    /* Smooth scrolling for mobile */
-    -webkit-overflow-scrolling: touch;
-    overflow-x: hidden;
+    /* overflow:hidden set in the unlayered rule above; nothing to add here. */
   }
   
   /* Responsive typography using clamp() */

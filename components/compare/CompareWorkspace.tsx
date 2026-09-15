@@ -330,6 +330,7 @@ export default function CompareWorkspace() {
           className="flex h-full"
           style={{ x }}
           drag={canDrag ? 'x' : false}
+          dragDirectionLock
           dragConstraints={{ left: -(comparisons.length - 1) * width, right: 0 }}
           dragElastic={0.12}
           onDragEnd={handleDragEnd}
@@ -345,7 +346,13 @@ export default function CompareWorkspace() {
               <div
                 key={c.id}
                 className="shrink-0 h-full overflow-y-auto relative"
-                style={{ width: width || '100%' }}
+                style={{
+                  width: width || '100%',
+                  // pan-y: browser handles vertical scroll natively; pager owns x.
+                  // overscroll contain: prevents scroll chaining to the document.
+                  touchAction: 'pan-y',
+                  overscrollBehavior: 'contain',
+                }}
               >
                 {isWindowed ? (
                   <ComparePane
