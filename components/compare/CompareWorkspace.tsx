@@ -274,9 +274,10 @@ export default function CompareWorkspace() {
       className="flex flex-col overflow-hidden text-white"
       style={{
         height: '100dvh',
-        // Reserve space for the persistent app BottomNav (shell-level) so the
-        // pager/panels sit above it (border-box → padding shrinks inner height).
-        paddingBottom: 'calc(var(--nav-h) + env(safe-area-inset-bottom))',
+        // No bottom reserve here: the pager fills the full height so comparison
+        // cards scroll BEHIND the floating BottomNav (seamless, iOS-style). The
+        // inner scroll content keeps its own nav-height bottom padding, so the
+        // last card still clears the pill when scrolled to the end.
         background: 'var(--bg)',
       }}
     >

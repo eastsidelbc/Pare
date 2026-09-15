@@ -49,7 +49,7 @@ export default function CompareTabBar({
 
   return (
     <div
-      className="flex-none flex items-center gap-1.5 overflow-x-auto px-2 py-1 no-scrollbar"
+      className="flex-none flex items-center gap-1 overflow-x-auto px-2 py-0.5 no-scrollbar"
       style={{ background: 'var(--card)', borderBottom: '1px solid var(--border)' }}
       role="tablist"
       aria-label="Comparisons"
@@ -62,7 +62,7 @@ export default function CompareTabBar({
             role="tab"
             aria-selected={isActive}
             onClick={() => onSelect(c.id)}
-            className="group flex items-center gap-1 rounded-full pl-2.5 pr-1 py-1 text-[11px] font-semibold whitespace-nowrap cursor-pointer transition-colors select-none"
+            className="group flex items-center gap-1 rounded-full pl-2 pr-0.5 py-0.5 text-[10px] font-semibold whitespace-nowrap cursor-pointer transition-colors select-none"
             style={{
               background: isActive ? 'var(--gold)' : 'rgba(255,255,255,.05)',
               color: isActive ? '#0a0e1a' : 'var(--subtext)',
@@ -80,13 +80,13 @@ export default function CompareTabBar({
                 }}
                 className="grid place-items-center rounded-full transition-opacity hover:opacity-100"
                 style={{
-                  width: 16,
-                  height: 16,
+                  width: 14,
+                  height: 14,
                   opacity: 0.7,
                   color: isActive ? '#0a0e1a' : 'var(--subtext)',
                 }}
               >
-                <X size={11} strokeWidth={2.5} />
+                <X size={10} strokeWidth={2.5} />
               </button>
             )}
           </div>
@@ -102,8 +102,8 @@ export default function CompareTabBar({
           onClick={onAdd}
           className="flex-none ml-auto grid place-items-center rounded-full touch-optimized transition-opacity active:opacity-70"
           style={{
-            width: 34,
-            height: 34,
+            width: 28,
+            height: 28,
             background: canAdd ? 'rgba(245,200,66,0.15)' : 'rgba(255,255,255,.05)',
             border: `1px solid ${canAdd ? 'transparent' : 'var(--border)'}`,
             color: canAdd ? 'var(--gold)' : 'var(--muted)',
@@ -111,7 +111,7 @@ export default function CompareTabBar({
             cursor: canAdd ? 'pointer' : 'not-allowed',
           }}
         >
-          <Plus size={18} strokeWidth={2.5} />
+          <Plus size={16} strokeWidth={2.5} />
         </button>
       )}
     </div>

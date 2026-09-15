@@ -37,8 +37,8 @@
      inset, added on top). `--nav-pill-h` is the capsule height; `--nav-h` is the
      total footprint (capsule + floating gap) that scrolling content must reserve
      via `calc(var(--nav-h) + safe-area)` so nothing hides behind it. */
-  --nav-pill-h: 52px;  /* visual capsule height (touch-optimized ensures ≥44px tap area) */
-  --nav-h: 76px;
+  --nav-pill-h: 40px;  /* leaner capsule (was 52) */
+  --nav-h: 60px;
 }
 
 /* Base surface + typography — applied globally so every screen is on-system */

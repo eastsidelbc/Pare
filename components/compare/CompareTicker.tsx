@@ -33,7 +33,7 @@ export default function CompareTicker() {
 
   if (reduced) {
     return (
-      <div className="truncate px-1 text-center" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--gold)' }}>
+      <div className="truncate px-1 text-center" style={{ fontSize: '10px', fontWeight: 600, color: 'var(--gold)' }}>
         Tap logos to change teams · rank badges for info
       </div>
     );
@@ -41,7 +41,7 @@ export default function CompareTicker() {
 
   return (
     <div
-      className="relative h-4 overflow-hidden"
+      className="relative h-3.5 overflow-hidden"
       style={{ WebkitMaskImage: EDGE_FADE, maskImage: EDGE_FADE }}
     >
       <div
@@ -52,7 +52,7 @@ export default function CompareTicker() {
           // width and the shift no longer equals a copy, causing a jump.
           width: 'max-content',
           animation: `ticker-marquee ${DURATION_S}s linear infinite`,
-          fontSize: '11px',
+          fontSize: '10px',
           fontWeight: 600,
           color: 'var(--gold)',
         }}

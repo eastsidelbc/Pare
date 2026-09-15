@@ -63,11 +63,11 @@ export default function BottomNav() {
               href={item.href}
               aria-label={item.label}
               aria-current={active ? 'page' : undefined}
-              className="flex h-full items-center gap-2 rounded-full px-3 touch-optimized transition-colors active:opacity-70"
+              className="flex h-full items-center gap-1.5 rounded-full px-2.5 touch-optimized transition-colors active:opacity-70"
               style={{ background: active ? 'rgba(245,200,66,0.15)' : 'transparent' }}
             >
-              <Icon size={19} style={{ color }} strokeWidth={active ? 2.4 : 2} />
-              <span style={{ fontSize: '13px', fontWeight: active ? 700 : 500, color }}>
+              <Icon size={16} style={{ color }} strokeWidth={active ? 2.4 : 2} />
+              <span style={{ fontSize: '12px', fontWeight: active ? 700 : 500, color }}>
                 {item.label}
               </span>
             </Link>
