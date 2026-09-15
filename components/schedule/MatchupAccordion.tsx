@@ -20,6 +20,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { ArrowUpRight } from 'lucide-react';
 import MatchupCard from './MatchupCard';
+import PostGameBox from './PostGameBox';
 import ComparePane from '@/components/compare/ComparePane';
 import { useComparisons } from '@/components/ComparisonsProvider';
 import { DEFAULT_OFFENSE_METRICS, DEFAULT_DEFENSE_METRICS } from '@/lib/metricsConfig';
@@ -118,6 +119,8 @@ export default function MatchupAccordion({
               className="mt-2 overflow-hidden"
               style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', background: 'var(--card)' }}
             >
+              {matchup.state === 'post' && <PostGameBox matchup={matchup} />}
+
               <ComparePane
                 inline
                 isMobile

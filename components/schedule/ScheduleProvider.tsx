@@ -233,20 +233,20 @@ export function ScheduleProvider({
       const w = clampWeek(wRaw);
       const curMin = minRef.current;
       const curMax = maxRef.current;
+      // Label is NOT set here for in-window / adjacent jumps — the scroll handler
+      // updates it as the target scrolls into view (climbs in order, no flicker).
+      // Only a full reset (far jump, no scroll travel) sets it directly.
       if (w >= curMin && w <= curMax) {
-        setActiveWeek(w);
         setPendingScrollWeek(w);
         return;
       }
       if (w === curMin - 1) {
         prependWeek();
-        setActiveWeek(w);
         setPendingScrollWeek(w);
         return;
       }
       if (w === curMax + 1) {
         appendWeek();
-        setActiveWeek(w);
         setPendingScrollWeek(w);
         return;
       }

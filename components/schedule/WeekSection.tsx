@@ -5,10 +5,10 @@
  * week is in view), then the week's matchups grouped by day as accordion rows.
  * While a week is still loading it shows skeletons; an empty week shows a note.
  *
- * `content-visibility: auto` lets the browser skip rendering/layout for weeks
- * scrolled off-screen (cheap even deep in the season); `contain-intrinsic-size`
- * reserves space so the scrollbar/position stays stable. Memoized so scrolling
- * and the header label updating never re-render a week that didn't change.
+ * Only a small window of weeks is mounted at a time (see ScheduleProvider), so
+ * each mounted week lays out at its real height — that keeps jump/scroll targets
+ * exact. Memoized so scrolling and the header label updating never re-render a
+ * week that didn't change.
  */
 
 'use client';
@@ -102,11 +102,6 @@ function WeekSectionImpl({
       ref={(el) => registerSection(entry.week, el)}
       data-week={entry.week}
       className="pt-2"
-      style={{
-        // Skip off-screen rendering cost; remember size once measured.
-        contentVisibility: 'auto',
-        containIntrinsicSize: 'auto 1100px',
-      }}
     >
       <WeekDivider week={entry.week} />
 

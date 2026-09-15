@@ -55,6 +55,8 @@ export interface Matchup {
   winner: 'away' | 'home' | null;
   /** Pre-game betting line, else `null`. */
   odds: MatchupOdds | null;
+  /** ESPN event id, for the post-game box-score lookup. `null` for fallback games. */
+  espnEventId: string | null;
 }
 
 /** Raw, source-agnostic matchup shape. This is what a real feed would provide. */
@@ -117,6 +119,7 @@ function toMatchup(raw: RawMatchup, week: number): Matchup | null {
     homeScore: null,
     winner: null,
     odds: null,
+    espnEventId: null,
   };
 }
 

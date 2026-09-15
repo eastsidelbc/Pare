@@ -45,6 +45,7 @@ interface EspnCompetition {
   odds?: EspnOdds[];
 }
 interface EspnEvent {
+  id?: string;
   date?: string;
   competitions?: EspnCompetition[];
 }
@@ -147,6 +148,7 @@ export function mapEspnScoreboard(data: EspnScoreboard, fallbackWeek = 1): Match
       homeScore,
       winner,
       odds,
+      espnEventId: event.id ?? null,
     });
   }
 

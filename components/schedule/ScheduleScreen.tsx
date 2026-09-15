@@ -65,6 +65,18 @@ export default function ScheduleScreen() {
   const anchorRef = useRef<{ h: number; t: number } | null>(null);
   const prevMinRef = useRef(min);
 
+  // While a jump is animating, the edge auto-loader is paused so a prepend +
+  // anchor can't hijack the scroll and cancel it. Released shortly after
+  // scrolling settles.
+  const jumpingRef = useRef(false);
+  const jumpEndTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const endJumpSoon = useCallback((delay: number) => {
+    if (jumpEndTimer.current) clearTimeout(jumpEndTimer.current);
+    jumpEndTimer.current = setTimeout(() => {
+      jumpingRef.current = false;
+    }, delay);
+  }, []);
+
   // Live scores — polls the current NFL week while any loaded game is live,
   // and merges by id into the window. Free (direct to ESPN, browser-side).
   useLiveScores(currentNflWeek, allMatchups, patchLiveMatchups);
@@ -91,16 +103,38 @@ export default function ScheduleScreen() {
     prevMinRef.current = min;
   }, [min]);
 
-  // Scroll to a week the user jumped to, once it's loaded + rendered.
+  // Jump (arrows / dropdown) → smooth-scroll to the target. Retries across a few
+  // frames until the section is mounted, then ALWAYS clears the request (so
+  // re-picking the same week fires again, and it never gets stuck). `jumpingRef`
+  // pauses the edge-loader for the scroll so it can't interrupt the jump. The
+  // label isn't touched here — the scroll handler updates it as it travels.
   useEffect(() => {
     if (pendingScrollWeek == null) return;
-    const node = sectionEls.current.get(pendingScrollWeek);
-    const entry = weeks[pendingScrollWeek];
-    if (node && entry && entry.status !== 'loading') {
-      node.scrollIntoView({ block: 'start', behavior: 'smooth' });
-      clearPendingScroll();
-    }
-  }, [pendingScrollWeek, weeks, clearPendingScroll]);
+    let tries = 0;
+    let raf = 0;
+    const attempt = () => {
+      const node = sectionEls.current.get(pendingScrollWeek);
+      if (node) {
+        jumpingRef.current = true;
+        node.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        endJumpSoon(700); // fallback release if the scroll fires no events
+        clearPendingScroll();
+      } else if (tries++ < 20) {
+        raf = requestAnimationFrame(attempt); // wait for the section to mount
+      } else {
+        clearPendingScroll(); // give up cleanly — never leave it stuck
+      }
+    };
+    attempt();
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [pendingScrollWeek, clearPendingScroll, endJumpSoon]);
+
+  // Release the jump timer on unmount.
+  useEffect(() => () => {
+    if (jumpEndTimer.current) clearTimeout(jumpEndTimer.current);
+  }, []);
 
   const onScroll = useCallback(() => {
     if (tickingRef.current) return;
@@ -125,6 +159,13 @@ export default function ScheduleScreen() {
       }
       if (active != null && active !== activeWeekRef.current) setActiveWeek(active);
 
+      // While a jump is animating, pause edge-loading so a prepend/anchor can't
+      // hijack the scroll; keep pushing the release out until scrolling settles.
+      if (jumpingRef.current) {
+        endJumpSoon(150);
+        return;
+      }
+
       // 3) Edge → lazy-load neighbor weeks (both self-guard against re-entry).
       if (el.scrollTop < EDGE_PX) {
         anchorRef.current = { h: el.scrollHeight, t: el.scrollTop };
@@ -134,7 +175,7 @@ export default function ScheduleScreen() {
         appendWeek();
       }
     });
-  }, [orderedWeeks, scrollTopRef, setActiveWeek, prependWeek, appendWeek]);
+  }, [orderedWeeks, scrollTopRef, setActiveWeek, prependWeek, appendWeek, endJumpSoon]);
 
   let idxBase = 0;
 
