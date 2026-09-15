@@ -48,19 +48,16 @@ export default function CompactTeamSelector({
     middleware: [
       offset(8),
       flip({
-        fallbackPlacements: ['bottom-start', 'top-start', 'right-start', 'left-start'],  // Phase 2C: Robust fallbacks
+        fallbackPlacements: ['top'],  // vertical only — never place sideways off a narrow screen
         padding: 12
       }),
       shift({
         padding: 12
       }),
-      size({  // Phase 2C: Dynamic sizing based on available space
+      size({  // constrain HEIGHT to available space (width is set up-front below)
         apply({ availableHeight, elements }) {
           const maxH = Math.min(420, Math.max(280, availableHeight - 16));
-          Object.assign(elements.floating.style, {
-            maxHeight: `${maxH}px`,
-            width: 'min(300px, calc(100vw - 24px))'
-          });
+          elements.floating.style.maxHeight = `${maxH}px`;
         }
       }),
       inline()  // Phase 2C: Better inline element positioning
@@ -136,6 +133,10 @@ export default function CompactTeamSelector({
                   position: floatingStrategy,  // Phase 2E: Direct positioning
                   top: y ?? 0,
                   left: x ?? 0,
+                  // Clamp width UP FRONT so Floating UI measures the real width
+                  // before shift/flip run — otherwise it positions a too-wide box
+                  // then shrinks it, leaving it off-screen on narrow phones.
+                  width: 'min(300px, calc(100vw - 24px))',
                   opacity: (x != null && y != null) ? 1 : 0  // Phase 2F: Hide first-frame flash
                 }}
                 {...getFloatingProps()}
