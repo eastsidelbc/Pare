@@ -168,6 +168,52 @@ async function fetchScoreboard(url: string): Promise<EspnScoreboard> {
   return (await res.json()) as EspnScoreboard;
 }
 
+// ── Closing odds for FINISHED games ────────────────────────────────────────
+// ESPN drops the betting line from the scoreboard feed once a game is final, so
+// past games arrive with `odds: null`. The dedicated per-event odds endpoint
+// still has the closing line, and a final game's line never changes — so we
+// fetch it once and cache it hard (30d), then attach it to completed matchups.
+
+interface EspnOddsItem {
+  details?: string;
+  overUnder?: number;
+}
+interface EspnOddsResponse {
+  items?: EspnOddsItem[];
+}
+
+const ONE_MONTH_SECONDS = 30 * 24 * 60 * 60;
+
+async function fetchClosingOdds(eventId: string): Promise<MatchupOdds | null> {
+  const url = `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/events/${eventId}/competitions/${eventId}/odds`;
+  try {
+    const res = await fetch(url, { next: { revalidate: ONE_MONTH_SECONDS } });
+    if (!res.ok) throw new Error(`odds HTTP ${res.status}`);
+    const data = (await res.json()) as EspnOddsResponse;
+    const o = data.items?.[0];
+    if (!o?.details) return null;
+    return { spread: o.details, overUnder: o.overUnder ?? null };
+  } catch {
+    return null; // best-effort — the card just omits the line
+  }
+}
+
+/** Attach the closing line to completed games missing odds (parallel + cached). */
+async function attachClosingOdds(matchups: Matchup[]): Promise<Matchup[]> {
+  const needs = matchups.filter((m) => m.state === 'post' && m.espnEventId && !m.odds);
+  if (needs.length === 0) return matchups;
+
+  const byId = new Map<string, MatchupOdds | null>();
+  await Promise.all(
+    needs.map(async (m) => byId.set(m.espnEventId!, await fetchClosingOdds(m.espnEventId!))),
+  );
+
+  return matchups.map((m) => {
+    const o = m.espnEventId ? byId.get(m.espnEventId) : undefined;
+    return o ? { ...m, odds: o } : m;
+  });
+}
+
 /**
  * Current week + season, detected from ESPN's default scoreboard (never
  * hardcoded). Falls back to {@link CURRENT_WEEK} / this year on failure.
@@ -196,7 +242,7 @@ export async function getMatchupsForWeek(week: number): Promise<Matchup[]> {
   const url = `${ESPN_SCOREBOARD_URL}?seasontype=2&week=${clamped}`;
   try {
     const data = await fetchScoreboard(url);
-    return mapEspnScoreboard(data, clamped);
+    return attachClosingOdds(mapEspnScoreboard(data, clamped));
   } catch (err) {
     console.error(`❌ [schedule] Week ${clamped} fetch failed:`, err);
     return [];
@@ -216,7 +262,7 @@ export async function getCurrentWeekMatchups(): Promise<Matchup[]> {
     const matchups = mapEspnScoreboard(data, CURRENT_WEEK);
     if (matchups.length === 0) throw new Error('ESPN scoreboard returned no usable games');
 
-    return matchups;
+    return attachClosingOdds(matchups);
   } catch (err) {
     console.error('❌ [schedule] Live schedule fetch failed — using fallback week:', err);
     return getFallbackMatchups();

@@ -11,11 +11,13 @@
 
 import { getAllLeaderboards, type LeaderSection } from '@/lib/leaders';
 import LeaderCard from '@/components/leaderboards/LeaderCard';
+import FantasyBoards from '@/components/leaderboards/FantasyBoards';
 
 // Re-fetch (and re-render) on the same ~6h cadence as the underlying board fetch.
 export const revalidate = 21600;
 
 const SECTIONS: { key: LeaderSection; label: string }[] = [
+  { key: 'fantasy', label: 'Fantasy (PPR)' },
   { key: 'offense', label: 'Offense' },
   { key: 'defense', label: 'Defense' },
   { key: 'special', label: 'Special Teams' },
@@ -57,6 +59,10 @@ export default async function LeaderboardsPage() {
           {SECTIONS.map(({ key, label }) => {
             const sectionBoards = boards.filter((b) => b.section === key);
             if (sectionBoards.length === 0) return null;
+            // Fantasy renders through a client component that owns the Total|PPG toggle.
+            if (key === 'fantasy') {
+              return <FantasyBoards key={key} boards={sectionBoards} label={label} />;
+            }
             return (
               <section key={key}>
                 <SectionLabel>{label}</SectionLabel>

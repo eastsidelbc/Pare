@@ -13,6 +13,7 @@
  * also hands us the player's league rank for free.
  */
 import 'server-only';
+import { getFantasyBoards } from './fantasy';
 
 /** Public ESPN per-athlete statistics endpoint (free, no key). */
 const ESPN_BYATHLETE_URL =
@@ -24,7 +25,7 @@ const REVALIDATE_SECONDS = 6 * 60 * 60;
 /** How many leaders to keep per board (UI shows top N, expand shows the rest). */
 const BOARD_LIMIT = 25;
 
-export type LeaderSection = 'offense' | 'defense' | 'special';
+export type LeaderSection = 'offense' | 'defense' | 'special' | 'fantasy';
 
 /** A single board's identity + how to pull it from ESPN. */
 export interface BoardConfig {
@@ -53,6 +54,9 @@ export interface LeaderRow {
   value: number;
   /** ESPN's display string, e.g. "939", "55.6", "8.0". */
   displayValue: string;
+  /** Fantasy boards only: the total-points value's per-game counterpart + games. */
+  perGame?: number;
+  games?: number;
 }
 
 export interface LeaderBoard {
@@ -165,7 +169,11 @@ async function fetchBoard(board: BoardConfig): Promise<LeaderBoard> {
   }
 }
 
-/** All boards, fetched in parallel. Individual failures degrade to empty boards. */
+/** All boards (stat + fantasy), fetched in parallel. Failures degrade to empty boards. */
 export async function getAllLeaderboards(): Promise<LeaderBoard[]> {
-  return Promise.all(BOARDS.map(fetchBoard));
+  const [statBoards, fantasyBoards] = await Promise.all([
+    Promise.all(BOARDS.map(fetchBoard)),
+    getFantasyBoards(),
+  ]);
+  return [...statBoards, ...fantasyBoards];
 }

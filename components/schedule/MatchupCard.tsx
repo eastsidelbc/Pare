@@ -116,12 +116,22 @@ export default function MatchupCard({ matchup, isOpen = false, onToggle }: Match
       {/* Center — status-driven */}
       <div className="flex flex-none flex-col items-center px-1" style={{ minWidth: 54 }}>
         {state === 'post' ? (
-          <span
-            className="font-bold leading-none"
-            style={{ fontSize: '10px', letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--gold)' }}
-          >
-            Final
-          </span>
+          <>
+            <span
+              className="font-bold leading-none"
+              style={{ fontSize: '10px', letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--gold)' }}
+            >
+              Final
+            </span>
+            {line && (
+              <span
+                className="mt-1 whitespace-nowrap font-medium leading-none"
+                style={{ fontSize: '9px', color: 'var(--muted)' }}
+              >
+                {line}
+              </span>
+            )}
+          </>
         ) : state === 'in' ? (
           <span
             className="font-bold leading-none text-center"

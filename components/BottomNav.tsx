@@ -5,19 +5,22 @@
  * Mounted ONCE in the root layout (outside every page/route and outside the
  * compare swipe container), so it never unmounts, re-animates, or "switches"
  * when navigating or swiping comparison tabs. Active state is derived purely
- * from the pathname, so switching tabs only moves the highlight.
+ * from the pathname.
+ *
+ * The gold active-highlight is a single shared element (framer-motion
+ * `layoutId`), so on each route change it SLIDES from the old tab to the new one
+ * instead of blinking on/off — a smooth spring across Home / Compare / Leaders.
  *
  * A centered, rounded capsule floating just above the bottom edge, iOS
  * safe-area aware. The full-width outer wrapper is click-through
- * (`pointer-events-none`) so only the capsule captures taps. Scrollable content
- * reserves `calc(var(--nav-h) + env(safe-area-inset-bottom))` so nothing hides
- * behind it. Supersedes the old per-page MobileBottomBar (now removed).
+ * (`pointer-events-none`) so only the capsule captures taps.
  */
 
 'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { CalendarDays, GitCompareArrows, Trophy, type LucideIcon } from 'lucide-react';
 
 interface NavItem {
@@ -64,11 +67,32 @@ export default function BottomNav() {
               href={item.href}
               aria-label={item.label}
               aria-current={active ? 'page' : undefined}
-              className="flex h-full items-center gap-1.5 rounded-full px-2.5 touch-optimized transition-colors active:opacity-70"
-              style={{ background: active ? 'rgba(245,200,66,0.15)' : 'transparent' }}
+              className="relative flex h-full items-center gap-1.5 rounded-full px-2.5 touch-optimized active:opacity-70"
             >
-              <Icon size={16} style={{ color }} strokeWidth={active ? 2.4 : 2} />
-              <span style={{ fontSize: '12px', fontWeight: active ? 700 : 500, color }}>
+              {/* Sliding gold highlight — one shared element that glides between tabs. */}
+              {active && (
+                <motion.span
+                  layoutId="nav-active-pill"
+                  className="absolute inset-0 rounded-full"
+                  style={{ background: 'rgba(245,200,66,0.15)' }}
+                  transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                />
+              )}
+              <Icon
+                size={16}
+                style={{ color, position: 'relative', zIndex: 1, transition: 'color .2s' }}
+                strokeWidth={active ? 2.4 : 2}
+              />
+              <span
+                style={{
+                  fontSize: '12px',
+                  fontWeight: active ? 700 : 500,
+                  color,
+                  position: 'relative',
+                  zIndex: 1,
+                  transition: 'color .2s',
+                }}
+              >
                 {item.label}
               </span>
             </Link>
