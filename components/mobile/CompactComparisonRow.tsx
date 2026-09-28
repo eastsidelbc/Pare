@@ -140,11 +140,11 @@ function CompactComparisonRow({
     <div className="relative">
       
       {/* LINE 1: Data + Ranks + Metric Name — 3-column grid, perfectly balanced */}
-      <div className="px-3 py-2 grid grid-cols-[1fr_auto_1fr] items-center gap-1">
+      <div className="px-3 py-1 grid grid-cols-[1fr_auto_1fr] items-center gap-1">
         
         {/* Team A: Value + Rank (left-aligned) */}
         <div className="flex items-baseline gap-1">
-          <span className="text-[15px] font-semibold text-white tabular-nums">
+          <span className="text-[13px] font-semibold text-white tabular-nums">
             {formattedA}
           </span>
           <CompactRankingDropdown
@@ -188,7 +188,7 @@ function CompactComparisonRow({
             } : null}
             position="right"
           />
-          <span className="text-[15px] font-semibold text-white tabular-nums">
+          <span className="text-[13px] font-semibold text-white tabular-nums">
             {formattedB}
           </span>
         </div>
@@ -198,9 +198,9 @@ function CompactComparisonRow({
       {/* LINE 2: theScore-style inward bars — proportional meeting point,
           animated into place, rounded outer ends. teamA% + teamB% ≈ 98 (2%
           reserved as the center gap), preserving the sacred bar math. */}
-      <div className="px-3 pb-2 pt-0.5">
+      <div className="px-3 pb-1.5 pt-0">
         {barsVisible ? (
-          <div className="flex h-[7px] w-full items-stretch">
+          <div className="flex h-[6px] w-full items-stretch">
             {/* Team A bar — grows inward from the left (green) */}
             <motion.div
               className="h-full rounded-l-full"
@@ -222,7 +222,7 @@ function CompactComparisonRow({
           </div>
         ) : (
           /* No live data for one/both sides — neutral track, no fake bars. */
-          <div className="h-[7px] w-full rounded-full bg-white/5" />
+          <div className="h-[6px] w-full rounded-full bg-white/5" />
         )}
       </div>
       

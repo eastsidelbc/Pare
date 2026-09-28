@@ -64,7 +64,7 @@ function MobileCompareLayout({
   // Shared body: skeleton while loading, else the two compact panels.
   const body = isLoading ? (
     <div
-      className="px-3 py-3 space-y-3"
+      className="px-3 py-2 space-y-2"
       style={{ paddingBottom: 'calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px)' }}
     >
       <PanelSkeleton rows={offenseMetrics.length || 5} />
@@ -72,7 +72,7 @@ function MobileCompareLayout({
     </div>
   ) : (
     <div
-      className="px-3 py-3 space-y-3"
+      className="px-3 py-2 space-y-2"
       style={{ paddingBottom: 'calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px)' }}
     >
       {/* Offense Panel */}
@@ -145,24 +145,24 @@ function PanelSkeleton({ rows }: { rows: number }) {
       style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
     >
       {/* Header */}
-      <div className="h-[70px] px-3 grid grid-cols-[44px_1fr_44px] items-center gap-2">
-        <div className="skeleton rounded-lg" style={{ width: 40, height: 40 }} />
-        <div className="flex flex-col items-center gap-1.5">
-          <div className="skeleton rounded" style={{ width: 56, height: 10 }} />
-          <div className="skeleton rounded" style={{ width: 40, height: 8 }} />
+      <div className="h-[50px] px-3 grid grid-cols-[36px_1fr_36px] items-center gap-2">
+        <div className="skeleton rounded-lg" style={{ width: 34, height: 34 }} />
+        <div className="flex flex-col items-center gap-1">
+          <div className="skeleton rounded" style={{ width: 52, height: 9 }} />
+          <div className="skeleton rounded" style={{ width: 36, height: 8 }} />
         </div>
-        <div className="skeleton justify-self-end rounded-lg" style={{ width: 40, height: 40 }} />
+        <div className="skeleton justify-self-end rounded-lg" style={{ width: 34, height: 34 }} />
       </div>
       {/* Rows */}
       <div className="divide-y divide-white/5">
         {Array.from({ length: rows }).map((_, i) => (
-          <div key={i} className="px-3 py-2">
+          <div key={i} className="px-3 py-1">
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1">
               <div className="skeleton rounded" style={{ width: 44, height: 14 }} />
               <div className="skeleton mx-auto rounded" style={{ width: 60, height: 8 }} />
               <div className="skeleton justify-self-end rounded" style={{ width: 44, height: 14 }} />
             </div>
-            <div className="skeleton mt-2 rounded-full" style={{ height: 6 }} />
+            <div className="skeleton mt-1 rounded-full" style={{ height: 6 }} />
           </div>
         ))}
       </div>

@@ -294,14 +294,14 @@ export default function CompareWorkspace() {
           borderColor: 'var(--border)',
         }}
       >
-        <div className="mx-auto grid h-12 w-full max-w-[600px] grid-cols-[44px_1fr_44px] items-center px-2">
+        <div className="mx-auto grid h-10 w-full max-w-[600px] grid-cols-[40px_1fr_40px] items-center px-2">
           <Link
             href="/"
             aria-label="Back to schedule"
-            className="flex h-11 w-11 items-center justify-center rounded-lg touch-optimized active:opacity-60"
+            className="flex h-9 w-9 items-center justify-center rounded-lg touch-optimized active:opacity-60"
             style={{ color: 'var(--text)' }}
           >
-            <ChevronLeft size={22} />
+            <ChevronLeft size={20} />
           </Link>
           <CompareTicker />
           {/* Right spacer keeps the title centered — the "+" now lives on the

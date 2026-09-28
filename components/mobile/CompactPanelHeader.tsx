@@ -54,7 +54,7 @@ export default function CompactPanelHeader({
   return (
     <>
       {/* 3-column grid: logo | center | logo — guarantees title is always pixel-perfect centered */}
-      <div className="h-[70px] px-3 grid grid-cols-[44px_1fr_44px] items-center gap-2">
+      <div className="h-[50px] px-3 grid grid-cols-[36px_1fr_36px] items-center gap-2">
         {/* Team A Logo - Tappable */}
         <button 
           ref={teamALogoRef}
@@ -62,7 +62,7 @@ export default function CompactPanelHeader({
           className="flex items-center justify-center transition-opacity active:opacity-50 touch-optimized"
           aria-label={`Change ${teamA}`}
         >
-          <TeamLogo teamName={teamA} size="44" />
+          <TeamLogo teamName={teamA} size="36" />
         </button>
         
         {/* Center Section — always perfectly centered between equal-width columns */}
@@ -108,7 +108,7 @@ export default function CompactPanelHeader({
           className="flex items-center justify-center transition-opacity active:opacity-50 touch-optimized"
           aria-label={`Change ${teamB}`}
         >
-          <TeamLogo teamName={teamB} size="44" />
+          <TeamLogo teamName={teamB} size="36" />
         </button>
       </div>
 

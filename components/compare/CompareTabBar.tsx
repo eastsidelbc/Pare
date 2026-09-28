@@ -100,10 +100,10 @@ export default function CompareTabBar({
           title={canAdd ? 'New comparison' : 'Max comparisons reached'}
           disabled={!canAdd}
           onClick={onAdd}
-          className="flex-none ml-auto grid place-items-center rounded-full touch-optimized transition-opacity active:opacity-70"
+          className="flex-none grid place-items-center rounded-full touch-optimized transition-opacity active:opacity-70"
           style={{
-            width: 28,
-            height: 28,
+            width: 20,
+            height: 20,
             background: canAdd ? 'rgba(245,200,66,0.15)' : 'rgba(255,255,255,.05)',
             border: `1px solid ${canAdd ? 'transparent' : 'var(--border)'}`,
             color: canAdd ? 'var(--gold)' : 'var(--muted)',
@@ -111,7 +111,7 @@ export default function CompareTabBar({
             cursor: canAdd ? 'pointer' : 'not-allowed',
           }}
         >
-          <Plus size={16} strokeWidth={2.5} />
+          <Plus size={13} strokeWidth={2.5} />
         </button>
       )}
     </div>
