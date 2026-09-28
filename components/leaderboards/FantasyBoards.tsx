@@ -44,8 +44,20 @@ export default function FantasyBoards({ boards, label }: { boards: LeaderBoard[]
 
   return (
     <section>
-      {/* Section header — label + embedded Total | PPG toggle */}
-      <div className="mb-3 flex items-center gap-3">
+      {/* Section header — label + embedded Total | PPG toggle.
+          Sticks to the top of the scroll area while the fantasy section is in
+          view (so the toggle is always reachable), then releases into the stat
+          sections. Glass blur so cards slide under it cleanly. */}
+      <div
+        className="sticky top-0 z-20 mb-3 flex items-center gap-3"
+        style={{
+          background: 'color-mix(in srgb, var(--bg) 86%, transparent)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          paddingTop: 8,
+          paddingBottom: 8,
+        }}
+      >
         <span
           className="font-black tracking-tight"
           style={{ fontSize: '13px', letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--gold)' }}
