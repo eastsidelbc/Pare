@@ -18,7 +18,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarDays, GitCompareArrows, type LucideIcon } from 'lucide-react';
+import { CalendarDays, GitCompareArrows, Trophy, type LucideIcon } from 'lucide-react';
 
 interface NavItem {
   href: string;
@@ -30,6 +30,7 @@ interface NavItem {
 const ITEMS: NavItem[] = [
   { href: '/', label: 'Home', icon: CalendarDays, isActive: (p) => p === '/' },
   { href: '/compare', label: 'Compare', icon: GitCompareArrows, isActive: (p) => p.startsWith('/compare') },
+  { href: '/leaderboards', label: 'Leaders', icon: Trophy, isActive: (p) => p.startsWith('/leaderboards') },
 ];
 
 export default function BottomNav() {

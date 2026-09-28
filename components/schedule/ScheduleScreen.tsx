@@ -61,6 +61,11 @@ export default function ScheduleScreen() {
   const activeWeekRef = useRef(activeWeek);
   activeWeekRef.current = activeWeek;
 
+  // Last scroll offset, to detect direction. The top edge-loader only fires
+  // when actually scrolling UP toward the top — never on the first downward
+  // touch from the resting seed, which used to yank in the previous week.
+  const lastScrollTopRef = useRef(0);
+
   // Prepend anchoring: captured ONLY on scroll-driven prepends.
   const anchorRef = useRef<{ h: number; t: number } | null>(null);
   const prevMinRef = useRef(min);
@@ -144,7 +149,10 @@ export default function ScheduleScreen() {
       const el = mainRef.current;
       if (!el) return;
 
-      // 1) Remember where we are (for restore across navigation).
+      // 1) Remember where we are (for restore across navigation) + direction.
+      const prevTop = lastScrollTopRef.current;
+      const scrollingUp = el.scrollTop < prevTop;
+      lastScrollTopRef.current = el.scrollTop;
       scrollTopRef.current = el.scrollTop;
 
       // 2) Which week is under the trigger line? (sections are ascending)
@@ -167,7 +175,7 @@ export default function ScheduleScreen() {
       }
 
       // 3) Edge → lazy-load neighbor weeks (both self-guard against re-entry).
-      if (el.scrollTop < EDGE_PX) {
+      if (scrollingUp && el.scrollTop < EDGE_PX) {
         anchorRef.current = { h: el.scrollHeight, t: el.scrollTop };
         prependWeek();
       }
