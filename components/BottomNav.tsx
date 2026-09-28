@@ -47,7 +47,7 @@ export default function BottomNav() {
     >
       <nav
         aria-label="Primary"
-        className="pointer-events-auto flex items-center gap-1 rounded-full p-1"
+        className="pointer-events-auto flex items-center gap-1 overflow-hidden rounded-full p-1"
         style={{
           height: 'var(--nav-pill-h)',
           background: 'color-mix(in srgb, var(--surface) 88%, transparent)',

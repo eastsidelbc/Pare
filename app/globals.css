@@ -147,14 +147,12 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
   
-  /* Improve touch targets in standalone mode */
-  button, 
-  [role="button"],
-  .touch-optimized {
-    min-height: 48px;
-    min-width: 48px;
-  }
-  
+  /* NOTE: no blanket button min-size here. A previous rule forced every
+     button/[role=button]/.touch-optimized to 48×48px in standalone, which
+     inflated small inline pills (the Total/PPG toggle, the week control) so the
+     installed app looked bloated vs. the browser. Components size their own
+     touch targets; standalone should match the web view. */
+
   /* Remove focus outlines in standalone (touch-first) */
   button:focus:not(:focus-visible),
   [role="button"]:focus:not(:focus-visible) {

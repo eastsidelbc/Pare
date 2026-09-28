@@ -27,7 +27,7 @@ export default async function LeaderboardsPage() {
   const boards = await getAllLeaderboards();
 
   return (
-    <div className="flex flex-col overflow-hidden" style={{ height: '100dvh', background: 'var(--bg)' }}>
+    <div className="flex flex-col overflow-hidden" style={{ height: 'var(--app-h, 100dvh)', background: 'var(--bg)' }}>
       {/* Fixed top bar — matches the schedule header. */}
       <header
         className="flex-none border-b"

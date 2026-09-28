@@ -188,7 +188,7 @@ export default function ScheduleScreen() {
   let idxBase = 0;
 
   return (
-    <div className="flex flex-col overflow-hidden" style={{ height: '100dvh', background: 'var(--bg)' }}>
+    <div className="flex flex-col overflow-hidden" style={{ height: 'var(--app-h, 100dvh)', background: 'var(--bg)' }}>
       {/* Fixed top bar — Pare (left) + week control (right, replaces season). */}
       <header
         className="flex-none border-b"

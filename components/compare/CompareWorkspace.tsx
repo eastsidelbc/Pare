@@ -273,7 +273,7 @@ export default function CompareWorkspace() {
     <div
       className="flex flex-col overflow-hidden text-white"
       style={{
-        height: '100dvh',
+        height: 'var(--app-h, 100dvh)',
         // No bottom reserve here: the pager fills the full height so comparison
         // cards scroll BEHIND the floating BottomNav (seamless, iOS-style). The
         // inner scroll content keeps its own nav-height bottom padding, so the

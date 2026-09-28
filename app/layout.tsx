@@ -91,6 +91,21 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Pare NFL" />
+        {/* Authoritative viewport height for standalone PWAs: iOS can report
+            100dvh taller than the real usable area, clipping the bottom of the
+            fixed app shell. Drive it from window.innerHeight instead. */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            (function () {
+              var setH = function () {
+                document.documentElement.style.setProperty('--app-h', window.innerHeight + 'px');
+              };
+              setH();
+              window.addEventListener('resize', setH);
+              window.addEventListener('orientationchange', setH);
+            })();
+          `,
+        }} />
         <script dangerouslySetInnerHTML={{
           __html: `
             // Register Service Worker for PWA functionality (gated by env flag)
