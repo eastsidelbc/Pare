@@ -2,7 +2,7 @@
   "name": "Pare: NFL Team Comparison",
   "short_name": "Pare NFL",
   "description": "Professional NFL team comparison with theScore-style visualizations and real-time 2025 stats",
-  "start_url": "/compare",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",

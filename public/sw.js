@@ -434,20 +434,6 @@ self.addEventListener('message', (event) => {
   }
 });
 
-// Navigation handling for SPAs in PWA mode
-self.addEventListener('navigate', (event) => {
-  console.log('🧭 [SW] Navigation request:', event.request.url);
-  
-  // For same-origin navigation, always serve the app shell
-  if (event.request.url.startsWith(self.location.origin)) {
-    event.respondWith(
-      fetch('/compare').catch(() => {
-        return caches.match('/compare');
-      })
-    );
-  }
-});
-
 // Push notifications for future features
 self.addEventListener('push', (event) => {
   if (event.data) {
