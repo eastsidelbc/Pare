@@ -60,7 +60,7 @@ export default async function LeaderboardsPage() {
             return (
               <section key={key}>
                 <SectionLabel>{label}</SectionLabel>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
                   {sectionBoards.map((board) => (
                     <LeaderCard key={board.key} board={board} />
                   ))}
