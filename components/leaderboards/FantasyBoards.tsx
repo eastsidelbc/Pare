@@ -67,7 +67,7 @@ export default function FantasyBoards({ boards, label }: { boards: LeaderBoard[]
         <span className="h-px flex-1" style={{ background: 'var(--border)' }} />
         <div
           className="flex items-center"
-          style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: 2 }}
+          style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: 3 }}
         >
           {(['total', 'ppg'] as const).map((m) => (
             <button
@@ -75,13 +75,13 @@ export default function FantasyBoards({ boards, label }: { boards: LeaderBoard[]
               type="button"
               onClick={() => setMode(m)}
               aria-pressed={mode === m}
-              className="touch-optimized px-2 py-0.5 active:opacity-70"
+              className="touch-optimized px-2.5 py-1 active:opacity-70"
               style={{
-                fontSize: '9px',
+                fontSize: '10px',
                 fontWeight: 700,
                 letterSpacing: '1px',
                 textTransform: 'uppercase',
-                borderRadius: 4,
+                borderRadius: 6,
                 background: mode === m ? 'rgba(212,168,67,0.15)' : 'transparent',
                 color: mode === m ? 'var(--gold)' : 'var(--muted)',
                 transition: 'color .15s, background .15s',
