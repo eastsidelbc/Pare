@@ -17,6 +17,8 @@ interface CompactPanelHeaderProps {
   type: 'offense' | 'defense';
   teamA: string;
   teamB: string;
+  teamARecord?: string | null;
+  teamBRecord?: string | null;
   displayMode: 'per-game' | 'total';
   onDisplayModeChange: (mode: 'per-game' | 'total') => void;
   activeTeamSelector: 'A' | 'B' | null;
@@ -31,6 +33,8 @@ export default function CompactPanelHeader({
   type,
   teamA,
   teamB,
+  teamARecord,
+  teamBRecord,
   displayMode,
   onDisplayModeChange,
   activeTeamSelector,
@@ -56,13 +60,18 @@ export default function CompactPanelHeader({
       {/* 3-column grid: logo | center | logo — guarantees title is always pixel-perfect centered */}
       <div className="h-[50px] px-3 grid grid-cols-[36px_1fr_36px] items-center gap-2">
         {/* Team A Logo - Tappable */}
-        <button 
+        <button
           ref={teamALogoRef}
           onClick={onTeamAClick}
-          className="flex items-center justify-center transition-opacity active:opacity-50 touch-optimized"
+          className="flex flex-col items-center justify-center gap-0.5 transition-opacity active:opacity-50 touch-optimized"
           aria-label={`Change ${teamA}`}
         >
           <TeamLogo teamName={teamA} size="36" />
+          {teamARecord && (
+            <span className="tabular-nums leading-none" style={{ fontSize: '9px', fontWeight: 600, color: 'var(--muted)' }}>
+              {teamARecord}
+            </span>
+          )}
         </button>
         
         {/* Center Section — always perfectly centered between equal-width columns */}
@@ -102,13 +111,18 @@ export default function CompactPanelHeader({
         </div>
         
         {/* Team B Logo - Tappable */}
-        <button 
+        <button
           ref={teamBLogoRef}
           onClick={onTeamBClick}
-          className="flex items-center justify-center transition-opacity active:opacity-50 touch-optimized"
+          className="flex flex-col items-center justify-center gap-0.5 transition-opacity active:opacity-50 touch-optimized"
           aria-label={`Change ${teamB}`}
         >
           <TeamLogo teamName={teamB} size="36" />
+          {teamBRecord && (
+            <span className="tabular-nums leading-none" style={{ fontSize: '9px', fontWeight: 600, color: 'var(--muted)' }}>
+              {teamBRecord}
+            </span>
+          )}
         </button>
       </div>
 

@@ -35,11 +35,13 @@ function TeamBlock({
   name,
   abbr,
   nickname,
+  record,
   align,
 }: {
   name: string;
   abbr: string;
   nickname: string;
+  record: string | null;
   align: 'left' | 'right';
 }) {
   const isRight = align === 'right';
@@ -58,6 +60,14 @@ function TeamBlock({
         <div className="truncate leading-tight" style={{ fontSize: '10px', color: 'var(--subtext)' }}>
           {nickname}
         </div>
+        {record && (
+          <div
+            className="truncate tabular-nums leading-tight"
+            style={{ fontSize: '10px', fontWeight: 600, color: 'var(--muted)' }}
+          >
+            {record}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -85,7 +95,7 @@ function oddsLine(odds: MatchupOdds | null): string | null {
 }
 
 export default function MatchupCard({ matchup, isOpen = false, onToggle }: MatchupCardProps) {
-  const { away, home, kickoff, state, statusDetail, awayScore, homeScore, winner, odds } = matchup;
+  const { away, home, kickoff, state, statusDetail, awayScore, homeScore, winner, odds, awayRecord, homeRecord } = matchup;
   const { day, time } = formatKickoff(kickoff);
 
   const showScores = state !== 'pre' && awayScore != null && homeScore != null;
@@ -107,7 +117,7 @@ export default function MatchupCard({ matchup, isOpen = false, onToggle }: Match
         padding: '10px 12px',
       }}
     >
-      <TeamBlock name={away.name} abbr={away.abbr} nickname={away.nickname} align="left" />
+      <TeamBlock name={away.name} abbr={away.abbr} nickname={away.nickname} record={awayRecord} align="left" />
 
       {showScores && (
         <Score value={awayScore!} highlight={winner === 'away'} dim={state === 'post' && winner === 'home'} />
@@ -169,7 +179,7 @@ export default function MatchupCard({ matchup, isOpen = false, onToggle }: Match
         <Score value={homeScore!} highlight={winner === 'home'} dim={state === 'post' && winner === 'away'} />
       )}
 
-      <TeamBlock name={home.name} abbr={home.abbr} nickname={home.nickname} align="right" />
+      <TeamBlock name={home.name} abbr={home.abbr} nickname={home.nickname} record={homeRecord} align="right" />
 
       <motion.span
         className="flex-none"

@@ -257,6 +257,10 @@ export async function fetchDefenseStatsFromESPN(): Promise<ParseResult> {
           row.points = String(pointsAgainst);
         }
         row.g = String(games);
+        // Overall W-L(-T) record (e.g. "3-0" / "2-1-1") — surfaced in the UI
+        // under each selected team. Not a metric, so it never renders as a
+        // comparison row; it just rides along on the team row.
+        row.record = `${wins}-${losses}${ties > 0 ? `-${ties}` : ''}`;
         rows.push(row);
       }
     }

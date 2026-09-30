@@ -105,6 +105,7 @@ function shouldConvertFieldToPerGame(key: string, value: unknown): boolean {
     'g',                    // Games (don't divide games by games!)
     'rk',                   // Rank
     'team',                 // Team name
+    'record',               // W-L(-T) string, e.g. "3-0" — never a per-game value
     'third_down_pct',       // Already a percentage
     'score_pct',            // Already a percentage  
     'turnover_pct',         // Already a percentage

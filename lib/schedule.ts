@@ -55,6 +55,10 @@ export interface Matchup {
   winner: 'away' | 'home' | null;
   /** Pre-game betting line, else `null`. */
   odds: MatchupOdds | null;
+  /** Away team's overall W-L(-T) record, e.g. "3-0". `null` when unknown/fallback. */
+  awayRecord: string | null;
+  /** Home team's overall W-L(-T) record, e.g. "3-0". `null` when unknown/fallback. */
+  homeRecord: string | null;
   /** ESPN event id, for the post-game box-score lookup. `null` for fallback games. */
   espnEventId: string | null;
 }
@@ -119,6 +123,8 @@ function toMatchup(raw: RawMatchup, week: number): Matchup | null {
     homeScore: null,
     winner: null,
     odds: null,
+    awayRecord: null,
+    homeRecord: null,
     espnEventId: null,
   };
 }

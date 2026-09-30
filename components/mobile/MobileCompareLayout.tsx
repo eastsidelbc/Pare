@@ -61,6 +61,12 @@ function MobileCompareLayout({
   const teamADefense = defenseData.find(t => t.team === selectedTeamA) || null;
   const teamBDefense = defenseData.find(t => t.team === selectedTeamB) || null;
 
+  // Overall W-L record lives on the defense (standings) rows. Read from the RAW
+  // data (not per-game transformed) so "3-0" stays intact. Shown under each
+  // team's logo in both panel headers.
+  const teamARecord = typeof teamADefense?.record === 'string' ? teamADefense.record : null;
+  const teamBRecord = typeof teamBDefense?.record === 'string' ? teamBDefense.record : null;
+
   // Shared body: skeleton while loading, else the two compact panels.
   const body = isLoading ? (
     <div
@@ -82,6 +88,8 @@ function MobileCompareLayout({
         teamB={selectedTeamB}
         teamAData={teamAOffense}
         teamBData={teamBOffense}
+        teamARecord={teamARecord}
+        teamBRecord={teamBRecord}
         selectedMetrics={offenseMetrics}
         allOffenseData={offenseData}
         allDefenseData={defenseData}
@@ -96,6 +104,8 @@ function MobileCompareLayout({
         teamB={selectedTeamB}
         teamAData={teamADefense}
         teamBData={teamBDefense}
+        teamARecord={teamARecord}
+        teamBRecord={teamBRecord}
         selectedMetrics={defenseMetrics}
         allOffenseData={offenseData}
         allDefenseData={defenseData}

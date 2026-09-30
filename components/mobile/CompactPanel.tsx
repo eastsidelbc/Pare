@@ -21,6 +21,8 @@ interface CompactPanelProps {
   teamB: string;
   teamAData: TeamData | null;
   teamBData: TeamData | null;
+  teamARecord?: string | null;
+  teamBRecord?: string | null;
   selectedMetrics: string[];
   allOffenseData: TeamData[];
   allDefenseData: TeamData[];
@@ -34,6 +36,8 @@ function CompactPanel({
   teamB,
   teamAData,
   teamBData,
+  teamARecord,
+  teamBRecord,
   selectedMetrics,
   allOffenseData,
   allDefenseData,
@@ -122,6 +126,8 @@ function CompactPanel({
         type={type}
         teamA={teamA}
         teamB={teamB}
+        teamARecord={teamARecord}
+        teamBRecord={teamBRecord}
         displayMode={mode}
         onDisplayModeChange={setMode}
         activeTeamSelector={activeTeamSelector}

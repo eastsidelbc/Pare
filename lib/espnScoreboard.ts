@@ -23,11 +23,17 @@ export const ESPN_SCOREBOARD_URL =
 interface EspnTeamRef {
   abbreviation?: string;
 }
+interface EspnRecord {
+  name?: string;
+  type?: string;
+  summary?: string;
+}
 interface EspnCompetitor {
   homeAway?: string;
   team?: EspnTeamRef;
   score?: string;
   winner?: boolean;
+  records?: EspnRecord[];
 }
 interface EspnStatusType {
   name?: string;
@@ -134,6 +140,11 @@ export function mapEspnScoreboard(data: EspnScoreboard, fallbackWeek = 1): Match
         ? { spread: rawOdds.details, overUnder: rawOdds.overUnder ?? null }
         : null;
 
+    // Overall W-L(-T) record for each side, straight from the scoreboard payload
+    // (no extra fetch). ESPN exposes it as records[{ name: "overall", summary }].
+    const recordOf = (c: EspnCompetitor | undefined): string | null =>
+      c?.records?.find((r) => r.name === 'overall')?.summary ?? null;
+
     const kickoff = new Date(event.date);
     matchups.push({
       id: `${kickoff.getFullYear()}-w${week}-${away.abbr}-${home.abbr}`,
@@ -148,6 +159,8 @@ export function mapEspnScoreboard(data: EspnScoreboard, fallbackWeek = 1): Match
       homeScore,
       winner,
       odds,
+      awayRecord: recordOf(awayComp),
+      homeRecord: recordOf(homeComp),
       espnEventId: event.id ?? null,
     });
   }

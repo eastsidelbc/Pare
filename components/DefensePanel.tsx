@@ -78,13 +78,18 @@ function DefensePanel({
   // Check if we have valid team selection
   const isValidSelection = Boolean(selectedTeamA && selectedTeamB && selectedTeamA !== selectedTeamB);
 
+  // Overall W-L record lives on the defense (standings) rows — read raw so the
+  // "3-0" string isn't touched by the per-game transform.
+  const teamARecord = defenseData.find(t => t.team === selectedTeamA)?.record;
+  const teamBRecord = defenseData.find(t => t.team === selectedTeamB)?.record;
+
   return (
     <div className={`bg-slate-900/90 rounded-xl border border-slate-700/50 shadow-2xl p-6 max-w-3xl mx-auto w-full ${className}`}>
       
       {/* Panel Header with Team Logos, Title, and Display Mode */}
       <div className="flex items-center justify-between mb-6">
         {/* Team A - Interactive Dropdown */}
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 flex flex-col items-center gap-1">
           {onTeamAChange ? (
             <TeamDropdown
               currentTeam={selectedTeamA}
@@ -95,6 +100,9 @@ function DefensePanel({
             />
           ) : (
             <TeamLogo teamName={selectedTeamA} size="60" />
+          )}
+          {teamARecord && (
+            <span className="tabular-nums text-sm font-semibold text-slate-400">{teamARecord}</span>
           )}
         </div>
 
@@ -117,7 +125,7 @@ function DefensePanel({
         </div>
 
         {/* Team B - Interactive Dropdown */}
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 flex flex-col items-center gap-1">
           {onTeamBChange ? (
             <TeamDropdown
               currentTeam={selectedTeamB}
@@ -128,6 +136,9 @@ function DefensePanel({
             />
           ) : (
             <TeamLogo teamName={selectedTeamB} size="60" />
+          )}
+          {teamBRecord && (
+            <span className="tabular-nums text-sm font-semibold text-slate-400">{teamBRecord}</span>
           )}
         </div>
       </div>
