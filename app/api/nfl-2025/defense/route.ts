@@ -1,11 +1,10 @@
 /**
- * NFL 2025 Defense Stats API Route Handler
- * 
- * Scrapes team defense stats (opponents) from Pro Football Reference and returns ranked JSON data.
- * 
- * Source: https://www.pro-football-reference.com/years/2025/opp.htm#team_stats
- * 
- * Returns defense stats where lower values are generally better (points allowed, yards allowed).
+ * NFL Defense Stats API Route Handler
+ *
+ * Serves team defense stats from ESPN (points allowed via standings + yards allowed
+ * opponent-aggregated from box scores). Returns raw rows; ranking is client-side.
+ *
+ * Returns defense stats where lower values are generally better (points/yards allowed).
  * 
  * WARNING: Do not rename data-stat keys without updating UI consumption accordingly.
  */
@@ -197,8 +196,7 @@ export async function GET() {
     console.error(`❌ [DEFENSE-${requestId}] Error processing request:`, {
       error: errorMessage,
       stack: errorStack,
-      type: error instanceof Error ? error.constructor.name : typeof error,
-      url: 'https://www.pro-football-reference.com/years/2025/opp.htm#team_stats'
+      type: error instanceof Error ? error.constructor.name : typeof error
     });
 
     // If we have stale cache data, serve it with a warning
@@ -231,7 +229,6 @@ export async function GET() {
         requestId,
         timestamp: new Date().toISOString(),
         details: {
-          url: 'https://www.pro-football-reference.com/years/2025/opp.htm#team_stats',
           cacheStatus: 'UNAVAILABLE',
           errorType: error instanceof Error ? error.constructor.name : typeof error
         }

@@ -13,8 +13,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://pare.gg"),
   title: "Pare: NFL Team Comparison",
-  description: "Professional NFL team comparison with theScore-style visualizations and real-time 2025 stats",
+  description: "Professional NFL team comparison with theScore-style visualizations and real-time NFL stats",
   applicationName: "Pare NFL",
   keywords: ["NFL", "sports", "team comparison", "statistics", "football"],
   authors: [{ name: "Pare" }],

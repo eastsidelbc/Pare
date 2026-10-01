@@ -149,8 +149,7 @@ export async function GET() {
     console.error(`❌ [OFFENSE-${requestId}] Error processing request:`, {
       error: errorMessage,
       stack: errorStack,
-      type: error instanceof Error ? error.constructor.name : typeof error,
-      url: 'https://www.pro-football-reference.com/years/2025/#team_stats'
+      type: error instanceof Error ? error.constructor.name : typeof error
     });
 
     // If we have stale cache data, serve it with a warning
@@ -183,7 +182,6 @@ export async function GET() {
         requestId,
         timestamp: new Date().toISOString(),
         details: {
-          url: 'https://www.pro-football-reference.com/years/2025/#team_stats',
           cacheStatus: 'UNAVAILABLE',
           errorType: error instanceof Error ? error.constructor.name : typeof error
         }
