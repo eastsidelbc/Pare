@@ -6,6 +6,15 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ## [Unreleased]
 
+### Changed
+- **Cleanup overhaul — dead-code removal, dedup, Leaders perf fix, rules draft** (2026-10-01)
+  - See: `docs/devnotes/2026-10-01-cleanup-overhaul.md` (branch `cleanup/overhaul`, one commit per phase)
+  - Removed the dead CSV/PFR data layer (`lib/pfr.ts`, `lib/pfrCsv.ts`, `data/pfr/`); data is ESPN + Sleeper only. Shared stat types consolidated into `lib/types.ts`.
+  - Single canonical team-abbr resolver in `lib/teams.ts` (replaced 5 duplicated alias maps; every path now also handles `JAC`/`LA`, not just `WSH`).
+  - Fixed the Leaders slowdown: Sleeper's ~20MB player map is no longer re-downloaded per request (module-level 24h in-memory cache of a trimmed map).
+  - Added `typecheck` / `check` npm scripts; cleared 22/24 eslint warnings; dropped the unused `node-html-parser` dep (**run `npm install`** to sync the lockfile).
+  - Proposed a lean consolidated `CLAUDE.md` at `docs/proposed/CLAUDE.lean.md` (current one has a stale-warning banner).
+
 ### Added
 - **Compare: 2×2 quadrant layout (tablet/desktop) + spacing polish** (2026-10-01)
   - See: `docs/devnotes/2026-10-01-compare-quadrants.md`
