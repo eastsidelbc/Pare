@@ -13,6 +13,7 @@
  * Every other key is a numeric player id resolved through the player map.
  */
 import 'server-only';
+import { unstable_cache } from 'next/cache';
 import type { LeaderBoard, LeaderRow, LeaderSection } from './leaders';
 import { getCurrentWeekInfo } from './schedule';
 import { getTeamByAbbr, normalizeTeamAbbr, type NflTeam } from './teams';
@@ -20,7 +21,7 @@ import { getTeamByAbbr, normalizeTeamAbbr, type NflTeam } from './teams';
 const SLEEPER_STATS_URL = 'https://api.sleeper.app/v1/stats/nfl/regular';
 const SLEEPER_PLAYERS_URL = 'https://api.sleeper.app/v1/players/nfl';
 const STATS_REVALIDATE = 6 * 60 * 60; // 6h — scores change through the week
-const PLAYERS_TTL_MS = 24 * 60 * 60 * 1000; // 24h — in-memory cache for the big (~20MB) player map
+const PLAYERS_TTL_SECONDS = 24 * 60 * 60; // 24h — revalidate window for the cached (trimmed) player map
 const BOARD_SIZE = 50; // send extra candidates so the client can re-rank by PPG
 const FANTASY: LeaderSection = 'fantasy';
 
@@ -78,38 +79,34 @@ interface SlimPlayer {
 }
 
 /**
- * Sleeper's full player map is ~20MB — far over Next's 2MB fetch-cache limit, so
- * `revalidate` silently never cached it and every request re-downloaded + re-parsed
- * the whole blob. Instead we fetch it at most once per TTL per server process, trim
- * it to { id -> name/position/team }, and keep that slim map in memory.
+ * Sleeper's full player map is ~20MB — far over Next's 2MB fetch-cache limit, so a
+ * plain cached fetch silently never cached it and every request re-downloaded the
+ * whole blob. Instead we fetch it raw (no-store, so Next doesn't try to cache 20MB),
+ * trim it to { id -> name/position/team }, and let `unstable_cache` hold that SMALL
+ * result (24h). The trimmed map caches fine and is shared across requests/invocations,
+ * so the 20MB download happens at most once per revalidate — and the route stays static.
  */
-let playersCache: { map: Record<string, SlimPlayer>; at: number } | null = null;
+const getPlayerMap = unstable_cache(
+  async (): Promise<Record<string, SlimPlayer>> => {
+    const raw = await fetchJson<Record<string, SleeperPlayer>>(
+      SLEEPER_PLAYERS_URL,
+      { cache: 'no-store' },
+      'players map'
+    );
+    if (!raw) return {};
 
-async function getPlayerMap(): Promise<Record<string, SlimPlayer>> {
-  const now = Date.now();
-  if (playersCache && now - playersCache.at < PLAYERS_TTL_MS) {
-    return playersCache.map;
-  }
-
-  // no-store: we cache the trimmed result ourselves; don't ask Next to cache 20MB.
-  const raw = await fetchJson<Record<string, SleeperPlayer>>(
-    SLEEPER_PLAYERS_URL,
-    { cache: 'no-store' },
-    'players map'
-  );
-  if (!raw) return playersCache?.map ?? {}; // keep a stale map over nothing
-
-  const slim: Record<string, SlimPlayer> = {};
-  for (const [id, p] of Object.entries(raw)) {
-    if (!p?.position) continue;
-    const name = p.full_name ?? `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim();
-    if (!name) continue;
-    slim[id] = { name, position: p.position, team: p.team ?? '' };
-  }
-
-  playersCache = { map: slim, at: now };
-  return slim;
-}
+    const slim: Record<string, SlimPlayer> = {};
+    for (const [id, p] of Object.entries(raw)) {
+      if (!p?.position) continue;
+      const name = p.full_name ?? `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim();
+      if (!name) continue;
+      slim[id] = { name, position: p.position, team: p.team ?? '' };
+    }
+    return slim;
+  },
+  ['sleeper-player-map'],
+  { revalidate: PLAYERS_TTL_SECONDS, tags: ['sleeper-player-map'] }
+);
 
 interface SkillRow {
   id: string;
