@@ -11,6 +11,7 @@
 
 import { useMemo } from 'react';
 import { TeamData } from './useNflStats';
+import { formatRank } from '@/utils/ordinal';
 
 /** Dev-only diagnostic logging (stripped from production hot paths). */
 const RANKING_DEBUG = process.env.NODE_ENV !== 'production';
@@ -132,16 +133,6 @@ export function useRanking(
       higherIsBetter
     });
 
-    // Format rank with tie prefix if needed
-    const formatRank = (rankNum: number, tied: boolean): string => {
-      const prefix = tied ? 'T-' : '';
-      
-      if (rankNum === 1) return `${prefix}1st`;
-      if (rankNum === 2) return `${prefix}2nd`;
-      if (rankNum === 3) return `${prefix}3rd`;
-      return `${prefix}${rankNum}th`;
-    };
-
     const formattedRank = formatRank(rank, isTied);
 
     return {
@@ -211,15 +202,6 @@ export function calculateBulkRanking(
 
     const rank = betterTeamsCount + 1;
     const isTied = teamsWithSameValue > 1;
-
-    const formatRank = (rankNum: number, tied: boolean): string => {
-      const prefix = tied ? 'T-' : '';
-      
-      if (rankNum === 1) return `${prefix}1st`;
-      if (rankNum === 2) return `${prefix}2nd`;
-      if (rankNum === 3) return `${prefix}3rd`;
-      return `${prefix}${rankNum}th`;
-    };
 
     results[teamName] = {
       rank,

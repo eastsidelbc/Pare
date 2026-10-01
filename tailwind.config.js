@@ -69,7 +69,8 @@ module.exports = {
     },
   },
   plugins: [
-    import('@tailwindcss/typography'),
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- this is a CommonJS config file; require() is the correct way to load the plugin
+    require('@tailwindcss/typography'),
     function({ addUtilities }) {
       addUtilities({
         '.touch-optimized': {

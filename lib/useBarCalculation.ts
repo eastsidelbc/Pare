@@ -49,7 +49,12 @@ export function useBarCalculation({
     let teamANum = parseFloat(teamAValue) || 0;
     let teamBNum = parseFloat(teamBValue) || 0;
     
-    // 🛡️ DEFENSE LOGIC: For defense panels, flip values so lower is better gets larger bars
+    // 🛡️ DEFENSE LOGIC: For defense panels, flip values so lower-is-better gets larger bars.
+    // NOTE: this assumes EVERY defense metric is an "allowed" stat (lower = better),
+    // which currently holds because metricsConfig only exposes allowed metrics on defense.
+    // If a "forced/made" defense metric (turnovers forced, INTs made — higher = better) is
+    // ever added with a data source, key this off the metric's higherIsBetter context
+    // instead of panelType, or that metric's bar will invert (bar vs rank badge disagree).
     if (panelType === 'defense') {
       [teamANum, teamBNum] = [teamBNum, teamANum];
     }

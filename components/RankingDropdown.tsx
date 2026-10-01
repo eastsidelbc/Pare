@@ -158,7 +158,7 @@ export default function RankingDropdown({
 
   // [Diagnostics] Log counts, filtering behavior, and computed menu sizing when opened
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || process.env.NODE_ENV === 'production') return;
 
     try {
       const swControlled = typeof navigator !== 'undefined' && !!navigator.serviceWorker?.controller;
@@ -192,8 +192,6 @@ export default function RankingDropdown({
 
   // Handle team selection
   const handleTeamSelect = (teamName: string) => {
-    console.log(`🔥 [RANKING-DROPDOWN] ${side} selected team: ${teamName}`);
-    console.log(`🔥 [RANKING-DROPDOWN] onTeamChange callback:`, onTeamChange);
     onTeamChange(teamName);
     setIsOpen(false);
   };

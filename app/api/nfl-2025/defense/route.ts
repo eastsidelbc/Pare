@@ -214,16 +214,13 @@ export async function GET() {
     // No cache available, return detailed error
     console.error(`💥 [DEFENSE-${requestId}] No cache available, returning error to client`);
 
+    // Generic client-facing error — full detail (errorMessage/stack) is logged
+    // server-side above and intentionally NOT leaked to the client.
     return NextResponse.json(
       {
         error: 'Failed to fetch defense data',
-        message: errorMessage,
         requestId,
         timestamp: new Date().toISOString(),
-        details: {
-          cacheStatus: 'UNAVAILABLE',
-          errorType: error instanceof Error ? error.constructor.name : typeof error
-        }
       },
       {
         status: 500,

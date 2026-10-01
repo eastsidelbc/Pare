@@ -1,59 +1,50 @@
-/**
- * Console-friendly test file for teamHelpers
- * 
- * Run in browser console:
- * 1. Import the functions
- * 2. Copy/paste the test cases below
- * 3. Check console output
- */
-
+import { describe, it, expect } from 'vitest';
 import {
   isAverageTeam,
   isNonSelectableSpecialTeam,
   shouldExcludeFromRanking,
   getTeamDisplayLabel,
-  getTeamEmoji
+  getTeamEmoji,
 } from '../teamHelpers';
 
-console.log('🧪 Testing teamHelpers utility functions...\n');
+describe('isAverageTeam', () => {
+  it('recognizes the average-team spellings', () => {
+    expect(isAverageTeam('Avg Tm/G')).toBe(true);
+    expect(isAverageTeam('Avg/TmG')).toBe(true);
+    expect(isAverageTeam('Average team/G')).toBe(true);
+  });
+  it('is false for real teams / other specials / undefined', () => {
+    expect(isAverageTeam('Buffalo Bills')).toBe(false);
+    expect(isAverageTeam('Avg Team')).toBe(false);
+    expect(isAverageTeam(undefined)).toBe(false);
+  });
+});
 
-// Test 1: isAverageTeam
-console.log('Test 1: isAverageTeam()');
-console.log('  "Avg Tm/G":', isAverageTeam('Avg Tm/G'), '(expected: true)');
-console.log('  "Avg/TmG":', isAverageTeam('Avg/TmG'), '(expected: true)');
-console.log('  "Average team/G":', isAverageTeam('Average team/G'), '(expected: true)');
-console.log('  "Buffalo Bills":', isAverageTeam('Buffalo Bills'), '(expected: false)');
-console.log('  "Avg Team":', isAverageTeam('Avg Team'), '(expected: false)');
-console.log('  undefined:', isAverageTeam(undefined), '(expected: false)');
-console.log('');
+describe('isNonSelectableSpecialTeam', () => {
+  it('flags League Total / Avg Team, not the average row', () => {
+    expect(isNonSelectableSpecialTeam('Avg Team')).toBe(true);
+    expect(isNonSelectableSpecialTeam('League Total')).toBe(true);
+    expect(isNonSelectableSpecialTeam('Avg Tm/G')).toBe(false);
+    expect(isNonSelectableSpecialTeam('Buffalo Bills')).toBe(false);
+  });
+});
 
-// Test 2: isNonSelectableSpecialTeam
-console.log('Test 2: isNonSelectableSpecialTeam()');
-console.log('  "Avg Team":', isNonSelectableSpecialTeam('Avg Team'), '(expected: true)');
-console.log('  "League Total":', isNonSelectableSpecialTeam('League Total'), '(expected: true)');
-console.log('  "Avg Tm/G":', isNonSelectableSpecialTeam('Avg Tm/G'), '(expected: false - average IS selectable)');
-console.log('  "Buffalo Bills":', isNonSelectableSpecialTeam('Buffalo Bills'), '(expected: false)');
-console.log('');
+describe('shouldExcludeFromRanking', () => {
+  it('excludes every special row, keeps real teams', () => {
+    expect(shouldExcludeFromRanking('Avg Tm/G')).toBe(true);
+    expect(shouldExcludeFromRanking('Avg Team')).toBe(true);
+    expect(shouldExcludeFromRanking('League Total')).toBe(true);
+    expect(shouldExcludeFromRanking('Buffalo Bills')).toBe(false);
+  });
+});
 
-// Test 3: shouldExcludeFromRanking
-console.log('Test 3: shouldExcludeFromRanking()');
-console.log('  "Avg Tm/G":', shouldExcludeFromRanking('Avg Tm/G'), '(expected: true)');
-console.log('  "Avg Team":', shouldExcludeFromRanking('Avg Team'), '(expected: true)');
-console.log('  "League Total":', shouldExcludeFromRanking('League Total'), '(expected: true)');
-console.log('  "Buffalo Bills":', shouldExcludeFromRanking('Buffalo Bills'), '(expected: false)');
-console.log('');
-
-// Test 4: getTeamDisplayLabel
-console.log('Test 4: getTeamDisplayLabel()');
-console.log('  "Avg Tm/G":', getTeamDisplayLabel('Avg Tm/G'), '(expected: "Avg (per game)")');
-console.log('  "Buffalo Bills":', getTeamDisplayLabel('Buffalo Bills'), '(expected: "Buffalo Bills")');
-console.log('');
-
-// Test 5: getTeamEmoji
-console.log('Test 5: getTeamEmoji()');
-console.log('  "Avg Tm/G":', getTeamEmoji('Avg Tm/G'), '(expected: "📊")');
-console.log('  "Buffalo Bills":', getTeamEmoji('Buffalo Bills'), '(expected: null)');
-console.log('');
-
-console.log('✅ All tests complete! Check results above.');
-
+describe('labels & emoji', () => {
+  it('labels the average row and passes real names through', () => {
+    expect(getTeamDisplayLabel('Avg Tm/G')).toBe('Avg (per game)');
+    expect(getTeamDisplayLabel('Buffalo Bills')).toBe('Buffalo Bills');
+  });
+  it('emoji only for the average row', () => {
+    expect(getTeamEmoji('Avg Tm/G')).toBe('📊');
+    expect(getTeamEmoji('Buffalo Bills')).toBeNull();
+  });
+});

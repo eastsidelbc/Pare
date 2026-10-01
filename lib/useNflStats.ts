@@ -88,7 +88,7 @@ export function useNflStats(): UseNflStatsReturn {
    * Fetches offense data from API
    */
   const fetchOffenseData = useCallback(async () => {
-    const requestId = Math.random().toString(36).substr(2, 9);
+    const requestId = Math.random().toString(36).slice(2, 11);
     if (STATS_DEBUG) console.log(`🏈 [HOOK-${requestId}] Fetching offense data...`);
     
     try {
@@ -169,7 +169,7 @@ export function useNflStats(): UseNflStatsReturn {
    * Fetches defense data from API
    */
   const fetchDefenseData = useCallback(async () => {
-    const requestId = Math.random().toString(36).substr(2, 9);
+    const requestId = Math.random().toString(36).slice(2, 11);
     if (STATS_DEBUG) console.log(`🛡️ [HOOK-${requestId}] Fetching defense data...`);
     
     try {

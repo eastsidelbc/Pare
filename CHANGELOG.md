@@ -6,6 +6,16 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ## [Unreleased]
 
+### Fixed
+- **Audit Wave 3 — correctness, logging, hygiene + test harness** (2026-10-01)
+  - See: `docs/devnotes/2026-10-01-audit-wave3-fixes.md`. Full audit: `docs/audits/2026-10-01-audit.md`.
+  - **Ordinal bug:** ranks 21st/22nd/23rd/31st no longer render as "21th/22th/23th/31th" (shown in the ranking dropdown badge + list and in screen-reader text). Three divergent copies consolidated into one `utils/ordinal.ts` used by `useRanking`, `calculateBulkRanking`, and `RankBadge`.
+  - **Prod logging:** removed the per-render `console.log` in `useTheme` (fired for every comparison row in production); `RankingDropdown` debug logs are now dev-only.
+  - **Metric selector hygiene (`metricsConfig`):** the selector now only offers metrics the data layer actually populates (defense = the 5 allowed stats; offense = its ~16 live fields). Removed duplicate `penalties_yds` and ghost `penalty_first_down`. Side effect: closes the only path to the latent defense bar-inversion (no higher-is-better metric is selectable on defense).
+  - **API error leakage:** `/api/nfl-2025/{offense,defense}` no longer return internal `message`/`errorType` to the client (still logged server-side).
+  - **Minor:** `tailwind.config` typography plugin now `require(...)` (was `import(...)`, which never loaded it); deprecated `substr`→`slice`; manifest "real-time 2025 stats"→"real-time NFL stats"; documented the defense-swap assumption in `useBarCalculation`.
+  - **Added — test harness + CI:** Vitest + first pure-logic unit tests (`utils/ordinal`, `utils/teamHelpers` [rewritten from the old console-log script], `utils/teamDataTransform`, `lib/comparisons/store`, `lib/useRanking` incl. ordinal/tie/special-team regressions) and `.github/workflows/ci.yml` (runs `check` + `test:run`). **One-time:** run `npm install` to add vitest + sync the lockfile, then commit `package-lock.json` (CI uses `npm ci`).
+
 ### Changed
 - **Cleanup overhaul — dead-code removal, dedup, Leaders perf fix, rules draft** (2026-10-01)
   - See: `docs/devnotes/2026-10-01-cleanup-overhaul.md` (branch `cleanup/overhaul`, one commit per phase)

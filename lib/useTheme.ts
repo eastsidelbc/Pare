@@ -158,8 +158,6 @@ export function useTheme(): UseThemeReturn {
     animations: true
   });
 
-  console.log(`🎨 [USE-THEME] Current theme:`, theme);
-
   // Color scheme setter
   const setColorScheme = useCallback((scheme: ColorScheme) => {
     console.log(`🎨 [USE-THEME] Changing color scheme to: ${scheme}`);

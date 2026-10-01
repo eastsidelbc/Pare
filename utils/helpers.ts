@@ -8,7 +8,7 @@ import { APP_CONSTANTS } from '@/config/constants';
  * Generate a unique request ID for API calls
  */
 export function generateRequestId(): string {
-  return Math.random().toString(36).substr(2, 9);
+  return Math.random().toString(36).slice(2, 11);
 }
 
 /**

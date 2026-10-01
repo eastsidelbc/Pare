@@ -1,17 +1,28 @@
 /**
  * Comprehensive NFL Metrics Configuration
- * 
- * This is the central registry for all available NFL metrics from Pro Football Reference.
- * Adding new metrics is as simple as adding entries to these objects.
- * 
- * SELF-HOSTING ADVANTAGE: Customize this file to focus on your specific needs!
+ *
+ * Central registry for all available NFL metrics. Adding new metrics is as simple
+ * as adding entries to these objects.
+ *
+ * AVAILABILITY CONVENTION (keep in sync with the data layer — lib/espnStats.ts):
+ *   `availableInOffense` / `availableInDefense` must be `true` ONLY for metrics the
+ *   data layer actually populates for that side. ESPN's `ESPN_FIELD_MAP` fills the
+ *   offense fields; the defense route only fills points / total_yards / pass_yds /
+ *   rush_yds / third_down_pct (+ g). A metric with no live source stays `false` so
+ *   the selector doesn't offer a column that can only ever render "—".
+ *
+ *   NOTE (defense bar math): every metric currently available on defense is an
+ *   "allowed" stat (lower = better), which is what useBarCalculation's defense
+ *   swap assumes. If you ever add a "forced/made" defense metric (turnovers forced,
+ *   INTs made — higher = better) AND a data source for it, revisit useBarCalculation
+ *   so the bar direction keys off the metric's context, not just panelType.
  */
 
 export interface MetricDefinition {
   /** Display name for the UI */
   name: string;
   
-  /** Technical field name from PFR (shown in parentheses) */
+  /** Technical field name (shown in parentheses) */
   field: string;
   
   /** Category for grouping in UI */
@@ -26,18 +37,16 @@ export interface MetricDefinition {
   /** Optional description for tooltips */
   description?: string;
   
-  /** Whether this metric is available in offense stats */
+  /** Whether this metric is available in offense stats (data-backed only) */
   availableInOffense?: boolean;
   
-  /** Whether this metric is available in defense stats */
+  /** Whether this metric is available in defense stats (data-backed only) */
   availableInDefense?: boolean;
 }
 
 /**
- * Complete registry of available NFL metrics
- * 
- * 🎯 CUSTOMIZATION TIP: Add your own metrics here!
- * Just match the field names from Pro Football Reference's data-stat attributes.
+ * Complete registry of available NFL metrics.
+ * Set availability flags per the AVAILABILITY CONVENTION above.
  */
 export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
   // === BASIC STATS ===
@@ -84,7 +93,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     format: 'decimal',
     description: 'Total offensive plays per game (offense) or plays allowed per game (defense)',
     availableInOffense: true,
-    availableInDefense: true,
+    availableInDefense: false, // no defense source (opponent plays not aggregated)
   },
 
   'yds_per_play_offense': {
@@ -94,8 +103,8 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     higherIsBetter: true, // Offense: more Y/P = better; Defense: fewer Y/P allowed = better (context-dependent)
     format: 'decimal',
     description: 'Average yards per offensive play (offense) or yards per play allowed (defense)',
-    availableInOffense: true,
-    availableInDefense: true,
+    availableInOffense: false, // no live ESPN source
+    availableInDefense: false,
   },
 
   'turnovers': {
@@ -106,7 +115,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     format: 'decimal',
     description: 'Turnovers per game (offense: committed, defense: forced)',
     availableInOffense: true,
-    availableInDefense: true,
+    availableInDefense: false, // ESPN does not populate turnovers-forced for defense
   },
 
   'fumbles_lost': {
@@ -117,7 +126,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     format: 'decimal',
     description: 'Fumbles lost per game (offense: lost, defense: forced)',
     availableInOffense: true,
-    availableInDefense: true,
+    availableInDefense: false, // ESPN does not populate fumbles-forced for defense
   },
 
   'first_down': {
@@ -128,7 +137,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     format: 'number',
     description: 'Total first downs gained',
     availableInOffense: true,
-    availableInDefense: true,
+    availableInDefense: false, // no defense source (opponent first downs not aggregated)
   },
 
   // === PASSING ===
@@ -140,7 +149,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     format: 'decimal', 
     description: 'Pass completions per game (offense: made, defense: allowed)',
     availableInOffense: true,
-    availableInDefense: true,
+    availableInDefense: false,
   },
 
   'pass_att': {
@@ -151,7 +160,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     format: 'decimal',
     description: 'Pass attempts per game (offense: attempted, defense: faced)',
     availableInOffense: true,
-    availableInDefense: true,
+    availableInDefense: false,
   },
 
   'pass_yds': {
@@ -173,7 +182,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     format: 'decimal',
     description: 'Passing touchdowns per game (offense: scored, defense: allowed)',
     availableInOffense: true,
-    availableInDefense: true,
+    availableInDefense: false,
   },
 
   'pass_int': {
@@ -184,7 +193,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     format: 'decimal',
     description: 'Interceptions per game (offense: thrown, defense: made)',
     availableInOffense: true,
-    availableInDefense: true,
+    availableInDefense: false, // ESPN does not populate INTs-made for defense
   },
 
   'pass_net_yds_per_att': {
@@ -194,8 +203,8 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     higherIsBetter: true, // Offense: more net yards per attempt = better; Defense: fewer net yards per attempt allowed = better (context-dependent)
     format: 'decimal',
     description: 'Net passing yards per attempt (offense: gained, defense: allowed)',
-    availableInOffense: true,
-    availableInDefense: true,
+    availableInOffense: false, // no live ESPN source
+    availableInDefense: false,
   },
 
   'pass_fd': {
@@ -205,8 +214,8 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     higherIsBetter: true, // Offense: more passing first downs = better; Defense: fewer passing first downs allowed = better (context-dependent)
     format: 'decimal',
     description: 'First downs via passing per game (offense: gained, defense: allowed)',
-    availableInOffense: true,
-    availableInDefense: true,
+    availableInOffense: false, // no live ESPN source
+    availableInDefense: false,
   },
 
   // === RUSHING ===
@@ -218,7 +227,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     format: 'decimal',
     description: 'Rushing attempts per game (offense: attempted, defense: faced)',
     availableInOffense: true,
-    availableInDefense: true,
+    availableInDefense: false,
   },
 
   'rush_yds': {
@@ -240,7 +249,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     format: 'decimal',
     description: 'Rushing touchdowns per game (offense: scored, defense: allowed)',
     availableInOffense: true,
-    availableInDefense: true,
+    availableInDefense: false,
   },
 
   'rush_yds_per_att': {
@@ -250,8 +259,8 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     higherIsBetter: true, // Offense: more yards per rush = better; Defense: fewer yards per rush allowed = better (context-dependent)
     format: 'decimal',
     description: 'Rushing yards per attempt (offense: gained, defense: allowed)',
-    availableInOffense: true,
-    availableInDefense: true,
+    availableInOffense: false, // no live ESPN source
+    availableInDefense: false,
   },
 
   'rush_fd': {
@@ -261,11 +270,11 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     higherIsBetter: true, // Offense: more rushing first downs = better; Defense: fewer rushing first downs allowed = better (context-dependent)
     format: 'decimal',
     description: 'First downs via rushing per game (offense: gained, defense: allowed)',
-    availableInOffense: true,
-    availableInDefense: true,
+    availableInOffense: false, // no live ESPN source
+    availableInDefense: false,
   },
 
-  // === PENALTIES ===
+  // === PENALTIES === (no live ESPN source yet — hidden until wired)
   'penalties': {
     name: 'Penalties',
     field: 'penalties',
@@ -273,8 +282,8 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     higherIsBetter: false,
     format: 'decimal',
     description: 'Penalties per game',
-    availableInOffense: true,
-    availableInDefense: true,
+    availableInOffense: false,
+    availableInDefense: false,
   },
 
   'penalty_yds': {
@@ -284,19 +293,10 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     higherIsBetter: false,
     format: 'decimal',
     description: 'Penalty yards per game',
-    availableInOffense: true,
-    availableInDefense: true,
+    availableInOffense: false,
+    availableInDefense: false,
   },
-  'penalties_yds': {
-    name: 'Penalty Yards',
-    field: 'penalties_yds',
-    category: 'special',
-    higherIsBetter: false,
-    format: 'number',
-    description: 'Total penalty yards committed',
-    availableInOffense: true,
-    availableInDefense: true,
-  },
+
   'pen_fd': {
     name: 'Penalty First Downs',
     field: 'pen_fd',
@@ -304,19 +304,8 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     higherIsBetter: false,
     format: 'number',
     description: 'First downs gained via penalty',
-    availableInOffense: true,
-    availableInDefense: true,
-  },
-
-  'penalty_first_down': {
-    name: 'Penalties',
-    field: 'penalties',
-    category: 'efficiency',
-    higherIsBetter: false,
-    format: 'decimal',
-    description: 'Penalties per game',
-    availableInOffense: true,
-    availableInDefense: true,
+    availableInOffense: false,
+    availableInDefense: false,
   },
 
   // === EFFICIENCY METRICS ===
@@ -338,8 +327,8 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     higherIsBetter: true, // Offense: higher scoring % = better; Defense: lower scoring % allowed = better (context-dependent)
     format: 'percentage',
     description: 'Percentage of drives that result in scores (offense: scored, defense: allowed)',
-    availableInOffense: true,
-    availableInDefense: true,
+    availableInOffense: false, // no exact ESPN source (PFR Sc% not exposed)
+    availableInDefense: false,
   },
 
   'turnover_pct': {
@@ -349,8 +338,8 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     higherIsBetter: false, // Offense: lower turnover % = better; Defense: higher turnover % forced = better (context-dependent)
     format: 'percentage',
     description: 'Percentage of drives that end in turnovers (offense: committed, defense: forced)',
-    availableInOffense: true,
-    availableInDefense: true,
+    availableInOffense: false, // no live ESPN source
+    availableInDefense: false,
   },
 
   'exp_pts_tot': {
@@ -360,8 +349,8 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     higherIsBetter: true, // Offense: more expected points = better; Defense: fewer expected points allowed = better (context-dependent)
     format: 'decimal',
     description: 'Expected points total (offense: generated, defense: allowed)',
-    availableInOffense: true,
-    availableInDefense: true,
+    availableInOffense: false, // no live ESPN source
+    availableInDefense: false,
   },
 };
 

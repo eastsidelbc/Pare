@@ -12,6 +12,8 @@
 
 'use client';
 
+import { ordinalSuffix } from '@/utils/ordinal';
+
 interface RankBadgeProps {
   /** 1-based rank, or null when unranked (e.g. league-average row). */
   rank: number | null;
@@ -37,18 +39,6 @@ const RED_FILL_TEXT = '#ffffff';
 const SLATE = '#7c8698';
 const SLATE_TINT = 'rgba(124,134,152,.14)';
 const SLATE_BORDER = 'rgba(124,134,152,.30)';
-
-/** Correct English ordinal suffix (1st, 2nd, 3rd, 21st, 31st, …). */
-function ordinalSuffix(rank: number): string {
-  const lastTwo = rank % 100;
-  const lastOne = rank % 10;
-  if (lastTwo < 11 || lastTwo > 13) {
-    if (lastOne === 1) return 'st';
-    if (lastOne === 2) return 'nd';
-    if (lastOne === 3) return 'rd';
-  }
-  return 'th';
-}
 
 interface TierStyle {
   color: string;
