@@ -14,14 +14,6 @@ const CACHE_EXPIRATION = {
   STATIC: 24 * 60 * 60 * 1000, // 24 hours for static assets
 };
 
-// Assets to cache immediately on install (HTML excluded by policy)
-const STATIC_ASSETS = [
-  '/icon-192.png',
-  '/manifest.json',
-  // Add core CSS/JS that Next.js generates (paths cached on demand)
-  '/_next/static/css/',
-  '/_next/static/chunks/',
-];
 
 // Install: Cache critical static assets
 self.addEventListener('install', (event) => {
@@ -345,61 +337,6 @@ async function cacheFirst(request, cacheName) {
   }
   
   return response;
-}
-
-// Network First with Fallback: Try network, fallback to cache, then offline page
-async function networkFirstWithFallback(request) {
-  try {
-    console.log('🌐 [SW] Trying network for HTML:', request.url);
-    const response = await fetch(request);
-    
-    if (response.ok) {
-      // Cache successful HTML responses
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, response.clone());
-    }
-    
-    return response;
-  } catch {
-    console.log('📦 [SW] Network failed, checking cache for:', request.url);
-    
-    const cache = await caches.open(CACHE_NAME);
-    const cachedResponse = await cache.match(request);
-    
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-
-    // Ultimate fallback: offline page or basic response
-    console.log('🔌 [SW] No cache available, showing offline fallback');
-    return new Response(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Pare NFL - Offline</title>
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-          <style>
-            body { 
-              font-family: system-ui; 
-              text-align: center; 
-              padding: 2rem; 
-              background: #0f172a; 
-              color: white; 
-            }
-            h1 { color: #8b5cf6; }
-          </style>
-        </head>
-        <body>
-          <h1>📱 Pare NFL</h1>
-          <p>You're offline, but your app is still here!</p>
-          <p>Reconnect to the internet to load fresh NFL stats.</p>
-          <button onclick="window.location.reload()">🔄 Try Again</button>
-        </body>
-      </html>
-    `, {
-      headers: { 'Content-Type': 'text/html' }
-    });
-  }
 }
 
 // Background Sync for future features
