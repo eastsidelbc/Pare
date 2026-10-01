@@ -14,11 +14,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { normalizeTeamAbbr } from '@/lib/teams';
 
 const SUMMARY_URL = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary';
 const FETCH_TIMEOUT_MS = 8_000;
-
-const ESPN_ABBR_ALIASES: Readonly<Record<string, string>> = { WSH: 'WAS' };
 
 /** Full-PPR scoring weights. */
 const PPR = {
@@ -106,8 +105,7 @@ const num = (v: string | undefined): number => {
 };
 
 function normAbbr(abbr: string | undefined): string {
-  const key = (abbr ?? '').trim().toUpperCase();
-  return ESPN_ABBR_ALIASES[key] ?? key;
+  return normalizeTeamAbbr(abbr);
 }
 
 function statAt(labels: string[], stats: string[], label: string): string | undefined {

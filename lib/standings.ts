@@ -14,7 +14,7 @@
 import 'server-only';
 import {
   NFL_TEAMS,
-  getTeamByAbbr,
+  resolveTeamByAbbr,
   type Conference,
   type Division,
   type NflTeam,
@@ -30,11 +30,6 @@ const REVALIDATE_SECONDS = APP_CONSTANTS.CACHE.REVALIDATE_SECONDS;
 
 /** Division display order within a conference. */
 const DIVISION_ORDER: readonly Division[] = ['North', 'South', 'East', 'West'];
-
-/** ESPN standings abbreviation → our `lib/teams.ts` abbreviation. */
-const ESPN_ABBR_ALIASES: Readonly<Record<string, string>> = {
-  WSH: 'WAS', // Washington Commanders
-};
 
 /** One team's standings line. */
 export interface TeamStanding {
@@ -87,9 +82,7 @@ interface EspnStandingsResponse {
 
 /** Resolve an ESPN standings abbreviation to our `NflTeam`. */
 function resolveTeam(abbr: string | undefined): NflTeam | null {
-  if (!abbr) return null;
-  const key = abbr.trim().toUpperCase();
-  return getTeamByAbbr(ESPN_ABBR_ALIASES[key] ?? key);
+  return resolveTeamByAbbr(abbr);
 }
 
 const num = (stats: EspnStat[], name: string): number | undefined =>

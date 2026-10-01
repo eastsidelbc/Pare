@@ -82,6 +82,28 @@ export function getTeamByAbbr(abbr: string | null | undefined): NflTeam | null {
   return BY_ABBR.get(abbr.trim().toUpperCase()) ?? null;
 }
 
+/**
+ * External abbreviation aliases → our registry abbreviations. Upstream sources
+ * (ESPN, Sleeper) spell a few teams differently; this is the single place that
+ * reconciles them. Everything not listed is used as-is.
+ */
+const ABBR_ALIASES: Readonly<Record<string, string>> = {
+  WSH: 'WAS', // Washington (ESPN)
+  JAC: 'JAX', // Jacksonville (Sleeper)
+  LA: 'LAR',  // LA Rams (Sleeper uses "LA")
+};
+
+/** Normalize any external team abbreviation to our registry's (trimmed, upper, aliased). */
+export function normalizeTeamAbbr(abbr: string | null | undefined): string {
+  const key = (abbr ?? '').trim().toUpperCase();
+  return ABBR_ALIASES[key] ?? key;
+}
+
+/** Look up a team by any external abbreviation, applying registry aliases. */
+export function resolveTeamByAbbr(abbr: string | null | undefined): NflTeam | null {
+  return getTeamByAbbr(normalizeTeamAbbr(abbr));
+}
+
 /** Look up a team by its canonical full name. */
 export function getTeamByName(name: string | null | undefined): NflTeam | null {
   if (!name) return null;

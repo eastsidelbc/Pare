@@ -14,7 +14,7 @@
 
 import { unstable_cache } from 'next/cache';
 import type { TeamStats, ParseResult } from '@/lib/types';
-import { NFL_TEAMS, getTeamByAbbr } from '@/lib/teams';
+import { NFL_TEAMS, resolveTeamByAbbr } from '@/lib/teams';
 import { getCurrentWeekInfo } from '@/lib/schedule';
 import { APP_CONSTANTS } from '@/config/constants';
 import { logger } from '@/utils/logger';
@@ -169,14 +169,6 @@ export async function fetchOffenseStatsFromESPN(): Promise<ParseResult> {
 //  DEFENSE (points allowed) — ESPN standings
 // ==========================================================================
 
-/**
- * ESPN standings abbreviation → our `lib/teams.ts` abbreviation.
- * Everything not listed is used as-is.
- */
-const ESPN_ABBR_ALIASES: Readonly<Record<string, string>> = {
-  WSH: 'WAS', // Washington Commanders
-};
-
 const ESPN_STANDINGS_URL =
   'https://site.api.espn.com/apis/v2/sports/football/nfl/standings';
 
@@ -234,8 +226,7 @@ export async function fetchDefenseStatsFromESPN(): Promise<ParseResult> {
       for (const entry of child.standings?.entries ?? []) {
         const espnAbbr = entry.team?.abbreviation;
         if (!espnAbbr) continue;
-        const key = espnAbbr.trim().toUpperCase();
-        const team = getTeamByAbbr(ESPN_ABBR_ALIASES[key] ?? key);
+        const team = resolveTeamByAbbr(espnAbbr);
         if (!team) {
           logger.error(
             { context: 'ESPN-DEFENSE' },

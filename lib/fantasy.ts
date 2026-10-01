@@ -15,7 +15,7 @@
 import 'server-only';
 import type { LeaderBoard, LeaderRow, LeaderSection } from './leaders';
 import { getCurrentWeekInfo } from './schedule';
-import { getTeamByAbbr, type NflTeam } from './teams';
+import { getTeamByAbbr, normalizeTeamAbbr, type NflTeam } from './teams';
 
 const SLEEPER_STATS_URL = 'https://api.sleeper.app/v1/stats/nfl/regular';
 const SLEEPER_PLAYERS_URL = 'https://api.sleeper.app/v1/players/nfl';
@@ -54,9 +54,9 @@ function espnLogo(abbr: string): string {
 
 /** Normalize a Sleeper abbreviation to our registry's. */
 function normalizeAbbr(raw: string): string {
-  const a = (raw.startsWith('TEAM_') ? raw.slice(5) : raw).toUpperCase();
-  const alias: Record<string, string> = { JAC: 'JAX', WSH: 'WAS', LA: 'LAR' };
-  return alias[a] ?? a;
+  // Strip Sleeper's "TEAM_" D/ST prefix, then apply the shared registry aliases.
+  const stripped = raw.startsWith('TEAM_') ? raw.slice(5) : raw;
+  return normalizeTeamAbbr(stripped);
 }
 
 async function fetchJson<T>(url: string, revalidate: number, label: string): Promise<T | null> {

@@ -12,7 +12,7 @@
  * games are live — see useLiveScores for the polling policy.
  */
 
-import { getTeamByAbbr, type NflTeam } from './teams';
+import { resolveTeamByAbbr, type NflTeam } from './teams';
 import type { Matchup, GameState, MatchupOdds } from './schedule';
 
 /** Public ESPN scoreboard endpoint (free, CORS-open, no key). */
@@ -66,19 +66,9 @@ export interface EspnScoreboard {
   events?: EspnEvent[];
 }
 
-/**
- * ESPN abbreviation → lib/teams.ts abbreviation, for the cases where ESPN
- * differs from our registry. Everything not listed is used as-is.
- */
-const ESPN_ABBR_ALIASES: Readonly<Record<string, string>> = {
-  WSH: 'WAS', // Washington Commanders
-};
-
-/** Resolve an ESPN team abbreviation to our `NflTeam`, applying aliases. */
+/** Resolve an ESPN team abbreviation to our `NflTeam`, applying registry aliases. */
 function resolveEspnTeam(abbr: string | undefined): NflTeam | null {
-  if (!abbr) return null;
-  const key = abbr.trim().toUpperCase();
-  return getTeamByAbbr(ESPN_ABBR_ALIASES[key] ?? key);
+  return resolveTeamByAbbr(abbr);
 }
 
 /** Parse an ESPN score string ("0", "27") into a number, or `null`. */
