@@ -1,5 +1,11 @@
 # CLAUDE.md — Pare (repo technical reference)
 
+> ⚠️ **PARTIALLY STALE (2026-10-01 cleanup overhaul).** The data layer is now
+> **ESPN + Sleeper APIs — the CSV/PFR layer was removed** (`lib/pfrCsv.ts`,
+> `lib/pfr.ts`, `data/pfr/` deleted). Disregard the "Manual CSV", "position-based
+> CSV mapping", and weekly-CSV-update sections below. A lean, corrected, consolidated
+> rewrite is proposed at `docs/proposed/CLAUDE.lean.md` — review and adopt it to replace this file.
+
 > **Master brain doc lives in vault:**
 > `D:\Programs\Obsidian\Vault\Me\Projects\Pare\CLAUDE.md`
 >
