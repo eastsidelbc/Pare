@@ -5,7 +5,7 @@
  * opponent-aggregated from box scores). Returns raw rows; ranking is client-side.
  *
  * Returns defense stats where lower values are generally better (points/yards allowed).
- * 
+ *
  * WARNING: Do not rename data-stat keys without updating UI consumption accordingly.
  */
 
@@ -16,6 +16,7 @@ import { NFL_TEAMS } from '@/lib/teams';
 import { APP_CONSTANTS } from '@/config/constants';
 import { logger } from '@/utils/logger';
 import { generateRequestId } from '@/utils/helpers';
+import { createTtlCache } from '@/lib/apiCache';
 
 // Cache the full route response on Vercel's Data Cache so cold serverless
 // invocations get the cached JSON without re-running the ESPN aggregation.
@@ -32,31 +33,24 @@ interface ApiResponse {
   error?: string;
 }
 
-// In-memory cache
-interface CacheEntry {
-  data: ApiResponse | null;
-  timestamp: number;
-  maxAge: number;
-}
-
-let cache: CacheEntry = {
-  data: null,
-  timestamp: 0,
-  maxAge: process.env.NODE_ENV === 'production' ? APP_CONSTANTS.CACHE.PRODUCTION_MAX_AGE : APP_CONSTANTS.CACHE.DEBUG_MAX_AGE
-};
+// In-memory cache (shared TTL helper; lives for the server process lifetime).
+const cache = createTtlCache<ApiResponse>(
+  process.env.NODE_ENV === 'production'
+    ? APP_CONSTANTS.CACHE.PRODUCTION_MAX_AGE
+    : APP_CONSTANTS.CACHE.DEBUG_MAX_AGE
+);
 
 // ✅ Server-side ranking removed - now handled client-side by useRanking hook
 
 export async function GET() {
   const requestId = generateRequestId();
-  
-  
+
   try {
     // Check cache first
-    const now = Date.now();
-    if (cache.data && cache.timestamp && (now - cache.timestamp) < cache.maxAge) {
-      
-      return NextResponse.json(cache.data, {
+    const fresh = cache.getFresh();
+    if (fresh) {
+
+      return NextResponse.json(fresh.value, {
         headers: {
           'Cache-Control': 'public, max-age=300',
           'Content-Type': 'application/json',
@@ -121,12 +115,13 @@ export async function GET() {
       logger.error({ context: 'DEFENSE', requestId }, `ESPN standings fetch failed: ${msg}`);
 
       // RESILIENCE 1: serve stale cache if we have any.
-      if (cache.data) {
+      const stale = cache.getStale();
+      if (stale) {
         logger.performance(
           { context: 'DEFENSE', requestId },
           'Serving STALE cache after ESPN failure'
         );
-        const staleResponse: ApiResponse = { ...cache.data, stale: true, error: msg };
+        const staleResponse: ApiResponse = { ...stale, stale: true, error: msg };
         return NextResponse.json(staleResponse, {
           headers: {
             'Cache-Control': 'public, max-age=60',
@@ -166,11 +161,7 @@ export async function GET() {
 
     // Only cache a full, live standings result.
     if (source === 'ESPN-STANDINGS') {
-      cache = {
-        data: response,
-        timestamp: now,
-        maxAge: cache.maxAge,
-      };
+      cache.set(response);
     }
 
     logger.performance({ context: 'DEFENSE', requestId }, 'API Processing Complete', {
@@ -192,7 +183,7 @@ export async function GET() {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : 'No stack trace';
-    
+
     console.error(`❌ [DEFENSE-${requestId}] Error processing request:`, {
       error: errorMessage,
       stack: errorStack,
@@ -200,10 +191,11 @@ export async function GET() {
     });
 
     // If we have stale cache data, serve it with a warning
-    if (cache.data) {
-      
+    const stale = cache.getStale();
+    if (stale) {
+
       const staleResponse: ApiResponse = {
-        ...cache.data,
+        ...stale,
         stale: true,
         error: errorMessage
       };
@@ -221,7 +213,7 @@ export async function GET() {
 
     // No cache available, return detailed error
     console.error(`💥 [DEFENSE-${requestId}] No cache available, returning error to client`);
-    
+
     return NextResponse.json(
       {
         error: 'Failed to fetch defense data',
@@ -233,7 +225,7 @@ export async function GET() {
           errorType: error instanceof Error ? error.constructor.name : typeof error
         }
       },
-      { 
+      {
         status: 500,
         headers: {
           'Content-Type': 'application/json',

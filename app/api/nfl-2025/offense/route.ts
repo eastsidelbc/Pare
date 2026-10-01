@@ -12,7 +12,8 @@ import { type TeamStats } from '@/lib/types';
 import { fetchOffenseStatsFromESPN } from '@/lib/espnStats';
 import { APP_CONSTANTS } from '@/config/constants';
 import { logger } from '@/utils/logger';
-import { generateRequestId, getCacheAgeMinutes } from '@/utils/helpers';
+import { generateRequestId } from '@/utils/helpers';
+import { createTtlCache } from '@/lib/apiCache';
 
 // Cache the full route response on Vercel's Data Cache so cold serverless
 // invocations get the cached JSON without re-running any ESPN fetches.
@@ -29,36 +30,27 @@ interface ApiResponse {
   error?: string;
 }
 
-// In-memory cache
-interface CacheEntry {
-  data: ApiResponse | null;
-  timestamp: number;
-  maxAge: number;
-}
-
-let cache: CacheEntry = {
-  data: null,
-  timestamp: 0,
-  maxAge: process.env.NODE_ENV === 'production' ? APP_CONSTANTS.CACHE.PRODUCTION_MAX_AGE : APP_CONSTANTS.CACHE.DEBUG_MAX_AGE
-};
+// In-memory cache (shared TTL helper; lives for the server process lifetime).
+const cache = createTtlCache<ApiResponse>(
+  process.env.NODE_ENV === 'production'
+    ? APP_CONSTANTS.CACHE.PRODUCTION_MAX_AGE
+    : APP_CONSTANTS.CACHE.DEBUG_MAX_AGE
+);
 
 // ✅ Server-side ranking removed - now handled client-side by useRanking hook
 
 export async function GET() {
   const requestId = generateRequestId();
-  
-  
-  
+
   try {
     // Check cache first
-    const now = Date.now();
-    
-    if (cache.data && cache.timestamp && (now - cache.timestamp) < cache.maxAge) {
-      logger.cache({ context: 'OFFENSE', requestId }, `Serving cached data (${getCacheAgeMinutes(cache.timestamp)} min old)`, {
-        teamCount: cache.data.rows.length
+    const fresh = cache.getFresh();
+    if (fresh) {
+      logger.cache({ context: 'OFFENSE', requestId }, `Serving cached data (${Math.floor(fresh.ageMs / 60000)} min old)`, {
+        teamCount: fresh.value.rows.length
       });
-      
-      return NextResponse.json(cache.data, {
+
+      return NextResponse.json(fresh.value, {
         headers: {
           'Cache-Control': 'public, max-age=300',
           'Content-Type': 'application/json',
@@ -86,12 +78,13 @@ export async function GET() {
       logger.error({ context: 'OFFENSE', requestId }, `ESPN offense fetch failed: ${msg}`);
 
       // RESILIENCE 1: serve stale cache if we have any.
-      if (cache.data) {
+      const stale = cache.getStale();
+      if (stale) {
         logger.performance(
           { context: 'OFFENSE', requestId },
           'Serving STALE cache after ESPN failure'
         );
-        const staleResponse: ApiResponse = { ...cache.data, stale: true, error: msg };
+        const staleResponse: ApiResponse = { ...stale, stale: true, error: msg };
         return NextResponse.json(staleResponse, {
           headers: {
             'Cache-Control': 'public, max-age=60',
@@ -120,11 +113,7 @@ export async function GET() {
       rows,
     };
 
-    cache = {
-      data: response,
-      timestamp: now,
-      maxAge: cache.maxAge,
-    };
+    cache.set(response);
 
     logger.performance({ context: 'OFFENSE', requestId }, 'API Processing Complete', {
       duration: Date.now() - startTime,
@@ -145,7 +134,7 @@ export async function GET() {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : 'No stack trace';
-    
+
     console.error(`❌ [OFFENSE-${requestId}] Error processing request:`, {
       error: errorMessage,
       stack: errorStack,
@@ -153,10 +142,11 @@ export async function GET() {
     });
 
     // If we have stale cache data, serve it with a warning
-    if (cache.data) {
-      
+    const stale = cache.getStale();
+    if (stale) {
+
       const staleResponse: ApiResponse = {
-        ...cache.data,
+        ...stale,
         stale: true,
         error: errorMessage
       };
@@ -174,7 +164,7 @@ export async function GET() {
 
     // No cache available, return detailed error
     console.error(`💥 [OFFENSE-${requestId}] No cache available, returning error to client`);
-    
+
     return NextResponse.json(
       {
         error: 'Failed to fetch offense data',
@@ -186,7 +176,7 @@ export async function GET() {
           errorType: error instanceof Error ? error.constructor.name : typeof error
         }
       },
-      { 
+      {
         status: 500,
         headers: {
           'Content-Type': 'application/json',
