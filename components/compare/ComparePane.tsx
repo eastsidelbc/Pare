@@ -30,6 +30,9 @@ export interface ComparePaneProps {
    *  Same Compare UI as the full/tab view — this is the "one component, three
    *  places" from VISION.md, not a duplicate. */
   inline?: boolean;
+  /** Quadrant (Compare 2×2) peek: like `inline` but with a tight, balanced
+   *  bottom reserve for the floating corner controls. Requires `inline`. */
+  quadrant?: boolean;
   teamA: string;
   teamB: string;
   offenseData: TeamData[];
@@ -48,6 +51,7 @@ export interface ComparePaneProps {
 function ComparePane({
   isMobile,
   inline = false,
+  quadrant = false,
   teamA,
   teamB,
   offenseData,
@@ -82,7 +86,7 @@ function ComparePane({
     // (panels only) regardless of viewport.
     return (
       <MobileCompareLayout
-        variant="inline"
+        variant={quadrant ? 'quadrant' : 'inline'}
         selectedTeamA={teamA}
         selectedTeamB={teamB}
         onTeamAChange={onTeamAChange}

@@ -26,7 +26,7 @@ import { useIsMobile } from '@/lib/hooks/useIsMobile';
 import { APP_CONSTANTS } from '@/config/constants';
 import ComparePane from '@/components/compare/ComparePane';
 import CompareTabBar from '@/components/compare/CompareTabBar';
-import FloatingMetricsButton from '@/components/FloatingMetricsButton';
+import CompareQuadrants from '@/components/compare/CompareQuadrants';
 import OfflineStatusBanner from '@/components/OfflineStatusBanner';
 
 /** Stable handler set for one pane (kept identity-constant per comparison id). */
@@ -39,6 +39,9 @@ interface PaneHandlers {
 
 export default function CompareWorkspace() {
   const isMobile = useIsMobile();
+  // Phones (<768px) keep the single-pane swipe; tablet/desktop get the 2×2
+  // quadrant grid. (iPad portrait 834 and landscape 1194 both get quadrants.)
+  const isPhone = useIsMobile(768);
 
   // Deep link: /compare?away=XXX&home=YYY (away → Team A, home → Team B).
   const searchParams = useSearchParams();
@@ -184,16 +187,6 @@ export default function CompareWorkspace() {
     addComparison('', ''); // respects MAX_COMPARISONS; auto-activates the new tab
   }, [addComparison]);
 
-  // Metric handlers for the workspace-level floating button (active comparison).
-  const handleActiveOffenseMetrics = useCallback(
-    (metrics: string[]) => updateComparison(activeId, { settings: { offenseMetrics: metrics } }),
-    [updateComparison, activeId],
-  );
-  const handleActiveDefenseMetrics = useCallback(
-    (metrics: string[]) => updateComparison(activeId, { settings: { defenseMetrics: metrics } }),
-    [updateComparison, activeId],
-  );
-
   // Stable per-comparison handler sets (keyed by id) so memoized <ComparePane>s
   // don't re-render when an unrelated `setActive` changes. `updateComparison` is
   // read through a ref, so the cached closures never need to change identity.
@@ -310,80 +303,81 @@ export default function CompareWorkspace() {
         </div>
       </div>
 
-      {/* Comparison tabs pill — sits BETWEEN the title row and the cards. The "+"
-          (far right, easy thumb tap) adds a BLANK tab and activates it. */}
-      <CompareTabBar
-        comparisons={comparisons.map((c) => ({ id: c.id, teamA: c.teamA, teamB: c.teamB }))}
-        activeId={activeId}
-        onSelect={setActive}
-        onClose={removeComparison}
-        onAdd={handleAddBlank}
-        canAdd={comparisons.length < APP_CONSTANTS.MAX_COMPARISONS}
-      />
+      {isPhone ? (
+        <>
+          {/* Comparison tabs pill — sits BETWEEN the title row and the cards. The "+"
+              (far right, easy thumb tap) adds a BLANK tab and activates it. */}
+          <CompareTabBar
+            comparisons={comparisons.map((c) => ({ id: c.id, teamA: c.teamA, teamB: c.teamB }))}
+            activeId={activeId}
+            onSelect={setActive}
+            onClose={removeComparison}
+            onAdd={handleAddBlank}
+            canAdd={comparisons.length < APP_CONSTANTS.MAX_COMPARISONS}
+          />
 
-      {/* Pager viewport */}
-      <div ref={viewportRef} className="relative flex-1 overflow-hidden">
-        <motion.div
-          className="flex h-full"
-          style={{ x }}
-          drag={canDrag ? 'x' : false}
-          dragDirectionLock
-          dragConstraints={{ left: -(comparisons.length - 1) * width, right: 0 }}
-          dragElastic={0.12}
-          onDragEnd={handleDragEnd}
-        >
-          {comparisons.map((c, i) => {
-            // Windowing: only mount the active pane and its immediate neighbors
-            // (active ±1). Neighbors stay mounted so a swipe reveals a ready page
-            // (no blank flash); panes ≥2 away are virtualized (empty cell of the
-            // same width, preserving the track layout + drag constraints).
-            const isWindowed = Math.abs(i - activeIndex) <= 1;
-            const h = getPaneHandlers(c.id);
-            return (
-              <div
-                key={c.id}
-                className="shrink-0 h-full overflow-y-auto relative"
-                style={{
-                  width: width || '100%',
-                  // pan-y: browser handles vertical scroll natively; pager owns x.
-                  // overscroll contain: prevents scroll chaining to the document.
-                  touchAction: 'pan-y',
-                  overscrollBehavior: 'contain',
-                }}
-              >
-                {isWindowed ? (
-                  <ComparePane
-                    isMobile={isMobile}
-                    teamA={c.teamA}
-                    teamB={c.teamB}
-                    offenseData={offenseData}
-                    defenseData={defenseData}
-                    selectedOffenseMetrics={c.settings.offenseMetrics}
-                    selectedDefenseMetrics={c.settings.defenseMetrics}
-                    isLoading={isLoading}
-                    isLoadingOffense={isLoadingOffense}
-                    isLoadingDefense={isLoadingDefense}
-                    onTeamAChange={h.onTeamAChange}
-                    onTeamBChange={h.onTeamBChange}
-                    onOffenseMetricsChange={h.onOffenseMetricsChange}
-                    onDefenseMetricsChange={h.onDefenseMetricsChange}
-                  />
-                ) : null}
-              </div>
-            );
-          })}
-        </motion.div>
-      </div>
-
-      {/* Floating metrics button (desktop) — edits the ACTIVE comparison.
-          Rendered at the workspace root so its fixed positioning isn't captured
-          by the pager's transform. */}
-      {!isMobile && (
-        <FloatingMetricsButton
-          selectedOffenseMetrics={activeComparison.settings.offenseMetrics}
-          selectedDefenseMetrics={activeComparison.settings.defenseMetrics}
-          onOffenseMetricsChange={handleActiveOffenseMetrics}
-          onDefenseMetricsChange={handleActiveDefenseMetrics}
+          {/* Pager viewport */}
+          <div ref={viewportRef} className="relative flex-1 overflow-hidden">
+            <motion.div
+              className="flex h-full"
+              style={{ x }}
+              drag={canDrag ? 'x' : false}
+              dragDirectionLock
+              dragConstraints={{ left: -(comparisons.length - 1) * width, right: 0 }}
+              dragElastic={0.12}
+              onDragEnd={handleDragEnd}
+            >
+              {comparisons.map((c, i) => {
+                // Windowing: only mount the active pane and its immediate neighbors
+                // (active ±1). Neighbors stay mounted so a swipe reveals a ready page
+                // (no blank flash); panes ≥2 away are virtualized (empty cell of the
+                // same width, preserving the track layout + drag constraints).
+                const isWindowed = Math.abs(i - activeIndex) <= 1;
+                const h = getPaneHandlers(c.id);
+                return (
+                  <div
+                    key={c.id}
+                    className="shrink-0 h-full overflow-y-auto relative"
+                    style={{
+                      width: width || '100%',
+                      // pan-y: browser handles vertical scroll natively; pager owns x.
+                      // overscroll contain: prevents scroll chaining to the document.
+                      touchAction: 'pan-y',
+                      overscrollBehavior: 'contain',
+                    }}
+                  >
+                    {isWindowed ? (
+                      <ComparePane
+                        isMobile={isMobile}
+                        teamA={c.teamA}
+                        teamB={c.teamB}
+                        offenseData={offenseData}
+                        defenseData={defenseData}
+                        selectedOffenseMetrics={c.settings.offenseMetrics}
+                        selectedDefenseMetrics={c.settings.defenseMetrics}
+                        isLoading={isLoading}
+                        isLoadingOffense={isLoadingOffense}
+                        isLoadingDefense={isLoadingDefense}
+                        onTeamAChange={h.onTeamAChange}
+                        onTeamBChange={h.onTeamBChange}
+                        onOffenseMetricsChange={h.onOffenseMetricsChange}
+                        onDefenseMetricsChange={h.onDefenseMetricsChange}
+                      />
+                    ) : null}
+                  </div>
+                );
+              })}
+            </motion.div>
+          </div>
+        </>
+      ) : (
+        /* Tablet / desktop — 2×2 quadrant grid (own paging, add, remove, metrics). */
+        <CompareQuadrants
+          offenseData={offenseData}
+          defenseData={defenseData}
+          isLoading={isLoading}
+          isLoadingOffense={isLoadingOffense}
+          isLoadingDefense={isLoadingDefense}
         />
       )}
     </div>
