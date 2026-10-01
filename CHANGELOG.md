@@ -6,6 +6,24 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ## [Unreleased]
 
+### Added
+- **Team records, Standings tab, broadcast networks, responsive CardGrid** (2026-09-30)
+  - See: `docs/devnotes/2026-09-30-records-standings-networks-cardgrid.md`
+  - **Team W–L–T records** on Home cards (from the ESPN scoreboard payload, no extra
+    fetch) and under each team on the Compare panels (from the ESPN standings data
+    already fetched for defense). `'record'` added to the per-game transform skip list.
+  - **New Standings tab** (4th nav tab): `lib/standings.ts` + `app/api/standings`
+    + `app/standings/page.tsx` + `components/standings/DivisionTable.tsx`.
+    AFC/NFC → four divisions (North/South/East/West), ESPN-style columns
+    (W/L/T/PCT/PF/PA/STRK). Teams kept in ESPN's official NFL tiebreaker order
+    (no manual point-diff sort). Last-good in-memory fallback on ESPN hiccups.
+    `conference`/`division` added to all 32 teams in `lib/teams.ts`.
+  - **Broadcast network** shown next to kickoff time on Home cards (from the
+    scoreboard payload; "Prime Video" → "Prime"; text label, not logos — trademark).
+  - **`components/ui/CardGrid.tsx`** — shared responsive card wall (CSS `auto-fit`,
+    min/max card width, `maxCols` cap, centered partial rows). House standard for
+    card grids. Standings = 4 per row (one row per conference), Leaders = up to 5.
+
 ### Performance
 - **Data caching — Batch 3 (Next.js Data Cache + unstable_cache, no more cold aggregation)** (2026-09-14)
   - See: `docs/devnotes/2026-09-14-perf-batch3.md`
