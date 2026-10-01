@@ -19,7 +19,8 @@ import type { DivisionStandings } from '@/lib/standings';
 
 /** Team column flexes a bit wider than a stat column (room for logo + abbr);
  *  the seven stat columns split the remaining width evenly. */
-const COLS = 'minmax(60px,1.3fr) repeat(7, minmax(0,1fr))';
+// W/L/T are 1 digit (narrow); PCT holds "1.000" (needs more room); PF/PA/STRK normal.
+const COLS = 'minmax(60px,1.3fr) repeat(3, minmax(0,0.75fr)) minmax(0,1.4fr) repeat(3, minmax(0,1fr))';
 
 function HeaderCell({ children }: { children: React.ReactNode }) {
   return (
@@ -68,7 +69,7 @@ export default function DivisionTable({ division }: { division: DivisionStanding
         <>
           {/* Column headers */}
           <div
-            className="grid items-center gap-1.5 px-3 py-1.5 border-b"
+            className="grid items-center gap-1 px-2 py-1.5 border-b"
             style={{ gridTemplateColumns: COLS, borderColor: 'var(--border)' }}
           >
             <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.5px', color: 'var(--muted)' }}>
@@ -91,7 +92,7 @@ export default function DivisionTable({ division }: { division: DivisionStanding
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2, delay: i * 0.03 }}
-                className="grid items-center gap-1.5 px-3 py-2"
+                className="grid items-center gap-1 px-2 py-2"
                 style={{
                   gridTemplateColumns: COLS,
                   background: i === 0 ? 'rgba(245,200,66,0.06)' : 'transparent',

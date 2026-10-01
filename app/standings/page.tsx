@@ -52,7 +52,7 @@ export default async function StandingsPage() {
               <SectionLabel>{conf.conference}</SectionLabel>
               {/* Cards flow naturally (1 → 2 → 3 → 4 by width); 4 per row max so
                   a conference's four divisions sit on one clean line on desktop. */}
-              <CardGrid minCard={290} maxCard={340} maxCols={4}>
+              <CardGrid minCard={270} maxCard={340} maxCols={4}>
                 {conf.divisions.map((division) => (
                   <DivisionTable key={division.label} division={division} />
                 ))}
