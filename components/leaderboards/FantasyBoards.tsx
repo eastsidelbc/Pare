@@ -13,6 +13,7 @@
 import { useMemo, useState } from 'react';
 import type { LeaderBoard, LeaderRow } from '@/lib/leaders';
 import LeaderCard from './LeaderCard';
+import CardGrid from '@/components/ui/CardGrid';
 
 const DISPLAY_COUNT = 25;
 type Mode = 'total' | 'ppg';
@@ -93,11 +94,11 @@ export default function FantasyBoards({ boards, label }: { boards: LeaderBoard[]
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:gap-3">
+      <CardGrid minCard={200} maxCard={300} maxCols={5}>
         {view.map((b) => (
           <LeaderCard key={b.key} board={b} />
         ))}
-      </div>
+      </CardGrid>
     </section>
   );
 }

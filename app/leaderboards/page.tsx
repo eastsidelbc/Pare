@@ -12,6 +12,7 @@
 import { getAllLeaderboards, type LeaderSection } from '@/lib/leaders';
 import LeaderCard from '@/components/leaderboards/LeaderCard';
 import FantasyBoards from '@/components/leaderboards/FantasyBoards';
+import CardGrid from '@/components/ui/CardGrid';
 
 // Re-fetch (and re-render) on the same ~6h cadence as the underlying board fetch.
 export const revalidate = 21600;
@@ -33,7 +34,7 @@ export default async function LeaderboardsPage() {
         className="flex-none border-b"
         style={{ background: 'var(--surface)', borderColor: 'var(--border)', paddingTop: 'env(safe-area-inset-top)' }}
       >
-        <div className="mx-auto flex h-14 w-full max-w-[600px] items-center justify-between px-4">
+        <div className="mx-auto flex h-14 w-full max-w-[1440px] items-center justify-between px-4">
           <h1 className="font-black tracking-tight" style={{ fontSize: '20px', color: 'var(--text)' }}>
             Pare
             <span
@@ -55,7 +56,7 @@ export default async function LeaderboardsPage() {
           paddingBottom: 'calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px)',
         }}
       >
-        <div className="mx-auto w-full max-w-[600px] px-4 pt-4 space-y-6">
+        <div className="mx-auto w-full max-w-[1440px] px-4 pt-4 space-y-6">
           {SECTIONS.map(({ key, label }) => {
             const sectionBoards = boards.filter((b) => b.section === key);
             if (sectionBoards.length === 0) return null;
@@ -66,11 +67,11 @@ export default async function LeaderboardsPage() {
             return (
               <section key={key}>
                 <SectionLabel>{label}</SectionLabel>
-                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <CardGrid minCard={200} maxCard={300} maxCols={5}>
                   {sectionBoards.map((board) => (
                     <LeaderCard key={board.key} board={board} />
                   ))}
-                </div>
+                </CardGrid>
               </section>
             );
           })}
