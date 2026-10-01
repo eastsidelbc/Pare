@@ -1,0 +1,14 @@
+# Normalize line endings: store LF in the repo, check out LF everywhere.
+# Stops the CRLF/LF churn between the Windows dev box and the Mac Mini.
+* text=auto eol=lf
+
+# Binary files — never touch their bytes.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.pdf  binary
