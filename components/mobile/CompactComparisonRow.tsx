@@ -40,7 +40,6 @@ function CompactComparisonRow({
   teamBData,
   allData,
   panelType,
-  displayMode,
   activeDropdownTeam,
   onTeamAChange,
   onTeamBChange,

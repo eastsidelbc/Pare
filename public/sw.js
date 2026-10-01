@@ -290,7 +290,7 @@ async function staleWhileRevalidate(request, cacheName) {
   // Return cached data immediately if available, otherwise wait for network
   if (cachedResponse) {
     console.log('⚡ [SW] Serving from cache (updating in background):', request.url);
-    fetchPromise; // Don't await - let it update in background
+    // fetchPromise is already in flight above; let it update the cache in the background (not awaited)
     return cachedResponse;
   }
 
@@ -360,7 +360,7 @@ async function networkFirstWithFallback(request) {
     }
     
     return response;
-  } catch (error) {
+  } catch {
     console.log('📦 [SW] Network failed, checking cache for:', request.url);
     
     const cache = await caches.open(CACHE_NAME);

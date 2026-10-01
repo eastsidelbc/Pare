@@ -140,7 +140,7 @@ export default function TeamDropdown({
 
             {/* Team List */}
             <div className="py-1" role="listbox" aria-label={`${label || 'Team'} selection`}>
-              {sortedTeams.map((team, index) => {
+              {sortedTeams.map((team) => {
                 const isSelected = team.team === currentTeam;
                 const isAverage = isAverageTeam(team.team);
                 const emoji = getTeamEmoji(team.team);

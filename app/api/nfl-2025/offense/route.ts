@@ -1,17 +1,14 @@
 /**
- * NFL 2025 Offense Stats API Route Handler
- * 
- * Scrapes team offense stats from Pro Football Reference and returns ranked JSON data.
- * 
- * Source: https://www.pro-football-reference.com/years/2025/#team_stats
- * 
- * Returns offense stats where higher values are generally better (points, yards, TDs).
- * 
- * WARNING: Do not rename data-stat keys without updating UI consumption accordingly.
+ * NFL Offense Stats API Route Handler
+ *
+ * Serves live team offense season totals from ESPN (all 32 teams), cached in-memory
+ * + via Next ISR. Returns raw rows; ranking is computed client-side (useRanking).
+ *
+ * WARNING: Do not rename stat keys without updating UI consumption accordingly.
  */
 
 import { NextResponse } from 'next/server';
-import { fetchAndParseCSV, type TeamStats } from '@/lib/pfrCsv';
+import { type TeamStats } from '@/lib/types';
 import { fetchOffenseStatsFromESPN } from '@/lib/espnStats';
 import { APP_CONSTANTS } from '@/config/constants';
 import { logger } from '@/utils/logger';
@@ -49,7 +46,6 @@ let cache: CacheEntry = {
 
 export async function GET() {
   const requestId = generateRequestId();
-  const timestamp = new Date().toISOString();
   
   // API request start (verbose only) 
   // Environment info (verbose only)
@@ -81,12 +77,10 @@ export async function GET() {
 
     let updatedAt: string;
     let rows: TeamStats[];
-    let source: 'ESPN' | 'CSV-FALLBACK';
 
     try {
       // 🏈 Live 2026 offense season totals from ESPN (all 32 teams in parallel).
       ({ updatedAt, rows } = await fetchOffenseStatsFromESPN());
-      source = 'ESPN';
       logger.performance(
         { context: 'OFFENSE', requestId },
         `Served ${rows.length} teams from ESPN (${APP_CONSTANTS.SEASON})`
@@ -113,18 +107,13 @@ export async function GET() {
         });
       }
 
-      // RESILIENCE 2: no cache — fall back to the existing 2025 offense CSV so the
-      // app never blanks. (Throws → outer catch → 500 if the CSV is also gone.)
-      logger.performance(
-        { context: 'OFFENSE', requestId },
-        'No cache — falling back to 2025 offense CSV'
-      );
-      ({ updatedAt, rows } = await fetchAndParseCSV({ type: 'offense' }));
-      source = 'CSV-FALLBACK';
+      // No cache to serve — bubble to the outer catch → 500. Data is ESPN-only
+      // now; the old 2025 CSV fallback was removed in the cleanup overhaul.
+      throw espnError;
     }
 
     if (rows.length === 0) {
-      throw new Error('No team data found (ESPN + CSV both empty)');
+      throw new Error('No team data found (ESPN returned empty)');
     }
 
     // ✅ Rankings computed client-side via useRanking hook (unchanged).
@@ -133,23 +122,17 @@ export async function GET() {
       type: 'offense',
       updatedAt,
       rows,
-      ...(source === 'CSV-FALLBACK'
-        ? { stale: true, error: 'served-2025-csv-fallback' }
-        : {}),
     };
 
-    // Only cache a full, live ESPN result — never cache the CSV fallback as if fresh.
-    if (source === 'ESPN') {
-      cache = {
-        data: response,
-        timestamp: now,
-        maxAge: cache.maxAge,
-      };
-    }
+    cache = {
+      data: response,
+      timestamp: now,
+      maxAge: cache.maxAge,
+    };
 
     logger.performance({ context: 'OFFENSE', requestId }, 'API Processing Complete', {
       duration: Date.now() - startTime,
-      operation: `Processed ${rows.length} teams via ${source}`
+      operation: `Processed ${rows.length} teams via ESPN`
     });
 
     return NextResponse.json(response, {
@@ -157,7 +140,7 @@ export async function GET() {
         'Cache-Control': 'public, max-age=300',
         'Content-Type': 'application/json',
         'X-Cache': 'MISS',
-        'X-Source': source,
+        'X-Source': 'ESPN',
         'X-Request-ID': requestId,
         'X-Processing-Time': `${Date.now() - startTime}ms`,
       },

@@ -11,7 +11,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { type TeamStats } from '@/lib/pfrCsv';
+import { type TeamStats } from '@/lib/types';
 import { fetchDefenseStatsFromESPN, fetchDefenseYardsAllowed } from '@/lib/espnStats';
 import { NFL_TEAMS } from '@/lib/teams';
 import { APP_CONSTANTS } from '@/config/constants';

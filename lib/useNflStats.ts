@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { APP_CONSTANTS } from '@/config/constants';
-import { TeamStatsWithRanks } from './pfr';
+import type { TeamStatsWithRanks } from '@/lib/types';
 import { transformApiResponseToTeamData } from '@/utils/teamDataTransform';
 
 /** Dev-only diagnostic logging (errors always log; info/warn are gated). */

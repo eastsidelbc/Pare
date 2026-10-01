@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import { 
   AVAILABLE_METRICS, 
   getMetricsByCategory,
@@ -30,8 +30,6 @@ export default function MetricsSelector({
   maxMetrics = 99,
   className = '' 
 }: MetricsSelectorProps) {
-  // Always show metrics (no expand/collapse needed)
-  const isExpanded = true;
   
   // Phase 2.1: Memoize expensive category grouping (only recalculate when type changes)
   const metricsByCategory = useMemo(() => getMetricsByCategory(type), [type]);
@@ -44,12 +42,6 @@ export default function MetricsSelector({
   }, [metricsByCategory]);
 
   // Phase 2.1: Wrap handlers in useCallback to prevent recreation on every render
-  const handleAddMetric = useCallback((metricKey: string) => {
-    if (!selectedMetrics.includes(metricKey) && selectedMetrics.length < maxMetrics) {
-      onMetricsChange([...selectedMetrics, metricKey]);
-    }
-  }, [selectedMetrics, maxMetrics, onMetricsChange]);
-
   const handleRemoveMetric = useCallback((metricKey: string) => {
     onMetricsChange(selectedMetrics.filter(key => key !== metricKey));
   }, [selectedMetrics, onMetricsChange]);

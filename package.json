@@ -8,7 +8,9 @@
     "clean": "node -e \"require('fs').rmSync('.next', {recursive:true, force:true}); require('fs').rmSync('.turbo', {recursive:true, force:true}); require('fs').rmSync('node_modules/.cache', {recursive:true, force:true});\"",
     "build": "next build --turbopack",
     "start": "next start -p 4000",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "check": "tsc --noEmit && eslint"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.16",
@@ -19,7 +21,6 @@
     "framer-motion": "^12.23.21",
     "lucide-react": "^0.544.0",
     "next": "15.5.9",
-    "node-html-parser": "^6.1.12",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },

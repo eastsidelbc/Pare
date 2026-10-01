@@ -13,7 +13,7 @@
  */
 
 import { unstable_cache } from 'next/cache';
-import type { TeamStats, ParseResult } from '@/lib/pfrCsv';
+import type { TeamStats, ParseResult } from '@/lib/types';
 import { NFL_TEAMS, getTeamByAbbr } from '@/lib/teams';
 import { getCurrentWeekInfo } from '@/lib/schedule';
 import { APP_CONSTANTS } from '@/config/constants';

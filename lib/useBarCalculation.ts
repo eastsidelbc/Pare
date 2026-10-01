@@ -41,8 +41,7 @@ export function useBarCalculation({
   teamBValue,
   teamARanking,
   teamBRanking,
-  panelType,
-  metricName
+  panelType
 }: BarCalculationProps): BarCalculationResult {
 
   return useMemo(() => {

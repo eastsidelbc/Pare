@@ -12,7 +12,7 @@
 
 import { useMemo, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useFloating, flip, shift, offset, autoUpdate, useClick, useDismiss, useInteractions, FloatingPortal, size, inline } from '@floating-ui/react';
+import { useFloating, flip, shift, offset, autoUpdate, useDismiss, useInteractions, FloatingPortal, size, inline } from '@floating-ui/react';
 import type { TeamData } from '@/lib/useNflStats';
 import { isAverageTeam, isNonSelectableSpecialTeam, getTeamDisplayLabel } from '@/utils/teamHelpers';
 import { BarChart3 } from 'lucide-react';
@@ -37,7 +37,7 @@ export default function CompactTeamSelector({
 }: CompactTeamSelectorProps) {
   
   // Floating UI setup with auto-positioning
-  const { refs, floatingStyles, context, x, y, strategy: floatingStrategy } = useFloating({
+  const { refs, context, x, y, strategy: floatingStrategy } = useFloating({
     strategy: 'fixed',  // Phase 2B: Use viewport positioning
     open: isOpen,
     onOpenChange: onToggle,

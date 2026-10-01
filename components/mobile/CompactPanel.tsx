@@ -13,8 +13,6 @@ import type { TeamData } from '@/lib/useNflStats';
 import { useDisplayMode } from '@/lib/useDisplayMode';
 import CompactPanelHeader from './CompactPanelHeader';
 import CompactComparisonRow from './CompactComparisonRow';
-import CompactRankingDropdown from './CompactRankingDropdown';
-import CompactTeamSelector from './CompactTeamSelector';
 interface CompactPanelProps {
   type: 'offense' | 'defense';
   teamA: string;
@@ -90,18 +88,7 @@ function CompactPanel({
     setActiveTeamSelector(null);
   }, [onTeamBChange]);
   
-  // Handle rank click to open dropdown
-  const handleRankClick = (metricKey: string, team: 'A' | 'B') => {
-    setActiveTeamSelector(null); // Close team selector
-    const current = activeDropdown;
-    if (current?.metricKey === metricKey && current?.team === team) {
-      // Close if same dropdown clicked
-      setActiveDropdown(null);
-    } else {
-      // Open new dropdown
-      setActiveDropdown({ metricKey, team });
-    }
-  };
+  
   
   // Handle logo click to open team selector
   const handleLogoClick = (team: 'A' | 'B') => {
@@ -140,7 +127,7 @@ function CompactPanel({
       
       {/* Metric Rows - tight, theScore-style density with subtle dividers */}
       <div className="divide-y divide-white/5">
-        {selectedMetrics.map((metricKey, index) => (
+        {selectedMetrics.map((metricKey) => (
           <CompactComparisonRow
             key={metricKey}
             metricField={metricKey}

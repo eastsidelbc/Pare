@@ -24,7 +24,6 @@ interface TeamSelectionPanelProps {
 
 export default function TeamSelectionPanel({
   offenseData,
-  defenseData,
   onTeamChange,
   isLoading = false,
   className = '',

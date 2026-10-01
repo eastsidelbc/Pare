@@ -15,7 +15,6 @@ import { ChevronDown } from 'lucide-react';
 import { TeamData } from '@/lib/useNflStats';
 import { calculateBulkRanking, RankingOptions } from '@/lib/useRanking';
 import { AVAILABLE_METRICS, formatMetricValue } from '@/lib/metricsConfig';
-import { useTheme } from '@/lib/useTheme';
 import { isAverageTeam, getTeamDisplayLabel, getTeamEmoji } from '@/utils/teamHelpers';
 
 interface RankingDropdownProps {
@@ -56,8 +55,6 @@ export default function RankingDropdown({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   
-  // Get theme colors for team-specific styling
-  const { getTeamAColor, getTeamBColor } = useTheme();
   
   // Get metric configuration
   const metric = AVAILABLE_METRICS[metricKey];
@@ -277,7 +274,7 @@ export default function RankingDropdown({
 
             {/* Team List */}
             <div className="py-1">
-              {sortedTeams.map((item, index) => {
+              {sortedTeams.map((item) => {
                 const isSelected = item.team.team === currentTeam;
                 const rank = item.ranking?.rank || 999;
                 const isTied = item.ranking?.isTied || false;
