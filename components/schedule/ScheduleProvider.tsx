@@ -98,6 +98,7 @@ function differsLive(a: Matchup, b: Matchup): boolean {
     a.winner !== b.winner ||
     a.awayRecord !== b.awayRecord ||
     a.homeRecord !== b.homeRecord ||
+    a.network !== b.network ||
     (a.odds?.spread ?? null) !== (b.odds?.spread ?? null) ||
     (a.odds?.overUnder ?? null) !== (b.odds?.overUnder ?? null)
   );
@@ -283,6 +284,7 @@ export function ScheduleProvider({
             odds: l.odds,
             awayRecord: l.awayRecord,
             homeRecord: l.homeRecord,
+            network: l.network,
           };
         });
         next[wk] = entryChanged ? { ...entry, matchups: newMatchups } : entry;

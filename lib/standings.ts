@@ -139,17 +139,6 @@ function mapEntry(entry: EspnEntry): { team: NflTeam; standing: TeamStanding } |
   };
 }
 
-/** Sort a division: best win % first, then point differential, then more wins. */
-function sortDivision(a: TeamStanding, b: TeamStanding): number {
-  const pa = parseFloat(a.pct) || 0;
-  const pb = parseFloat(b.pct) || 0;
-  if (pb !== pa) return pb - pa;
-  const da = parseInt(a.diff, 10) || 0;
-  const db = parseInt(b.diff, 10) || 0;
-  if (db !== da) return db - da;
-  return b.wins - a.wins;
-}
-
 /** Build the empty (no-data) shape so the UI still renders all 8 boxes. */
 function emptyConferences(): ConferenceStandings[] {
   const build = (conf: Conference): ConferenceStandings => ({
@@ -165,8 +154,8 @@ function emptyConferences(): ConferenceStandings[] {
 
 /**
  * All standings, grouped NFC → AFC, each with its four divisions (North, South,
- * East, West), teams sorted within a division. Degrades to empty boxes on any
- * failure so the tab never crashes.
+ * East, West), teams kept in ESPN's official standings order (real NFL
+ * tiebreakers). Degrades to empty boxes on any failure so the tab never crashes.
  */
 export async function getStandings(): Promise<ConferenceStandings[]> {
   const url = `${ESPN_STANDINGS_URL}?season=${APP_CONSTANTS.SEASON}`;
@@ -177,6 +166,10 @@ export async function getStandings(): Promise<ConferenceStandings[]> {
     const data = (await res.json()) as EspnStandingsResponse;
 
     // Bucket every entry by conference + division using the static team map.
+    // ESPN returns entries already in official standings order (it applies the
+    // full NFL tiebreaker chain: head-to-head, division record, common games,
+    // conference record, strength of victory/schedule, …). We iterate in that
+    // order and never re-sort, so each division inherits ESPN's official order.
     const buckets = new Map<string, TeamStanding[]>();
     const keyOf = (c: Conference, d: Division) => `${c}-${d}`;
 
@@ -202,7 +195,7 @@ export async function getStandings(): Promise<ConferenceStandings[]> {
       divisions: DIVISION_ORDER.map((division) => ({
         division,
         label: `${conf} ${division}`,
-        teams: (buckets.get(keyOf(conf, division)) ?? []).slice().sort(sortDivision),
+        teams: buckets.get(keyOf(conf, division)) ?? [],
       })),
     });
 

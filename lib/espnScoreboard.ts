@@ -45,10 +45,15 @@ interface EspnOdds {
   details?: string;
   overUnder?: number;
 }
+interface EspnBroadcast {
+  market?: string;
+  names?: string[];
+}
 interface EspnCompetition {
   competitors?: EspnCompetitor[];
   status?: { type?: EspnStatusType };
   odds?: EspnOdds[];
+  broadcasts?: EspnBroadcast[];
 }
 interface EspnEvent {
   id?: string;
@@ -145,6 +150,12 @@ export function mapEspnScoreboard(data: EspnScoreboard, fallbackWeek = 1): Match
     const recordOf = (c: EspnCompetitor | undefined): string | null =>
       c?.records?.find((r) => r.name === 'overall')?.summary ?? null;
 
+    // Broadcast network (pre-game only; ESPN drops it once a game is final).
+    // Shorten the one long name — "Prime Video" → "Prime". Everything else is
+    // already short (FOX, CBS, NBC, ABC, ESPN, NFL Network, Netflix).
+    const rawNetwork = competition?.broadcasts?.[0]?.names?.[0] ?? null;
+    const network = rawNetwork === 'Prime Video' ? 'Prime' : rawNetwork;
+
     const kickoff = new Date(event.date);
     matchups.push({
       id: `${kickoff.getFullYear()}-w${week}-${away.abbr}-${home.abbr}`,
@@ -161,6 +172,7 @@ export function mapEspnScoreboard(data: EspnScoreboard, fallbackWeek = 1): Match
       odds,
       awayRecord: recordOf(awayComp),
       homeRecord: recordOf(homeComp),
+      network,
       espnEventId: event.id ?? null,
     });
   }

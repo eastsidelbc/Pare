@@ -23,7 +23,7 @@ export default async function StandingsPage() {
         className="flex-none border-b"
         style={{ background: 'var(--surface)', borderColor: 'var(--border)', paddingTop: 'env(safe-area-inset-top)' }}
       >
-        <div className="mx-auto flex h-14 w-full max-w-[600px] items-center justify-between px-4">
+        <div className="mx-auto flex h-14 w-full max-w-[1080px] items-center justify-between px-4">
           <h1 className="font-black tracking-tight" style={{ fontSize: '20px', color: 'var(--text)' }}>
             Pare
             <span
@@ -45,11 +45,18 @@ export default async function StandingsPage() {
           paddingBottom: 'calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px)',
         }}
       >
-        <div className="mx-auto w-full max-w-[600px] px-4 pt-4 space-y-6">
+        <div className="mx-auto w-full max-w-[1080px] px-4 pt-4 space-y-6">
           {conferences.map((conf) => (
             <section key={conf.conference}>
               <SectionLabel>{conf.conference}</SectionLabel>
-              <div className="space-y-3">
+              {/* Cards flow naturally: as many tight (~340px) cards per row as
+                  the width allows — 1 on a phone, 2 on a tablet, 3 on desktop —
+                  with no hand-set breakpoints. Capping the card width is what
+                  keeps the columns tight instead of stretching across the card. */}
+              <div
+                className="grid gap-3"
+                style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 340px))' }}
+              >
                 {conf.divisions.map((division) => (
                   <DivisionTable key={division.label} division={division} />
                 ))}

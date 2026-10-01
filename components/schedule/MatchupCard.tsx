@@ -95,7 +95,7 @@ function oddsLine(odds: MatchupOdds | null): string | null {
 }
 
 export default function MatchupCard({ matchup, isOpen = false, onToggle }: MatchupCardProps) {
-  const { away, home, kickoff, state, statusDetail, awayScore, homeScore, winner, odds, awayRecord, homeRecord } = matchup;
+  const { away, home, kickoff, state, statusDetail, awayScore, homeScore, winner, odds, awayRecord, homeRecord, network } = matchup;
   const { day, time } = formatKickoff(kickoff);
 
   const showScores = state !== 'pre' && awayScore != null && homeScore != null;
@@ -157,12 +157,22 @@ export default function MatchupCard({ matchup, isOpen = false, onToggle }: Match
             >
               {day.toUpperCase()}
             </span>
-            <span
-              className="mt-1 font-semibold tabular-nums leading-none"
-              style={{ fontSize: '11px', color: 'var(--subtext)' }}
-            >
-              {time}
-            </span>
+            <div className="mt-1 flex items-center gap-1 whitespace-nowrap leading-none">
+              <span
+                className="font-semibold tabular-nums"
+                style={{ fontSize: '11px', color: 'var(--subtext)' }}
+              >
+                {time}
+              </span>
+              {network && (
+                <>
+                  <span className="font-semibold" style={{ fontSize: '11px', color: 'var(--subtext)' }}>·</span>
+                  <span className="font-semibold" style={{ fontSize: '11px', color: 'var(--subtext)' }}>
+                    {network}
+                  </span>
+                </>
+              )}
+            </div>
             {line && (
               <span
                 className="mt-1 whitespace-nowrap font-medium leading-none"

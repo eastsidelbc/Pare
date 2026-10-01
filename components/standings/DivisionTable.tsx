@@ -4,6 +4,11 @@
  * ESPN-style columns: Team | W | L | T | PCT | PF | PA | Strk. The division
  * leader (first row, already sorted upstream) gets a subtle gold tint. Styled
  * with the app's design tokens so it matches the schedule / leaders shells.
+ *
+ * The row is a single grid that fills the card edge-to-edge: the team column
+ * flexes to take the left side, the seven stat columns share the rest. Card
+ * width is kept tight by the page (see app/standings/page.tsx), so the columns
+ * stay close together without any hand-tuned pixel widths.
  */
 
 'use client';
@@ -12,13 +17,14 @@ import { motion } from 'framer-motion';
 import TeamLogo from '@/components/TeamLogo';
 import type { DivisionStandings } from '@/lib/standings';
 
-/** Shared column template so the header row and every team row line up exactly. */
-const COLS = 'minmax(0,1fr) 20px 20px 18px 42px 34px 34px 34px';
+/** Team column flexes a bit wider than a stat column (room for logo + abbr);
+ *  the seven stat columns split the remaining width evenly. */
+const COLS = 'minmax(60px,1.3fr) repeat(7, minmax(0,1fr))';
 
 function HeaderCell({ children }: { children: React.ReactNode }) {
   return (
     <span
-      className="text-right tabular-nums"
+      className="text-center tabular-nums"
       style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.5px', color: 'var(--muted)' }}
     >
       {children}
@@ -29,7 +35,7 @@ function HeaderCell({ children }: { children: React.ReactNode }) {
 function Stat({ children, dim }: { children: React.ReactNode; dim?: boolean }) {
   return (
     <span
-      className="text-right tabular-nums leading-none"
+      className="text-center tabular-nums leading-none"
       style={{ fontSize: '12px', fontWeight: 600, color: dim ? 'var(--muted)' : 'var(--text)' }}
     >
       {children}

@@ -59,6 +59,8 @@ export interface Matchup {
   awayRecord: string | null;
   /** Home team's overall W-L(-T) record, e.g. "3-0". `null` when unknown/fallback. */
   homeRecord: string | null;
+  /** Broadcast network, e.g. "FOX" / "CBS" / "Prime". Pre-game only; `null` otherwise. */
+  network: string | null;
   /** ESPN event id, for the post-game box-score lookup. `null` for fallback games. */
   espnEventId: string | null;
 }
@@ -125,6 +127,7 @@ function toMatchup(raw: RawMatchup, week: number): Matchup | null {
     odds: null,
     awayRecord: null,
     homeRecord: null,
+    network: null,
     espnEventId: null,
   };
 }
