@@ -7,6 +7,19 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Added
+- **Compare: 2×2 quadrant layout (tablet/desktop) + spacing polish** (2026-10-01)
+  - See: `docs/devnotes/2026-10-01-compare-quadrants.md`
+  - **Quadrant view** on tablet/desktop (≥768px): up to four comparisons at once in a
+    2×2 grid, each its own Offense+Defense pane, still swipeable (paging between sets of
+    four). Phone keeps the single-pane swipe. `components/compare/CompareQuadrants.tsx` +
+    `components/compare/QuadrantMetricsButton.tsx` (per-quadrant ⚙ metrics modal);
+    `CompareWorkspace.tsx` branches on `useIsMobile(768)`; `ComparePane.tsx` /
+    `MobileCompareLayout.tsx` gained a `quadrant` variant.
+  - **Per-quadrant × / ⚙ controls** as a vertical box floating in a reserved right gap.
+    Centering gotcha fixed by wrapping content + box in an inner `relative` div so the box
+    centers to the content, not the grid-stretched card.
+  - **Uniform 6px dark-blue band** around the quadrant body (left/top/bottom/between
+    panels + both sides of the control box); panels widened to fill most of the card.
 - **Team records, Standings tab, broadcast networks, responsive CardGrid** (2026-09-30)
   - See: `docs/devnotes/2026-09-30-records-standings-networks-cardgrid.md`
   - **Team W–L–T records** on Home cards (from the ESPN scoreboard payload, no extra

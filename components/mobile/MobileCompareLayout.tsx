@@ -67,25 +67,33 @@ function MobileCompareLayout({
   const teamARecord = typeof teamADefense?.record === 'string' ? teamADefense.record : null;
   const teamBRecord = typeof teamBDefense?.record === 'string' ? teamBDefense.record : null;
 
-  // Bottom reserve: full/inline leave room for the floating BottomNav; the
-  // quadrant view needs only a small, balanced gap that holds the corner
-  // metrics/× pill (so the gap above the pill === the gap below it).
-  const padBottom =
-    variant === 'quadrant' ? 52 : 'calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px)';
+  // Quadrant uses a single uniform GAP (6px) as the dark-blue band everywhere:
+  // left, top, bottom, between the two panels, and on each side of the control
+  // box — so the stat panels fill most of the card and the leftover dark blue is
+  // even on all sides. Right reserves GAP + control-box(≈34) + GAP = 46 so the
+  // vertically-centered ×/⚙ box has a matching 6px band left and right.
+  // full/inline keep their original px-3/py-2 + BottomNav bottom reserve.
+  const isQuad = variant === 'quadrant';
+  const GAP = 6;
+  const padBottom = isQuad ? GAP : 'calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px)';
+  const padRight = isQuad ? GAP + 34 + GAP : undefined;
+  const padLeft = isQuad ? GAP : undefined; // undefined → px-3 (12px) for full/inline
+  const padTop = isQuad ? GAP : undefined;  // undefined → py-2 (8px) for full/inline
+  const bodyClass = isQuad ? 'space-y-1.5' : 'px-3 py-2 space-y-2'; // space-y-1.5 = 6px
 
   // Shared body: skeleton while loading, else the two compact panels.
   const body = isLoading ? (
     <div
-      className="px-3 py-2 space-y-2"
-      style={{ paddingBottom: padBottom }}
+      className={bodyClass}
+      style={{ paddingBottom: padBottom, paddingRight: padRight, paddingLeft: padLeft, paddingTop: padTop }}
     >
       <PanelSkeleton rows={offenseMetrics.length || 5} />
       <PanelSkeleton rows={defenseMetrics.length || 8} />
     </div>
   ) : (
     <div
-      className="px-3 py-2 space-y-2"
-      style={{ paddingBottom: padBottom }}
+      className={bodyClass}
+      style={{ paddingBottom: padBottom, paddingRight: padRight, paddingLeft: padLeft, paddingTop: padTop }}
     >
       {/* Offense Panel */}
       <CompactPanel

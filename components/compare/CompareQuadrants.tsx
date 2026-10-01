@@ -247,6 +247,9 @@ function Quadrant({
 
   return (
     <div className={shell} style={shellStyle}>
+      {/* Inner wrapper hugs the content so the control box centers to the
+          comparison itself, not to the (grid-stretched) card height. */}
+      <div className="relative">
       {hasTeams ? (
         <ComparePane
           isMobile
@@ -278,25 +281,22 @@ function Quadrant({
         </div>
       )}
 
-      {/* No title bar — controls float in the bottom-right dead space to save
-          vertical room and keep the quadrant clean. */}
+      {/* Controls float as a small VERTICAL box (× over ⚙) in the reserved right
+          gap, vertically centered — dark-blue card shows above, below, around. */}
       {(hasTeams || canRemove) && (
         <div
-          className="absolute bottom-2.5 right-2.5 z-10 flex items-center gap-0.5 rounded-lg"
+          className="absolute top-1/2 z-10 flex -translate-y-1/2 flex-col items-center gap-0.5 rounded-lg"
           style={{
+            // Centered in the reserved right gap. The quadrant body uses a uniform
+            // 6px dark-blue band everywhere (padLeft/top/bottom + between panels);
+            // padRight is 6 + boxWidth(≈34) + 6 = 46, so right:6 leaves a matching
+            // 6px band on BOTH sides of the control box.
+            right: 6,
             background: 'color-mix(in srgb, var(--card) 85%, transparent)',
             border: '1px solid var(--border)',
             padding: 2,
           }}
         >
-          {hasTeams && (
-            <QuadrantMetricsButton
-              offenseMetrics={c.settings.offenseMetrics}
-              defenseMetrics={c.settings.defenseMetrics}
-              onOffenseMetricsChange={(m) => onUpdate(c.id, { settings: { offenseMetrics: m } })}
-              onDefenseMetricsChange={(m) => onUpdate(c.id, { settings: { defenseMetrics: m } })}
-            />
-          )}
           {canRemove && (
             <button
               type="button"
@@ -308,8 +308,17 @@ function Quadrant({
               <X size={15} />
             </button>
           )}
+          {hasTeams && (
+            <QuadrantMetricsButton
+              offenseMetrics={c.settings.offenseMetrics}
+              defenseMetrics={c.settings.defenseMetrics}
+              onOffenseMetricsChange={(m) => onUpdate(c.id, { settings: { offenseMetrics: m } })}
+              onDefenseMetricsChange={(m) => onUpdate(c.id, { settings: { defenseMetrics: m } })}
+            />
+          )}
         </div>
       )}
+      </div>
     </div>
   );
 }
