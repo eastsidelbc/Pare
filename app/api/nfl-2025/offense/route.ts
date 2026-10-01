@@ -47,15 +47,11 @@ let cache: CacheEntry = {
 export async function GET() {
   const requestId = generateRequestId();
   
-  // API request start (verbose only) 
-  // Environment info (verbose only)
   
-  // Process info (verbose only)
   
   try {
     // Check cache first
     const now = Date.now();
-    // Cache checking (verbose only)
     
     if (cache.data && cache.timestamp && (now - cache.timestamp) < cache.maxAge) {
       logger.cache({ context: 'OFFENSE', requestId }, `Serving cached data (${getCacheAgeMinutes(cache.timestamp)} min old)`, {
@@ -159,7 +155,6 @@ export async function GET() {
 
     // If we have stale cache data, serve it with a warning
     if (cache.data) {
-      // Stale cache info (verbose only)
       
       const staleResponse: ApiResponse = {
         ...cache.data,

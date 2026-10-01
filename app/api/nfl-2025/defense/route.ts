@@ -51,14 +51,11 @@ let cache: CacheEntry = {
 export async function GET() {
   const requestId = generateRequestId();
   
-  // API request start (verbose only) 
-  // Environment info (verbose only)
   
   try {
     // Check cache first
     const now = Date.now();
     if (cache.data && cache.timestamp && (now - cache.timestamp) < cache.maxAge) {
-      // Cached data info (verbose only)
       
       return NextResponse.json(cache.data, {
         headers: {
@@ -206,7 +203,6 @@ export async function GET() {
 
     // If we have stale cache data, serve it with a warning
     if (cache.data) {
-      // Stale cache info (verbose only)
       
       const staleResponse: ApiResponse = {
         ...cache.data,
