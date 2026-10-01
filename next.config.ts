@@ -5,6 +5,17 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Baseline security headers on every route (defense-in-depth). HSTS + a
+        // tuned Content-Security-Policy are added at the Cloudflare edge / later.
+        source: '/:path*',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), browsing-topics=()' },
+        ],
+      },
+      {
         source: '/sw.js',
         headers: [
           {
