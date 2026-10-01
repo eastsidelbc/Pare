@@ -20,7 +20,7 @@ import { getTeamByAbbr, normalizeTeamAbbr, type NflTeam } from './teams';
 const SLEEPER_STATS_URL = 'https://api.sleeper.app/v1/stats/nfl/regular';
 const SLEEPER_PLAYERS_URL = 'https://api.sleeper.app/v1/players/nfl';
 const STATS_REVALIDATE = 6 * 60 * 60; // 6h — scores change through the week
-const PLAYERS_REVALIDATE = 24 * 60 * 60; // 24h — big + slow-changing (Sleeper's advice)
+const PLAYERS_TTL_MS = 24 * 60 * 60 * 1000; // 24h — in-memory cache for the big (~20MB) player map
 const BOARD_SIZE = 50; // send extra candidates so the client can re-rank by PPG
 const FANTASY: LeaderSection = 'fantasy';
 
@@ -59,15 +59,56 @@ function normalizeAbbr(raw: string): string {
   return normalizeTeamAbbr(stripped);
 }
 
-async function fetchJson<T>(url: string, revalidate: number, label: string): Promise<T | null> {
+async function fetchJson<T>(url: string, init: RequestInit, label: string): Promise<T | null> {
   try {
-    const res = await fetch(url, { next: { revalidate } });
+    const res = await fetch(url, init);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return (await res.json()) as T;
   } catch (err) {
     console.error(`❌ [fantasy] ${label} failed:`, err);
     return null;
   }
+}
+
+/** Slimmed player record — only what the boards need (keeps the cached map tiny). */
+interface SlimPlayer {
+  name: string;
+  position: string;
+  team: string;
+}
+
+/**
+ * Sleeper's full player map is ~20MB — far over Next's 2MB fetch-cache limit, so
+ * `revalidate` silently never cached it and every request re-downloaded + re-parsed
+ * the whole blob. Instead we fetch it at most once per TTL per server process, trim
+ * it to { id -> name/position/team }, and keep that slim map in memory.
+ */
+let playersCache: { map: Record<string, SlimPlayer>; at: number } | null = null;
+
+async function getPlayerMap(): Promise<Record<string, SlimPlayer>> {
+  const now = Date.now();
+  if (playersCache && now - playersCache.at < PLAYERS_TTL_MS) {
+    return playersCache.map;
+  }
+
+  // no-store: we cache the trimmed result ourselves; don't ask Next to cache 20MB.
+  const raw = await fetchJson<Record<string, SleeperPlayer>>(
+    SLEEPER_PLAYERS_URL,
+    { cache: 'no-store' },
+    'players map'
+  );
+  if (!raw) return playersCache?.map ?? {}; // keep a stale map over nothing
+
+  const slim: Record<string, SlimPlayer> = {};
+  for (const [id, p] of Object.entries(raw)) {
+    if (!p?.position) continue;
+    const name = p.full_name ?? `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim();
+    if (!name) continue;
+    slim[id] = { name, position: p.position, team: p.team ?? '' };
+  }
+
+  playersCache = { map: slim, at: now };
+  return slim;
 }
 
 interface SkillRow {
@@ -89,13 +130,15 @@ function emptyBoards(): LeaderBoard[] {
 /** Every fantasy board (QB/RB/WR/TE/K/D-ST), all from Sleeper. */
 export async function getFantasyBoards(): Promise<LeaderBoard[]> {
   const { season } = await getCurrentWeekInfo();
-  const [players, stats] = await Promise.all([
-    fetchJson<Record<string, SleeperPlayer>>(SLEEPER_PLAYERS_URL, PLAYERS_REVALIDATE, 'players map'),
-    fetchJson<Record<string, SleeperStat>>(`${SLEEPER_STATS_URL}/${season}`, STATS_REVALIDATE, 'stats'),
+  const [playerMap, stats] = await Promise.all([
+    getPlayerMap(),
+    fetchJson<Record<string, SleeperStat>>(
+      `${SLEEPER_STATS_URL}/${season}`,
+      { next: { revalidate: STATS_REVALIDATE } },
+      'stats'
+    ),
   ]);
   if (!stats) return emptyBoards();
-
-  const playerMap = players ?? {};
   const skill: SkillRow[] = [];
   const dst: { team: NflTeam; points: number; games: number }[] = [];
 
@@ -112,12 +155,10 @@ export async function getFantasyBoards(): Promise<LeaderBoard[]> {
       }
     }
 
-    // Skill/K: numeric id resolved through the player map.
+    // Skill/K: numeric id resolved through the slim player map.
     const p = playerMap[id];
-    if (!p?.position || (points === 0 && games === 0)) continue;
-    const name = p.full_name ?? `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim();
-    if (!name) continue;
-    skill.push({ id, name, abbr: p.team ? normalizeAbbr(p.team) : '', position: p.position, points, games });
+    if (!p || (points === 0 && games === 0)) continue;
+    skill.push({ id, name: p.name, abbr: p.team ? normalizeAbbr(p.team) : '', position: p.position, points, games });
   }
 
   const boards: LeaderBoard[] = POSITION_BOARDS.map(({ key, label, pos }) => {
