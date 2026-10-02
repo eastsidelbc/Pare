@@ -3,7 +3,7 @@
  * 
  * Panel header: logos + instant toggle
  * LAYOUT: theScore compact structure (70px height, 40px logos)
- * STYLE: Pare visual design (purple title, borderless logos)
+ * STYLE: Pare design tokens (gold title, borderless logos)
  */
 
 'use client';
@@ -65,6 +65,8 @@ export default function CompactPanelHeader({
           onClick={onTeamAClick}
           className="flex flex-col items-center justify-center gap-0.5 transition-opacity active:opacity-50 touch-optimized"
           aria-label={`Change ${teamA}`}
+          aria-haspopup="listbox"
+          aria-expanded={activeTeamSelector === 'A'}
         >
           <TeamLogo teamName={teamA} size="36" />
           {teamARecord && (
@@ -91,6 +93,7 @@ export default function CompactPanelHeader({
                 transition: 'color 0.15s'
               }}
               aria-label="Switch to per-game"
+              aria-pressed={displayMode === 'per-game'}
             >
               PG
             </button>
@@ -104,6 +107,7 @@ export default function CompactPanelHeader({
                 transition: 'color 0.15s'
               }}
               aria-label="Switch to total"
+              aria-pressed={displayMode === 'total'}
             >
               TOT
             </button>
@@ -116,6 +120,8 @@ export default function CompactPanelHeader({
           onClick={onTeamBClick}
           className="flex flex-col items-center justify-center gap-0.5 transition-opacity active:opacity-50 touch-optimized"
           aria-label={`Change ${teamB}`}
+          aria-haspopup="listbox"
+          aria-expanded={activeTeamSelector === 'B'}
         >
           <TeamLogo teamName={teamB} size="36" />
           {teamBRecord && (
@@ -152,4 +158,3 @@ export default function CompactPanelHeader({
     </>
   );
 }
-

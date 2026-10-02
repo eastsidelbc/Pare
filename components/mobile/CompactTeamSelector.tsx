@@ -3,8 +3,8 @@
  * 
  * Team logo dropdown for mobile using Floating UI for professional positioning
  * LAYOUT: theScore compact structure (borderless, responsive height clamp(320px, 50vh, 420px))
- * STYLE: Pare visual design (purple accents, NO borders)
- * INTERACTION: Sleek dropdown, opacity feedback
+ * STYLE: Pare design tokens (gold accents)
+ * INTERACTION: Sleek dropdown, opacity feedback; listbox/option semantics for a11y
  * POSITIONING: Floating UI with auto-flip, shift, and boundary detection
  */
 
@@ -137,6 +137,7 @@ export default function CompactTeamSelector({
                   // before shift/flip run — otherwise it positions a too-wide box
                   // then shrinks it, leaving it off-screen on narrow phones.
                   width: 'min(300px, calc(100vw - 24px))',
+                  boxShadow: 'var(--shadow-pop)',
                   opacity: (x != null && y != null) ? 1 : 0  // Phase 2F: Hide first-frame flash
                 }}
                 {...getFloatingProps()}
@@ -144,12 +145,11 @@ export default function CompactTeamSelector({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className="z-100 rounded-2xl shadow-2xl overflow-auto overscroll-contain pb-[calc(64px+env(safe-area-inset-bottom)+12px)]"  // Phase 2E: Safe area padding
+                className="z-100 rounded-[var(--radius-xl)] overflow-auto overscroll-contain pb-[calc(64px+env(safe-area-inset-bottom)+12px)]"  // Phase 2E: Safe area padding
               >
                 <div
                   style={{
-                    background: 'var(--card)',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)'
+                    background: 'var(--card)'
                   }}
                 >
                   {/* Header */}
@@ -157,13 +157,15 @@ export default function CompactTeamSelector({
                     className="px-4 py-3 border-b"
                     style={{ borderColor: 'var(--border)' }}
                   >
-                    <h3 style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)' }}>
+                    <h3 id="team-selector-label" style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)' }}>
                       Select Team
                     </h3>
                   </div>
                   
                   {/* Scrollable Team List */}
                   <div 
+                    role="listbox"
+                    aria-labelledby="team-selector-label"
                     className="overflow-y-auto"
                     style={{ maxHeight: 'clamp(320px, 50vh, 420px)' }}
                   >
@@ -175,6 +177,8 @@ export default function CompactTeamSelector({
                   return (
                     <button
                       key={team.team}
+                      role="option"
+                      aria-selected={isCurrent}
                       onClick={() => handleTeamSelect(team.team)}
                       className="w-full px-4 py-3 flex items-center gap-3 transition-all active:opacity-50"
                       style={{
@@ -189,7 +193,7 @@ export default function CompactTeamSelector({
                       {/* Logo or average icon */}
                       {isAverage ? (
                         <div 
-                          className="w-10 h-10 rounded-sm flex items-center justify-center shrink-0"
+                          className="w-10 h-10 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0"
                           style={{
                             background: 'color-mix(in srgb, var(--muted) 15%, transparent)',
                             color: 'var(--muted)'
@@ -227,4 +231,3 @@ export default function CompactTeamSelector({
     </>
   );
 }
-

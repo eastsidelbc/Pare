@@ -3,8 +3,8 @@
  * 
  * Borderless rank dropdown with responsive height using Floating UI for professional positioning
  * LAYOUT: theScore compact structure (responsive height clamp(280px, 40vh, 380px), NO borders)
- * STYLE: Pare visual design (purple accents, steel colors)
- * INTERACTION: Sleek dropdown, opacity feedback
+ * STYLE: Pare design tokens (gold accents)
+ * INTERACTION: Sleek dropdown, opacity feedback; listbox/option semantics for a11y
  * POSITIONING: Floating UI with auto-flip, shift, and boundary detection
  */
 
@@ -209,6 +209,8 @@ export default function CompactRankingDropdown({
         onClick={onToggle}
         className="transition-opacity active:opacity-50"
         aria-label={`Ranked ${ranking?.formattedRank || 'N/A'} - tap to change`}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
       >
         {renderRankBadge()}
       </button>
@@ -235,6 +237,7 @@ export default function CompactRankingDropdown({
                   position: floatingStrategy,  // Phase 2E: Direct positioning
                   top: y ?? 0,
                   left: x ?? 0,
+                  boxShadow: 'var(--shadow-pop)',
                   opacity: (x != null && y != null) ? 1 : 0  // Phase 2F: Hide first-frame flash
                 }}
                 {...getFloatingProps()}
@@ -242,13 +245,12 @@ export default function CompactRankingDropdown({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className="z-100 rounded-2xl shadow-2xl overflow-auto overscroll-contain pb-[calc(64px+env(safe-area-inset-bottom)+12px)]"  // Phase 2E: Safe area padding
+                className="z-100 rounded-[var(--radius-xl)] overflow-auto overscroll-contain pb-[calc(64px+env(safe-area-inset-bottom)+12px)]"  // Phase 2E: Safe area padding
               >
                 <div
-                  style={{
-                    background: 'var(--card)',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)'
-                  }}
+                  role="listbox"
+                  aria-label="Teams ranked by this metric"
+                  style={{ background: 'var(--card)' }}
                 >
                   {/* Scrollable Team List */}
                 {sortedTeams.map((item, index) => {
@@ -259,6 +261,8 @@ export default function CompactRankingDropdown({
                   return (
                     <button
                       key={item.team.team}
+                      role="option"
+                      aria-selected={isCurrent}
                       onClick={() => handleTeamSelect(item.team.team)}
                       className="w-full px-4 py-3 flex items-center gap-3 transition-all active:opacity-50"
                       style={{
@@ -272,7 +276,7 @@ export default function CompactRankingDropdown({
                     >
                       {/* Rank badge — gold for all, slightly different shade for ties */}
                       <div 
-                        className="w-8 h-8 rounded-sm flex items-center justify-center font-bold text-[11px] shrink-0"
+                        className="w-8 h-8 rounded-[var(--radius-sm)] flex items-center justify-center font-bold text-[11px] shrink-0"
                         style={{
                           background: isAverage
                             ? 'color-mix(in srgb, var(--muted) 15%, transparent)'
@@ -316,4 +320,3 @@ export default function CompactRankingDropdown({
     </>
   );
 }
-
