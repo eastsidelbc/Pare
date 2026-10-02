@@ -89,7 +89,7 @@ function DefensePanel({
       {/* Panel Header with Team Logos, Title, and Display Mode */}
       <div className="flex items-center justify-between mb-6">
         {/* Team A - Interactive Dropdown */}
-        <div className="flex-shrink-0 flex flex-col items-center gap-1">
+        <div className="shrink-0 flex flex-col items-center gap-1">
           {onTeamAChange ? (
             <TeamDropdown
               currentTeam={selectedTeamA}
@@ -116,7 +116,7 @@ function DefensePanel({
           <select
             value={displayMode}
             onChange={(e) => setDisplayMode(e.target.value as 'per-game' | 'total')}
-            className="px-3 py-2 bg-slate-800/90 border border-slate-600/50 rounded-lg text-slate-200 text-base font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 touch-optimized min-h-[2.75rem]"
+            className="px-3 py-2 bg-slate-800/90 border border-slate-600/50 rounded-lg text-slate-200 text-base font-medium focus:outline-hidden focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 touch-optimized min-h-11"
             style={{ fontSize: '16px' }}
           >
             <option value="per-game">PER GAME</option>
@@ -125,7 +125,7 @@ function DefensePanel({
         </div>
 
         {/* Team B - Interactive Dropdown */}
-        <div className="flex-shrink-0 flex flex-col items-center gap-1">
+        <div className="shrink-0 flex flex-col items-center gap-1">
           {onTeamBChange ? (
             <TeamDropdown
               currentTeam={selectedTeamB}

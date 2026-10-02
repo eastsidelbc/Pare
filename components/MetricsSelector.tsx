@@ -119,14 +119,14 @@ export default function MetricsSelector({
         <div className="flex gap-2">
           <button
             onClick={handleAddOrClearAll}
-            className="text-xs md:text-sm px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded text-white transition-colors"
+            className="text-xs md:text-sm px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded-sm text-white transition-colors"
             title={allMetricsSelected ? 'Remove all metrics' : 'Add all available metrics'}
           >
             {allMetricsSelected ? 'Clear All' : 'Add All'}
           </button>
           <button
             onClick={handleResetToDefaults}
-            className="text-xs md:text-sm px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded text-slate-300 transition-colors"
+            className="text-xs md:text-sm px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded-sm text-slate-300 transition-colors"
           >
             Reset Defaults
           </button>

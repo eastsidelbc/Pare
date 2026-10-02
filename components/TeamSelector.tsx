@@ -51,13 +51,13 @@ export default function TeamSelector({
     rounded-lg 
     text-slate-200 
     font-medium
-    focus:outline-none 
+    focus:outline-hidden 
     focus:ring-2 
     focus:ring-purple-500/50 
     focus:border-purple-500/50
     transition-all duration-200
     touch-optimized
-    min-h-[2.75rem]
+    min-h-11
     ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-slate-500/70'}
   `.trim().replace(/\s+/g, ' ');
 

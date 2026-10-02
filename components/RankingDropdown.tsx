@@ -215,7 +215,7 @@ export default function RankingDropdown({
           bg-slate-800/80 border border-slate-600/50
           rounded-md text-sm font-medium
           cursor-pointer transition-all duration-200
-          min-h-[2rem] min-w-[3rem] touch-optimized
+          min-h-8 min-w-12 touch-optimized
           ${colors.badge}
         `}
         whileHover={{ scale: 1.05 }}
@@ -248,7 +248,7 @@ export default function RankingDropdown({
             transition={{ duration: 0.2, ease: "easeOut" }}
             className={`
               absolute z-50 mt-2 w-80
-              bg-slate-900/95 backdrop-blur-sm
+              bg-slate-900/95 backdrop-blur-xs
               border border-slate-700/50 rounded-lg
               shadow-2xl shadow-black/50
               max-h-[60vh] md:max-h-[500px] overflow-y-auto momentum-scroll
@@ -290,13 +290,13 @@ export default function RankingDropdown({
                       ${isSelected ? `bg-${side === 'teamA' ? 'green' : 'orange'}-500/20 border-l-2 border-l-${side === 'teamA' ? 'green' : 'orange'}-400` : ''}
                       ${isAverage ? 'border-t border-slate-700/50 mt-1 pt-3' : ''}
                       transition-all duration-150
-                      min-h-[3rem] touch-optimized
+                      min-h-12 touch-optimized
                     `}
                     whileHover={{ x: 2 }}
                     onClick={() => handleTeamSelect(item.team.team)}
                   >
                     {/* Rank Emoji + Number OR "📊 Avg" for average */}
-                    <div className="flex items-center gap-1 w-12 flex-shrink-0">
+                    <div className="flex items-center gap-1 w-12 shrink-0">
                       {isAverage && emoji ? (
                         <>
                           <span className="text-sm" role="img" aria-label="Statistics icon">

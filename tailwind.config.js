@@ -91,22 +91,7 @@ module.exports = {
   plugins: [
     // eslint-disable-next-line @typescript-eslint/no-require-imports -- this is a CommonJS config file; require() is the correct way to load the plugin
     require('@tailwindcss/typography'),
-    function({ addUtilities }) {
-      addUtilities({
-        '.touch-optimized': {
-          '-webkit-tap-highlight-color': 'transparent',
-          '-webkit-touch-callout': 'none',
-          '-webkit-user-select': 'none',
-          'user-select': 'none',
-          'touch-action': 'manipulation',
-        },
-        '.focus-ring': {
-          '&:focus-visible': {
-            'outline': '2px solid rgba(139, 92, 246, 0.5)',
-            'outline-offset': '2px',
-          }
-        }
-      })
-    }
+    // NOTE: .touch-optimized and .focus-ring were moved to @utility blocks in
+    // app/globals.css (Tailwind v4 canonical form) — no addUtilities needed here.
   ],
 };

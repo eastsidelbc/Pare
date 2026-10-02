@@ -242,7 +242,7 @@ export default function CompactRankingDropdown({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className="z-[100] rounded-2xl shadow-2xl overflow-auto overscroll-contain pb-[calc(64px+env(safe-area-inset-bottom)+12px)]"  // Phase 2E: Safe area padding
+                className="z-100 rounded-2xl shadow-2xl overflow-auto overscroll-contain pb-[calc(64px+env(safe-area-inset-bottom)+12px)]"  // Phase 2E: Safe area padding
               >
                 <div
                   style={{
@@ -272,7 +272,7 @@ export default function CompactRankingDropdown({
                     >
                       {/* Rank badge — gold for all, slightly different shade for ties */}
                       <div 
-                        className="w-8 h-8 rounded flex items-center justify-center font-bold text-[11px] flex-shrink-0"
+                        className="w-8 h-8 rounded-sm flex items-center justify-center font-bold text-[11px] shrink-0"
                         style={{
                           background: isAverage
                             ? 'rgba(107,114,128,0.15)'

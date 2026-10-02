@@ -52,7 +52,7 @@ export default function ThemeCustomizer({ className = '' }: ThemeCustomizerProps
     <div className={`
       fixed bottom-6 right-6 z-50
       w-80 p-6
-      bg-slate-900/95 backdrop-blur-sm
+      bg-slate-900/95 backdrop-blur-xs
       border border-slate-700/50
       rounded-xl shadow-2xl
       ${className}

@@ -10,7 +10,7 @@ function Circle() {
 }
 
 function Line({ w, h = 10 }: { w: number; h?: number }) {
-  return <div className="skeleton rounded" style={{ width: w, height: h }} />;
+  return <div className="skeleton rounded-sm" style={{ width: w, height: h }} />;
 }
 
 export default function MatchupCardSkeleton() {

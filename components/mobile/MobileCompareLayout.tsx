@@ -173,8 +173,8 @@ function PanelSkeleton({ rows }: { rows: number }) {
       <div className="h-[50px] px-3 grid grid-cols-[36px_1fr_36px] items-center gap-2">
         <div className="skeleton rounded-lg" style={{ width: 34, height: 34 }} />
         <div className="flex flex-col items-center gap-1">
-          <div className="skeleton rounded" style={{ width: 52, height: 9 }} />
-          <div className="skeleton rounded" style={{ width: 36, height: 8 }} />
+          <div className="skeleton rounded-sm" style={{ width: 52, height: 9 }} />
+          <div className="skeleton rounded-sm" style={{ width: 36, height: 8 }} />
         </div>
         <div className="skeleton justify-self-end rounded-lg" style={{ width: 34, height: 34 }} />
       </div>
@@ -183,9 +183,9 @@ function PanelSkeleton({ rows }: { rows: number }) {
         {Array.from({ length: rows }).map((_, i) => (
           <div key={i} className="px-3 py-1">
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1">
-              <div className="skeleton rounded" style={{ width: 44, height: 14 }} />
-              <div className="skeleton mx-auto rounded" style={{ width: 60, height: 8 }} />
-              <div className="skeleton justify-self-end rounded" style={{ width: 44, height: 14 }} />
+              <div className="skeleton rounded-sm" style={{ width: 44, height: 14 }} />
+              <div className="skeleton mx-auto rounded-sm" style={{ width: 60, height: 8 }} />
+              <div className="skeleton justify-self-end rounded-sm" style={{ width: 44, height: 14 }} />
             </div>
             <div className="skeleton mt-1 rounded-full" style={{ height: 6 }} />
           </div>

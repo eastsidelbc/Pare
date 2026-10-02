@@ -202,7 +202,7 @@ function FloatingMetricsButton({
             <div 
               id="metrics-panel"
               ref={panelRef}
-              className="bg-slate-900/95 backdrop-blur-sm rounded-xl border border-slate-700/50 shadow-2xl p-4 h-full flex flex-col"
+              className="bg-slate-900/95 backdrop-blur-xs rounded-xl border border-slate-700/50 shadow-2xl p-4 h-full flex flex-col"
               role="dialog"
               aria-labelledby="metrics-panel-title"
               onKeyDown={handleTrapKeyDown}
@@ -226,7 +226,7 @@ function FloatingMetricsButton({
                   onClick={() => setActiveTab('offense')}
                   className={`
                     px-4 py-3 text-sm rounded-lg transition-colors flex-1
-                    min-h-[2.75rem] touch-optimized focus-ring
+                    min-h-11 touch-optimized focus-ring
                     ${activeTab === 'offense' 
                       ? 'bg-purple-600 text-white' 
                       : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
@@ -243,7 +243,7 @@ function FloatingMetricsButton({
                   onClick={() => setActiveTab('defense')}
                   className={`
                     px-4 py-3 text-sm rounded-lg transition-colors flex-1
-                    min-h-[2.75rem] touch-optimized focus-ring
+                    min-h-11 touch-optimized focus-ring
                     ${activeTab === 'defense' 
                       ? 'bg-purple-600 text-white' 
                       : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
@@ -301,13 +301,13 @@ function FloatingMetricsButton({
                       onDefenseMetricsChange([]);
                     }
                   }}
-                  className="px-4 py-2 text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors min-h-[2.75rem] touch-optimized"
+                  className="px-4 py-2 text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors min-h-11 touch-optimized"
                 >
                   Clear {activeTab === 'offense' ? 'Offense' : 'Defense'}
                 </button>
                 <button
                   onClick={() => setShowSettings(false)}
-                  className="px-4 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors min-h-[2.75rem] touch-optimized"
+                  className="px-4 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors min-h-11 touch-optimized"
                 >
                   Done
                 </button>
@@ -336,7 +336,7 @@ function FloatingMetricsButton({
         }}
         className={`
           fixed bottom-4 right-4 z-50
-          w-14 h-14 min-w-[3.5rem] min-h-[3.5rem]
+          w-14 h-14 min-w-14 min-h-14
           bg-slate-700 hover:bg-slate-600
           text-white text-xl
           rounded-full

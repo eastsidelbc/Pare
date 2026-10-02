@@ -1,70 +1,180 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-/* ============================================================
+@config '../tailwind.config.js';
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+/* Mobile touch optimization */
+
+@utility touch-optimized {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+@utility safe-area-padding {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+@utility momentum-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+@utility sr-only {
+  /* Screen reader only content */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@utility focus-ring {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+
+  &:focus {
+    outline: 2px solid #8b5cf6;
+    outline-offset: 2px;
+  }
+
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #8b5cf6;
+    outline-offset: 2px;
+  }
+}
+
+@utility skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface);
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.06) 50%,
+      transparent 100%
+    );
+    animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  }
+}
+
+@utility no-scrollbar {
+  /* Hide scrollbar but keep scrolling (chip rows) */
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@layer utilities {
+  /* ============================================================
    GLOBAL DESIGN SYSTEM — from styleguide.md
    Apply to ALL web and mobile views
    ============================================================ */
-:root {
-  --bg:      #0a0e1a;   /* Page background — near black, blue tint */
-  --surface: #111827;   /* Slightly lighter surface */
-  --card:    #1a2235;   /* Card background */
-  --border:  #2a3450;   /* Borders and dividers */
-  --gold:    #d4a843;   /* Primary accent — active, rankings, important */
-  --green:   #22c55e;   /* Success, wins, Team A bars */
-  --red:     #ef4444;   /* Errors, losses, live */
-  --blue:    #3b82f6;   /* Info, scores */
-  --muted:   #6b7280;   /* Tertiary text, disabled */
-  --text:    #f1f5f9;   /* Primary text */
-  --subtext: #94a3b8;   /* Secondary text */
-  --fire:    #ff6b35;   /* Hot/featured — Team B bars */
+  :root {
+    --bg: #0a0e1a; /* Page background — near black, blue tint */
+    --surface: #111827; /* Slightly lighter surface */
+    --card: #1a2235; /* Card background */
+    --border: #2a3450; /* Borders and dividers */
+    --gold: #d4a843; /* Primary accent — active, rankings, important */
+    --green: #22c55e; /* Success, wins, Team A bars */
+    --red: #ef4444; /* Errors, losses, live */
+    --blue: #3b82f6; /* Info, scores */
+    --muted: #6b7280; /* Tertiary text, disabled */
+    --text: #f1f5f9; /* Primary text */
+    --subtext: #94a3b8; /* Secondary text */
+    --fire: #ff6b35; /* Hot/featured — Team B bars */
 
-  /* Brighter gold for high-emphasis accents (badges, active) */
-  --gold-bright: #f5c842;
+    /* Brighter gold for high-emphasis accents (badges, active) */
+    --gold-bright: #f5c842;
 
-  /* Radius language — one consistent scale */
-  --radius-sm:  6px;   /* small pills, inner chips */
-  --radius-md:  10px;  /* buttons, badges */
-  --radius-lg:  14px;  /* cards */
-  --radius-xl:  20px;  /* sheets, floating panels */
+    /* Radius language — one consistent scale */
+    --radius-sm: 6px; /* small pills, inner chips */
+    --radius-md: 10px; /* buttons, badges */
+    --radius-lg: 14px; /* cards */
+    --radius-xl: 20px; /* sheets, floating panels */
 
-  /* Elevation */
-  --shadow-card: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px -12px rgba(0,0,0,0.6);
-  --shadow-pop:  0 12px 40px -8px rgba(0,0,0,0.7);
+    /* Elevation */
+    --shadow-card:
+      0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+    --shadow-pop: 0 12px 40px -8px rgba(0, 0, 0, 0.7);
 
-  /* Persistent bottom nav — floating "pill" capsule (excludes the safe-area
+    /* Persistent bottom nav — floating "pill" capsule (excludes the safe-area
      inset, added on top). `--nav-pill-h` is the capsule height; `--nav-h` is the
      total footprint (capsule + floating gap) that scrolling content must reserve
      via `calc(var(--nav-h) + safe-area)` so nothing hides behind it. */
-  --nav-pill-h: 40px;  /* leaner capsule (was 52) */
-  --nav-h: 60px;
-}
+    --nav-pill-h: 40px; /* leaner capsule (was 52) */
+    --nav-h: 60px;
+  }
 
-/* Base surface + typography — applied globally so every screen is on-system */
-html,
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-size: 15px;
-  -webkit-font-smoothing: antialiased;
-  /* Native-app shell: the page/document must NEVER scroll.
+  /* Base surface + typography — applied globally so every screen is on-system */
+  html,
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+    /* Native-app shell: the page/document must NEVER scroll.
      Content scrolls inside designated overflow-y:auto scroll regions.
      Prevents browser pull-to-refresh and rubber-band bounce on iOS. */
-  overscroll-behavior-y: none;
+    overscroll-behavior-y: none;
+  }
+
+  /* Prevent the document body from scrolling — only inner scroll regions scroll. */
+  body {
+    overflow: hidden;
+  }
+
+  /* Consistent, thin scrollbars (styleguide) */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+  }
+
+  /* Mobile-first responsive typography */
 }
-
-/* Prevent the document body from scrolling — only inner scroll regions scroll. */
-body {
-  overflow: hidden;
-}
-
-/* Consistent, thin scrollbars (styleguide) */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-/* Mobile-first responsive typography */
 @layer base {
   html {
     /* Prevent zoom on input focus (iOS) */
@@ -93,188 +203,117 @@ body {
   }
 }
 
-/* Mobile touch optimization */
 @layer utilities {
-  .touch-optimized {
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
-  
-  .safe-area-padding {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-  }
-  
-  .momentum-scroll {
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-  }
-  
-  /* Screen reader only content */
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
-}
+  /* PWA Standalone Mode Optimizations */
+  @media all and (display-mode: standalone) {
+    body {
+      /* Remove any browser chrome artifacts in standalone mode */
+      -webkit-user-select: none;
+      user-select: none;
+      /* Prevent overscroll bounce on iOS */
+      overscroll-behavior: contain;
+    }
 
-/* PWA Standalone Mode Optimizations */
-@media all and (display-mode: standalone) {
-  body {
-    /* Remove any browser chrome artifacts in standalone mode */
-    -webkit-user-select: none;
-    user-select: none;
-    /* Prevent overscroll bounce on iOS */
-    overscroll-behavior: contain;
-  }
-  
-  /* Hide any web-only elements in app mode */
-  .web-only {
-    display: none !important;
-  }
-  
-  /* Enhance app-like feel */
-  .pwa-enhanced {
-    /* Add subtle app-like shadows */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* NOTE: no blanket button min-size here. A previous rule forced every
+    /* Hide any web-only elements in app mode */
+    .web-only {
+      display: none !important;
+    }
+
+    /* Enhance app-like feel */
+    .pwa-enhanced {
+      /* Add subtle app-like shadows */
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* NOTE: no blanket button min-size here. A previous rule forced every
      button/[role=button]/.touch-optimized to 48×48px in standalone, which
      inflated small inline pills (the Total/PPG toggle, the week control) so the
      installed app looked bloated vs. the browser. Components size their own
      touch targets; standalone should match the web view. */
 
-  /* Remove focus outlines in standalone (touch-first) */
-  button:focus:not(:focus-visible),
-  [role="button"]:focus:not(:focus-visible) {
-    outline: none;
+    /* Remove focus outlines in standalone (touch-first) */
+    button:focus:not(:focus-visible),
+    [role='button']:focus:not(:focus-visible) {
+      outline: none;
+    }
   }
+
+  /* iOS Standalone Mode Specific */
+  @media all and (display-mode: standalone) and (-webkit-touch-callout: none) {
+    body {
+      /* iOS-specific standalone optimizations */
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      /* Prevent text selection in app mode */
+      user-select: none;
+    }
+
+    /* Better tap handling on iOS */
+    .touch-optimized {
+      -webkit-tap-highlight-color: rgba(139, 92, 246, 0.1);
+    }
+  }
+
+  /* Accessibility: Respect user's motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+
+    /* Disable Framer Motion animations */
+    .motion-reduce {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+
+  /* Focus indicators for keyboard navigation */
 }
 
-/* iOS Standalone Mode Specific */
-@media all and (display-mode: standalone) and (-webkit-touch-callout: none) {
-  body {
-    /* iOS-specific standalone optimizations */
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    /* Prevent text selection in app mode */
-    user-select: none;
-  }
-  
-  /* Better tap handling on iOS */
-  .touch-optimized {
-    -webkit-tap-highlight-color: rgba(139, 92, 246, 0.1);
-  }
-}
-
-/* Accessibility: Respect user's motion preferences */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-  
-  /* Disable Framer Motion animations */
-  .motion-reduce {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-
-/* Focus indicators for keyboard navigation */
 @layer utilities {
-  .focus-ring {
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-  }
-  
-  .focus-ring:focus {
+  /* Ensure all interactive elements have proper focus */
+  button:focus-visible,
+  select:focus-visible,
+  [role='button']:focus-visible {
     outline: 2px solid #8b5cf6;
     outline-offset: 2px;
   }
-  
-  .focus-ring:focus:not(:focus-visible) {
-    outline: none;
-  }
-  
-  .focus-ring:focus-visible {
-    outline: 2px solid #8b5cf6;
-    outline-offset: 2px;
-  }
-}
 
-/* Ensure all interactive elements have proper focus */
-button:focus-visible,
-select:focus-visible,
-[role="button"]:focus-visible {
-  outline: 2px solid #8b5cf6;
-  outline-offset: 2px;
-}
-
-/* Custom animations for the tabs */
-@keyframes fadeIn {
+  /* Custom animations for the tabs */
+  @keyframes fadeIn {
     from {
-        opacity: 0;
-        transform: translateY(5px);
+      opacity: 0;
+      transform: translateY(5px);
     }
 
     to {
-        opacity: 1;
-        transform: translateY(0);
+      opacity: 1;
+      transform: translateY(0);
     }
-}
+  }
 
-.animate-fadeIn {
+  .animate-fadeIn {
     animation: fadeIn 0.2s ease-out forwards;
-}
+  }
 
-/* Add a subtle glow effect to the tabs */
-.tab-glow {
+  /* Add a subtle glow effect to the tabs */
+  .tab-glow {
     box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
-}
+  }
 
-/* ============================================================
+  /* ============================================================
    Skeleton loading — shimmer placeholders (never bare spinners)
    ============================================================ */
+}
 @layer utilities {
-  .skeleton {
-    position: relative;
-    overflow: hidden;
-    background: var(--surface);
-  }
-  .skeleton::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    transform: translateX(-100%);
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.06) 50%,
-      transparent 100%
-    );
-    animation: skeleton-shimmer 1.4s ease-in-out infinite;
-  }
   @keyframes skeleton-shimmer {
     100% { transform: translateX(100%); }
   }
-
-  /* Hide scrollbar but keep scrolling (chip rows) */
-  .no-scrollbar { scrollbar-width: none; }
-  .no-scrollbar::-webkit-scrollbar { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

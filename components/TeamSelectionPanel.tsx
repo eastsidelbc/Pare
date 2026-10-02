@@ -79,7 +79,7 @@ export default function TeamSelectionPanel({
         </div>
 
         {/* VS */}
-        <div className="flex-shrink-0 text-2xl font-bold text-slate-400 px-3">
+        <div className="shrink-0 text-2xl font-bold text-slate-400 px-3">
           VS
         </div>
 

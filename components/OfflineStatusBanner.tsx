@@ -25,7 +25,7 @@ export default function OfflineStatusBanner({ className = '' }: OfflineStatusBan
           transition={{ duration: 0.3, ease: 'easeOut' }}
           className={`
             fixed top-0 left-0 right-0 z-50 
-            bg-amber-500/90 backdrop-blur-sm border-b border-amber-400/50
+            bg-amber-500/90 backdrop-blur-xs border-b border-amber-400/50
             px-4 py-2 text-center text-amber-900 font-medium text-sm
             ${className}
           `}

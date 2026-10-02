@@ -43,11 +43,11 @@ function LoadingRows() {
     <div className="flex gap-3 p-3">
       {[0, 1].map((col) => (
         <div key={col} className="min-w-0 flex-1 space-y-2">
-          <div className="skeleton rounded" style={{ width: 40, height: 13 }} />
+          <div className="skeleton rounded-sm" style={{ width: 40, height: 13 }} />
           {[0, 1, 2].map((r) => (
             <div key={r} className="space-y-1">
-              <div className="skeleton rounded" style={{ width: '70%', height: 11 }} />
-              <div className="skeleton rounded" style={{ width: '50%', height: 9 }} />
+              <div className="skeleton rounded-sm" style={{ width: '70%', height: 11 }} />
+              <div className="skeleton rounded-sm" style={{ width: '50%', height: 9 }} />
             </div>
           ))}
         </div>

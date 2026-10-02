@@ -109,7 +109,7 @@ export default function PWAInstallPrompt({
         transition={{ duration: 0.3, ease: 'easeOut' }}
         className={`
           fixed bottom-4 left-4 right-4 z-50 max-w-md mx-auto
-          bg-slate-800/95 backdrop-blur-sm border border-slate-600/50 rounded-xl
+          bg-slate-800/95 backdrop-blur-xs border border-slate-600/50 rounded-xl
           p-4 text-white shadow-2xl
           ${className}
         `}
@@ -135,7 +135,7 @@ export default function PWAInstallPrompt({
             onClick={handleDismiss}
             className="
               p-1 rounded-lg hover:bg-slate-700/50 transition-colors
-              focus:outline-none focus:ring-2 focus:ring-purple-500
+              focus:outline-hidden focus:ring-2 focus:ring-purple-500
             "
             aria-label="Dismiss install prompt"
           >
@@ -156,7 +156,7 @@ export default function PWAInstallPrompt({
               {instructions.steps.map((step, index) => (
                 <li key={index} className="flex items-start gap-2">
                   <span className="
-                    flex-shrink-0 w-5 h-5 bg-purple-500 text-white text-xs 
+                    shrink-0 w-5 h-5 bg-purple-500 text-white text-xs 
                     rounded-full flex items-center justify-center mt-0.5
                   ">
                     {index + 1}
@@ -185,7 +185,7 @@ export default function PWAInstallPrompt({
               className="
                 flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 
                 rounded-lg font-medium transition-colors
-                focus:outline-none focus:ring-2 focus:ring-purple-500
+                focus:outline-hidden focus:ring-2 focus:ring-purple-500
               "
             >
               {instructions.buttonText}
@@ -196,7 +196,7 @@ export default function PWAInstallPrompt({
                 onClick={handleDismiss}
                 className="
                   px-4 py-2 text-slate-300 hover:text-white transition-colors
-                  focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-lg
+                  focus:outline-hidden focus:ring-2 focus:ring-purple-500 rounded-lg
                 "
               >
                 Not now
@@ -209,7 +209,7 @@ export default function PWAInstallPrompt({
                   flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 
                   disabled:bg-purple-600/50 disabled:cursor-not-allowed
                   rounded-lg font-medium transition-colors
-                  focus:outline-none focus:ring-2 focus:ring-purple-500
+                  focus:outline-hidden focus:ring-2 focus:ring-purple-500
                   flex items-center justify-center gap-2
                 "
               >

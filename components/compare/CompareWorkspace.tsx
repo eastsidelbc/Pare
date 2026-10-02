@@ -227,7 +227,7 @@ export default function CompareWorkspace() {
   // ── Error state (shared data failed) ────────────────────────────────────────
   if (offenseError || defenseError) {
     return (
-      <div className="min-h-screen-dynamic w-full bg-gradient-to-br from-[#0b1120] via-[#0f172a] to-[#1e293b] text-white px-4 sm:px-6 py-safe-top pb-safe-bottom pt-12">
+      <div className="min-h-screen-dynamic w-full bg-linear-to-br from-[#0b1120] via-[#0f172a] to-[#1e293b] text-white px-4 sm:px-6 py-safe-top pb-safe-bottom pt-12">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl font-bold text-red-400 mb-6">⚠️ Data Loading Error</h1>
           <div className="bg-slate-900/90 rounded-xl border border-red-500/50 p-8 space-y-6">

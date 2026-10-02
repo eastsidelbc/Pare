@@ -144,7 +144,7 @@ export default function CompactTeamSelector({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className="z-[100] rounded-2xl shadow-2xl overflow-auto overscroll-contain pb-[calc(64px+env(safe-area-inset-bottom)+12px)]"  // Phase 2E: Safe area padding
+                className="z-100 rounded-2xl shadow-2xl overflow-auto overscroll-contain pb-[calc(64px+env(safe-area-inset-bottom)+12px)]"  // Phase 2E: Safe area padding
               >
                 <div
                   style={{
@@ -189,7 +189,7 @@ export default function CompactTeamSelector({
                       {/* Logo or average icon */}
                       {isAverage ? (
                         <div 
-                          className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0"
+                          className="w-10 h-10 rounded-sm flex items-center justify-center shrink-0"
                           style={{
                             background: 'rgba(107,114,128,0.15)',
                             color: 'var(--muted)'
@@ -198,7 +198,7 @@ export default function CompactTeamSelector({
                           <BarChart3 size={18} />
                         </div>
                       ) : (
-                        <div className="flex-shrink-0">
+                        <div className="shrink-0">
                           <TeamLogo teamName={team.team} size="40" />
                         </div>
                       )}

@@ -97,7 +97,7 @@ export default function TeamDropdown({
       {/* Team Logo Button (Closed State) - Looks identical to original */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="cursor-pointer transition-all duration-100 touch-optimized min-w-[3.5rem] min-h-[3.5rem] flex items-center justify-center focus-ring"
+        className="cursor-pointer transition-all duration-100 touch-optimized min-w-14 min-h-14 flex items-center justify-center focus-ring"
         whileHover={{ scale: 1.20 }}
         whileTap={{ scale: 0.97 }}
         aria-label={`${label || 'Team selection'}: ${currentTeam}. Click to change team.`}
@@ -116,8 +116,8 @@ export default function TeamDropdown({
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
             className={`
-              absolute z-[60] mt-2 w-72 sm:w-80
-              bg-slate-900/95 backdrop-blur-sm
+              absolute z-60 mt-2 w-72 sm:w-80
+              bg-slate-900/95 backdrop-blur-xs
               border border-slate-700/50 rounded-lg
               shadow-2xl shadow-black/50
               max-h-[70vh] overflow-y-auto momentum-scroll
@@ -156,7 +156,7 @@ export default function TeamDropdown({
                       ${isSelected ? colors.highlight : ''}
                       ${isAverage ? 'border-t border-slate-700/50 mt-1 pt-3' : ''}
                       transition-all duration-150
-                      min-h-[3rem] touch-optimized focus-ring
+                      min-h-12 touch-optimized focus-ring
                     `}
                     whileHover={{ x: 2 }}
                     onClick={() => handleTeamSelect(team.team)}
@@ -172,7 +172,7 @@ export default function TeamDropdown({
                     }}
                   >
                     {/* Team Logo or Emoji */}
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                       {isAverage && emoji ? (
                         <span className="text-xl" role="img" aria-label="Statistics icon">
                           {emoji}
