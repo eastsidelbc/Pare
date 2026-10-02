@@ -25,8 +25,9 @@ import { APP_CONSTANTS } from '@/config/constants';
 const ESPN_STANDINGS_URL =
   'https://site.api.espn.com/apis/v2/sports/football/nfl/standings';
 
-/** Cache window (1h) — matches the rest of the ESPN fetches. */
-const REVALIDATE_SECONDS = APP_CONSTANTS.CACHE.REVALIDATE_SECONDS;
+/** Cache window (5 min) — standings change on game day; a single cheap fetch,
+ *  so refresh it faster than the heavy offense/defense stat aggregation. */
+const REVALIDATE_SECONDS = APP_CONSTANTS.CACHE.LIVE_REVALIDATE_SECONDS;
 
 /** Division display order within a conference. */
 const DIVISION_ORDER: readonly Division[] = ['North', 'South', 'East', 'West'];

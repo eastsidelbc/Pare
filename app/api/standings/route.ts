@@ -10,8 +10,8 @@
 import { NextResponse } from 'next/server';
 import { getStandings } from '@/lib/standings';
 
-// Re-render on the same cadence as the underlying ESPN fetch.
-export const revalidate = 3600; // 1 hour
+// Re-render every 5 min — standings change on game day (matches the fetch cache).
+export const revalidate = 300; // 5 minutes
 
 export async function GET() {
   const conferences = await getStandings();

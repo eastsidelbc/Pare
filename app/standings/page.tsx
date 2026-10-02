@@ -11,8 +11,8 @@ import { getStandings } from '@/lib/standings';
 import DivisionTable from '@/components/standings/DivisionTable';
 import CardGrid from '@/components/ui/CardGrid';
 
-// Re-render on the same ~1h cadence as the underlying standings fetch.
-export const revalidate = 3600;
+// Re-render every 5 min — standings change on game day (matches the fetch cache).
+export const revalidate = 300;
 
 export default async function StandingsPage() {
   const conferences = await getStandings();

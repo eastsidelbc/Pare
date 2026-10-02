@@ -24,6 +24,8 @@ export async function GET() {
   const health = {
     ok: true,
     version: '1.0.0',
+    commit: process.env.GIT_SHA ?? 'unknown',
+    builtAt: process.env.BUILD_TIME ?? null,
     timestamp,
     uptime,
     endpoints: {

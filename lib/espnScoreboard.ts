@@ -128,10 +128,12 @@ export function mapEspnScoreboard(data: EspnScoreboard, fallbackWeek = 1): Match
       }
     }
 
-    // Betting line — pre-game only, when ESPN provides it.
+    // Betting line — keep ESPN's line whenever it's present, regardless of game
+    // state. ESPN ships the (closing) line in the scoreboard for live/final games
+    // too, so completed matchups retain their odds instead of losing them.
     const rawOdds = competition?.odds?.[0];
     const odds: MatchupOdds | null =
-      state === 'pre' && rawOdds?.details
+      rawOdds?.details
         ? { spread: rawOdds.details, overUnder: rawOdds.overUnder ?? null }
         : null;
 

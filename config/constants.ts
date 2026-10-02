@@ -18,7 +18,11 @@ export const APP_CONSTANTS = {
     /** Next.js Data Cache / unstable_cache revalidation window (seconds).
      *  Controls how long Vercel persists ESPN fetch results and computed
      *  aggregations across serverless invocations. Tunable in one place. */
-    REVALIDATE_SECONDS: 3600, // 1 hour
+    REVALIDATE_SECONDS: 3600, // 1 hour — heavy offense/defense stat aggregation
+    /** Shorter window (5 min) for game-day-sensitive single-fetch feeds:
+     *  standings + scoreboard/schedule. Keeps those fresh without hammering ESPN
+     *  (the heavy stat aggregation stays on REVALIDATE_SECONDS above). */
+    LIVE_REVALIDATE_SECONDS: 300, // 5 minutes
   },
 
   // API endpoints

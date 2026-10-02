@@ -172,16 +172,17 @@ function getFallbackMatchups(): Matchup[] {
 
 /** Fetch + parse an ESPN scoreboard payload (throws on HTTP error). */
 async function fetchScoreboard(url: string): Promise<EspnScoreboard> {
-  const res = await fetch(url, { next: { revalidate: APP_CONSTANTS.CACHE.REVALIDATE_SECONDS } });
+  const res = await fetch(url, { next: { revalidate: APP_CONSTANTS.CACHE.LIVE_REVALIDATE_SECONDS } });
   if (!res.ok) throw new Error(`ESPN scoreboard HTTP ${res.status}`);
   return (await res.json()) as EspnScoreboard;
 }
 
 // ── Closing odds for FINISHED games ────────────────────────────────────────
-// ESPN drops the betting line from the scoreboard feed once a game is final, so
-// past games arrive with `odds: null`. The dedicated per-event odds endpoint
-// still has the closing line, and a final game's line never changes — so we
-// fetch it once and cache it hard (30d), then attach it to completed matchups.
+// The scoreboard mapper now keeps ESPN's line for any game state, so this only
+// runs when the scoreboard genuinely omits odds for a completed game. It pulls
+// the closing line from the per-event odds endpoint. We cache it only a few
+// hours (not 30d): a miss right after a game flips final would otherwise stick,
+// so a short revalidate lets an empty lookup self-heal once ESPN publishes it.
 
 interface EspnOddsItem {
   details?: string;
@@ -191,12 +192,12 @@ interface EspnOddsResponse {
   items?: EspnOddsItem[];
 }
 
-const ONE_MONTH_SECONDS = 30 * 24 * 60 * 60;
+const CLOSING_ODDS_REVALIDATE_SECONDS = 6 * 60 * 60; // 6h — short so a missed lookup self-heals
 
 async function fetchClosingOdds(eventId: string): Promise<MatchupOdds | null> {
   const url = `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/events/${eventId}/competitions/${eventId}/odds`;
   try {
-    const res = await fetch(url, { next: { revalidate: ONE_MONTH_SECONDS } });
+    const res = await fetch(url, { next: { revalidate: CLOSING_ODDS_REVALIDATE_SECONDS } });
     if (!res.ok) throw new Error(`odds HTTP ${res.status}`);
     const data = (await res.json()) as EspnOddsResponse;
     const o = data.items?.[0];

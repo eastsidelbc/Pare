@@ -1,6 +1,24 @@
 import type { NextConfig } from "next";
+import { execSync } from "node:child_process";
+
+// Bake the deployed git commit + build time into the bundle so /api/health can
+// report exactly what's running (one curl from anywhere). Best-effort — falls
+// back to 'unknown' if git isn't available at build time.
+const gitSha = (() => {
+  try {
+    return execSync("git rev-parse --short HEAD").toString().trim();
+  } catch {
+    return "unknown";
+  }
+})();
+const buildTime = new Date().toISOString();
 
 const nextConfig: NextConfig = {
+  env: {
+    GIT_SHA: gitSha,
+    BUILD_TIME: buildTime,
+  },
+
   // PWA Optimizations
   async headers() {
     return [
