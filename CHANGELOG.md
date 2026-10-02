@@ -6,6 +6,14 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ## [Unreleased]
 
+### Added
+- **Compare "Neon Frame" redesign — Round 5 R + Round 4 K gold nav** (2026-10-02, branch `ui/compare-neon-frame`)
+  - See: `docs/devnotes/2026-10-02-compare-neon-frame.md`, rules in `docs/design-system.md` §8.
+  - Split-capsule neon bars in each team's own color (lift / clash / fallback rules, `lib/teamColors.ts`); rank-tier effects (#1 gold ring + sparks, #2–5 soft breathe, #28–31 static red badge outline, #32 ember badge). Brighter card side glows (Round 5 S strength); inactive comparison tabs show their team colors dimmed.
+  - Team-name wordmarks replace logos on Compare; neon-frame cards; deep Compare background; Offense + Defense fit one iPhone 14 Pro screen in app mode.
+  - Bottom nav active tab = sliding gold neon outline (same size). Bar math, ranking, data layer untouched.
+  - Team picker + rank-badge dropdowns restyled (shared `components/ui/neonMenu.ts`): 40px rows, height grows with the screen, logos replaced by `TeamMark` (2–3 letter wordmark). New-comparison picker + tablet "Add comparison" cell match (dashed gold slots, team-color frame when filled).
+
 ### Fixed
 - **Data freshness on self-hosted pare.gg** (2026-10-02, branch `fix/data-freshness`)
   - See: `docs/devnotes/2026-10-02-data-freshness.md`.

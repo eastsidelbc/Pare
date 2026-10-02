@@ -2,8 +2,8 @@
  * Compact Panel
  * 
  * Complete panel with rows (offense or defense)
- * LAYOUT: theScore compact structure (70px header + 48px rows = ~310px for 5 metrics)
- * STYLE: Pare visual design (purple accents, borderless, rounded)
+ * LAYOUT: 28px slim header + ~48px rows (5 metrics ≈ 270px)
+ * STYLE: Neon Frame (Round 5 "R") — team-color fading frame + deep card gradient
  */
 
 'use client';
@@ -13,6 +13,8 @@ import type { TeamData } from '@/lib/useNflStats';
 import { useDisplayMode } from '@/lib/useDisplayMode';
 import CompactPanelHeader from './CompactPanelHeader';
 import CompactComparisonRow from './CompactComparisonRow';
+import { getMatchupPalettes } from '@/lib/teamColors';
+
 interface CompactPanelProps {
   type: 'offense' | 'defense';
   teamA: string;
@@ -34,8 +36,6 @@ function CompactPanel({
   teamB,
   teamAData,
   teamBData,
-  teamARecord,
-  teamBRecord,
   selectedMetrics,
   allOffenseData,
   allDefenseData,
@@ -51,9 +51,6 @@ function CompactPanel({
     metricKey: string;
     team: 'A' | 'B';
   } | null>(null);
-  
-  // Team selector dropdown state management
-  const [activeTeamSelector, setActiveTeamSelector] = useState<'A' | 'B' | null>(null);
 
   // Select correct dataset
   const allData = type === 'offense' ? allOffenseData : allDefenseData;
@@ -79,58 +76,50 @@ function CompactPanel({
   const handleTeamAChange = useCallback((teamName: string) => {
     if (onTeamAChange) onTeamAChange(teamName);
     setActiveDropdown(null);
-    setActiveTeamSelector(null);
   }, [onTeamAChange]);
   
   const handleTeamBChange = useCallback((teamName: string) => {
     if (onTeamBChange) onTeamBChange(teamName);
     setActiveDropdown(null);
-    setActiveTeamSelector(null);
   }, [onTeamBChange]);
-  
-  
-  
-  // Handle logo click to open team selector
-  const handleLogoClick = (team: 'A' | 'B') => {
-    setActiveDropdown(null); // Close ranking dropdown
-    if (activeTeamSelector === team) {
-      setActiveTeamSelector(null);
-    } else {
-      setActiveTeamSelector(team);
-    }
+
+  // Team bar colors for this matchup (lift / clash / fallback rules in lib/teamColors).
+  const palettes = useMemo(() => getMatchupPalettes(teamA, teamB), [teamA, teamB]);
+
+  // Neon frame (Round 5 "R"): 2px border that fades from team A's color →
+  // neutral → team B's color, with each team's glow spilling off its side.
+  // Glow strength matches Round 5 "S" (brighter than R): 2px frame, 34px / 34% side glows.
+  const frameStyle = {
+    padding: 2,
+    borderRadius: 'var(--radius-xl)',
+    background: `linear-gradient(90deg, ${palettes.a.line}, var(--frame-mid) 50%, ${palettes.b.line})`,
+    boxShadow: `-12px 4px 34px rgba(${palettes.a.rgb}, 0.34), 12px 4px 34px rgba(${palettes.b.rgb}, 0.34), var(--shadow-pop)`,
   };
-  
+
   return (
-    <div 
-      className="rounded-xl overflow-hidden"
-      style={{
-        background: 'var(--card)',
-        border: '1px solid var(--border)'
-      }}
-    >
-      {/* Panel Header - 70px */}
+    <div style={frameStyle}>
+      <div
+        className="overflow-hidden"
+        style={{
+          borderRadius: 'calc(var(--radius-xl) - 2px)',
+          background: 'linear-gradient(90deg, var(--card-deep-a) 0%, var(--card-deep-mid) 50%, var(--card-deep-b) 100%)',
+          boxShadow: 'inset 0 1px 0 color-mix(in srgb, var(--text) 6%, transparent)',
+        }}
+      >
       <CompactPanelHeader
         type={type}
-        teamA={teamA}
-        teamB={teamB}
-        teamARecord={teamARecord}
-        teamBRecord={teamBRecord}
         displayMode={mode}
         onDisplayModeChange={setMode}
-        activeTeamSelector={activeTeamSelector}
-        onTeamAClick={() => handleLogoClick('A')}
-        onTeamBClick={() => handleLogoClick('B')}
-        onTeamAChange={handleTeamAChange}
-        onTeamBChange={handleTeamBChange}
-        allData={allData}
       />
       
       {/* Metric Rows - tight, theScore-style density with subtle dividers */}
-      <div className="divide-y divide-white/5">
+      <div className="divide-y divide-[var(--hairline)]">
         {selectedMetrics.map((metricKey) => (
           <CompactComparisonRow
             key={metricKey}
             metricField={metricKey}
+            paletteA={palettes.a}
+            paletteB={palettes.b}
             teamA={teamA}
             teamB={teamB}
             teamAData={transformedTeamAData}
@@ -146,11 +135,11 @@ function CompactPanel({
                 setActiveDropdown(null);
               } else {
                 setActiveDropdown({ metricKey, team });
-                setActiveTeamSelector(null); // Close team selector
               }
             }}
           />
         ))}
+      </div>
       </div>
     </div>
   );

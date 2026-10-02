@@ -1,7 +1,7 @@
 /**
  * CompareTicker — the compare header's center hint, as a horizontal scrolling
  * ticker (marquee). The motion catches the eye so people actually read the tips:
- * tap a logo to swap teams, tap a rank badge for detail. Gold text.
+ * tap a team name to swap teams, tap a rank badge for detail. Gold text.
  *
  * Seamless loop: the text is rendered twice and the track slides by exactly one
  * copy (-50%) on repeat. Respects prefers-reduced-motion (static line, no
@@ -12,7 +12,7 @@
 
 import { useEffect, useState } from 'react';
 
-const TIPS = ['Tap a team logo to change teams', 'Tap a rank badge for more info'];
+const TIPS = ['Tap a team name to change teams', 'Tap a rank badge for more info'];
 const SEP = ' • '; // em-space · bullet · em-space
 const TEXT = TIPS.join(SEP) + SEP; // trailing sep = spacing between loop copies
 const DURATION_S = 3;
@@ -34,7 +34,7 @@ export default function CompareTicker() {
   if (reduced) {
     return (
       <div className="truncate px-1 text-center" style={{ fontSize: '10px', fontWeight: 600, color: 'var(--gold)' }}>
-        Tap logos to change teams · rank badges for info
+        Tap team names to change teams · rank badges for info
       </div>
     );
   }

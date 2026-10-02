@@ -271,7 +271,7 @@ export default function CompareWorkspace() {
         // cards scroll BEHIND the floating BottomNav (seamless, iOS-style). The
         // inner scroll content keeps its own nav-height bottom padding, so the
         // last card still clears the pill when scrolled to the end.
-        background: 'var(--bg)',
+        background: 'var(--bg-deep)',
       }}
     >
       <OfflineStatusBanner />
@@ -280,11 +280,10 @@ export default function CompareWorkspace() {
           for the whole compare screen; the mobile per-pane top bar was removed
           so this is the only header. */}
       <div
-        className="flex-none border-b"
+        className="flex-none"
         style={{
           paddingTop: 'env(safe-area-inset-top)',
-          background: 'var(--surface)',
-          borderColor: 'var(--border)',
+          background: 'var(--bg-deep)',
         }}
       >
         <div className="mx-auto grid h-10 w-full max-w-[600px] grid-cols-[40px_1fr_40px] items-center px-2">

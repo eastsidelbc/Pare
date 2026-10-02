@@ -152,6 +152,15 @@
     --badge-red-deep:   #c93b40;
     --badge-slate:      #7c8698;
 
+    /* "Neon Frame" (Compare redesign, Round 5 R) — deep surfaces. Scoped to
+       Compare for now; promote to --bg/--card when the whole app adopts it. */
+    --bg-deep: #030409; /* Compare page background — near-black */
+    --card-deep-a: #0d0a10; /* card gradient, left (warm) */
+    --card-deep-mid: #06070c; /* card gradient, center */
+    --card-deep-b: #080b14; /* card gradient, right (cool) */
+    --hairline: #0f131c; /* row dividers inside deep cards */
+    --frame-mid: rgba(255, 255, 255, 0.15); /* neutral middle of the red→blue frame fade */
+
     /* Warning / offline — semantic amber (its own token, not an accent) */
     --warn:      #f59e0b; /* amber — offline/caution surface */
     --warn-text: #713f12; /* dark amber — readable text on --warn */
@@ -341,3 +350,38 @@
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
 }
+
+/* ============================================================
+   NEON FRAME effects (Compare redesign, Round 5 "R")
+   Only transform/opacity animate (cheap on phones), except the #32 badge
+   ember (box-shadow on one tiny element). The global prefers-reduced-motion
+   rule above already stops all of these.
+   ============================================================ */
+@keyframes pare-breathe {
+  0%, 100% { opacity: 0.25; }
+  50%      { opacity: 0.95; }
+}
+@keyframes pare-soft {
+  0%, 100% { opacity: 0.75; }
+  50%      { opacity: 1; }
+}
+@keyframes pare-spark {
+  0%   { transform: translateY(0) scale(1); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translateY(-14px) scale(0.4); opacity: 0; }
+}
+@keyframes pare-ember {
+  0%, 100% { box-shadow: 0 0 6px rgba(239, 68, 68, 0.7), inset 0 0 4px rgba(255, 180, 120, 0.4); }
+  33%      { box-shadow: 0 0 14px rgba(255, 90, 60, 0.95), inset 0 0 6px rgba(255, 180, 120, 0.7); }
+  66%      { box-shadow: 0 0 4px rgba(239, 68, 68, 0.5), inset 0 0 2px rgba(255, 180, 120, 0.3); }
+}
+
+.pare-breathe { animation: pare-breathe 3.4s ease-in-out infinite; }
+.pare-breathe-fast { animation: pare-breathe 1.5s ease-in-out infinite; }
+.pare-soft { animation: pare-soft 2.6s ease-in-out infinite; }
+.pare-spark {
+  position: absolute; width: 3px; height: 3px; border-radius: 50%;
+  background: var(--gold-bright); box-shadow: 0 0 6px var(--gold-bright);
+  animation: pare-spark 1.6s ease-out infinite;
+}
+.pare-ember { animation: pare-ember 1.2s ease-in-out infinite; }

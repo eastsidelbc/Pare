@@ -12,6 +12,7 @@
 
 import { X, Plus } from 'lucide-react';
 import { teamNameToAbbr } from '@/lib/teams';
+import { getMatchupPalettes } from '@/lib/teamColors';
 
 interface TabItem {
   id: string;
@@ -50,12 +51,19 @@ export default function CompareTabBar({
   return (
     <div
       className="flex-none flex items-center gap-1 overflow-x-auto px-2 py-1 no-scrollbar"
-      style={{ background: 'var(--card)', borderBottom: '1px solid var(--border)' }}
+      style={{ background: 'var(--bg-deep)' }}
       role="tablist"
       aria-label="Comparisons"
     >
       {comparisons.map((c) => {
         const isActive = c.id === activeId;
+        // Every pill is washed in its two teams' colors (Round 5 "R"): bright when
+        // active, dimmed when inactive so you can still tell matchups apart.
+        const pal = c.teamA && c.teamB ? getMatchupPalettes(c.teamA, c.teamB) : null;
+        const wash = (alpha: number) =>
+          pal ? `linear-gradient(90deg, rgba(${pal.a.rgb}, ${alpha}), rgba(${pal.b.rgb}, ${alpha}))` : 'transparent';
+        const activeBg = pal ? wash(0.22) : 'color-mix(in srgb, var(--text) 8%, transparent)';
+        const inactiveBg = wash(0.14);
         return (
           <div
             key={c.id}
@@ -64,9 +72,9 @@ export default function CompareTabBar({
             onClick={() => onSelect(c.id)}
             className="group flex items-center gap-1 rounded-full pl-2.5 pr-1 py-1 text-[11px] font-semibold whitespace-nowrap cursor-pointer transition-colors select-none"
             style={{
-              background: isActive ? 'var(--gold)' : 'rgba(255,255,255,.05)',
-              color: isActive ? 'var(--bg)' : 'var(--subtext)',
-              border: `1px solid ${isActive ? 'transparent' : 'var(--border)'}`,
+              background: isActive ? activeBg : inactiveBg,
+              color: isActive ? 'var(--text)' : 'var(--muted)',
+              border: `1px solid ${isActive ? 'color-mix(in srgb, var(--text) 28%, transparent)' : 'color-mix(in srgb, var(--text) 10%, transparent)'}`,
             }}
           >
             <span className="tabular-nums">{shortLabel(c.teamA, c.teamB)}</span>
@@ -83,7 +91,7 @@ export default function CompareTabBar({
                   width: 14,
                   height: 14,
                   opacity: 0.7,
-                  color: isActive ? 'var(--bg)' : 'var(--subtext)',
+                  color: isActive ? 'var(--text)' : 'var(--muted)',
                 }}
               >
                 <X size={10} strokeWidth={2.5} />
@@ -104,9 +112,9 @@ export default function CompareTabBar({
           style={{
             width: 24,
             height: 24,
-            background: canAdd ? 'color-mix(in srgb, var(--gold) 15%, transparent)' : 'rgba(255,255,255,.05)',
-            border: `1px solid ${canAdd ? 'transparent' : 'var(--border)'}`,
-            color: canAdd ? 'var(--gold)' : 'var(--muted)',
+            background: canAdd ? 'color-mix(in srgb, var(--gold-bright) 8%, transparent)' : 'transparent',
+            border: `1px solid ${canAdd ? 'color-mix(in srgb, var(--gold-bright) 55%, transparent)' : 'var(--border)'}`,
+            color: canAdd ? 'var(--gold-bright)' : 'var(--muted)',
             opacity: canAdd ? 1 : 0.4,
             cursor: canAdd ? 'pointer' : 'not-allowed',
           }}

@@ -199,3 +199,63 @@ component state — zero new deps, and it doubles as a QA page.
 
 Recommendation: let **this file** be the source of truth, update `globals.css` usage to match,
 and replace `styleguide.md` with a one-line pointer here (or stage it to `_to-delete/`).
+
+---
+
+## 8. Neon Frame — the Compare look (Round 5 "R", 2026-10-02)
+
+The approved redesign direction. Live on **Compare only** for now; written as a template so
+it can be promoted app-wide later (swap `--bg` → `--bg-deep`, `--card` → deep card gradient).
+Mockups: the "Pare Compare Redesign" canvas (rounds 1–5; R = the pick, nav = Round 4 K).
+
+**Surfaces:** page `--bg-deep` (#030409). Cards = 2px frame whose border fades
+team A color → `--frame-mid` → team B color, with each team's glow (34px, 34%) spilling off its side;
+inside, a `--card-deep-a → --card-deep-mid → --card-deep-b` gradient. Row dividers `--hairline`.
+
+**Team colors (not tokens — brand data):** `lib/teamColors.ts`. Rules: (1) lift dark colors to
+≥3:1 on `--bg-deep`; (2) clash → right side swaps to its alt, then left, then both;
+(3) fallback to `--green` / `--fire`. Every 32×32 matchup is unit-tested to stay distinct.
+
+**Team identity = wordmarks, not logos** (licensing): city + record small caps, nickname in
+Inter 900 outlined (`-webkit-text-stroke`) in the team's line color with a soft glow.
+Component: `components/compare/MatchupHero.tsx`.
+
+**The split-capsule bar** (`components/ui/SplitCapsuleBar.tsx`): two see-through neon tubes
+meeting at the exact `useBarCalculation` ratio, a short flush white divider, leader glows
+brighter. Numbers are all white (`--text`) — the trailing team is never greyed out.
+
+**Rank tiers** (`lib/rankTier.ts`, one definition):
+
+| Rank | Bar | Badge |
+|---|---|---|
+| #1 | gold ring + gold sparks + fast team-color breathe | filled gold |
+| #2–5 | soft team-color breathe only (gold is #1's alone) | gold tint |
+| #6–27 | plain | slate |
+| #28–31 | plain | red outline (static) |
+| #32 | plain | solid red "ember" glow (`effects` prop) |
+
+**Motion budget:** widths spring via framer-motion; glows are opacity-only CSS keyframes
+(`pare-*` in globals.css); blur layers only on top-5 sides; everything stops under
+`prefers-reduced-motion`. Effects are opt-in on `RankBadge` so Standings stay static.
+Comparison tab pills: every pill is washed in its two teams' colors — 22% active, 14% inactive.
+
+**Nav (Round 4 K):** near-black glass capsule; the active tab is a sliding gold neon outline
+(`--gold-bright` border + glow). Sizing unchanged (`--nav-pill-h`).
+
+**Density rule:** on an iPhone 14 Pro in app mode (393×759 usable) Offense **and** Defense
+(5 + 5 default metrics) fit without scrolling. Re-check with any change to row/hero height.
+
+**Menus & pickers (`components/ui/neonMenu.ts`):** team picker and rank list share one look —
+deep gradient card, `--frame-mid` edge, `--hairline` rows, gold-bright small-caps header,
+blurred deep backdrop. Rows are **40px** (`MENU_ROW_H`). Height follows the screen: Floating UI
+`size()` with `MENU_VIEWPORT_PADDING` (bottom keeps clear of the nav) — ~12–16 rows on a
+14 Pro, ~24–26 on an iPad. Current row = 2px gold-bright edge + 8% gold tint.
+
+**TeamMark (`components/ui/TeamMark.tsx`):** 2–3 letter abbreviation in the wordmark voice
+(Inter 900, team-color outline + glow, fixed width so lists align). Replaces logo artwork in
+lists/pickers. Unknown teams (League Average) → muted. Color = `getTeamPalette()` (lifted, no
+clash logic — single team).
+
+**Empty / add states:** dashed gold-bright outline + `AddMark` (gold neon "+" ring) for "Pick
+team" slots and the tablet "Add comparison" cell; a filled slot wears the team-color frame +
+TeamMark + nickname wordmark. "VS" = small gold italic 900.

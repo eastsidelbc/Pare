@@ -15,12 +15,12 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, useMotionValue, animate, type PanInfo } from 'framer-motion';
-import { Plus, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useComparisons, type Comparison, type ComparisonPatch } from '@/components/ComparisonsProvider';
 import { APP_CONSTANTS } from '@/config/constants';
 import type { TeamData } from '@/lib/useNflStats';
 import ComparePane from '@/components/compare/ComparePane';
-import BlankComparePicker from '@/components/compare/BlankComparePicker';
+import BlankComparePicker, { AddMark } from '@/components/compare/BlankComparePicker';
 
 const PAGE = 4; // 2×2
 
@@ -215,7 +215,9 @@ function Quadrant({
   onUpdate,
 }: QuadrantProps) {
   const shell = 'rounded-xl overflow-hidden relative h-full';
-  const shellStyle = { background: 'var(--card)', border: '1px solid var(--border)' } as const;
+  // Neon Frame: the quadrant shell is a quiet deep surface — the panels inside
+  // carry the glowing frames, so no card-in-card double border.
+  const shellStyle = { background: 'var(--bg-deep)', border: '1px solid var(--hairline)' } as const;
 
   // Empty "+" quadrant.
   if (cell.kind !== 'cmp' || !comparison) {
@@ -226,17 +228,12 @@ function Quadrant({
       <button
         type="button"
         onClick={onAdd}
-        className={`${shell} flex min-h-[160px] flex-col items-center justify-center gap-2 touch-optimized active:opacity-70`}
-        style={shellStyle}
+        className={`${shell} flex min-h-[160px] flex-col items-center justify-center gap-3 touch-optimized active:opacity-70`}
+        style={{ ...shellStyle, border: '1.5px dashed color-mix(in srgb, var(--gold-bright) 35%, transparent)' }}
         aria-label="Add comparison"
       >
-        <div
-          className="flex h-10 w-10 items-center justify-center rounded-full"
-          style={{ background: 'color-mix(in srgb, var(--gold) 15%, transparent)', color: 'var(--gold)' }}
-        >
-          <Plus size={20} strokeWidth={2.5} />
-        </div>
-        <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--muted)' }}>Add comparison</span>
+        <AddMark size={44} />
+        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.22em', color: 'var(--subtext)' }}>ADD COMPARISON</span>
       </button>
     );
   }
@@ -295,8 +292,8 @@ function Quadrant({
             width: 22,
             height: 30,
             color: 'var(--muted)',
-            background: 'var(--card)',
-            border: '1px solid var(--border)',
+            background: 'var(--bg-deep)',
+            border: '1px solid var(--hairline)',
             borderLeft: 'none', // flush against the card's right edge
             borderRadius: '0 9px 9px 0', // round only the outer (right) corners → reads as a tab
             boxShadow: '2px 0 6px -2px rgba(0,0,0,0.45)',

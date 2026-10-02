@@ -3,13 +3,15 @@
  * 
  * Main mobile layout wrapper for comparison interface
  * LAYOUT: theScore compact structure
- * STYLE: Pare visual design (steel-blue gradient, purple accents)
+ * STYLE: Neon Frame (Round 5 "R") — wordmark hero + framed Offense/Defense cards
  */
 
 'use client';
 
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import CompactPanel from './CompactPanel';
+import MatchupHero from '@/components/compare/MatchupHero';
+import { getMatchupPalettes } from '@/lib/teamColors';
 import { DEFAULT_OFFENSE_METRICS, DEFAULT_DEFENSE_METRICS } from '@/lib/metricsConfig';
 import type { TeamData } from '@/lib/useNflStats';
 
@@ -62,10 +64,13 @@ function MobileCompareLayout({
   const teamBDefense = defenseData.find(t => t.team === selectedTeamB) || null;
 
   // Overall W-L record lives on the defense (standings) rows. Read from the RAW
-  // data (not per-game transformed) so "3-0" stays intact. Shown under each
-  // team's logo in both panel headers.
+  // data (not per-game transformed) so "3-0" stays intact. Shown next to each
+  // team's city in the wordmark hero.
   const teamARecord = typeof teamADefense?.record === 'string' ? teamADefense.record : null;
   const teamBRecord = typeof teamBDefense?.record === 'string' ? teamBDefense.record : null;
+
+  // Team colors for the wordmarks (same resolution the panels use for bars/frames).
+  const palettes = useMemo(() => getMatchupPalettes(selectedTeamA, selectedTeamB), [selectedTeamA, selectedTeamB]);
 
   // Quadrant uses a single uniform GAP (6px) as the dark-blue band everywhere:
   // left, top, bottom, between the two panels, and on each side of the control
@@ -75,11 +80,13 @@ function MobileCompareLayout({
   // full/inline keep their original px-3/py-2 + BottomNav bottom reserve.
   const isQuad = variant === 'quadrant';
   const GAP = 6;
-  const padBottom = isQuad ? GAP : 'calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px)';
+  // Phone: reserve just enough for the floating nav so Offense + Defense both fit
+  // on one iPhone 14 Pro screen in app (standalone) mode.
+  const padBottom = isQuad ? GAP : 'calc(var(--nav-h) + env(safe-area-inset-bottom) + 6px)';
   const padRight = isQuad ? GAP : undefined;
   const padLeft = isQuad ? GAP : undefined; // undefined → px-3 (12px) for full/inline
   const padTop = isQuad ? GAP : undefined;  // undefined → py-2 (8px) for full/inline
-  const bodyClass = isQuad ? 'space-y-1.5' : 'px-3 py-2 space-y-2'; // space-y-1.5 = 6px
+  const bodyClass = isQuad ? 'space-y-1.5' : 'px-3 pt-1 space-y-2'; // space-y-1.5 = 6px
 
   // Shared body: skeleton while loading, else the two compact panels.
   const body = isLoading ? (
@@ -95,6 +102,20 @@ function MobileCompareLayout({
       className={bodyClass}
       style={{ paddingBottom: padBottom, paddingRight: padRight, paddingLeft: padLeft, paddingTop: padTop }}
     >
+      {/* Team wordmarks (replace logos on Compare) — tap a name to change team */}
+      <MatchupHero
+        teamA={selectedTeamA}
+        teamB={selectedTeamB}
+        teamARecord={teamARecord}
+        teamBRecord={teamBRecord}
+        paletteA={palettes.a}
+        paletteB={palettes.b}
+        allTeams={offenseData}
+        onTeamAChange={onTeamAChange}
+        onTeamBChange={onTeamBChange}
+        size={variant === 'full' ? 'lg' : 'sm'}
+      />
+
       {/* Offense Panel */}
       <CompactPanel
         type="offense"
@@ -132,7 +153,7 @@ function MobileCompareLayout({
   // Inline (Home accordion peek) and quadrant (Compare 2×2): just the panels,
   // no chrome, natural height.
   if (variant === 'inline' || variant === 'quadrant') {
-    return <div className="text-white" style={{ background: 'var(--bg)' }}>{body}</div>;
+    return <div className="text-text" style={{ background: isQuad ? 'var(--bg-deep)' : 'var(--bg)' }}>{body}</div>;
   }
 
   return (
@@ -141,8 +162,8 @@ function MobileCompareLayout({
        is just the scrollable cards area. height:100% (not 100dvh) so it slots
        under the workspace header/tab bar. */
     <div
-      className="flex flex-col text-white"
-      style={{ height: '100%', background: 'var(--bg)' }}
+      className="flex flex-col text-text"
+      style={{ height: '100%', background: 'var(--bg-deep)' }}
     >
       {/* Scrollable Content — flex-1 fills remaining space. The persistent app
           BottomNav lives at the shell level now; the workspace root reserves its

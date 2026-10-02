@@ -1,9 +1,10 @@
 /**
  * Compact Team Selector
  * 
- * Team logo dropdown for mobile using Floating UI for professional positioning
- * LAYOUT: theScore compact structure (borderless, responsive height clamp(320px, 50vh, 420px))
- * STYLE: Pare design tokens (gold accents)
+ * Team picker dropdown (Floating UI). Neon Frame "R" look (components/ui/neonMenu):
+ * deep gradient card, hairline rows, gold header. 40px rows with a <TeamMark>
+ * (2–3 letter wordmark — no logo artwork). Height follows the screen: as tall
+ * as the space below/above the trigger allows, minus the bottom-nav reserve.
  * INTERACTION: Sleek dropdown — spring pop, blurred backdrop, staggered rows; listbox/option a11y
  * POSITIONING: Floating UI with auto-flip, shift, and boundary detection
  */
@@ -16,7 +17,9 @@ import { useFloating, flip, shift, offset, autoUpdate, useDismiss, useInteractio
 import type { TeamData } from '@/lib/useNflStats';
 import { isAverageTeam, isNonSelectableSpecialTeam, getTeamDisplayLabel } from '@/utils/teamHelpers';
 import { BarChart3 } from 'lucide-react';
-import TeamLogo from '@/components/TeamLogo';
+import TeamMark from '@/components/ui/TeamMark';
+import { getTeamByName } from '@/lib/teams';
+import { MENU_VIEWPORT_PADDING, menuBackdrop, menuHeader, menuMaxHeight, menuRowStyle, menuSurface } from '@/components/ui/neonMenu';
 
 interface CompactTeamSelectorProps {
   allTeams: TeamData[];
@@ -49,15 +52,15 @@ export default function CompactTeamSelector({
       offset(8),
       flip({
         fallbackPlacements: ['top'],  // vertical only — never place sideways off a narrow screen
-        padding: 12
+        padding: MENU_VIEWPORT_PADDING
       }),
       shift({
-        padding: 12
+        padding: MENU_VIEWPORT_PADDING
       }),
-      size({  // constrain HEIGHT to available space (width is set up-front below)
+      size({  // HEIGHT follows the screen: all the room the viewport allows (width set up-front below)
+        padding: MENU_VIEWPORT_PADDING,
         apply({ availableHeight, elements }) {
-          const maxH = Math.min(420, Math.max(280, availableHeight - 16));
-          elements.floating.style.maxHeight = `${maxH}px`;
+          elements.floating.style.maxHeight = `${menuMaxHeight(availableHeight)}px`;
         }
       }),
       inline()  // Phase 2C: Better inline element positioning
@@ -123,11 +126,7 @@ export default function CompactTeamSelector({
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.18 }}
                 className="fixed inset-0 z-40"
-                style={{
-                  background: 'rgba(0, 0, 0, 0.45)',
-                  backdropFilter: 'blur(3px)',
-                  WebkitBackdropFilter: 'blur(3px)'
-                }}
+                style={menuBackdrop}
                 onClick={onToggle}
               />
               
@@ -141,8 +140,8 @@ export default function CompactTeamSelector({
                   // Clamp width UP FRONT so Floating UI measures the real width
                   // before shift/flip run — otherwise it positions a too-wide box
                   // then shrinks it, leaving it off-screen on narrow phones.
-                  width: 'min(300px, calc(100vw - 24px))',
-                  boxShadow: 'var(--shadow-pop)',
+                  width: 'min(280px, calc(100vw - 24px))',
+                  ...menuSurface,
                   opacity: (x != null && y != null) ? 1 : 0  // Phase 2F: Hide first-frame flash
                 }}
                 {...getFloatingProps()}
@@ -150,89 +149,74 @@ export default function CompactTeamSelector({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.96 }}
                 transition={{ type: 'spring', stiffness: 420, damping: 30 }}
-                className="z-100 rounded-[var(--radius-xl)] overflow-auto overscroll-contain pb-[calc(64px+env(safe-area-inset-bottom)+12px)]"  // Phase 2E: Safe area padding
+                className="z-100 flex flex-col overflow-hidden rounded-[var(--radius-xl)]"
               >
-                <div
-                  style={{
-                    background: 'var(--card)'
-                  }}
-                >
                   {/* Header */}
-                  <div 
-                    className="px-4 py-3 border-b"
-                    style={{ borderColor: 'var(--border)' }}
-                  >
-                    <h3 id="team-selector-label" style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)' }}>
+                  <div className="flex h-8 shrink-0 items-center px-3.5" style={{ borderBottom: '1px solid var(--hairline)' }}>
+                    <h3 id="team-selector-label" style={menuHeader}>
                       Select Team
                     </h3>
                   </div>
-                  
-                  {/* Scrollable Team List */}
-                  <div 
+
+                  {/* Scrollable Team List — fills whatever height the screen allows */}
+                  <div
                     role="listbox"
                     aria-labelledby="team-selector-label"
-                    className="overflow-y-auto"
-                    style={{ maxHeight: 'clamp(320px, 50vh, 420px)' }}
+                    className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
                   >
                 {sortedTeams.map((team, index) => {
                   const isAverage = isAverageTeam(team.team);
                   const displayLabel = isAverage ? getTeamDisplayLabel(team.team) : team.team;
                   const isCurrent = team.team === currentTeam;
-                  
+                  const info = isAverage ? null : getTeamByName(team.team);
+
                   return (
                     <motion.button
                       key={team.team}
                       role="option"
                       aria-selected={isCurrent}
+                      aria-label={displayLabel}
                       onClick={() => handleTeamSelect(team.team)}
-                      initial={{ opacity: 0, y: 6 }}
+                      initial={{ opacity: 0, y: 4 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.18, delay: Math.min(index, 18) * 0.015 }}
+                      transition={{ duration: 0.16, delay: Math.min(index, 18) * 0.012 }}
                       whileTap={{ scale: 0.98 }}
-                      className="w-full px-4 py-3 flex items-center gap-3 active:opacity-50"
-                      style={{
-                        background: isCurrent 
-                          ? 'color-mix(in srgb, var(--gold) 10%, transparent)' 
-                          : 'transparent',
-                        borderTop: index > 0 
-                          ? `1px solid var(--border)` 
-                          : 'none',
-                        boxShadow: isCurrent ? 'inset 3px 0 0 0 var(--gold)' : undefined
-                      }}
+                      className="flex w-full items-center gap-2 pl-1.5 pr-3.5 active:opacity-50"
+                      style={menuRowStyle(index, isCurrent)}
                     >
-                      {/* Logo or average icon */}
                       {isAverage ? (
-                        <div 
-                          className="w-10 h-10 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0"
-                          style={{
-                            background: 'color-mix(in srgb, var(--muted) 15%, transparent)',
-                            color: 'var(--muted)'
-                          }}
-                        >
-                          <BarChart3 size={18} />
-                        </div>
+                        <span className="flex w-[38px] shrink-0 justify-center" style={{ color: 'var(--muted)' }}>
+                          <BarChart3 size={16} />
+                        </span>
                       ) : (
-                        <div className="shrink-0">
-                          <TeamLogo teamName={team.team} size="40" />
-                        </div>
+                        <TeamMark teamName={team.team} size={15} />
                       )}
-                      
-                      {/* Team Name */}
-                      <div className="flex-1 text-left">
-                        <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)' }}>
-                          {displayLabel}
-                        </div>
-                      </div>
-                      
-                      {/* Selected Indicator — gold dot */}
+
+                      {/* City (small caps) over nickname — the wordmark voice, compressed */}
+                      <span className="min-w-0 flex-1 text-left leading-none">
+                        {info ? (
+                          <>
+                            <span className="block truncate" style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.16em', color: 'var(--muted)' }}>
+                              {info.location.toUpperCase()}
+                            </span>
+                            <span className="mt-[3px] block truncate" style={{ fontSize: 14, fontWeight: 800, color: isCurrent ? 'var(--gold-bright)' : 'var(--text)' }}>
+                              {info.nickname}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="block truncate" style={{ fontSize: 13, fontWeight: 700, color: 'var(--subtext)' }}>
+                            {displayLabel}
+                          </span>
+                        )}
+                      </span>
+
                       {isCurrent && (
-                        <div className="w-2 h-2 rounded-full" style={{ background: 'var(--gold)' }} />
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: 'var(--gold-bright)', boxShadow: '0 0 6px var(--gold-bright)' }} />
                       )}
                     </motion.button>
                   );
                 })}
                   </div>
-                </div>
               </motion.div>
             </>
           )}

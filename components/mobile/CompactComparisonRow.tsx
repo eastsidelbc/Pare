@@ -2,21 +2,24 @@
  * Compact Comparison Row
  * 
  * Two-line layout: Data line (padded) + Bar line (edge-to-edge)
- * LAYOUT: theScore compact structure (~52px total height)
- * STYLE: Pare visual design (green/fire gradients, NO borders)
+ * LAYOUT: theScore compact structure (~48px total height)
+ * STYLE: Neon Frame (Round 5 "R") — split-capsule bar in team colors, white stats
  * INTERACTION: Tap rank text (30th) to open dropdown; stat values roll (NumberFlow)
  */
 
 'use client';
 
 import { memo } from 'react';
-import { motion } from 'framer-motion';
+import type React from 'react';
 import NumberFlow from '@number-flow/react';
 import { AVAILABLE_METRICS } from '@/lib/metricsConfig';
 import { useRanking } from '@/lib/useRanking';
 import { useBarCalculation } from '@/lib/useBarCalculation';
 import type { TeamData } from '@/lib/useNflStats';
 import CompactRankingDropdown from './CompactRankingDropdown';
+import SplitCapsuleBar from '@/components/ui/SplitCapsuleBar';
+import { getRankTier } from '@/lib/rankTier';
+import type { BarPalette } from '@/lib/teamColors';
 
 /**
  * StatValue — one stat number with a premium "odometer" roll (NumberFlow) when
@@ -25,7 +28,7 @@ import CompactRankingDropdown from './CompactRankingDropdown';
  * neither rolls as a number. NumberFlow respects prefers-reduced-motion, so it
  * degrades to an instant swap for users who ask for less motion.
  */
-const STAT_CLS = 'text-[13px] font-semibold text-text tabular-nums';
+const STAT_CLS = 'text-[15px] leading-[18px] font-bold text-text tabular-nums';
 
 function StatValue({
   raw,
@@ -46,6 +49,8 @@ function StatValue({
   return (
     <NumberFlow
       className={STAT_CLS}
+      // Thinner roll mask = less built-in vertical padding (keeps rows compact)
+      style={{ '--number-flow-mask-height': '0.12em' } as React.CSSProperties}
       value={num}
       format={{ minimumFractionDigits: digits, maximumFractionDigits: digits }}
       suffix={format === 'percentage' ? '%' : ''}
@@ -66,6 +71,9 @@ interface CompactComparisonRowProps {
   onTeamAChange?: (team: string) => void;  // Team change handler
   onTeamBChange?: (team: string) => void;  // Team change handler
   onDropdownToggle?: (team: 'A' | 'B') => void;  // Toggle dropdown
+  /** Team bar colors for this matchup (lib/teamColors, resolved once per panel). */
+  paletteA: BarPalette;
+  paletteB: BarPalette;
 }
 
 function CompactComparisonRow({
@@ -79,7 +87,9 @@ function CompactComparisonRow({
   activeDropdownTeam,
   onTeamAChange,
   onTeamBChange,
-  onDropdownToggle
+  onDropdownToggle,
+  paletteA,
+  paletteB,
 }: CompactComparisonRowProps) {
   
   const metricConfig = AVAILABLE_METRICS[metricField];
@@ -154,7 +164,7 @@ function CompactComparisonRow({
     <div className="relative">
       
       {/* LINE 1: Data + Ranks + Metric Name — 3-column grid, perfectly balanced */}
-      <div className="px-3 py-1 grid grid-cols-[1fr_auto_1fr] items-center gap-1">
+      <div className="px-3 pt-1 grid grid-cols-[1fr_auto_1fr] items-center gap-1">
         
         {/* Team A: Value + Rank (left-aligned) */}
         <div className="flex items-baseline gap-1">
@@ -177,7 +187,7 @@ function CompactComparisonRow({
         </div>
         
         {/* Center: Metric Name — fixed-width, never stretches */}
-        <div className="text-center px-1">
+        <div className="text-center px-1 leading-none">
           <span className="uppercase whitespace-nowrap" style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', color: 'var(--subtext)' }}>
             {metricConfig.name}
           </span>
@@ -205,34 +215,23 @@ function CompactComparisonRow({
         
       </div>
       
-      {/* LINE 2: theScore-style inward bars — proportional meeting point,
-          animated into place, rounded outer ends. teamA% + teamB% ≈ 98 (2%
-          reserved as the center gap), preserving the sacred bar math. */}
-      <div className="px-3 pb-1.5 pt-0">
+      {/* LINE 2: Round 5 "R" split-capsule neon bar — proportional meeting point
+          from useBarCalculation (sacred math untouched), team colors, rank-tier
+          effects (#1 gold ring + sparks, #2–5 soft breathe). */}
+      <div className="px-3 pb-1.5 pt-[5px]">
         {barsVisible ? (
-          <div className="flex h-[6px] w-full items-stretch">
-            {/* Team A bar — grows inward from the left (green) */}
-            <motion.div
-              className="h-full rounded-l-full"
-              style={{ background: 'linear-gradient(90deg, var(--green-deep) 0%, var(--green) 100%)' }}
-              initial={false}
-              animate={{ width: `${teamAPercentage}%` }}
-              transition={{ type: 'spring', stiffness: 220, damping: 30 }}
-            />
-            {/* Center gap */}
-            <div className="h-full" style={{ width: '2%' }} />
-            {/* Team B bar — grows inward from the right (fire) */}
-            <motion.div
-              className="ml-auto h-full rounded-r-full"
-              style={{ background: 'linear-gradient(90deg, var(--fire) 0%, var(--fire-deep) 100%)' }}
-              initial={false}
-              animate={{ width: `${teamBPercentage}%` }}
-              transition={{ type: 'spring', stiffness: 220, damping: 30 }}
-            />
-          </div>
+          <SplitCapsuleBar
+            teamAPercentage={teamAPercentage}
+            teamBPercentage={teamBPercentage}
+            paletteA={paletteA}
+            paletteB={paletteB}
+            tierA={getRankTier(teamARanking?.rank, teamARanking?.totalTeams)}
+            tierB={getRankTier(teamBRanking?.rank, teamBRanking?.totalTeams)}
+            height={10}
+          />
         ) : (
           /* No live data for one/both sides — neutral track, no fake bars. */
-          <div className="h-[6px] w-full rounded-full bg-border" />
+          <div className="w-full rounded-full" style={{ height: 10, border: '1px solid var(--hairline)' }} />
         )}
       </div>
       

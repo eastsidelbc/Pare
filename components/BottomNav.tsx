@@ -51,8 +51,9 @@ export default function BottomNav() {
         className="pointer-events-auto flex items-center gap-1 overflow-hidden rounded-full p-1"
         style={{
           height: 'var(--nav-pill-h)',
-          background: 'color-mix(in srgb, var(--surface) 88%, transparent)',
-          border: '1px solid var(--border)',
+          // Neon Frame (Round 4 "K"): near-black glass capsule with a faint edge.
+          background: 'color-mix(in srgb, var(--bg-deep) 85%, transparent)',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
           boxShadow: 'var(--shadow-pop)',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
@@ -60,7 +61,7 @@ export default function BottomNav() {
       >
         {ITEMS.map((item) => {
           const active = item.isActive(pathname);
-          const color = active ? 'var(--gold)' : 'var(--muted)';
+          const color = active ? 'var(--gold-bright)' : 'var(--muted)';
           const Icon = item.icon;
           return (
             <Link
@@ -70,12 +71,16 @@ export default function BottomNav() {
               aria-current={active ? 'page' : undefined}
               className="relative flex h-full items-center gap-1.5 rounded-full px-2.5 touch-optimized active:opacity-70"
             >
-              {/* Sliding gold highlight — one shared element that glides between tabs. */}
+              {/* Sliding gold neon outline — one shared element that glides between tabs. */}
               {active && (
                 <motion.span
                   layoutId="nav-active-pill"
                   className="absolute inset-0 rounded-full"
-                  style={{ background: 'color-mix(in srgb, var(--gold) 15%, transparent)' }}
+                  style={{
+                    border: '1.5px solid var(--gold-bright)',
+                    background: 'color-mix(in srgb, var(--gold-bright) 8%, transparent)',
+                    boxShadow: '0 0 12px color-mix(in srgb, var(--gold-bright) 35%, transparent)',
+                  }}
                   transition={{ type: 'spring', stiffness: 420, damping: 34 }}
                 />
               )}

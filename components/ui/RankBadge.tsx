@@ -13,6 +13,7 @@
 'use client';
 
 import { ordinalSuffix } from '@/utils/ordinal';
+import { getRankTier } from '@/lib/rankTier';
 
 interface RankBadgeProps {
   /** 1-based rank, or null when unranked (e.g. league-average row). */
@@ -23,6 +24,11 @@ interface RankBadgeProps {
   totalTeams?: number;
   /** Visual size. */
   size?: 'sm' | 'md';
+  /**
+   * Opt-in neon effect (Compare rows only — Standings etc. stay static):
+   * #32 → solid red ember glow. (#28–31 keep the plain red outline.)
+   */
+  effects?: boolean;
 }
 
 // --- tier tokens (dark mode) — values live in globals.css :root ---
@@ -85,7 +91,7 @@ function tierStyle(rank: number, total: number): TierStyle {
   return { color: SLATE, background: SLATE_TINT, border: `1px solid ${SLATE_BORDER}`, boxShadow: 'none' };
 }
 
-export default function RankBadge({ rank, isTied = false, totalTeams = 32, size = 'sm' }: RankBadgeProps) {
+export default function RankBadge({ rank, isTied = false, totalTeams = 32, size = 'sm', effects = false }: RankBadgeProps) {
   const dims = size === 'md' ? 'text-[12px] px-2 py-[3px]' : 'text-[11px] px-1.5 py-[2px]';
 
   // Unranked → neutral placeholder (no tier), don't crash.
@@ -107,16 +113,17 @@ export default function RankBadge({ rank, isTied = false, totalTeams = 32, size 
 
   const tier = tierStyle(rank, totalTeams);
   const label = `${isTied ? 'T-' : ''}${rank}${ordinalSuffix(rank)}`;
+  const ember = effects && getRankTier(rank, totalTeams) === 'last'; // #32: solid red, smoldering
 
   return (
     <span
-      className={`inline-flex items-center justify-center font-bold tabular-nums leading-none whitespace-nowrap ${dims}`}
+      className={`inline-flex items-center justify-center font-bold tabular-nums leading-none whitespace-nowrap ${dims} ${ember ? 'pare-ember' : ''}`}
       style={{
         borderRadius: 'var(--radius-sm)',
         color: tier.color,
         background: tier.background,
         border: tier.border,
-        boxShadow: tier.boxShadow,
+        boxShadow: ember ? undefined : tier.boxShadow,
       }}
     >
       {label}
