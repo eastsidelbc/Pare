@@ -35,7 +35,7 @@ All data is live from public APIs; there is **no** CSV/PFR layer (removed in the
 - **Offense stats:** ESPN team statistics (`lib/espnStats.ts`). Team yards use NET (`netPassingYards`/`netTotalYards`) so offense matches defense-allowed.
 - **Defense:** points allowed via ESPN standings; yards/3rd-down opponent-aggregated from box scores (`lib/espnStats.ts`).
 - **Fantasy (QB/RB/WR/TE/K/D-ST):** Sleeper (`lib/fantasy.ts`). The ~20MB player map is fetched at most once per 24h per process and cached (trimmed) in memory — never per request.
-- **Caching:** API routes keep a ~6h in-memory cache + Next ISR, and serve stale cache on upstream failure so the app never blanks.
+- **Freshness (self-hosted, verified 2026-10-02):** live scores ~15s (browser polls ESPN while a game is live or within 10 min before / 3h after kickoff — `lib/liveWindow.ts`); standings instant (`no-store`); schedule 5 min; Compare offense/defense stats + W-L record 10 min (route ISR + `REVALIDATE_SECONDS`); finished box scores cached 24h per game; leaderboards 6h. Offense/defense routes keep an in-memory copy as a **last-good backup only** (served on ESPN failure, never in front of ISR). Never nest `unstable_cache`/cached fetch inside `unstable_cache` — Next bypasses nested caches. Full table + rules: repo `CLAUDE.md` → "Data Freshness".
 
 ## Architecture
 
@@ -107,6 +107,6 @@ open ios/Pare.xcodeproj         # build/run (Cmd+R)
 | Default matchup | Minnesota Vikings vs Detroit Lions |
 | Special rows filtered | `Avg Team`, `League Total`, `Avg Tm/G`, `Avg/TmG` |
 | Tie notation / tolerance | `T-12th` / `0.001` |
-| Cache TTL | ~6h (stats), 24h (Sleeper player map, in-memory) |
+| Data freshness | stats 10 min · standings instant · live 15s · schedule 5 min · leaders 6h · Sleeper player map 24h |
 | Service worker default | OFF (`NEXT_PUBLIC_ENABLE_SW=true` to enable) |
 | Abbr aliases | `WSH->WAS`, `JAC->JAX`, `LA->LAR` (in `lib/teams.ts`) |

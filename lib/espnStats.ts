@@ -374,7 +374,7 @@ async function getFinalEventIds(week: number): Promise<string[]> {
 }
 
 /** Reads both teams' offensive total/net-pass/rush yards from a game summary. */
-async function getGameYards(eventId: string): Promise<GameTeamYards[] | null> {
+async function fetchGameYards(eventId: string): Promise<GameTeamYards[] | null> {
   const url = `${ESPN_SUMMARY_URL}?event=${eventId}`;
   const data = await fetchJsonWithTimeout<EspnSummaryResponse>(url);
   const teams = data.boxscore?.teams ?? [];
@@ -418,6 +418,35 @@ async function getGameYards(eventId: string): Promise<GameTeamYards[] | null> {
 }
 
 /**
+ * Per-game cache for FINISHED games' box-score yards (~24h).
+ *
+ * Why: the yards-allowed aggregation used to re-download EVERY box score of the
+ * season on each refresh (~16 per finished week, ~270 by Week 18). A final box
+ * score is effectively frozen, so each refresh now only downloads games that
+ * finished since the last one. 24h (not forever) so the NFL's midweek stat
+ * corrections still land. NOTE: this must NOT be called from inside another
+ * `unstable_cache` — Next bypasses nested caches (see fetchDefenseYardsAllowed).
+ *
+ * Incomplete box scores THROW instead of returning null, because
+ * `unstable_cache` never stores a thrown error — so a partial box score right at
+ * the final whistle is retried next refresh instead of being frozen for 24h.
+ */
+function getGameYards(eventId: string): Promise<GameTeamYards[]> {
+  return unstable_cache(
+    async () => {
+      const yards = await fetchGameYards(eventId);
+      if (!yards) throw new Error(`incomplete box score for event ${eventId}`);
+      return yards;
+    },
+    ['final-boxscore-yards', eventId],
+    {
+      revalidate: APP_CONSTANTS.CACHE.FINAL_BOXSCORE_REVALIDATE_SECONDS,
+      tags: ['final-boxscore-yards'],
+    },
+  )();
+}
+
+/**
  * Computes each team's yards ALLOWED (total / net-pass / rush) by summing its
  * OPPONENTS' offensive yards across all completed 2026 regular-season games.
  *
@@ -430,8 +459,8 @@ async function getGameYards(eventId: string): Promise<GameTeamYards[] | null> {
  * Throws only if it can't compute anything, so the route can keep serving the
  * Step-3 points-allowed with "—" yards.
  *
- * Internal: returns a plain object (JSON-serializable for `unstable_cache`).
- * Public API wraps it back into a Map — call site in defense/route.ts unchanged.
+ * Internal: returns a plain object; the public API wraps it back into a Map —
+ * call site in defense/route.ts unchanged.
  */
 async function _fetchDefenseYardsAllowed(): Promise<Record<string, YardsAllowed>> {
   // Upper bound = current week (completed games only live at or before it).
@@ -554,29 +583,21 @@ async function _fetchDefenseYardsAllowed(): Promise<Record<string, YardsAllowed>
       `rush=${aRush}/${gRush} (${aRush === gRush ? 'MATCH' : 'MISMATCH'})`,
   );
 
-  // Convert Map → plain object so unstable_cache can JSON-serialize the result.
+  // Convert Map → plain object (public API turns it back into a Map).
   return Object.fromEntries(allowed);
 }
 
 /**
- * Cached wrapper — persists the aggregated yards-allowed across serverless
- * invocations via Next.js unstable_cache (Vercel KV / file-system cache).
- * Revalidates every REVALIDATE_SECONDS. On cache miss the full aggregation runs;
- * on cache hit only the in-memory Map reconstruction executes.
- */
-const _cachedFetchDefenseYardsAllowed = unstable_cache(
-  _fetchDefenseYardsAllowed,
-  ['defense-yards-allowed', String(APP_CONSTANTS.SEASON)],
-  {
-    revalidate: APP_CONSTANTS.CACHE.REVALIDATE_SECONDS,
-    tags: ['defense-yards-allowed'],
-  },
-);
-
-/**
  * Public API — unchanged signature so defense/route.ts needs no update.
+ *
+ * No outer `unstable_cache` here any more: the defense route is already ISR-
+ * cached (10 min), and an outer unstable_cache silently DISABLES every cache
+ * nested inside it (Next bypasses nested unstable_cache + fetch caching), which
+ * forced a full re-download of every season box score on each refresh. Now the
+ * week scoreboards use the normal 10-min fetch cache and finished box scores
+ * use the 24h per-game cache in getGameYards().
  */
 export async function fetchDefenseYardsAllowed(): Promise<Map<string, YardsAllowed>> {
-  const obj = await _cachedFetchDefenseYardsAllowed();
+  const obj = await _fetchDefenseYardsAllowed();
   return new Map(Object.entries(obj));
 }

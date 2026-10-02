@@ -12,16 +12,20 @@ export const APP_CONSTANTS = {
 
   // Cache configuration
   CACHE: {
-    PRODUCTION_MAX_AGE: 6 * 60 * 60 * 1000, // 6 hours in milliseconds
-    DEBUG_MAX_AGE: 10 * 1000, // 10 seconds for debugging
     STALE_THRESHOLD: 24 * 60 * 60 * 1000, // 24 hours before cache is considered stale
-    /** Next.js Data Cache / unstable_cache revalidation window (seconds).
-     *  Controls how long Vercel persists ESPN fetch results and computed
-     *  aggregations across serverless invocations. Tunable in one place. */
-    REVALIDATE_SECONDS: 3600, // 1 hour — heavy offense/defense stat aggregation
-    /** Shorter window (5 min) for game-day-sensitive single-fetch feeds:
-     *  standings + scoreboard/schedule. Keeps those fresh without hammering ESPN
-     *  (the heavy stat aggregation stays on REVALIDATE_SECONDS above). */
+    /** Next.js Data Cache / unstable_cache revalidation window (seconds) for the
+     *  Compare team stats (offense totals + defense standings/yards-allowed).
+     *  10 min = a finished game shows up in Compare within ~10 min. Kept cheap
+     *  by FINAL_BOXSCORE_REVALIDATE_SECONDS below. The offense/defense route
+     *  files hold a literal `revalidate = 600` — keep them in sync. */
+    REVALIDATE_SECONDS: 600, // 10 minutes
+    /** Box scores of FINISHED games barely change, so the yards-allowed
+     *  aggregation re-downloads each one at most once a day (still catches the
+     *  NFL's midweek stat corrections) instead of every refresh. */
+    FINAL_BOXSCORE_REVALIDATE_SECONDS: 24 * 60 * 60, // 24 hours
+    /** Shorter window (5 min) for the server-side scoreboard/schedule fetch
+     *  (home page + /api/schedule). Standings are fully live (no-store). Keeps those fresh without hammering ESPN
+     *  (team stats use REVALIDATE_SECONDS above). */
     LIVE_REVALIDATE_SECONDS: 300, // 5 minutes
   },
 

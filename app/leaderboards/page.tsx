@@ -1,8 +1,8 @@
 /**
  * Leaderboards — the third tab.
  *
- * Server component: fetches every board once via `getAllLeaderboards()` (ESPN,
- * 6h-cached) and renders the fixed-header + single-scroll shell used across the
+ * Server component: fetches every board once via `getAllLeaderboards()` (ESPN
+ * data cached ~6h; page re-renders ~every 5 min) and renders the fixed-header + single-scroll shell used across the
  * app. Grouped into Offense / Defense / Special Teams sections.
  *
  * The polished, interactive card lives in `components/leaderboards/LeaderCard`
@@ -14,7 +14,10 @@ import LeaderCard from '@/components/leaderboards/LeaderCard';
 import FantasyBoards from '@/components/leaderboards/FantasyBoards';
 import CardGrid from '@/components/ui/CardGrid';
 
-// Re-fetch (and re-render) on the same ~6h cadence as the underlying board fetch.
+// Page-level ISR hint. NOTE: the effective page refresh is ~5 min, because the
+// root layout's schedule fetch (5 min) is shorter and Next uses the smallest
+// window on the page. The ESPN/Sleeper board DATA itself is still held ~6h at
+// the fetch layer (lib/leaders.ts, lib/fantasy.ts), so re-renders are cheap.
 export const revalidate = 21600;
 
 const SECTIONS: { key: LeaderSection; label: string }[] = [

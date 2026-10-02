@@ -3,7 +3,7 @@
  *
  * `getCurrentWeekMatchups()` returns the current NFL week's matchups as a typed
  * array. It fetches live from ESPN's free public scoreboard API (server-side,
- * cached ~1h). If that fails or returns nothing, it falls back to a hardcoded
+ * cached ~5 min — LIVE_REVALIDATE_SECONDS). If that fails or returns nothing, it falls back to a hardcoded
  * week so the home page never blanks.
  *
  * Only the INSIDE of this seam knows about ESPN — the `Matchup` shape and every
@@ -262,7 +262,7 @@ export async function getMatchupsForWeek(week: number): Promise<Matchup[]> {
 /**
  * Returns the current NFL week's matchups, ordered by kickoff time.
  *
- * Fetches live from ESPN (server-side, cached ~1h). Falls back to
+ * Fetches live from ESPN (server-side, cached ~5 min). Falls back to
  * {@link getFallbackMatchups} on any failure so the UI never blanks.
  * Must be called server-side (uses Next fetch caching + avoids CORS).
  */

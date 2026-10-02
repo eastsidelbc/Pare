@@ -5,6 +5,7 @@
 > `lib/pfr.ts`, `data/pfr/` deleted). Disregard the "Manual CSV", "position-based
 > CSV mapping", and weekly-CSV-update sections below. A lean, corrected, consolidated
 > rewrite is proposed at `docs/proposed/CLAUDE.lean.md` — review and adopt it to replace this file.
+> The **Data Freshness** section and **Data flow** below ARE current (updated 2026-10-02).
 
 > **Master brain doc lives in vault:**
 > `D:\Programs\Obsidian\Vault\Me\Projects\Pare\CLAUDE.md`
@@ -22,7 +23,7 @@ NFL team head-to-head stat comparison platform.
 
 - **Web:** Next.js 15 + React 19 + TypeScript + Tailwind v3 — production
 - **iOS:** SwiftUI + WKWebView wrapper — Phase C scaffold complete (2025-10-14)
-- **Data:** Manual CSV from Pro Football Reference, 6hr in-memory cache
+- **Data:** Live ESPN public JSON API (+ Sleeper for fantasy) — see `DATA_SOURCES.md` and **Data Freshness** below
 - **Audience:** NFL fans, fantasy players, casual stat-checkers
 - **Signature visual:** theScore-style proportional inward bars
 
@@ -36,21 +37,21 @@ npm run build            # Production build
 npm run start            # Production server (port 4000)
 npm run lint             # ESLint
 
-# Production deploy (M1 Mac mini, PM2)
-pm2 start npm --name "pare-nfl" -- start
-pm2 status
-pm2 logs pare-nfl
-pm2 restart pare-nfl
+# Production deploy (M1 Mac mini, PM2 process "pare", served at pare.gg via Cloudflare Tunnel "pare-tunnel")
+git pull
+npm install              # not `npm ci` — lockfile is cross-platform
+npm run clean            # flush .next/cache so a rebuild can't bake stale ESPN data
+npm run build
+pm2 restart pare
+pm2 logs pare            # watch for ESPN 429/403
 
 # iOS (Mac mini only)
 cd ios && ./Scripts/setup.sh        # First-time: install XcodeGen, generate project
 cd ios && ./Scripts/gen_xcode.sh    # Regen after editing project.yml
 open ios/Pare.xcodeproj             # Build & run from Xcode (⌘R)
 
-# Data updates (weekly)
-# 1. Export https://www.pro-football-reference.com/years/2025/#team_stats → data/pfr/offense-2025.csv
-# 2. Export https://www.pro-football-reference.com/years/2025/opp.htm#team_stats → data/pfr/defense-2025.csv
-# 3. Cache auto-invalidates after 6hr (or pm2 restart pare-nfl)
+# Data updates: automatic — all data is pulled live from ESPN/Sleeper on the
+# schedule in "Data Freshness" below. No manual exports.
 ```
 
 ## 📂 Architecture Overview
@@ -170,21 +171,15 @@ CHANGELOG.md                ⭐ Authoritative state of what's done
 ### Data flow
 
 ```
-Pro Football Reference (manual CSV export, weekly)
+ESPN public JSON API (team stats, standings, scoreboard, box scores) + Sleeper
    ↓
-data/pfr/offense-2025.csv  +  data/pfr/defense-2025.csv
+lib/espnStats.ts · lib/standings.ts · lib/schedule.ts · lib/leaders.ts · lib/fantasy.ts
    ↓
-lib/pfrCsv.ts  (position-based column mapping, handles duplicate "Yds")
-   ↓
-app/api/nfl-2025/{offense,defense}/route.ts  (6hr in-memory cache)
+app/api/nfl-2025/{offense,defense}/route.ts  (ISR, 10 min — see Data Freshness)
    ↓  JSON
 lib/useNflStats.ts  (client hook, fetches both, transforms shape)
    ↓
-app/compare/page.tsx  (global team + metric state)
-   ↓  props
-OffensePanel + DefensePanel  (self-contained, own display mode)
-   ↓
-DynamicComparisonRow  (per-metric row)
+components/compare/* + components/mobile/Compact*  (Compare workspace + schedule peeks)
    ├→ useRanking  (client-side rank math, float tolerance, tie handling)
    └→ useBarCalculation  (theScore bar width with rank amplification)
 ```
@@ -262,21 +257,26 @@ DEFAULT_DEFENSE_METRICS = [
 5. Optionally add to `DEFAULT_OFFENSE_METRICS` / `DEFAULT_DEFENSE_METRICS`
 6. Done — metric auto-appears in selectors + ranking
 
-## 🔧 CSV Processing
+## ⏱️ Data Freshness (self-hosted `next start` on the Mac mini)
 
-`lib/pfrCsv.ts` uses **position-based** column mapping because PFR has multiple "Yds" columns:
+Verified 2026-10-02 with a fake-ESPN + clock-skip test harness (see `docs/devnotes/2026-10-02-data-freshness.md`).
 
-```typescript
-const CSV_COLUMN_MAPPING_BY_POSITION = {
-  3:  'points',       // PF
-  4:  'total_yards',  // Yds (position 4 = TOTAL)
-  12: 'pass_yds',     // Yds (position 12 = PASSING)
-  18: 'rush_yds',     // Yds (position 18 = RUSHING)
-  // ...
-};
-```
+| Data | Where | How it refreshes | Lag after ESPN updates |
+|---|---|---|---|
+| Live score / clock / final | `lib/hooks/useLiveScores.ts` (browser → ESPN) | 15s poll while a game is live **or** within 10 min before / 3h after a listed kickoff (`lib/liveWindow.ts`) | ~15s |
+| Standings tab + `/api/standings` | `lib/standings.ts` | `no-store` + `force-dynamic` — every request | Instant |
+| Home schedule (page load) + `/api/schedule` | `lib/schedule.ts` | fetch cache `LIVE_REVALIDATE_SECONDS` (5 min) | ≤5 min (+ one reload) |
+| Compare offense/defense stats + W-L record on Compare | `app/api/nfl-2025/*`, `lib/espnStats.ts` | route ISR + fetch cache `REVALIDATE_SECONDS` (10 min) | ≤10 min (+ one reload) |
+| Finished-game box scores (yards-allowed) | `getGameYards()` in `lib/espnStats.ts` | per-game `unstable_cache`, `FINAL_BOXSCORE_REVALIDATE_SECONDS` (24h) | New finals: next 10-min refresh · stat corrections: ≤24h |
+| Leaderboards (ESPN + Sleeper) | `lib/leaders.ts`, `lib/fantasy.ts` | fetch cache 6h (page re-renders ~5 min) | ≤6h |
 
-**Never** change positions without updating both `offense/route.ts` and `defense/route.ts`. Wrong position = all stats wrong.
+**Rules**
+- **One timer per data type.** Never stack an in-memory TTL cache in front of ISR — the offense/defense routes' memory copy is a *last-good backup* only (read on ESPN failure via `getStale()`). A 6h memory TTL in front of ISR froze Compare stats for ~6h on self-hosted (Vercel hid it by restarting instances).
+- **Never call `unstable_cache` / cached `fetch` from inside another `unstable_cache`** — Next silently bypasses nested caches.
+- **"Reload twice" is normal ISR:** self-hosted ISR serves the old copy on the first request after the window and rebuilds in the background.
+- **Never judge prod freshness against `npm run dev`** — dev mode doesn't cache. Compare prod to prod: `curl.exe -sI https://pare.gg/<path>` and read `cache-control` / `x-nextjs-cache`.
+- Route-file `export const revalidate` must be a literal — keep `600` in sync with `REVALIDATE_SECONDS`.
+- Planned (not built): on-demand `revalidatePath()` endpoint pinged when a game goes final → Compare stats within ~1–2 min.
 
 ## ⚡ Smart Per-Game Calculations
 
@@ -370,9 +370,12 @@ curl http://localhost:4000/api/nfl-2025/offense | jq '.rows[0] | {team, points, 
 ### Common debugging
 
 **No API data?**
-- Check `data/pfr/*.csv` files exist
-- Verify column positions match
-- Read server logs
+- `pm2 logs pare` — look for ESPN HTTP 429/403 or timeouts
+- Routes serve the last-good backup (`stale: true`) when ESPN fails; a fresh process with ESPN down returns 500 (offense) or "—" rows (defense)
+
+**Data looks stale?**
+- See **Data Freshness** — check the lag for that data type before debugging
+- `curl.exe -sI https://pare.gg/api/nfl-2025/offense` → `x-nextjs-cache: HIT/STALE` is expected ISR behavior
 
 **Rankings wrong?**
 - Verify `higherIsBetter` in `metricsConfig.ts`
@@ -416,7 +419,7 @@ Repo has `.cursorrules`. Cursor agent must:
 | Special team rows filtered | `Avg Team`, `League Total`, `Avg Tm/G`, `Avg/TmG` |
 | Tie notation | `T-12th` |
 | Float tolerance for ties | `0.001` |
-| Cache TTL | 6 hours |
+| Data freshness | See **Data Freshness** table (stats 10 min, standings instant, live scores 15s) |
 | Service worker default | OFF (`NEXT_PUBLIC_ENABLE_SW=true` to enable) |
 | Emoji log prefixes | 🏈 offense, 🛡️ defense, 🏆 ranking, 🚀 state, ✅ success, ❌ error, ⚠️ warning |
 

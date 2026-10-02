@@ -6,6 +6,14 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ## [Unreleased]
 
+### Fixed
+- **Data freshness on self-hosted pare.gg** (2026-10-02, branch `fix/data-freshness`)
+  - See: `docs/devnotes/2026-10-02-data-freshness.md`.
+  - Compare offense/defense stats (and the W-L record on Compare) refresh every **10 min** instead of freezing for up to ~6h — the routes' 6h in-memory cache no longer sits in front of ISR (now a last-good backup only); `REVALIDATE_SECONDS` 3600 → 600.
+  - Finished-game box scores cached per game for 24h (incomplete ones retried) — each refresh only downloads new finals instead of the whole season. Removed the outer `unstable_cache` that silently disabled nested caches.
+  - Live scores now start polling on their own from 10 min before kickoff (`lib/liveWindow.ts`, unit-tested) — a page opened pre-game no longer stays frozen.
+  - Corrected stale cache comments + added a **Data Freshness** table to `CLAUDE.md`.
+
 ### Changed
 - **Phase 3 design token sweep — colors only** (2026-10-02, branch `tailwind-v4`)
   - See: `docs/devnotes/2026-10-02-token-sweep-phase3.md`.

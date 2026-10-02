@@ -2,7 +2,7 @@
  * Standings — the fourth tab.
  *
  * Server component: fetches the full league standings once via `getStandings()`
- * (ESPN, ~1h-cached) and renders the same fixed-header + single-scroll shell used
+ * (ESPN, fresh on every request — no cache) and renders the same fixed-header + single-scroll shell used
  * across the app. Grouped AFC → NFC, each conference showing its four division
  * boxes stacked (East, North, South, West).
  */

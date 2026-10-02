@@ -15,10 +15,10 @@ import { logger } from '@/utils/logger';
 import { generateRequestId } from '@/utils/helpers';
 import { createTtlCache } from '@/lib/apiCache';
 
-// Cache the full route response on Vercel's Data Cache so cold serverless
-// invocations get the cached JSON without re-running any ESPN fetches.
+// ISR: the route response is cached and rebuilt in the background every 10 min
+// (Vercel and self-hosted `next start` alike), so requests get cached JSON without re-running any ESPN fetches.
 // Value must be a literal for Next.js static analysis (keep in sync with REVALIDATE_SECONDS).
-export const revalidate = 3600; // 1 hour
+export const revalidate = 600; // 10 minutes
 
 // API Response interface
 interface ApiResponse {
@@ -30,12 +30,13 @@ interface ApiResponse {
   error?: string;
 }
 
-// In-memory cache (shared TTL helper; lives for the server process lifetime).
-const cache = createTtlCache<ApiResponse>(
-  process.env.NODE_ENV === 'production'
-    ? APP_CONSTANTS.CACHE.PRODUCTION_MAX_AGE
-    : APP_CONSTANTS.CACHE.DEBUG_MAX_AGE
-);
+// Last-good BACKUP only (lives for the server process lifetime). Freshness is
+// owned by ONE timer — the route `revalidate` above. This copy is never served
+// on the happy path; it's only read via getStale() when ESPN fails, so users get
+// the last good numbers instead of an error. (It used to be checked FIRST with a
+// 6h TTL, which silently froze stats on self-hosted for up to 6h — see
+// docs/devnotes/2026-10-02-data-freshness.md.)
+const cache = createTtlCache<ApiResponse>(0); // maxAge 0 = never "fresh" — backup only
 
 // ✅ Server-side ranking removed - now handled client-side by useRanking hook
 
@@ -43,24 +44,7 @@ export async function GET() {
   const requestId = generateRequestId();
 
   try {
-    // Check cache first
-    const fresh = cache.getFresh();
-    if (fresh) {
-      logger.cache({ context: 'OFFENSE', requestId }, `Serving cached data (${Math.floor(fresh.ageMs / 60000)} min old)`, {
-        teamCount: fresh.value.rows.length
-      });
-
-      return NextResponse.json(fresh.value, {
-        headers: {
-          'Cache-Control': 'public, max-age=300',
-          'Content-Type': 'application/json',
-          'X-Cache': 'HIT',
-          'X-Request-ID': requestId,
-        },
-      });
-    }
-
-    // Fetch fresh data — PRIMARY: live ESPN offense totals; FALLBACK: 2025 CSV.
+    // Fetch fresh data — PRIMARY: live ESPN offense totals; FALLBACK: last-good backup.
     const startTime = Date.now();
 
     let updatedAt: string;

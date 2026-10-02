@@ -77,3 +77,34 @@
 - **Watch the first CI "Design-token guard" run** — if it reds on the regex, tune it.
 - **Delete the `_to-delete/` folders** in Explorer (14 dead files + `styleguide.md` + `ErrorBoundary`) once comfortable.
 - iOS H2 (prod URL → `pare.gg`) + M4 (ATS) when the iOS track resumes; H1 data licensing before monetizing.
+
+---
+
+## Addendum — data freshness, odds, version visibility (same day, later)
+
+After the UI batch above, a run of data/infra fixes (all shipped + deployed):
+
+### Odds now persist on completed games
+- **Root cause (two bugs):** `lib/espnScoreboard.ts` only kept the betting line when `state === 'pre'` — it discarded `odds` for live/final games **even though ESPN still ships the line in the scoreboard**. Separately, the `attachClosingOdds` fallback (per-event odds endpoint) cached a miss for **30 days**, so a game that flipped final before ESPN published its closing line got stuck with no odds.
+- **Fix:** mapper keeps `odds` for any game state (`rawOdds?.details ? … : null`). Fallback cache cut 30d → **6h** (`CLOSING_ODDS_REVALIDATE_SECONDS`) so a miss self-heals. Completed games keep their line like older games always did.
+
+### `/api/health` now reports the running build
+- `next.config.ts` bakes `GIT_SHA` (`git rev-parse --short HEAD`) + `BUILD_TIME` into `env` at build; `/api/health` returns `commit` + `builtAt`. One `curl https://pare.gg/api/health` from anywhere tells you exactly what's deployed (verified: `commit:"e3ce68c"`). The route is `no-cache`, so it always reflects the live build.
+
+### Standings freshness — ISR → fully dynamic (live)
+- **Why pare.gg lagged while `localhost` was instant, same code:** `localhost:4000` is `next dev` (ignores ISR + fetch cache → always fresh); `pare.gg` is `next build` + `next start` (honors ISR → cached). That's the whole difference — dev vs prod runtime, not the code.
+- **Compounders:** (a) `next build` **reuses `.next/cache`** fetch entries, so a rebuild can bake stale ESPN data unless `npm run clean` wipes it first; (b) self-hosted ISR is **lazy/traffic-triggered** — first request after the window serves stale then regenerates, so you often see fresh only on the *second* reload.
+- **Ruled out:** Cloudflare (both `/standings` and `/api/standings` return `cf-cache-status: DYNAMIC` — CF isn't caching); the `pare-tunnel` cloudflared process (a dumb pipe, no caching); wrong/old prod build (`/api/health` confirmed latest commit).
+- **First pass:** split the cache window — added `LIVE_REVALIDATE_SECONDS: 300` for standings + scoreboard, kept `REVALIDATE_SECONDS: 3600` for the heavy offense/defense stat aggregation.
+- **Final (correct) fix:** standings are live data, so they shouldn't be cached at all. `app/standings/page.tsx` + `app/api/standings/route.ts` → `export const dynamic = 'force-dynamic'`; `getStandings()` fetches `cache: 'no-store'`. Fresh ESPN pull every request, no stale window, no two-step. (`/standings` + `/api/standings` now build as `ƒ (Dynamic)`.)
+
+### Env / infra findings (for next session)
+- **dev ≠ prod caching** — never diagnose prod staleness by comparing to `next dev`; dev doesn't cache. Compare prod to prod (`curl -sI … | grep cache-control`: dynamic routes drop `s-maxage`).
+- **`next build` reuses `.next/cache`** — to force a genuinely fresh data bake on the Mac mini, `npm run clean` before `npm run build` (not needed for `no-store`/dynamic routes).
+- **Cloudflare isn't caching the app** (`cf-cache-status: DYNAMIC`); the `pare-tunnel` process is just a proxy — restarting it never affects data freshness.
+- **WebFetch from the Cowork cloud box is NOT a reliable view of ESPN** — it returned `0-0` for games that Kobe's own network shows live. Verify ESPN data on Kobe's machines, not from here.
+
+### Still open (data)
+- **Compare offense/defense stats** are still **1h-cached** on purpose — that defense aggregation makes 16+ ESPN calls per refresh, so per-request/no-store would be slow and risk rate-limiting. If they need to be fresher on game day, lower to ~10 min (don't make dynamic). Decision pending.
+- **Option B — on-demand revalidation** (`revalidatePath` + a scheduled ping when games finalize) is the only way to get *everything* Vercel-instant on self-hosted without per-request fetches. Deferred.
+- **Auto-refresh standings while the tab is open** would need client-side polling (like the 15s live-score poll); right now standings are fresh on load but don't tick while viewing.

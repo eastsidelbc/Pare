@@ -2,8 +2,9 @@
  * GET /api/standings
  *
  * Returns the full league standings grouped AFC → NFC → division, sourced from
- * ESPN's public standings endpoint via `lib/standings.ts`. Cached ~1h at the
- * fetch layer, so this route stays cheap under load. Backs the Standings tab
+ * ESPN's public standings endpoint via `lib/standings.ts`. NOT cached — fresh
+ * ESPN pull on every request (one cheap call), so records update the moment a
+ * game goes final. Backs the Standings tab
  * (and is iOS-ready per Mobile_plan.md).
  */
 
