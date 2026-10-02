@@ -21,7 +21,6 @@ import { APP_CONSTANTS } from '@/config/constants';
 import type { TeamData } from '@/lib/useNflStats';
 import ComparePane from '@/components/compare/ComparePane';
 import BlankComparePicker from '@/components/compare/BlankComparePicker';
-import QuadrantMetricsButton from '@/components/compare/QuadrantMetricsButton';
 
 const PAGE = 4; // 2×2
 
@@ -215,7 +214,7 @@ function Quadrant({
   onRemove,
   onUpdate,
 }: QuadrantProps) {
-  const shell = 'rounded-xl overflow-hidden relative';
+  const shell = 'rounded-xl overflow-hidden relative h-full';
   const shellStyle = { background: 'var(--card)', border: '1px solid var(--border)' } as const;
 
   // Empty "+" quadrant.
@@ -246,79 +245,66 @@ function Quadrant({
   const hasTeams = Boolean(c.teamA && c.teamB);
 
   return (
-    <div className={shell} style={shellStyle}>
-      {/* Inner wrapper hugs the content so the control box centers to the
-          comparison itself, not to the (grid-stretched) card height. */}
-      <div className="relative">
-      {hasTeams ? (
-        <ComparePane
-          isMobile
-          inline
-          quadrant
-          teamA={c.teamA}
-          teamB={c.teamB}
-          offenseData={offenseData}
-          defenseData={defenseData}
-          selectedOffenseMetrics={c.settings.offenseMetrics}
-          selectedDefenseMetrics={c.settings.defenseMetrics}
-          isLoading={isLoading}
-          isLoadingOffense={isLoadingOffense}
-          isLoadingDefense={isLoadingDefense}
-          onTeamAChange={(t) => onUpdate(c.id, { teamA: t })}
-          onTeamBChange={(t) => onUpdate(c.id, { teamB: t })}
-          onOffenseMetricsChange={(m) => onUpdate(c.id, { settings: { offenseMetrics: m } })}
-          onDefenseMetricsChange={(m) => onUpdate(c.id, { settings: { defenseMetrics: m } })}
-        />
-      ) : (
-        <div className="p-3">
-          <BlankComparePicker
+    <div className="relative h-full">
+      <div className={shell} style={shellStyle}>
+        {hasTeams ? (
+          <ComparePane
+            isMobile
+            inline
+            quadrant
             teamA={c.teamA}
             teamB={c.teamB}
             offenseData={offenseData}
+            defenseData={defenseData}
+            selectedOffenseMetrics={c.settings.offenseMetrics}
+            selectedDefenseMetrics={c.settings.defenseMetrics}
+            isLoading={isLoading}
+            isLoadingOffense={isLoadingOffense}
+            isLoadingDefense={isLoadingDefense}
             onTeamAChange={(t) => onUpdate(c.id, { teamA: t })}
             onTeamBChange={(t) => onUpdate(c.id, { teamB: t })}
+            onOffenseMetricsChange={(m) => onUpdate(c.id, { settings: { offenseMetrics: m } })}
+            onDefenseMetricsChange={(m) => onUpdate(c.id, { settings: { defenseMetrics: m } })}
           />
-        </div>
-      )}
+        ) : (
+          <div className="p-3">
+            <BlankComparePicker
+              teamA={c.teamA}
+              teamB={c.teamB}
+              offenseData={offenseData}
+              onTeamAChange={(t) => onUpdate(c.id, { teamA: t })}
+              onTeamBChange={(t) => onUpdate(c.id, { teamB: t })}
+            />
+          </div>
+        )}
+      </div>
 
-      {/* Controls float as a small VERTICAL box (× over ⚙) in the reserved right
-          gap, vertically centered — dark-blue card shows above, below, around. */}
-      {(hasTeams || canRemove) && (
-        <div
-          className="absolute top-1/2 z-10 flex -translate-y-1/2 flex-col items-center gap-0.5 rounded-lg"
+      {/* Close control: a small tab fused to the card's RIGHT EDGE (bookmark
+          style). Rendered OUTSIDE the overflow-hidden card so it can jut out a
+          few px. Metrics editing was removed from the quadrant view — each
+          comparison shows its default metric set (⚙ button retired). */}
+      {canRemove && (
+        <button
+          type="button"
+          onClick={() => onRemove(c.id)}
+          aria-label="Remove comparison"
+          className="absolute z-10 flex items-center justify-center touch-optimized active:opacity-60"
           style={{
-            // Centered in the reserved right gap. The quadrant body uses a uniform
-            // 6px dark-blue band everywhere (padLeft/top/bottom + between panels);
-            // padRight is 6 + boxWidth(≈34) + 6 = 46, so right:6 leaves a matching
-            // 6px band on BOTH sides of the control box.
-            right: 6,
-            background: 'color-mix(in srgb, var(--card) 85%, transparent)',
+            top: 14,
+            right: -10, // protrude ~10px past the card edge (sits in the grid gap/padding — no page overflow)
+            width: 22,
+            height: 30,
+            color: 'var(--muted)',
+            background: 'var(--card)',
             border: '1px solid var(--border)',
-            padding: 2,
+            borderLeft: 'none', // flush against the card's right edge
+            borderRadius: '0 9px 9px 0', // round only the outer (right) corners → reads as a tab
+            boxShadow: '2px 0 6px -2px rgba(0,0,0,0.45)',
           }}
         >
-          {canRemove && (
-            <button
-              type="button"
-              onClick={() => onRemove(c.id)}
-              aria-label="Remove comparison"
-              className="flex h-7 w-7 items-center justify-center rounded-lg touch-optimized active:opacity-60"
-              style={{ color: 'var(--muted)' }}
-            >
-              <X size={15} />
-            </button>
-          )}
-          {hasTeams && (
-            <QuadrantMetricsButton
-              offenseMetrics={c.settings.offenseMetrics}
-              defenseMetrics={c.settings.defenseMetrics}
-              onOffenseMetricsChange={(m) => onUpdate(c.id, { settings: { offenseMetrics: m } })}
-              onDefenseMetricsChange={(m) => onUpdate(c.id, { settings: { defenseMetrics: m } })}
-            />
-          )}
-        </div>
+          <X size={14} />
+        </button>
       )}
-      </div>
     </div>
   );
 }

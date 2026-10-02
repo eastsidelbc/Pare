@@ -11,8 +11,25 @@ module.exports = {
         sans: ['var(--font-inter)', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
       },
       colors: {
+        // Legacy — these point at vars NOT defined in globals.css; kept only to avoid breakage.
         background: "var(--background)",
         foreground: "var(--foreground)",
+        // Design-system tokens. Source of truth = app/globals.css :root. Prefer these:
+        // bg-bg / bg-surface / bg-card, border-border, text-text / text-subtext / text-muted,
+        // bg-gold, bg-green, bg-fire, etc. (Additive — existing palette classes still work.)
+        bg: "var(--bg)",
+        surface: "var(--surface)",
+        card: "var(--card)",
+        border: "var(--border)",
+        gold: "var(--gold)",
+        "gold-bright": "var(--gold-bright)",
+        green: "var(--green)",
+        fire: "var(--fire)",
+        red: "var(--red)",
+        blue: "var(--blue)",
+        text: "var(--text)",
+        subtext: "var(--subtext)",
+        muted: "var(--muted)",
       },
       spacing: {
         'safe-top': 'env(safe-area-inset-top)',
@@ -37,6 +54,9 @@ module.exports = {
         'panel-floating': '0 20px 40px -8px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06)',
         'glow-green': '0 0 20px rgba(34, 197, 94, 0.4), 0 0 40px rgba(34, 197, 94, 0.2)',
         'glow-blue': '0 0 20px rgba(59, 130, 246, 0.4), 0 0 40px rgba(59, 130, 246, 0.2)',
+        // Design-system elevation tokens (source: globals.css) → shadow-card / shadow-pop.
+        'card': 'var(--shadow-card)',
+        'pop': 'var(--shadow-pop)',
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

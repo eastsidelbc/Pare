@@ -70,13 +70,13 @@ function MobileCompareLayout({
   // Quadrant uses a single uniform GAP (6px) as the dark-blue band everywhere:
   // left, top, bottom, between the two panels, and on each side of the control
   // box — so the stat panels fill most of the card and the leftover dark blue is
-  // even on all sides. Right reserves GAP + control-box(≈34) + GAP = 46 so the
-  // vertically-centered ×/⚙ box has a matching 6px band left and right.
+  // even on all sides. The remove (×) control is no longer a gutter box — it's an
+  // edge tab rendered outside the card (see CompareQuadrants), so no extra right pad.
   // full/inline keep their original px-3/py-2 + BottomNav bottom reserve.
   const isQuad = variant === 'quadrant';
   const GAP = 6;
   const padBottom = isQuad ? GAP : 'calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px)';
-  const padRight = isQuad ? GAP + 34 + GAP : undefined;
+  const padRight = isQuad ? GAP : undefined;
   const padLeft = isQuad ? GAP : undefined; // undefined → px-3 (12px) for full/inline
   const padTop = isQuad ? GAP : undefined;  // undefined → py-2 (8px) for full/inline
   const bodyClass = isQuad ? 'space-y-1.5' : 'px-3 py-2 space-y-2'; // space-y-1.5 = 6px

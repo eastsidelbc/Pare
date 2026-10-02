@@ -17,6 +17,12 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - **Added — test harness + CI:** Vitest + first pure-logic unit tests (`utils/ordinal`, `utils/teamHelpers` [rewritten from the old console-log script], `utils/teamDataTransform`, `lib/comparisons/store`, `lib/useRanking` incl. ordinal/tie/special-team regressions) and `.github/workflows/ci.yml` (runs `check` + `test:run`). **One-time:** run `npm install` to add vitest + sync the lockfile, then commit `package-lock.json` (CI uses `npm ci`).
 
 ### Changed
+- **Compare quadrants: edge close-tab + metrics locked to defaults** (2026-10-01)
+  - See: `docs/devnotes/2026-10-01-quadrant-close-tab.md`.
+  - Tablet/desktop quadrant view: removed the floating right-gutter control box. Close (×) is now a small bookmark tab fused to each card's right edge; panels fill the reclaimed width (uniform 6px band). The per-quadrant metrics (⚙) button was retired — quadrants show their default metric set (metric editing stays on phone / the workspace). `QuadrantMetricsButton.tsx` is now orphaned, pending removal.
+- **Design system: drift audit + codified rules doc** (2026-10-01)
+  - Added `docs/design-system.md` — living source of truth (supersedes the drifted `styleguide.md`): surface/elevation ladder + border/radius/accent/spacing rules, component recipes, a drift audit (worst offender `TeamDropdown.tsx`; token values hardcoded as literals in 6/8 sampled components; cards 12px `rounded-xl` vs the 14px `--radius-lg` token; two golds used as the active tint), a migration order, and tooling/library recommendations (CVA + tailwind-merge + clsx, shadcn/ui, Radix primitives, mapping tokens into `tailwind.config`).
+  - **Phase 1 (foundation) started:** token `colors` + `boxShadow` added to `tailwind.config.js` (`bg-card`, `border-border`, `text-subtext`, `shadow-card`, `shadow-pop`, …) — purely additive, existing styles unchanged. Radius remap intentionally deferred (shifts corners app-wide — apply + eyeball). Phase 2 (CVA/shadcn/Radix) needs `npx shadcn init` + `npm i` on-device; Phase 3 component migration follows. Handoff + commands: `docs/devnotes/2026-10-02-design-system-phase1.md`.
 - **Cleanup overhaul — dead-code removal, dedup, Leaders perf fix, rules draft** (2026-10-01)
   - See: `docs/devnotes/2026-10-01-cleanup-overhaul.md` (branch `cleanup/overhaul`, one commit per phase)
   - Removed the dead CSV/PFR data layer (`lib/pfr.ts`, `lib/pfrCsv.ts`, `data/pfr/`); data is ESPN + Sleeper only. Shared stat types consolidated into `lib/types.ts`.

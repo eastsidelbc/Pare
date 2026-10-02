@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # Requires package-lock.json to be in sync with package.json.
+      # After adding vitest, run `npm install` locally once and commit the
+      # updated lockfile, or this step will fail.
+      - run: npm ci
+
+      - run: npm run check      # tsc --noEmit && eslint
+
+      - run: npm run test:run   # vitest run
