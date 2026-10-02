@@ -10,8 +10,9 @@
 import { NextResponse } from 'next/server';
 import { getStandings } from '@/lib/standings';
 
-// Re-render every 5 min — standings change on game day (matches the fetch cache).
-export const revalidate = 300; // 5 minutes
+// Live data — fetch fresh on every request (no ISR cache) so standings are
+// always current. getStandings() fetches no-store.
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const conferences = await getStandings();

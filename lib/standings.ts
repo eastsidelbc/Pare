@@ -3,8 +3,9 @@
  *
  * Turns ESPN's public standings endpoint into typed, division-grouped standings
  * for the Standings tab. Same free, CORS-open ESPN family the schedule + leaders
- * use; fetched server-side and cached (see `/api/standings`), so we never hammer
- * ESPN no matter how many viewers.
+ * use; fetched server-side FRESH on every request (no ISR cache) so the tab
+ * reflects a game the moment it finalizes — this is live sports data, not a
+ * static snapshot. It's a single cheap ESPN call, so per-request is fine.
  *
  * ESPN groups standings by CONFERENCE (AFC/NFC) with a flat team list — it does
  * NOT nest divisions. So we group into divisions ourselves using the static
@@ -24,10 +25,6 @@ import { APP_CONSTANTS } from '@/config/constants';
 /** Public ESPN standings endpoint (free, no key). */
 const ESPN_STANDINGS_URL =
   'https://site.api.espn.com/apis/v2/sports/football/nfl/standings';
-
-/** Cache window (5 min) — standings change on game day; a single cheap fetch,
- *  so refresh it faster than the heavy offense/defense stat aggregation. */
-const REVALIDATE_SECONDS = APP_CONSTANTS.CACHE.LIVE_REVALIDATE_SECONDS;
 
 /** Division display order within a conference. */
 const DIVISION_ORDER: readonly Division[] = ['North', 'South', 'East', 'West'];
@@ -150,12 +147,17 @@ function emptyConferences(): ConferenceStandings[] {
  * All standings, grouped NFC → AFC, each with its four divisions (North, South,
  * East, West), teams kept in ESPN's official standings order (real NFL
  * tiebreakers). Degrades to empty boxes on any failure so the tab never crashes.
+ *
+ * Fetched `no-store` — fresh ESPN data on every request. Standings are live data
+ * (records/points change the moment a game finalizes), and this is a single
+ * cheap call, so there's no ISR cache to go stale. Route-level `force-dynamic`
+ * keeps the page/route dynamic to match.
  */
 export async function getStandings(): Promise<ConferenceStandings[]> {
   const url = `${ESPN_STANDINGS_URL}?season=${APP_CONSTANTS.SEASON}`;
 
   try {
-    const res = await fetch(url, { next: { revalidate: REVALIDATE_SECONDS } });
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) throw new Error(`ESPN standings HTTP ${res.status}`);
     const data = (await res.json()) as EspnStandingsResponse;
 
