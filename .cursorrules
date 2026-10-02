@@ -1,36 +1,41 @@
 # Cursor Rules — Pare (NFL head-to-head comparison app)
 
-## Standing engineering rules (ALWAYS apply — do not re-read CLAUDE.md for these)
-- Stack: Next.js 15 + React 19 + TypeScript + Tailwind v3. Dev server on port 4000.
-- DARK MODE ONLY. Mobile-first — design at ~390px; this web app is the base for an iOS app.
+## Source of truth
+- **`CLAUDE.md` (repo root) is the single source of truth** for rules, architecture, data
+  freshness, commands, and gotchas. This file is only the short always-on subset so scoped
+  tasks don't need to load it. If anything here conflicts with `CLAUDE.md`, `CLAUDE.md` wins.
+
+## Standing engineering rules (ALWAYS apply)
+- Stack: Next.js 15.5 + React 19 + TypeScript + Tailwind v4. Dev server on port 4000. Live at pare.gg.
+- DARK MODE ONLY. Mobile-first — design at ~393px (iPhone 14 Pro); this web app is the base for an iOS app.
 - TypeScript strict, no `any`; typed props/interfaces. Hooks hold logic; components render.
-- Tailwind utility classes + design tokens. No ad-hoc inline styles.
-- SURGICAL over rebuild: small, atomic, scoped to exactly what's asked. Don't refactor
-  unrelated code.
+- Design tokens only (`docs/design-system.md`, values in `app/globals.css :root`). Never hardcode
+  a color/radius/shadow; no raw Tailwind palette classes (CI fails on them).
+- SURGICAL over rebuild: small, atomic, scoped to exactly what's asked. Don't refactor unrelated code.
 - Do NOT change the data layer, the ranking / display-mode / bar-calculation math, or hook
-  signatures unless the task explicitly says so. Preserve the theScore inward-bar logic —
-  it's the heart of the app.
-- No duplicate global state — team selection lives at ComparePage level, passed via props.
-- Data source: schedule + stats come from ESPN (see DATA_SOURCES.md). Team yards use NET
-  (netPassingYards / netTotalYards) so offense matches defense-allowed. Defense yards/3rd-down
-  are opponent-aggregated from box scores. Cache fetches (~6h) and ALWAYS keep a fallback so
-  the app never blanks.
+  signatures unless the task explicitly says so. Preserve the theScore inward-bar logic.
+- Comparison state lives in the comparisons store (`lib/comparisons/store.ts` +
+  `ComparisonsProvider`); schedule state in `ScheduleProvider`. Don't add parallel state.
+- Data: ESPN + Sleeper only (see DATA_SOURCES.md). Respect the freshness timers in `CLAUDE.md`
+  → "Freshness" — one timer per data type, never nest `unstable_cache`, always keep a fallback
+  so the app never blanks.
+- Dead code → `_to-delete/<date>-<what>/`, never silently deleted.
 
 ## Verification (token-thrifty — important)
 - Do NOT open a browser, drive it, or take screenshots to self-verify. Kobe checks the UI.
-- Verify with cheap checks ONLY: curl + jq, row counts, internal-consistency assertions,
-  and `npm run lint`. Print the numbers, don't screenshot.
+- Verify with cheap checks ONLY: `npm run check`, `npm run test:run`, curl + jq, row counts,
+  internal-consistency assertions. Print the numbers, don't screenshot.
 
 ## When to read the big docs (don't by default)
-- CLAUDE.md: read only for architecture-level or cross-cutting work.
+- CLAUDE.md: read for architecture-level, data/caching, or cross-cutting work.
 - DATA_SOURCES.md: read only when wiring or changing data endpoints.
-- For a scoped, surgical change, skip both — these standing rules cover it.
+- For a scoped, surgical change, these standing rules cover it.
 - Do NOT print "Rule Summary / Ambiguities / Confirmation" blocks unless asked.
 
 ## Docs ritual (keep, but lightweight)
-- Conventional Commits: feat: / fix: / docs: / chore:.
-- Non-trivial change → append a short Dev Note at docs/devnotes/YYYY-MM-DD-<task>.md
+- Conventional Commits: feat: / fix: / refactor: / perf: / docs: / chore:.
+- Non-trivial change → short Dev Note at docs/devnotes/YYYY-MM-DD-<task>.md
   (rationale only; link CLAUDE.md, don't duplicate it) + a CHANGELOG [Unreleased] bullet
   linking it. Skip the note for tiny one-line fixes.
 - Create an ADR (docs/adr/) only for a genuine architectural decision.
-- CLAUDE.md stays the source of truth for deep rules; promote a rule there only when it's reusable.
+- Promote a rule into CLAUDE.md only when it's reusable.

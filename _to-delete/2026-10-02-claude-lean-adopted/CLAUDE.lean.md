@@ -1,13 +1,11 @@
-# CLAUDE.md — Pare (repo technical reference)
+# CLAUDE.md — Pare (lean, consolidated) — PROPOSED
 
-> **Master brain doc lives in the vault:** `D:\Programs\Obsidian\Vault\Me\Projects\Pare\CLAUDE.md`
-> — read it FIRST every session (identity, hard rules, current focus, protected files, paths).
-> This file = technical reference for AI agents working inside the repo. Lean rewrite adopted
-> 2026-10-02, synced with every dev note from 2026-10-01 → 2026-10-02.
->
-> **Current state authority:** `CHANGELOG.md` (not this file). Deep references stay separate:
+> Ready to adopt. Synced 2026-10-02 against every dev note from 2026-10-01 → 2026-10-02
+> (cleanup overhaul, audit wave 3, quadrants, Tailwind v4, design system, token sweep,
+> pickers/premium/cleanups, data freshness). To adopt: replace the repo `CLAUDE.md` with
+> this file and point `.cursorrules` at it. Deep references stay separate:
 > `docs/design-system.md` (UI rules), `DATA_SOURCES.md` (ESPN/Sleeper endpoints),
-> `VISION.md` (product), `docs/mobile/IOS_RUNBOOK.md` (iOS).
+> `VISION.md` (product), `docs/mobile/IOS_RUNBOOK.md` (iOS). `CHANGELOG.md` = what's done.
 
 ---
 
@@ -43,7 +41,7 @@ All live from free public APIs — **no** CSV/PFR layer (removed 2026-10-01). En
 - **Metrics:** `lib/metricsConfig.ts`. `availableInOffense/Defense` = only fields ESPN actually fills (AVAILABILITY CONVENTION comment; keep in sync with `espnStats.ts`). Defense exposes only *allowed* metrics (lower = better) — `useBarCalculation` swaps defense values on that assumption.
 - **Licensing:** ESPN is unofficial/undocumented; Sleeper is non-commercial only. Licensed data provider required **before** any monetization (ads/Pro tier).
 
-### Freshness (self-hosted, verified 2026-10-02 — see `docs/devnotes/2026-10-02-data-freshness.md`)
+### Freshness (self-hosted, verified 2026-10-02)
 
 | Data | Refresh | Lag after ESPN |
 |---|---|---|
@@ -109,7 +107,6 @@ Bars grow inward and meet at the exact ratio; elite-vs-poor matchups get up to 3
 - Conventional Commits (`feat:` / `fix:` / `refactor:` / `perf:` / `chore:` / `docs:`).
 - Non-trivial change → dev note `docs/devnotes/YYYY-MM-DD-<task>.md` (rationale; link, don't duplicate) + `CHANGELOG.md` `[Unreleased]` bullet.
 - Stale or wrong docs get corrected immediately.
-- Session start: read the vault brain doc + this file, skim `CHANGELOG.md` `[Unreleased]` and today's dev notes, propose a short plan before coding.
 
 ## Commands
 
@@ -159,34 +156,3 @@ pm2 logs pare                   # watch for ESPN 429/403
 | Tie notation / tolerance | `T-12th` / `0.001` |
 | Data freshness | live 15s · standings instant · schedule 5 min · stats 10 min · leaders 6h |
 | Service worker default | OFF (`NEXT_PUBLIC_ENABLE_SW=true` to enable; off on pare.gg) |
-
-## End Session → Vault Brain
-
-When Kobe says "end session":
-1. Ask ONE question: "What do you want to work on next session?" Wait for the answer.
-2. Write ONE summary to the Obsidian vault (outside this repo — confirm the write if prompted):
-   `/mnt/d/Programs/Obsidian/Vault/Me/Projects/Pare/session-summaries/YYYY-MM-DD-session.md`
-   (`/mnt/d/...` in WSL = `D:\...` in Windows. On the Mac mini the vault isn't present — update repo `CHANGELOG.md` there and file the vault summary from the Windows box.)
-3. Format:
-```
-[SESSION COMPLETE] — [YYYY-MM-DD]
-BUILT:      [what was done]
-BUGS FIXED: [list or none]
-DECISIONS:  [list or none]
-COMMITS:    [suggested git messages]
-NEXT SESSION:
-Goal:       [what Kobe said he wants next]
-First step: [exact first action]
-Read first: [files to load at session start]
-```
-Repo `CHANGELOG.md` = technical state. Vault summary = cross-project brain. Do both.
-
-<!-- BEGIN:nextjs-agent-rules -->
-
-# This is NOT the Next.js you know
-
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
-
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
-
-<!-- END:nextjs-agent-rules -->
