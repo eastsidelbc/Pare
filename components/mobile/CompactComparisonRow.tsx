@@ -3,19 +3,55 @@
  * 
  * Two-line layout: Data line (padded) + Bar line (edge-to-edge)
  * LAYOUT: theScore compact structure (~52px total height)
- * STYLE: Pare visual design (green/orange gradients, NO borders)
- * INTERACTION: Tap rank text (30th) to open dropdown
+ * STYLE: Pare visual design (green/fire gradients, NO borders)
+ * INTERACTION: Tap rank text (30th) to open dropdown; stat values roll (NumberFlow)
  */
 
 'use client';
 
 import { memo } from 'react';
 import { motion } from 'framer-motion';
+import NumberFlow from '@number-flow/react';
 import { AVAILABLE_METRICS } from '@/lib/metricsConfig';
 import { useRanking } from '@/lib/useRanking';
 import { useBarCalculation } from '@/lib/useBarCalculation';
 import type { TeamData } from '@/lib/useNflStats';
 import CompactRankingDropdown from './CompactRankingDropdown';
+
+/**
+ * StatValue — one stat number with a premium "odometer" roll (NumberFlow) when
+ * it changes (team swap, PG/TOT toggle). Non-numeric cases fall back to plain
+ * text: a missing metric shows "—", and a time value (MM:SS) shows as-is, since
+ * neither rolls as a number. NumberFlow respects prefers-reduced-motion, so it
+ * degrades to an instant swap for users who ask for less motion.
+ */
+const STAT_CLS = 'text-[13px] font-semibold text-text tabular-nums';
+
+function StatValue({
+  raw,
+  present,
+  format,
+}: {
+  raw: string;
+  present: boolean;
+  format: 'number' | 'decimal' | 'percentage' | 'time';
+}) {
+  if (!present) return <span className={STAT_CLS}>—</span>;
+  if (format === 'time') return <span className={STAT_CLS}>{raw}</span>;
+
+  const num = parseFloat(raw);
+  if (Number.isNaN(num)) return <span className={STAT_CLS}>—</span>;
+
+  const digits = format === 'number' ? 0 : 1;
+  return (
+    <NumberFlow
+      className={STAT_CLS}
+      value={num}
+      format={{ minimumFractionDigits: digits, maximumFractionDigits: digits }}
+      suffix={format === 'percentage' ? '%' : ''}
+    />
+  );
+}
 
 interface CompactComparisonRowProps {
   metricField: string;
@@ -96,27 +132,6 @@ function CompactComparisonRow({
     return null;
   }
 
-  // Format values
-  const formatValue = (value: string): string => {
-    const num = parseFloat(value);
-    if (isNaN(num)) return '—';
-    
-    switch (metricConfig.format) {
-      case 'percentage':
-        return `${num.toFixed(1)}%`;
-      case 'decimal':
-        return num.toFixed(1);
-      case 'time':
-        return value; // Time format (MM:SS)
-      case 'number':
-      default:
-        return num.toFixed(0);
-    }
-  };
-  
-  const formattedA = hasA ? formatValue(teamAValue) : '—';
-  const formattedB = hasB ? formatValue(teamBValue) : '—';
-
   // Bars only make sense when BOTH sides have a real value.
   const barsVisible = hasA && hasB;
   
@@ -143,9 +158,7 @@ function CompactComparisonRow({
         
         {/* Team A: Value + Rank (left-aligned) */}
         <div className="flex items-baseline gap-1">
-          <span className="text-[13px] font-semibold text-text tabular-nums">
-            {formattedA}
-          </span>
+          <StatValue raw={teamAValue} present={hasA} format={metricConfig.format} />
           <CompactRankingDropdown
             allData={allData}
             metricKey={metricField}
@@ -187,9 +200,7 @@ function CompactComparisonRow({
             } : null}
             position="right"
           />
-          <span className="text-[13px] font-semibold text-text tabular-nums">
-            {formattedB}
-          </span>
+          <StatValue raw={teamBValue} present={hasB} format={metricConfig.format} />
         </div>
         
       </div>
@@ -230,4 +241,3 @@ function CompactComparisonRow({
 }
 
 export default memo(CompactComparisonRow);
-

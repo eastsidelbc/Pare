@@ -4,7 +4,7 @@
  * Team logo dropdown for mobile using Floating UI for professional positioning
  * LAYOUT: theScore compact structure (borderless, responsive height clamp(320px, 50vh, 420px))
  * STYLE: Pare design tokens (gold accents)
- * INTERACTION: Sleek dropdown, opacity feedback; listbox/option semantics for a11y
+ * INTERACTION: Sleek dropdown — spring pop, blurred backdrop, staggered rows; listbox/option a11y
  * POSITIONING: Floating UI with auto-flip, shift, and boundary detection
  */
 
@@ -116,13 +116,18 @@ export default function CompactTeamSelector({
         <AnimatePresence>
           {isOpen && triggerElement && (  // Phase 2G: Guard null reference
             <>
-              {/* Backdrop */}
+              {/* Backdrop — dim + subtle blur for depth */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
+                transition={{ duration: 0.18 }}
                 className="fixed inset-0 z-40"
-                style={{ background: 'rgba(0, 0, 0, 0.6)' }}
+                style={{
+                  background: 'rgba(0, 0, 0, 0.45)',
+                  backdropFilter: 'blur(3px)',
+                  WebkitBackdropFilter: 'blur(3px)'
+                }}
                 onClick={onToggle}
               />
               
@@ -141,10 +146,10 @@ export default function CompactTeamSelector({
                   opacity: (x != null && y != null) ? 1 : 0  // Phase 2F: Hide first-frame flash
                 }}
                 {...getFloatingProps()}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.15 }}
+                initial={{ opacity: 0, scale: 0.96, y: -4 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={{ type: 'spring', stiffness: 420, damping: 30 }}
                 className="z-100 rounded-[var(--radius-xl)] overflow-auto overscroll-contain pb-[calc(64px+env(safe-area-inset-bottom)+12px)]"  // Phase 2E: Safe area padding
               >
                 <div
@@ -175,19 +180,24 @@ export default function CompactTeamSelector({
                   const isCurrent = team.team === currentTeam;
                   
                   return (
-                    <button
+                    <motion.button
                       key={team.team}
                       role="option"
                       aria-selected={isCurrent}
                       onClick={() => handleTeamSelect(team.team)}
-                      className="w-full px-4 py-3 flex items-center gap-3 transition-all active:opacity-50"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.18, delay: Math.min(index, 18) * 0.015 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full px-4 py-3 flex items-center gap-3 active:opacity-50"
                       style={{
                         background: isCurrent 
                           ? 'color-mix(in srgb, var(--gold) 10%, transparent)' 
                           : 'transparent',
                         borderTop: index > 0 
                           ? `1px solid var(--border)` 
-                          : 'none'
+                          : 'none',
+                        boxShadow: isCurrent ? 'inset 3px 0 0 0 var(--gold)' : undefined
                       }}
                     >
                       {/* Logo or average icon */}
@@ -218,7 +228,7 @@ export default function CompactTeamSelector({
                       {isCurrent && (
                         <div className="w-2 h-2 rounded-full" style={{ background: 'var(--gold)' }} />
                       )}
-                    </button>
+                    </motion.button>
                   );
                 })}
                   </div>
