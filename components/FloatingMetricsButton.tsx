@@ -17,7 +17,7 @@ import { preloadMetricsSelector } from '@/lib/metricsSelectorPreload';
 const MetricsSelector = dynamic(() => import('@/components/MetricsSelector'), {
   loading: () => (
     <div className="flex items-center justify-center py-8">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold"></div>
     </div>
   ),
   ssr: false // Not needed on server since it's user interaction
@@ -202,7 +202,7 @@ function FloatingMetricsButton({
             <div 
               id="metrics-panel"
               ref={panelRef}
-              className="bg-slate-900/95 backdrop-blur-xs rounded-xl border border-slate-700/50 shadow-2xl p-4 h-full flex flex-col"
+              className="bg-surface/95 backdrop-blur-xs rounded-xl border border-border/50 shadow-2xl p-4 h-full flex flex-col"
               role="dialog"
               aria-labelledby="metrics-panel-title"
               onKeyDown={handleTrapKeyDown}
@@ -213,7 +213,7 @@ function FloatingMetricsButton({
                 <h3 id="metrics-panel-title" className="text-lg font-bold text-white">⚙️ Customize Metrics</h3>
                 <button
                   onClick={() => setShowSettings(false)}
-                  className="text-slate-400 hover:text-white transition-colors focus-ring"
+                  className="text-subtext hover:text-text transition-colors focus-ring"
                   aria-label="Close metrics panel"
                 >
                   ✕
@@ -228,8 +228,8 @@ function FloatingMetricsButton({
                     px-4 py-3 text-sm rounded-lg transition-colors flex-1
                     min-h-11 touch-optimized focus-ring
                     ${activeTab === 'offense' 
-                      ? 'bg-purple-600 text-white' 
-                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                      ? 'bg-gold text-bg' 
+                      : 'bg-surface text-subtext hover:bg-card'
                     }
                   `}
                   role="tab"
@@ -245,8 +245,8 @@ function FloatingMetricsButton({
                     px-4 py-3 text-sm rounded-lg transition-colors flex-1
                     min-h-11 touch-optimized focus-ring
                     ${activeTab === 'defense' 
-                      ? 'bg-purple-600 text-white' 
-                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                      ? 'bg-gold text-bg' 
+                      : 'bg-surface text-subtext hover:bg-card'
                     }
                   `}
                   role="tab"
@@ -292,7 +292,7 @@ function FloatingMetricsButton({
               </div>
 
               {/* Footer Actions */}
-              <div className="mt-4 pt-4 border-t border-slate-700/50 flex justify-between">
+              <div className="mt-4 pt-4 border-t border-border/50 flex justify-between">
                 <button
                   onClick={() => {
                     if (activeTab === 'offense') {
@@ -301,13 +301,13 @@ function FloatingMetricsButton({
                       onDefenseMetricsChange([]);
                     }
                   }}
-                  className="px-4 py-2 text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors min-h-11 touch-optimized"
+                  className="px-4 py-2 text-sm bg-surface hover:bg-card text-subtext rounded-lg transition-colors min-h-11 touch-optimized"
                 >
                   Clear {activeTab === 'offense' ? 'Offense' : 'Defense'}
                 </button>
                 <button
                   onClick={() => setShowSettings(false)}
-                  className="px-4 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors min-h-11 touch-optimized"
+                  className="px-4 py-2 text-sm bg-gold hover:bg-gold/80 text-bg rounded-lg transition-colors min-h-11 touch-optimized"
                 >
                   Done
                 </button>
@@ -337,14 +337,14 @@ function FloatingMetricsButton({
         className={`
           fixed bottom-4 right-4 z-50
           w-14 h-14 min-w-14 min-h-14
-          bg-slate-700 hover:bg-slate-600
+          bg-surface hover:bg-card
           text-white text-xl
           rounded-full
           shadow-lg shadow-black/25
           transition-all duration-200
           flex items-center justify-center
           touch-optimized focus-ring
-          ${showSettings ? 'bg-purple-600 hover:bg-purple-700' : ''}
+          ${showSettings ? 'bg-gold hover:bg-gold/80' : ''}
         `}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}

@@ -95,7 +95,7 @@ export default function DivisionTable({ division }: { division: DivisionStanding
                 className="grid items-center gap-1 px-2 py-2"
                 style={{
                   gridTemplateColumns: COLS,
-                  background: i === 0 ? 'rgba(245,200,66,0.06)' : 'transparent',
+                  background: i === 0 ? 'color-mix(in srgb, var(--gold) 6%, transparent)' : 'transparent',
                 }}
               >
                 {/* Team: logo + abbr */}

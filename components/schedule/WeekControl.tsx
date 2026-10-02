@@ -117,7 +117,7 @@ export default function WeekControl({ activeWeek, onStep, onJump }: WeekControlP
                 aria-selected={isActive}
                 onClick={() => pick(w)}
                 className="flex w-full flex-col items-start gap-0.5 rounded-md px-3 py-2 text-left touch-optimized active:opacity-70"
-                style={{ background: isActive ? 'rgba(212,168,67,0.14)' : 'transparent' }}
+                style={{ background: isActive ? 'color-mix(in srgb, var(--gold) 14%, transparent)' : 'transparent' }}
               >
                 <span
                   className="font-semibold tabular-nums"

@@ -76,7 +76,7 @@ export default function TeamLogo({ teamName, size = "40" }: TeamLogoProps) {
     // Render initials placeholder — subtle border so it's recognisable as a slot.
     return (
       <div
-        className="flex items-center justify-center rounded-lg text-slate-400"
+        className="flex items-center justify-center rounded-lg text-subtext"
         style={{
           width: `${sizeNum}px`,
           height: `${sizeNum}px`,

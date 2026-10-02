@@ -232,7 +232,7 @@ function Quadrant({
       >
         <div
           className="flex h-10 w-10 items-center justify-center rounded-full"
-          style={{ background: 'rgba(245,200,66,0.15)', color: 'var(--gold)' }}
+          style={{ background: 'color-mix(in srgb, var(--gold) 15%, transparent)', color: 'var(--gold)' }}
         >
           <Plus size={20} strokeWidth={2.5} />
         </div>

@@ -110,23 +110,23 @@ export default function MetricsSelector({
   }
 
   return (
-    <div className={`bg-slate-800/50 border border-slate-600/30 rounded-lg p-4 md:p-6 ${className}`}>
+    <div className={`bg-card/50 border border-border/30 rounded-lg p-4 md:p-6 ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg md:text-xl font-semibold text-slate-200 capitalize">
+        <h3 className="text-lg md:text-xl font-semibold text-text capitalize">
           {type === 'offense' ? '🏈' : '🛡️'} {type} Metrics
         </h3>
         <div className="flex gap-2">
           <button
             onClick={handleAddOrClearAll}
-            className="text-xs md:text-sm px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded-sm text-white transition-colors"
+            className="text-xs md:text-sm px-3 py-1 bg-gold hover:bg-gold/80 rounded-sm text-bg transition-colors"
             title={allMetricsSelected ? 'Remove all metrics' : 'Add all available metrics'}
           >
             {allMetricsSelected ? 'Clear All' : 'Add All'}
           </button>
           <button
             onClick={handleResetToDefaults}
-            className="text-xs md:text-sm px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded-sm text-slate-300 transition-colors"
+            className="text-xs md:text-sm px-3 py-1 bg-surface hover:bg-card rounded-sm text-subtext transition-colors"
           >
             Reset Defaults
           </button>
@@ -135,21 +135,21 @@ export default function MetricsSelector({
 
       {/* Selected Metrics */}
       <div className="space-y-2 mb-4">
-        <p className="text-sm md:text-base text-slate-400">Selected ({selectedMetrics.length}/{maxMetrics}):</p>
+        <p className="text-sm md:text-base text-subtext">Selected ({selectedMetrics.length}/{maxMetrics}):</p>
         <div className="flex flex-wrap gap-2 md:gap-3">
           {selectedMetrics.map((metricKey, index) => {
             const metric = AVAILABLE_METRICS[metricKey];
             return (
               <div
                 key={metricKey}
-                className="flex items-center gap-2 bg-blue-600/20 border border-blue-400/30 rounded-lg px-3 py-2 text-sm md:text-base"
+                className="flex items-center gap-2 bg-blue/20 border border-blue/30 rounded-lg px-3 py-2 text-sm md:text-base"
               >
-                <span className="text-blue-300 font-medium">
+                <span className="text-blue/80 font-medium">
                   {index + 1}. {metric?.name || metricKey}
                 </span>
                 <button
                   onClick={() => handleRemoveMetric(metricKey)}
-                  className="text-red-400 hover:text-red-300 ml-1"
+                  className="text-red hover:text-red/80 ml-1"
                   title="Remove metric"
                 >
                   ×
@@ -161,8 +161,8 @@ export default function MetricsSelector({
       </div>
 
       {/* Metrics Selection Panel */}
-      <div className="border-t border-slate-600/30 pt-4">
-        <p className="text-sm md:text-base text-slate-400 mb-3">
+      <div className="border-t border-border/30 pt-4">
+        <p className="text-sm md:text-base text-subtext mb-3">
           Click any metric to toggle selection:
         </p>
           
@@ -170,7 +170,7 @@ export default function MetricsSelector({
           <div className="space-y-4">
             {Object.entries(metricsByCategory).map(([category, metrics]) => (
               <div key={category}>
-                <h4 className="text-sm md:text-base font-medium text-slate-300 mb-2 flex items-center gap-2">
+                <h4 className="text-sm md:text-base font-medium text-text mb-2 flex items-center gap-2">
                   {getCategoryEmoji(category)}
                   <span className="capitalize">{category}</span>
                 </h4>
@@ -189,10 +189,10 @@ export default function MetricsSelector({
                           text-left p-3 md:p-3 rounded-lg border text-sm md:text-sm transition-all
                           min-h-[120px] md:min-h-[110px] lg:min-h-[105px]
                           ${isSelected 
-                            ? 'bg-green-600/20 border-green-400/30 text-green-300 hover:bg-green-600/30 cursor-pointer' 
+                            ? 'bg-green/20 border-green/30 text-green hover:bg-green/30 cursor-pointer' 
                             : isDisabled
-                            ? 'bg-slate-800/50 border-slate-700/30 text-slate-500 cursor-not-allowed'
-                            : 'bg-slate-700/50 border-slate-600/30 text-slate-300 hover:bg-slate-600/50 hover:border-slate-500/50 cursor-pointer'
+                            ? 'bg-card/50 border-border/30 text-muted cursor-not-allowed'
+                            : 'bg-surface/50 border-border/30 text-text hover:bg-card/50 hover:border-border/50 cursor-pointer'
                           }
                         `}
                         title={isSelected ? `Click to remove: ${metric.description}` : metric.description}
@@ -227,8 +227,8 @@ export default function MetricsSelector({
       </div>
 
       {/* Quick Stats */}
-      <div className="mt-4 pt-4 border-t border-slate-600/30">
-        <div className="flex justify-between text-xs md:text-sm text-slate-400">
+      <div className="mt-4 pt-4 border-t border-border/30">
+        <div className="flex justify-between text-xs md:text-sm text-subtext">
           <span>{availableToAdd.length} more available</span>
           <span>{selectedMetrics.length}/{maxMetrics} selected</span>
         </div>

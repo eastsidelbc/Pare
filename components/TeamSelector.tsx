@@ -46,25 +46,25 @@ export default function TeamSelector({
 
   const baseClasses = `
     px-4 py-3
-    bg-slate-800/90 
-    border border-slate-600/50 
+    bg-card/90 
+    border border-border/50 
     rounded-lg 
-    text-slate-200 
+    text-text 
     font-medium
     focus:outline-hidden 
     focus:ring-2 
-    focus:ring-purple-500/50 
-    focus:border-purple-500/50
+    focus:ring-gold/50 
+    focus:border-gold/50
     transition-all duration-200
     touch-optimized
     min-h-11
-    ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-slate-500/70'}
+    ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-border/70'}
   `.trim().replace(/\s+/g, ' ');
 
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
       {label && (
-        <label className="text-slate-300 text-sm font-medium">
+        <label className="text-text text-sm font-medium">
           {label}
         </label>
       )}
@@ -84,7 +84,7 @@ export default function TeamSelector({
           <option 
             key={team.team} 
             value={team.team}
-            className="bg-slate-800 text-slate-200"
+            className="bg-card text-text"
           >
             {team.team}
           </option>

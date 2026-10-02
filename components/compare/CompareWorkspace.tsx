@@ -227,31 +227,31 @@ export default function CompareWorkspace() {
   // ── Error state (shared data failed) ────────────────────────────────────────
   if (offenseError || defenseError) {
     return (
-      <div className="min-h-screen-dynamic w-full bg-linear-to-br from-[#0b1120] via-[#0f172a] to-[#1e293b] text-white px-4 sm:px-6 py-safe-top pb-safe-bottom pt-12">
+      <div className="min-h-screen-dynamic w-full bg-linear-to-br from-[var(--bg)] via-[var(--surface)] to-[var(--card)] text-text px-4 sm:px-6 py-safe-top pb-safe-bottom pt-12">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl font-bold text-red-400 mb-6">⚠️ Data Loading Error</h1>
-          <div className="bg-slate-900/90 rounded-xl border border-red-500/50 p-8 space-y-6">
-            <p className="text-slate-300 text-lg">
+          <h1 className="text-4xl font-bold text-red mb-6">⚠️ Data Loading Error</h1>
+          <div className="bg-surface/90 rounded-xl border border-red/50 p-8 space-y-6">
+            <p className="text-text text-lg">
               Unable to load NFL team data. Please check the API connection.
             </p>
             <div className="text-left space-y-4">
               {offenseError && (
                 <div>
-                  <span className="text-red-400 font-medium">Offense API:</span>
-                  <p className="text-slate-300 text-sm mt-1">{offenseError}</p>
+                  <span className="text-red font-medium">Offense API:</span>
+                  <p className="text-text text-sm mt-1">{offenseError}</p>
                 </div>
               )}
               {defenseError && (
                 <div>
-                  <span className="text-red-400 font-medium">Defense API:</span>
-                  <p className="text-slate-300 text-sm mt-1">{defenseError}</p>
+                  <span className="text-red font-medium">Defense API:</span>
+                  <p className="text-text text-sm mt-1">{defenseError}</p>
                 </div>
               )}
             </div>
             <div className="mt-8 space-x-4">
               <button
                 onClick={() => window.location.reload()}
-                className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors"
+                className="bg-blue hover:bg-blue/80 px-6 py-3 rounded-lg font-semibold transition-colors"
               >
                 🔄 Retry
               </button>
@@ -264,7 +264,7 @@ export default function CompareWorkspace() {
 
   return (
     <div
-      className="flex flex-col overflow-hidden text-white"
+      className="flex flex-col overflow-hidden text-text"
       style={{
         height: 'var(--app-h, 100dvh)',
         // No bottom reserve here: the pager fills the full height so comparison

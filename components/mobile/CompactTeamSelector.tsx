@@ -179,7 +179,7 @@ export default function CompactTeamSelector({
                       className="w-full px-4 py-3 flex items-center gap-3 transition-all active:opacity-50"
                       style={{
                         background: isCurrent 
-                          ? 'rgba(245,200,66,0.1)' 
+                          ? 'color-mix(in srgb, var(--gold) 10%, transparent)' 
                           : 'transparent',
                         borderTop: index > 0 
                           ? `1px solid var(--border)` 
@@ -191,7 +191,7 @@ export default function CompactTeamSelector({
                         <div 
                           className="w-10 h-10 rounded-sm flex items-center justify-center shrink-0"
                           style={{
-                            background: 'rgba(107,114,128,0.15)',
+                            background: 'color-mix(in srgb, var(--muted) 15%, transparent)',
                             color: 'var(--muted)'
                           }}
                         >

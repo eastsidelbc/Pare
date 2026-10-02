@@ -88,7 +88,7 @@ export default function QuadrantMetricsButton({
                       fontWeight: 700,
                       letterSpacing: '1px',
                       textTransform: 'uppercase',
-                      background: tab === t ? 'rgba(245,200,66,0.15)' : 'transparent',
+                      background: tab === t ? 'color-mix(in srgb, var(--gold) 15%, transparent)' : 'transparent',
                       color: tab === t ? 'var(--gold)' : 'var(--muted)',
                     }}
                   >

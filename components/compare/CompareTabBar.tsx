@@ -65,7 +65,7 @@ export default function CompareTabBar({
             className="group flex items-center gap-1 rounded-full pl-2.5 pr-1 py-1 text-[11px] font-semibold whitespace-nowrap cursor-pointer transition-colors select-none"
             style={{
               background: isActive ? 'var(--gold)' : 'rgba(255,255,255,.05)',
-              color: isActive ? '#0a0e1a' : 'var(--subtext)',
+              color: isActive ? 'var(--bg)' : 'var(--subtext)',
               border: `1px solid ${isActive ? 'transparent' : 'var(--border)'}`,
             }}
           >
@@ -83,7 +83,7 @@ export default function CompareTabBar({
                   width: 14,
                   height: 14,
                   opacity: 0.7,
-                  color: isActive ? '#0a0e1a' : 'var(--subtext)',
+                  color: isActive ? 'var(--bg)' : 'var(--subtext)',
                 }}
               >
                 <X size={10} strokeWidth={2.5} />
@@ -104,7 +104,7 @@ export default function CompareTabBar({
           style={{
             width: 24,
             height: 24,
-            background: canAdd ? 'rgba(245,200,66,0.15)' : 'rgba(255,255,255,.05)',
+            background: canAdd ? 'color-mix(in srgb, var(--gold) 15%, transparent)' : 'rgba(255,255,255,.05)',
             border: `1px solid ${canAdd ? 'transparent' : 'var(--border)'}`,
             color: canAdd ? 'var(--gold)' : 'var(--muted)',
             opacity: canAdd ? 1 : 0.4,

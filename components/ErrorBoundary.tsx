@@ -68,17 +68,17 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
       // Default fallback UI
       return (
-        <div className="flex flex-col items-center justify-center p-8 bg-slate-900/90 rounded-xl border border-red-500/30 text-center">
-          <div className="text-red-400 text-6xl mb-4">⚠️</div>
-          <h2 className="text-xl font-bold text-red-400 mb-2">
+        <div className="flex flex-col items-center justify-center p-8 bg-surface/90 rounded-xl border border-red/30 text-center">
+          <div className="text-red text-6xl mb-4">⚠️</div>
+          <h2 className="text-xl font-bold text-red mb-2">
             Something went wrong
           </h2>
-          <p className="text-slate-400 mb-4 max-w-md">
+          <p className="text-subtext mb-4 max-w-md">
             An unexpected error occurred while rendering this component. 
             {process.env.NODE_ENV === 'development' && this.state.error && (
               <>
                 <br />
-                <span className="text-xs font-mono mt-2 block text-red-300">
+                <span className="text-xs font-mono mt-2 block text-red/80">
                   {this.state.error.message}
                 </span>
               </>
@@ -86,16 +86,16 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           </p>
           <button
             onClick={this.handleRetry}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            className="px-4 py-2 bg-blue hover:bg-blue/80 text-bg rounded-lg transition-colors"
           >
             Try Again
           </button>
           {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
             <details className="mt-4 text-left">
-              <summary className="text-slate-400 cursor-pointer">
+              <summary className="text-subtext cursor-pointer">
                 Error Details (Development)
               </summary>
-              <pre className="text-xs text-slate-500 mt-2 max-w-lg overflow-auto bg-slate-800 p-2 rounded-sm">
+              <pre className="text-xs text-muted mt-2 max-w-lg overflow-auto bg-card p-2 rounded-sm">
                 {this.state.errorInfo.componentStack}
               </pre>
             </details>

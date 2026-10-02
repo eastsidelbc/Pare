@@ -126,10 +126,10 @@ function ComparePane({
       {/* Premium Steel-Blue Multi-Layer Gradient. `absolute` (not `fixed`) so it
           works inside the pager's transformed track and covers the full pane. */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-linear-to-br from-[#070d16] via-[#0b1120] to-[#1e293b]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--tw-gradient-stops))] from-[#0b1120]/60 via-[#0f172a]/30 to-transparent"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,var(--tw-gradient-stops))] from-[#0f172a]/50 via-[#1e293b]/25 to-transparent"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_center,var(--tw-gradient-stops))] from-[#1e293b]/40 via-transparent to-transparent"></div>
+        <div className="absolute inset-0 bg-linear-to-br from-[var(--bg)] via-[var(--bg)] to-[var(--card)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--tw-gradient-stops))] from-[var(--bg)]/60 via-[var(--surface)]/30 to-transparent"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,var(--tw-gradient-stops))] from-[var(--surface)]/50 via-[var(--card)]/25 to-transparent"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_center,var(--tw-gradient-stops))] from-[var(--card)]/40 via-transparent to-transparent"></div>
         <div className="absolute inset-0 opacity-[0.02] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMzAwdjMwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=')]"></div>
       </div>
       <div className="max-w-6xl mx-auto">
@@ -137,7 +137,7 @@ function ComparePane({
         <div className="mb-4">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-300 transition-colors hover:text-white"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-subtext transition-colors hover:text-text"
           >
             <ChevronLeft size={18} /> Schedule
           </Link>
@@ -145,10 +145,10 @@ function ComparePane({
         {/* Comparison Panels - Protected by Error Boundaries */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           <ErrorBoundary fallback={
-            <div className="p-8 bg-slate-900/90 rounded-xl border border-red-500/30 text-center">
-              <div className="text-red-400 text-4xl mb-2">⚠️</div>
-              <h3 className="text-lg font-bold text-red-400">Offense Panel Error</h3>
-              <p className="text-slate-400 mt-2">Unable to load offense comparison data</p>
+            <div className="p-8 bg-surface/90 rounded-xl border border-red/30 text-center">
+              <div className="text-red text-4xl mb-2">⚠️</div>
+              <h3 className="text-lg font-bold text-red">Offense Panel Error</h3>
+              <p className="text-subtext mt-2">Unable to load offense comparison data</p>
             </div>
           }>
             <OffensePanel
@@ -164,10 +164,10 @@ function ComparePane({
           </ErrorBoundary>
 
           <ErrorBoundary fallback={
-            <div className="p-8 bg-slate-900/90 rounded-xl border border-red-500/30 text-center">
-              <div className="text-red-400 text-4xl mb-2">⚠️</div>
-              <h3 className="text-lg font-bold text-red-400">Defense Panel Error</h3>
-              <p className="text-slate-400 mt-2">Unable to load defense comparison data</p>
+            <div className="p-8 bg-surface/90 rounded-xl border border-red/30 text-center">
+              <div className="text-red text-4xl mb-2">⚠️</div>
+              <h3 className="text-lg font-bold text-red">Defense Panel Error</h3>
+              <p className="text-subtext mt-2">Unable to load defense comparison data</p>
             </div>
           }>
             <DefensePanel
@@ -184,8 +184,8 @@ function ComparePane({
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-slate-800/50 mb-safe-bottom">
-          <p className="text-slate-500 text-sm">Stay Locked</p>
+        <div className="text-center mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-border/50 mb-safe-bottom">
+          <p className="text-muted text-sm">Stay Locked</p>
         </div>
       </div>
     </div>

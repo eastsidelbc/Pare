@@ -133,12 +133,12 @@ export default function RankingDropdown({
   // Team-specific styling based on side
   const sideColors = {
     teamA: {
-      badge: 'bg-green-500/20 text-white border-green-500/30 hover:bg-green-500/30',  // Changed text-green-400 to text-white
-      text: 'text-white'  // Changed from text-green-400 to white
+      badge: 'bg-green/20 text-text border-green/30 hover:bg-green/30',
+      text: 'text-text'
     },
     teamB: {
-      badge: 'bg-orange-500/20 text-white border-orange-500/30 hover:bg-orange-500/30',  // Changed text-orange-400 to text-white
-      text: 'text-white'  // Changed from text-orange-400 to white
+      badge: 'bg-fire/20 text-text border-fire/30 hover:bg-fire/30',
+      text: 'text-text'
     }
   };
 
@@ -212,7 +212,7 @@ export default function RankingDropdown({
         onClick={() => setIsOpen(!isOpen)}
         className={`
           inline-flex items-center gap-1 px-2 py-1.5
-          bg-slate-800/80 border border-slate-600/50
+          bg-card/80 border border-border/50
           rounded-md text-sm font-medium
           cursor-pointer transition-all duration-200
           min-h-8 min-w-12 touch-optimized
@@ -248,8 +248,8 @@ export default function RankingDropdown({
             transition={{ duration: 0.2, ease: "easeOut" }}
             className={`
               absolute z-50 mt-2 w-80
-              bg-slate-900/95 backdrop-blur-xs
-              border border-slate-700/50 rounded-lg
+              bg-surface/95 backdrop-blur-xs
+              border border-border/50 rounded-lg
               shadow-2xl shadow-black/50
               max-h-[60vh] md:max-h-[500px] overflow-y-auto momentum-scroll
               py-2
@@ -261,11 +261,11 @@ export default function RankingDropdown({
             }}
           >
             {/* Dropdown Header */}
-            <div className="px-3 py-2 border-b border-slate-700/50">
-              <div className="text-xs font-medium text-slate-300">
+            <div className="px-3 py-2 border-b border-border/50">
+              <div className="text-xs font-medium text-text">
                 {metric?.name || 'Metric'} Rankings
               </div>
-              <div className="text-xs text-slate-500">
+              <div className="text-xs text-muted">
                 Click to select team
               </div>
             </div>
@@ -286,9 +286,9 @@ export default function RankingDropdown({
                     className={`
                       flex items-center gap-3 px-3 py-3 mx-1
                       rounded-md cursor-pointer
-                      hover:bg-slate-800/60 
+                      hover:bg-surface/60 
                       ${isSelected ? `bg-${side === 'teamA' ? 'green' : 'orange'}-500/20 border-l-2 border-l-${side === 'teamA' ? 'green' : 'orange'}-400` : ''}
-                      ${isAverage ? 'border-t border-slate-700/50 mt-1 pt-3' : ''}
+                      ${isAverage ? 'border-t border-border/50 mt-1 pt-3' : ''}
                       transition-all duration-150
                       min-h-12 touch-optimized
                     `}
@@ -302,14 +302,14 @@ export default function RankingDropdown({
                           <span className="text-sm" role="img" aria-label="Statistics icon">
                             {emoji}
                           </span>
-                          <span className="text-xs font-medium text-slate-300">Avg</span>
+                          <span className="text-xs font-medium text-subtext">Avg</span>
                         </>
                       ) : (
                         <>
                           <span className="text-sm">
                             {getRankEmoji(rank, isTied)}
                           </span>
-                          <span className={`text-xs font-medium ${isTied ? 'text-amber-400' : 'text-slate-300'}`}>
+                          <span className={`text-xs font-medium ${isTied ? 'text-gold' : 'text-subtext'}`}>
                             {item.ranking?.formattedRank}
                           </span>
                         </>
@@ -317,12 +317,12 @@ export default function RankingDropdown({
                     </div>
 
                     {/* Team Name */}
-                    <div className={`flex-1 text-sm font-medium truncate ${isSelected ? colors.text : 'text-white'}`}>
+                    <div className={`flex-1 text-sm font-medium truncate ${isSelected ? colors.text : 'text-text'}`}>
                       {displayLabel}
                     </div>
 
                     {/* Metric Value */}
-                    <div className="text-xs text-slate-400 font-mono">
+                    <div className="text-xs text-subtext font-mono">
                       ({item.formattedValue})
                     </div>
                   </motion.div>
@@ -331,8 +331,8 @@ export default function RankingDropdown({
             </div>
 
             {/* Footer */}
-            <div className="px-3 py-2 border-t border-slate-700/50">
-              <div className="text-xs text-slate-500">
+            <div className="px-3 py-2 border-t border-border/50">
+              <div className="text-xs text-muted">
                 {sortedTeams.length} teams ranked
               </div>
             </div>

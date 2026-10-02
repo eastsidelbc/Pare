@@ -75,7 +75,7 @@ export default function BottomNav() {
                 <motion.span
                   layoutId="nav-active-pill"
                   className="absolute inset-0 rounded-full"
-                  style={{ background: 'rgba(245,200,66,0.15)' }}
+                  style={{ background: 'color-mix(in srgb, var(--gold) 15%, transparent)' }}
                   transition={{ type: 'spring', stiffness: 420, damping: 34 }}
                 />
               )}

@@ -7,6 +7,13 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Changed
+- **Phase 3 design token sweep — colors only** (2026-10-02, branch `tailwind-v4`)
+  - See: `docs/devnotes/2026-10-02-token-sweep-phase3.md`.
+  - Replaced every hardcoded color literal (hex, rgba) and raw Tailwind palette class (slate, green-500, orange-500, red-400, blue-600, amber, purple) with design tokens (`var(--token)` / `color-mix()` / tailwind.config.js mapped classes) across 28 files in `components/` and `app/`.
+  - Added 8 new tokens to `globals.css :root`: `--green-deep`, `--fire-deep`, `--badge-gold`, `--badge-gold-deep`, `--badge-gold-text`, `--badge-red`, `--badge-red-deep`, `--badge-slate`.
+  - 3 intentional visual shifts: (1) BottomNav active tab + DivisionTable leader row tint: gold-bright→gold token; (2) CompactComparisonRow stat text: `#fff`→`--text`; (3) CompactComparisonRow empty track: `white/5`→`--border`.
+  - Excluded per spec: `TeamDropdown.tsx` (skip entirely), black/white-alpha shadows/overlays, `app/global-error.tsx` (globals.css not loaded), `OfflineStatusBanner.tsx` (amber semantic warning), purple install CTAs in `PWAInstallPrompt.tsx`.
+  - All verification gates pass: `npm run lint` (0 errors), `npm run build` (14 pages). **NOT merged/deployed — awaiting human visual QA.**
 - **Tailwind CSS v3 → v4 migration** (2026-10-01, branch `tailwind-v4`)
   - See: `docs/devnotes/2026-10-01-tailwind-v4-migration.md`.
   - Cleaned shadcn/tailwind-upgrade pollution from `main` (restored `app/globals.css`, `app/layout.tsx`, `package.json` from `origin/main`). Removed `components.json`, `components/ui/button.tsx`. Kept design-system token mapping in `tailwind.config.js`, `lib/utils.ts` cn(), and all component changes.

@@ -146,7 +146,7 @@ export default function MatchupAccordion({
                   className="flex w-full items-center justify-center gap-1.5 font-bold touch-optimized active:opacity-80"
                   style={{
                     background: 'var(--gold)',
-                    color: '#0a0e1a',
+                    color: 'var(--bg)',
                     borderRadius: 'var(--radius-md)',
                     padding: '11px',
                     fontSize: '14px',

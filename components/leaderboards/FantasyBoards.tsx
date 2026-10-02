@@ -83,7 +83,7 @@ export default function FantasyBoards({ boards, label }: { boards: LeaderBoard[]
                 letterSpacing: '1px',
                 textTransform: 'uppercase',
                 borderRadius: 6,
-                background: mode === m ? 'rgba(212,168,67,0.15)' : 'transparent',
+                background: mode === m ? 'color-mix(in srgb, var(--gold) 15%, transparent)' : 'transparent',
                 color: mode === m ? 'var(--gold)' : 'var(--muted)',
                 transition: 'color .15s, background .15s',
               }}

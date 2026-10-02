@@ -263,7 +263,7 @@ export default function CompactRankingDropdown({
                       className="w-full px-4 py-3 flex items-center gap-3 transition-all active:opacity-50"
                       style={{
                         background: isCurrent 
-                          ? 'rgba(245,200,66,0.1)' 
+                          ? 'color-mix(in srgb, var(--gold) 10%, transparent)' 
                           : 'transparent',
                         borderTop: index > 0 
                           ? `1px solid var(--border)` 
@@ -275,10 +275,10 @@ export default function CompactRankingDropdown({
                         className="w-8 h-8 rounded-sm flex items-center justify-center font-bold text-[11px] shrink-0"
                         style={{
                           background: isAverage
-                            ? 'rgba(107,114,128,0.15)'
+                            ? 'color-mix(in srgb, var(--muted) 15%, transparent)'
                             : isTied
-                              ? 'rgba(245,200,66,0.15)'
-                              : 'rgba(245,200,66,0.1)',
+                              ? 'color-mix(in srgb, var(--gold) 15%, transparent)'
+                              : 'color-mix(in srgb, var(--gold) 10%, transparent)',
                           color: isAverage
                             ? 'var(--muted)'
                             : 'var(--gold)'

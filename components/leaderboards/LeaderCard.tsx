@@ -104,7 +104,7 @@ function Row({ row, rank }: { row: LeaderRow; rank: number }) {
   const isLeader = rank === 1;
 
   return (
-    <div className="py-1.5 pl-1.5 pr-2" style={{ background: isLeader ? 'rgba(212,168,67,0.08)' : 'transparent' }}>
+    <div className="py-1.5 pl-1.5 pr-2" style={{ background: isLeader ? 'color-mix(in srgb, var(--gold) 8%, transparent)' : 'transparent' }}>
       <div className="flex items-center gap-0.5">
         {/* Rank — hugs the left edge, tight to the logo */}
         <span

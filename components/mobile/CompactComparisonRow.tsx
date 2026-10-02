@@ -143,7 +143,7 @@ function CompactComparisonRow({
         
         {/* Team A: Value + Rank (left-aligned) */}
         <div className="flex items-baseline gap-1">
-          <span className="text-[13px] font-semibold text-white tabular-nums">
+          <span className="text-[13px] font-semibold text-text tabular-nums">
             {formattedA}
           </span>
           <CompactRankingDropdown
@@ -187,7 +187,7 @@ function CompactComparisonRow({
             } : null}
             position="right"
           />
-          <span className="text-[13px] font-semibold text-white tabular-nums">
+          <span className="text-[13px] font-semibold text-text tabular-nums">
             {formattedB}
           </span>
         </div>
@@ -203,7 +203,7 @@ function CompactComparisonRow({
             {/* Team A bar — grows inward from the left (green) */}
             <motion.div
               className="h-full rounded-l-full"
-              style={{ background: 'linear-gradient(90deg, #16a34a 0%, #22c55e 100%)' }}
+              style={{ background: 'linear-gradient(90deg, var(--green-deep) 0%, var(--green) 100%)' }}
               initial={false}
               animate={{ width: `${teamAPercentage}%` }}
               transition={{ type: 'spring', stiffness: 220, damping: 30 }}
@@ -213,7 +213,7 @@ function CompactComparisonRow({
             {/* Team B bar — grows inward from the right (fire) */}
             <motion.div
               className="ml-auto h-full rounded-r-full"
-              style={{ background: 'linear-gradient(90deg, #ff6b35 0%, #ea580c 100%)' }}
+              style={{ background: 'linear-gradient(90deg, var(--fire) 0%, var(--fire-deep) 100%)' }}
               initial={false}
               animate={{ width: `${teamBPercentage}%` }}
               transition={{ type: 'spring', stiffness: 220, damping: 30 }}
@@ -221,7 +221,7 @@ function CompactComparisonRow({
           </div>
         ) : (
           /* No live data for one/both sides — neutral track, no fake bars. */
-          <div className="h-[6px] w-full rounded-full bg-white/5" />
+          <div className="h-[6px] w-full rounded-full bg-border" />
         )}
       </div>
       

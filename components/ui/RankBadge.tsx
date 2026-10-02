@@ -25,20 +25,20 @@ interface RankBadgeProps {
   size?: 'sm' | 'md';
 }
 
-// --- tier tokens (dark mode) ---
-const GOLD = '#e8b923';
-const GOLD_TINT = 'rgba(232,185,35,.14)';
-const GOLD_BORDER = 'rgba(232,185,35,.45)';
-const GOLD_FILL_TEXT = '#1a1400';
+// --- tier tokens (dark mode) — values live in globals.css :root ---
+const GOLD       = 'var(--badge-gold)';
+const GOLD_TINT  = 'color-mix(in srgb, var(--badge-gold) 14%, transparent)';
+const GOLD_BORDER= 'color-mix(in srgb, var(--badge-gold) 45%, transparent)';
+const GOLD_FILL_TEXT = 'var(--badge-gold-text)';
 
-const RED = '#e5484d';
-const RED_TINT = 'rgba(229,72,77,.14)';
-const RED_BORDER = 'rgba(229,72,77,.45)';
-const RED_FILL_TEXT = '#ffffff';
+const RED        = 'var(--badge-red)';
+const RED_TINT   = 'color-mix(in srgb, var(--badge-red) 14%, transparent)';
+const RED_BORDER = 'color-mix(in srgb, var(--badge-red) 45%, transparent)';
+const RED_FILL_TEXT = 'white';
 
-const SLATE = '#7c8698';
-const SLATE_TINT = 'rgba(124,134,152,.14)';
-const SLATE_BORDER = 'rgba(124,134,152,.30)';
+const SLATE       = 'var(--badge-slate)';
+const SLATE_TINT  = 'color-mix(in srgb, var(--badge-slate) 14%, transparent)';
+const SLATE_BORDER= 'color-mix(in srgb, var(--badge-slate) 30%, transparent)';
 
 interface TierStyle {
   color: string;
@@ -59,9 +59,9 @@ function tierStyle(rank: number, total: number): TierStyle {
   if (rank === 1) {
     return {
       color: GOLD_FILL_TEXT,
-      background: `linear-gradient(180deg, ${GOLD}, #c99a12)`,
+      background: `linear-gradient(180deg, ${GOLD}, var(--badge-gold-deep))`,
       border: `1px solid ${GOLD_BORDER}`,
-      boxShadow: `0 1px 7px -1px rgba(232,185,35,.55)`,
+      boxShadow: `0 1px 7px -1px color-mix(in srgb, var(--badge-gold) 55%, transparent)`,
     };
   }
   // 2–5 — gold outline
@@ -72,9 +72,9 @@ function tierStyle(rank: number, total: number): TierStyle {
   if (rank === worst && worst > 5) {
     return {
       color: RED_FILL_TEXT,
-      background: `linear-gradient(180deg, ${RED}, #c93b40)`,
+      background: `linear-gradient(180deg, ${RED}, var(--badge-red-deep))`,
       border: `1px solid ${RED_BORDER}`,
-      boxShadow: `0 1px 7px -1px rgba(229,72,77,.55)`,
+      boxShadow: `0 1px 7px -1px color-mix(in srgb, var(--badge-red) 55%, transparent)`,
     };
   }
   // bottom 5 (excluding worst) — red outline

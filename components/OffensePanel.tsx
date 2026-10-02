@@ -84,7 +84,7 @@ function OffensePanel({
   const teamBRecord = defenseData.find(t => t.team === selectedTeamB)?.record;
 
   return (
-    <div className={`bg-slate-900/90 rounded-xl border border-slate-700/50 shadow-2xl p-6 max-w-3xl mx-auto w-full ${className}`}>
+    <div className={`bg-surface/90 rounded-xl border border-border/50 shadow-2xl p-6 max-w-3xl mx-auto w-full ${className}`}>
       
       {/* Panel Header with Team Logos, Title, and Display Mode */}
       <div className="flex items-center justify-between mb-6">
@@ -102,13 +102,13 @@ function OffensePanel({
             <TeamLogo teamName={selectedTeamA} size="60" />
           )}
           {teamARecord && (
-            <span className="tabular-nums text-sm font-semibold text-slate-400">{teamARecord}</span>
+            <span className="tabular-nums text-sm font-semibold text-subtext">{teamARecord}</span>
           )}
         </div>
 
         {/* Center: Title and Display Mode */}
         <div className="flex flex-col items-center gap-3">
-          <h2 className="text-2xl font-bold text-purple-400 text-center">
+          <h2 className="text-2xl font-bold text-gold text-center">
             Offense
           </h2>
           
@@ -116,7 +116,7 @@ function OffensePanel({
           <select
             value={displayMode}
             onChange={(e) => setDisplayMode(e.target.value as 'per-game' | 'total')}
-            className="px-3 py-2 bg-slate-800/90 border border-slate-600/50 rounded-lg text-slate-200 text-base font-medium focus:outline-hidden focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 touch-optimized min-h-11"
+            className="px-3 py-2 bg-card/90 border border-border/50 rounded-lg text-text text-base font-medium focus:outline-hidden focus:ring-2 focus:ring-gold/50 focus:border-gold/50 transition-all duration-200 touch-optimized min-h-11"
             style={{ fontSize: '16px' }}
           >
             <option value="per-game">PER GAME</option>
@@ -138,7 +138,7 @@ function OffensePanel({
             <TeamLogo teamName={selectedTeamB} size="60" />
           )}
           {teamBRecord && (
-            <span className="tabular-nums text-sm font-semibold text-slate-400">{teamBRecord}</span>
+            <span className="tabular-nums text-sm font-semibold text-subtext">{teamBRecord}</span>
           )}
         </div>
       </div>
@@ -147,7 +147,7 @@ function OffensePanel({
       {/* Loading State */}
       {isLoading && (
         <div className="text-center py-8">
-          <div className="text-slate-400">Loading offense data...</div>
+          <div className="text-subtext">Loading offense data...</div>
         </div>
       )}
 
@@ -170,7 +170,7 @@ function OffensePanel({
           ))}
           
           {selectedMetrics.length === 0 && (
-            <div className="text-center py-8 text-slate-400">
+            <div className="text-center py-8 text-subtext">
               No offense metrics selected.
             </div>
           )}
@@ -179,7 +179,7 @@ function OffensePanel({
 
       {/* Invalid Selection State */}
       {!isLoading && !isValidSelection && (
-        <div className="text-center py-8 text-slate-400">
+        <div className="text-center py-8 text-subtext">
           Select both teams to see offense comparison.
         </div>
       )}

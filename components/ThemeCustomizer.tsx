@@ -36,8 +36,8 @@ export default function ThemeCustomizer({ className = '' }: ThemeCustomizerProps
         className={`
           fixed bottom-6 right-6 z-50
           px-4 py-2
-          bg-purple-600 hover:bg-purple-700
-          text-white font-medium
+          bg-gold hover:bg-gold/80
+          text-bg font-medium
           rounded-xl shadow-lg
           transition-all duration-200
           ${className}
@@ -52,19 +52,19 @@ export default function ThemeCustomizer({ className = '' }: ThemeCustomizerProps
     <div className={`
       fixed bottom-6 right-6 z-50
       w-80 p-6
-      bg-slate-900/95 backdrop-blur-xs
-      border border-slate-700/50
+      bg-surface/95 backdrop-blur-xs
+      border border-border/50
       rounded-xl shadow-2xl
       ${className}
     `}>
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-bold text-slate-200">
+        <h3 className="text-lg font-bold text-text">
           🎨 Theme Customizer
         </h3>
         <button
           onClick={() => setIsOpen(false)}
-          className="text-slate-400 hover:text-slate-200 transition-colors"
+          className="text-subtext hover:text-text transition-colors"
         >
           ✕
         </button>
@@ -73,7 +73,7 @@ export default function ThemeCustomizer({ className = '' }: ThemeCustomizerProps
       <div className="space-y-6">
         {/* Color Scheme */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-3">
+          <label className="block text-sm font-medium text-text mb-3">
             Color Scheme
           </label>
           <div className="grid grid-cols-2 gap-2">
@@ -84,8 +84,8 @@ export default function ThemeCustomizer({ className = '' }: ThemeCustomizerProps
                 className={`
                   px-3 py-2 text-sm rounded-lg transition-all
                   ${theme.colorScheme === scheme
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    ? 'bg-gold text-bg'
+                    : 'bg-card text-subtext hover:bg-surface'
                   }
                 `}
               >
@@ -97,7 +97,7 @@ export default function ThemeCustomizer({ className = '' }: ThemeCustomizerProps
 
         {/* Panel Style */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-3">
+          <label className="block text-sm font-medium text-text mb-3">
             Panel Style
           </label>
           <div className="grid grid-cols-2 gap-2">
@@ -108,8 +108,8 @@ export default function ThemeCustomizer({ className = '' }: ThemeCustomizerProps
                 className={`
                   px-3 py-2 text-sm rounded-lg transition-all
                   ${theme.panelStyle === style
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    ? 'bg-gold text-bg'
+                    : 'bg-card text-subtext hover:bg-surface'
                   }
                 `}
               >
@@ -121,7 +121,7 @@ export default function ThemeCustomizer({ className = '' }: ThemeCustomizerProps
 
         {/* Bar Style */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-3">
+          <label className="block text-sm font-medium text-text mb-3">
             Bar Style
           </label>
           <div className="grid grid-cols-2 gap-2">
@@ -132,8 +132,8 @@ export default function ThemeCustomizer({ className = '' }: ThemeCustomizerProps
                 className={`
                   px-3 py-2 text-sm rounded-lg transition-all
                   ${theme.barStyle === style
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    ? 'bg-gold text-bg'
+                    : 'bg-card text-subtext hover:bg-surface'
                   }
                 `}
               >
@@ -145,7 +145,7 @@ export default function ThemeCustomizer({ className = '' }: ThemeCustomizerProps
 
         {/* Shadows */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-3">
+          <label className="block text-sm font-medium text-text mb-3">
             Shadow Intensity
           </label>
           <div className="grid grid-cols-2 gap-2">
@@ -156,8 +156,8 @@ export default function ThemeCustomizer({ className = '' }: ThemeCustomizerProps
                 className={`
                   px-3 py-2 text-sm rounded-lg transition-all
                   ${theme.shadows === shadow
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    ? 'bg-gold text-bg'
+                    : 'bg-card text-subtext hover:bg-surface'
                   }
                 `}
               >
@@ -170,14 +170,14 @@ export default function ThemeCustomizer({ className = '' }: ThemeCustomizerProps
         {/* Animations Toggle */}
         <div>
           <label className="flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-300">
+            <span className="text-sm font-medium text-text">
               Animations
             </span>
             <button
               onClick={toggleAnimations}
               className={`
                 relative w-12 h-6 rounded-full transition-colors
-                ${theme.animations ? 'bg-purple-600' : 'bg-slate-700'}
+                ${theme.animations ? 'bg-gold' : 'bg-border'}
               `}
             >
               <div className={`
@@ -189,8 +189,8 @@ export default function ThemeCustomizer({ className = '' }: ThemeCustomizerProps
         </div>
 
         {/* Preview */}
-        <div className="pt-4 border-t border-slate-700">
-          <p className="text-xs text-slate-400 mb-3">Preview:</p>
+        <div className="pt-4 border-t border-border">
+          <p className="text-xs text-subtext mb-3">Preview:</p>
           <div className={`w-full h-4 ${theme.teamColors.teamA.bar} rounded-full mb-2`} />
           <div className={`w-3/4 h-4 ${theme.teamColors.teamB.bar} rounded-full`} />
         </div>

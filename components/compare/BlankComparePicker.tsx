@@ -74,7 +74,7 @@ export default function BlankComparePicker({
             <>
               <span
                 className="flex h-12 w-12 items-center justify-center rounded-full"
-                style={{ background: 'rgba(245,200,66,0.12)', color: 'var(--gold)' }}
+                style={{ background: 'color-mix(in srgb, var(--gold) 12%, transparent)', color: 'var(--gold)' }}
               >
                 <Plus size={22} strokeWidth={2.5} />
               </span>
@@ -110,7 +110,7 @@ export default function BlankComparePicker({
             <>
               <span
                 className="flex h-12 w-12 items-center justify-center rounded-full"
-                style={{ background: 'rgba(245,200,66,0.12)', color: 'var(--gold)' }}
+                style={{ background: 'color-mix(in srgb, var(--gold) 12%, transparent)', color: 'var(--gold)' }}
               >
                 <Plus size={22} strokeWidth={2.5} />
               </span>

@@ -113,6 +113,8 @@
     --border: #2a3450; /* Borders and dividers */
     --gold: #d4a843; /* Primary accent — active, rankings, important */
     --green: #22c55e; /* Success, wins, Team A bars */
+    --green-deep: #16a34a; /* Team A bar gradient dark stop */
+    --fire-deep: #ea580c; /* Team B bar gradient dark stop */
     --red: #ef4444; /* Errors, losses, live */
     --blue: #3b82f6; /* Info, scores */
     --muted: #6b7280; /* Tertiary text, disabled */
@@ -140,6 +142,15 @@
      via `calc(var(--nav-h) + safe-area)` so nothing hides behind it. */
     --nav-pill-h: 40px; /* leaner capsule (was 52) */
     --nav-h: 60px;
+
+    /* Rank-badge tier palette — intentionally distinct from accent tokens so
+       badge coloring can be tuned independently of the design-system accents. */
+    --badge-gold:       #e8b923;
+    --badge-gold-deep:  #c99a12;
+    --badge-gold-text:  #1a1400;
+    --badge-red:        #e5484d;
+    --badge-red-deep:   #c93b40;
+    --badge-slate:      #7c8698;
   }
 
   /* Base surface + typography — applied globally so every screen is on-system */

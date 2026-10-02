@@ -109,7 +109,7 @@ export default function PWAInstallPrompt({
         transition={{ duration: 0.3, ease: 'easeOut' }}
         className={`
           fixed bottom-4 left-4 right-4 z-50 max-w-md mx-auto
-          bg-slate-800/95 backdrop-blur-xs border border-slate-600/50 rounded-xl
+          bg-card/95 backdrop-blur-xs border border-border/50 rounded-xl
           p-4 text-white shadow-2xl
           ${className}
         `}
@@ -125,7 +125,7 @@ export default function PWAInstallPrompt({
             </span>
             <h3 
               id="pwa-install-title"
-              className="font-semibold text-lg text-slate-100"
+              className="font-semibold text-lg text-text"
             >
               {instructions.title}
             </h3>
@@ -134,12 +134,12 @@ export default function PWAInstallPrompt({
           <button
             onClick={handleDismiss}
             className="
-              p-1 rounded-lg hover:bg-slate-700/50 transition-colors
+              p-1 rounded-lg hover:bg-surface/50 transition-colors
               focus:outline-hidden focus:ring-2 focus:ring-purple-500
             "
             aria-label="Dismiss install prompt"
           >
-            <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-subtext" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -147,12 +147,12 @@ export default function PWAInstallPrompt({
 
         {/* Instructions */}
         <div id="pwa-install-description" className="mb-4">
-          <p className="text-slate-300 text-sm mb-2">
+          <p className="text-text text-sm mb-2">
             Get the full app experience with offline access and faster loading:
           </p>
           
           {isIOS ? (
-            <ol className="text-sm text-slate-300 space-y-1">
+            <ol className="text-sm text-text space-y-1">
               {instructions.steps.map((step, index) => (
                 <li key={index} className="flex items-start gap-2">
                   <span className="
@@ -166,7 +166,7 @@ export default function PWAInstallPrompt({
               ))}
             </ol>
           ) : (
-            <ul className="text-sm text-slate-300 space-y-1">
+            <ul className="text-sm text-text space-y-1">
               {instructions.steps.map((step, index) => (
                 <li key={index} className="flex items-start gap-2">
                   <span className="text-purple-400 mt-1">•</span>
@@ -195,7 +195,7 @@ export default function PWAInstallPrompt({
               <button
                 onClick={handleDismiss}
                 className="
-                  px-4 py-2 text-slate-300 hover:text-white transition-colors
+                  px-4 py-2 text-subtext hover:text-text transition-colors
                   focus:outline-hidden focus:ring-2 focus:ring-purple-500 rounded-lg
                 "
               >
@@ -228,8 +228,8 @@ export default function PWAInstallPrompt({
 
         {/* Debug info (dev only) */}
         {process.env.NODE_ENV === 'development' && (
-          <div className="mt-3 pt-3 border-t border-slate-600/50">
-            <p className="text-xs text-slate-500">
+          <div className="mt-3 pt-3 border-t border-border/50">
+            <p className="text-xs text-muted">
               Debug: {isIOS ? 'iOS' : isAndroid ? 'Android' : 'Desktop'} • Mode: {displayMode}
             </p>
           </div>

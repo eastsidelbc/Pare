@@ -61,7 +61,7 @@ export default function TeamSelectionPanel({
   });
 
   return (
-    <div className={`bg-slate-900/90 rounded-xl border border-slate-700/50 shadow-lg p-4 max-w-6xl mx-auto w-full ${className}`}>
+    <div className={`bg-surface/90 rounded-xl border border-border/50 shadow-lg p-4 max-w-6xl mx-auto w-full ${className}`}>
       {/* Team Selection */}
       <div className="flex items-center gap-6 max-w-2xl mx-auto">
         {/* Centered layout now that settings button is in floating component */}
@@ -79,7 +79,7 @@ export default function TeamSelectionPanel({
         </div>
 
         {/* VS */}
-        <div className="shrink-0 text-2xl font-bold text-slate-400 px-3">
+        <div className="shrink-0 text-2xl font-bold text-subtext px-3">
           VS
         </div>
 
@@ -101,7 +101,7 @@ export default function TeamSelectionPanel({
       {/* Status Message */}
       {(!selectedTeamA || !selectedTeamB) && !isLoading && (
         <div className="text-center mt-4">
-          <p className="text-slate-400 text-sm">
+          <p className="text-subtext text-sm">
             Select both teams to start comparing
           </p>
         </div>
@@ -109,7 +109,7 @@ export default function TeamSelectionPanel({
 
       {isLoading && (
         <div className="text-center mt-4">
-          <p className="text-slate-400 text-sm">Loading teams...</p>
+          <p className="text-subtext text-sm">Loading teams...</p>
         </div>
       )}
     </div>

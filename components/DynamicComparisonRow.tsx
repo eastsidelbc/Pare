@@ -128,8 +128,8 @@ function DynamicComparisonRow({
   }
 
   // 🔧 FALLBACK: Original styling if theme fails
-  const fallbackPanelClasses = "py-2 bg-slate-900/90 rounded-xl border border-slate-700/50 shadow-lg mb-3 relative";
-  const fallbackBarClasses = "relative w-full h-5 bg-slate-800 rounded-full overflow-hidden";
+  const fallbackPanelClasses = "py-2 bg-surface/90 rounded-xl border border-border/50 shadow-lg mb-3 relative";
+  const fallbackBarClasses = "relative w-full h-5 bg-surface rounded-full overflow-hidden";
 
   return (
     <div className={getPanelClasses ? `py-2 mb-3 relative ${getPanelClasses()}` : fallbackPanelClasses}>
@@ -138,7 +138,7 @@ function DynamicComparisonRow({
       <div className="flex justify-between items-center mb-2 px-4">
         {/* Team A Stats */}
         <div className="flex items-center gap-3">
-          <div className={`font-semibold text-base ${getTeamAColor ? getTeamAColor() : 'text-green-400'}`}>
+          <div className={`font-semibold text-base ${getTeamAColor ? getTeamAColor() : 'text-green'}`}>
             {formattedTeamAValue}
           </div>
           {/* Interactive Ranking Dropdown for Team A (shows "Avg" badge when average selected) */}
@@ -153,7 +153,7 @@ function DynamicComparisonRow({
               className="ml-1"
             />
           ) : (
-            <div className={`text-xs ${getTeamAColor ? getTeamAColor() : 'text-green-400'} opacity-60`}>
+            <div className={`text-xs ${getTeamAColor ? getTeamAColor() : 'text-green'} opacity-60`}>
               ({teamARanking?.formattedRank || 'N/A'})
             </div>
           )}
@@ -161,7 +161,7 @@ function DynamicComparisonRow({
         
         {/* Metric Name (Center) */}
         <div className="text-center">
-          <div className="text-slate-300 font-medium text-sm">
+          <div className="text-subtext font-medium text-sm">
             {metric.name}
           </div>
         </div>
@@ -180,11 +180,11 @@ function DynamicComparisonRow({
               className="mr-1"
             />
           ) : (
-            <div className={`text-xs ${getTeamBColor ? getTeamBColor() : 'text-orange-400'} opacity-60`}>
+            <div className={`text-xs ${getTeamBColor ? getTeamBColor() : 'text-fire'} opacity-60`}>
               ({teamBRanking?.formattedRank || 'N/A'})
             </div>
           )}
-          <div className={`font-semibold text-base ${getTeamBColor ? getTeamBColor() : 'text-orange-400'}`}>
+          <div className={`font-semibold text-base ${getTeamBColor ? getTeamBColor() : 'text-fire'}`}>
             {formattedTeamBValue}
           </div>
         </div>
@@ -206,7 +206,7 @@ function DynamicComparisonRow({
             className={`absolute left-0 top-0 h-full rounded-full ${theme?.animations ? 'transition-all duration-300 ease-out' : 'transition-all duration-300 ease-out'}`}
             style={{ 
               width: `${barsVisible ? teamAPercentage : 0}%`,
-              background: getTeamAGradient ? getTeamAGradient() : 'linear-gradient(90deg, #22c55e, #16a34a)',
+              background: getTeamAGradient ? getTeamAGradient() : 'linear-gradient(90deg, var(--green), var(--green-deep))',
               willChange: 'width'
             }}
           />
@@ -214,7 +214,7 @@ function DynamicComparisonRow({
           {/* Center gap/separator - invisible background match */}
           {barsVisible && (
             <div 
-              className="absolute top-0 h-full w-0.5 bg-slate-800 z-10"
+              className="absolute top-0 h-full w-0.5 bg-surface z-10"
               style={{ left: `${teamAPercentage}%` }}
             />
           )}
@@ -224,7 +224,7 @@ function DynamicComparisonRow({
             className={`absolute right-0 top-0 h-full rounded-full ${theme?.animations ? 'transition-all duration-300 ease-out' : 'transition-all duration-300 ease-out'}`}
             style={{ 
               width: `${barsVisible ? teamBPercentage : 0}%`,
-              background: getTeamBGradient ? getTeamBGradient() : 'linear-gradient(90deg, #f97316, #ea580c)',
+              background: getTeamBGradient ? getTeamBGradient() : 'linear-gradient(90deg, var(--fire), var(--fire-deep))',
               willChange: 'width'
             }}
           />
