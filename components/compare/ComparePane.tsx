@@ -47,6 +47,8 @@ export interface ComparePaneProps {
   isLoadingOffense: boolean;
   isLoadingDefense: boolean;
   onTeamAChange: (team: string) => void;
+  /** Blank comparison only: fill both teams from a "This week" pill. */
+  onPickMatchup?: (teamA: string, teamB: string) => void;
   onTeamBChange: (team: string) => void;
   onOffenseMetricsChange: (metrics: string[]) => void;
   onDefenseMetricsChange: (metrics: string[]) => void;
@@ -64,6 +66,7 @@ function ComparePane({
   isLoading,
   onTeamAChange,
   onTeamBChange,
+  onPickMatchup,
   onOffenseMetricsChange,
   onDefenseMetricsChange,
 }: ComparePaneProps) {
@@ -78,6 +81,7 @@ function ComparePane({
         offenseData={offenseData}
         onTeamAChange={onTeamAChange}
         onTeamBChange={onTeamBChange}
+        onPickMatchup={onPickMatchup}
       />
     );
   }

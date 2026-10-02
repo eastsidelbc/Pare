@@ -18,6 +18,7 @@ import { motion, useMotionValue, animate, type PanInfo } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useComparisons, type Comparison, type ComparisonPatch } from '@/components/ComparisonsProvider';
 import { APP_CONSTANTS } from '@/config/constants';
+import { useFillComparison } from '@/lib/comparisons/useFillComparison';
 import type { TeamData } from '@/lib/useNflStats';
 import ComparePane from '@/components/compare/ComparePane';
 import BlankComparePicker, { AddMark } from '@/components/compare/BlankComparePicker';
@@ -45,6 +46,7 @@ export default function CompareQuadrants({
   isLoadingDefense,
 }: Props) {
   const { comparisons, addComparison, removeComparison, updateComparison } = useComparisons();
+  const fillComparison = useFillComparison();
 
   const canAdd = comparisons.length < APP_CONSTANTS.MAX_COMPARISONS;
   // One trailing slot's worth of "+" room when there's capacity to add.
@@ -142,10 +144,15 @@ export default function CompareQuadrants({
                         isLoading={isLoading}
                         isLoadingOffense={isLoadingOffense}
                         isLoadingDefense={isLoadingDefense}
-                        canRemove={comparisons.length > 1}
+                        // Any card can close; closing the last leaves a blank picker.
+                        canRemove={
+                          comparisons.length > 1 ||
+                          Boolean(comparisons[0]?.teamA && comparisons[0]?.teamB)
+                        }
                         onAdd={handleAdd}
                         onRemove={removeComparison}
                         onUpdate={updateComparison}
+                        onFill={fillComparison}
                         comparison={
                           cell.kind === 'cmp'
                             ? comparisons.find((c) => c.id === cell.id)
@@ -199,6 +206,7 @@ interface QuadrantProps {
   onAdd: () => void;
   onRemove: (id: string) => void;
   onUpdate: (id: string, patch: ComparisonPatch) => void;
+  onFill: (id: string, teamA: string, teamB: string) => void;
 }
 
 function Quadrant({
@@ -213,6 +221,7 @@ function Quadrant({
   onAdd,
   onRemove,
   onUpdate,
+  onFill,
 }: QuadrantProps) {
   const shell = 'rounded-xl overflow-hidden relative h-full';
   // Neon Frame: the quadrant shell is a quiet deep surface — the panels inside
@@ -271,6 +280,7 @@ function Quadrant({
               offenseData={offenseData}
               onTeamAChange={(t) => onUpdate(c.id, { teamA: t })}
               onTeamBChange={(t) => onUpdate(c.id, { teamB: t })}
+              onPickMatchup={(a, b) => onFill(c.id, a, b)}
             />
           </div>
         )}
@@ -291,10 +301,12 @@ function Quadrant({
             right: -10, // protrude ~10px past the card edge (sits in the grid gap/padding — no page overflow)
             width: 22,
             height: 30,
-            color: 'var(--muted)',
+            color: 'color-mix(in srgb, var(--gold-bright) 65%, transparent)', // soft gold ×
             background: 'var(--bg-deep)',
-            border: '1px solid var(--hairline)',
-            borderLeft: 'none', // flush against the card's right edge
+            // Longhands only (no `border` + `borderLeft` mix → React re-render warning).
+            borderStyle: 'solid',
+            borderColor: 'var(--hairline)',
+            borderWidth: '1px 1px 1px 0', // no left edge: flush against the card's right edge
             borderRadius: '0 9px 9px 0', // round only the outer (right) corners → reads as a tab
             boxShadow: '2px 0 6px -2px rgba(0,0,0,0.45)',
           }}

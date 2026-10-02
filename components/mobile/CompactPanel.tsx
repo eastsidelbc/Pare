@@ -4,6 +4,7 @@
  * Complete panel with rows (offense or defense)
  * LAYOUT: 28px slim header + ~48px rows (5 metrics ≈ 270px)
  * STYLE: Neon Frame (Round 5 "R") — team-color fading frame + deep card gradient
+ * EFFECT: Power Surge — <StormCrackle> on a team's half when it's top 5 in ≥ 3 metrics
  */
 
 'use client';
@@ -14,6 +15,8 @@ import { useDisplayMode } from '@/lib/useDisplayMode';
 import CompactPanelHeader from './CompactPanelHeader';
 import CompactComparisonRow from './CompactComparisonRow';
 import { getMatchupPalettes } from '@/lib/teamColors';
+import { usePowerSurge } from '@/lib/usePowerSurge';
+import StormCrackle from '@/components/ui/StormCrackle';
 
 interface CompactPanelProps {
   type: 'offense' | 'defense';
@@ -83,6 +86,10 @@ function CompactPanel({
     setActiveDropdown(null);
   }, [onTeamBChange]);
 
+  // Power Surge: a team ranked top 5 in ≥ 3 of this card's metrics gets the
+  // storm-crackle effect on its half (same ranks/data as the row badges).
+  const powered = usePowerSurge(transformedAllData, selectedMetrics, teamA, teamB, type);
+
   // Team bar colors for this matchup (lift / clash / fallback rules in lib/teamColors).
   const palettes = useMemo(() => getMatchupPalettes(teamA, teamB), [teamA, teamB]);
 
@@ -99,13 +106,16 @@ function CompactPanel({
   return (
     <div style={frameStyle}>
       <div
-        className="overflow-hidden"
+        className="relative isolate overflow-hidden"
         style={{
           borderRadius: 'calc(var(--radius-xl) - 2px)',
           background: 'linear-gradient(90deg, var(--card-deep-a) 0%, var(--card-deep-mid) 50%, var(--card-deep-b) 100%)',
           boxShadow: 'inset 0 1px 0 color-mix(in srgb, var(--text) 6%, transparent)',
         }}
       >
+      {powered.a && <StormCrackle side="a" rgb={palettes.a.rgb} />}
+      {powered.b && <StormCrackle side="b" rgb={palettes.b.rgb} />}
+      <div className="relative z-[1]">
       <CompactPanelHeader
         type={type}
         displayMode={mode}
@@ -139,6 +149,7 @@ function CompactPanel({
             }}
           />
         ))}
+      </div>
       </div>
       </div>
     </div>

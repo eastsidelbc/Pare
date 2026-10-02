@@ -26,6 +26,19 @@ five mockup rounds on the "Pare Compare Redesign" canvas.
   padding instead of the old inner `pb-[64px…]`). `BlankComparePicker` rewritten (dashed gold
   slots → team-color frame); quadrant "Add comparison" cell uses the shared `AddMark`.
   Measured: team picker 12 rows visible on 393×759, 24 on iPad; rank list 16 / 26.
+- **Week presets (pass 3):** `components/compare/WeekMatchupPills.tsx` reads
+  `useSchedule().weeks[currentNflWeek]` (already loaded app-wide — no fetch); hides if the week
+  isn't ready. `onPickMatchup` threads ComparePane → BlankComparePicker; Workspace + Quadrants
+  supply it via `useFillComparison` (pure `findPairDuplicate` tested). Away = Team A. QA: 16
+  pills, tap fills MIA vs BUF with no extra tab; tapping an open pair from a new blank drops the
+  blank and jumps (4 tabs → 3).
+
+- **Power Surge (pass 4):** trigger = `isPowered(ranks)` (≥ 3 ranks in 1..5) per card per team,
+  computed by `usePowerSurge` with `calculateBulkRanking` + the row badges' direction rule on the
+  displayed (per-game/total) data, so it always matches the badges. `StormCrackle` canvas sits
+  under the rows (`z-0`, content `z-[1]`) inside the card's inner `relative isolate` box. Picked
+  B·9 from two mockup rounds (15 effects → 10 crackle programs). QA: BAL (5/5 top-5) powered on
+  both cards; BUF (2/5) not; no console warnings.
 
 ## Verification (cloud sandbox, every phase)
 `npm run check` · `vitest run` (51 tests) · production build (webpack, Google Font mocked —
@@ -37,7 +50,9 @@ stats at 393×852, 393×759 (14 Pro app-mode usable height → no scroll), iPad 
 Logos on Home / Standings / Leaders (next branch). Global `--bg` switch.
 Loading skeleton still uses the old panel shape (brief; restyle with the next pass).
 
-## Found, not fixed (pre-existing)
-`ComparisonsProvider.addComparison` reads `added` from inside a `setComparisons` updater; React
-may run the updater later, so it can log "cap reached" (and skip `setActiveId`) even when the
-add succeeded. Seen in QA with 3 tabs. Needs a go-ahead before touching the store.
+## Fixed (pre-existing bug)
+`ComparisonsProvider.addComparison` read `added` from inside a `setComparisons` updater; React
+may run the updater later, so it logged "cap reached" and skipped `setActiveId` even when the add
+succeeded ("+" left you on the old tab). Now `setActiveId` runs inside the updater (like
+`setActive`/`removeComparison`) and the cap check uses a ref of the committed list. QA: 8 taps
+of "+" → each lands on the new blank tab; cap holds at 8; no warnings.

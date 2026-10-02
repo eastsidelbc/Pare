@@ -13,8 +13,12 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Team-name wordmarks replace logos on Compare; neon-frame cards; deep Compare background; Offense + Defense fit one iPhone 14 Pro screen in app mode.
   - Bottom nav active tab = sliding gold neon outline (same size). Bar math, ranking, data layer untouched.
   - Team picker + rank-badge dropdowns restyled (shared `components/ui/neonMenu.ts`): 40px rows, height grows with the screen, logos replaced by `TeamMark` (2–3 letter wordmark). New-comparison picker + tablet "Add comparison" cell match (dashed gold slots, team-color frame when filled).
+  - Blank comparison: text removed, slots moved up, and **this week's games as one-tap pills** ("IND vs WAS") that fill both teams; an already-open pair jumps to its tab instead of duplicating (`lib/comparisons/useFillComparison.ts`).
+  - Close × on comparison tabs / iPad cards is soft gold and always shown — closing the last one leaves a blank "pick 2 teams" tab (a lone blank tab hides its ×).
+  - **Power Surge:** a team ranked top 5 in ≥ 3 of a card's metrics gets a subtle storm-crackle effect (team-color plasma web + random edge flares) on its half, fading to the middle (`lib/powerSurge.ts`, `lib/usePowerSurge.ts`, `components/ui/StormCrackle.tsx`). Chosen from the Power Surge / Storm Crackle labs (option B·9).
 
 ### Fixed
+- **"+" comparison tab now opens the new tab** (2026-10-02) — `ComparisonsProvider.addComparison` read the add result before React ran the state updater, so it logged a false "cap reached" and skipped `setActiveId`. Now activates inside the updater; cap answered from the committed list. Also fixes Home "Open full" + iPad "Add comparison".
 - **Data freshness on self-hosted pare.gg** (2026-10-02, branch `fix/data-freshness`)
   - See: `docs/devnotes/2026-10-02-data-freshness.md`.
   - Compare offense/defense stats (and the W-L record on Compare) refresh every **10 min** instead of freezing for up to ~6h — the routes' 6h in-memory cache no longer sits in front of ISR (now a last-good backup only); `REVALIDATE_SECONDS` 3600 → 600.

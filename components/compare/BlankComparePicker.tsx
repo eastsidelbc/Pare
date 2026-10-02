@@ -4,11 +4,11 @@
  * A blank comparison (no teams — created by the "+" on the compare tab row or a
  * tablet "Add comparison" cell) renders this instead of the panels:
  *
- *        NEW COMPARISON
- *   ┌╌╌╌╌╌╌╌╌╌┐  VS  ┌╌╌╌╌╌╌╌╌╌┐
- *   ╎    +     ╎      ╎    +     ╎   empty = dashed gold slot
- *   ╎ PICK TEAM╎      ╎ PICK TEAM╎   filled = team-color frame + TeamMark + wordmark
- *   └╌╌╌╌╌╌╌╌╌┘      └╌╌╌╌╌╌╌╌╌┘
+ *   ┌╌╌╌╌╌╌╌╌┐  VS  ┌╌╌╌╌╌╌╌╌┐   empty = dashed gold slot with a "+"
+ *   ╎   +    ╎      ╎   +    ╎   filled = team-color frame + TeamMark + wordmark
+ *   └╌╌╌╌╌╌╌╌┘      └╌╌╌╌╌╌╌╌┘
+ *            WEEK 5
+ *   ( IND VS WAS )  ( NE VS BUF )   ← <WeekMatchupPills>: one tap fills both
  *
  * Tapping a slot opens the same anchored <CompactTeamSelector> used everywhere
  * on Compare. Once both slots are filled the parent (<ComparePane>) renders the
@@ -25,6 +25,7 @@ import { getTeamPalette } from '@/lib/teamColors';
 import TeamMark from '@/components/ui/TeamMark';
 import CompactTeamSelector from '@/components/mobile/CompactTeamSelector';
 import { wordmarkSize } from '@/components/compare/MatchupHero';
+import WeekMatchupPills from '@/components/compare/WeekMatchupPills';
 
 interface BlankComparePickerProps {
   teamA: string;
@@ -33,6 +34,8 @@ interface BlankComparePickerProps {
   offenseData: TeamData[];
   onTeamAChange: (team: string) => void;
   onTeamBChange: (team: string) => void;
+  /** One-tap matchup preset (this week's games). Omit → pills hidden. */
+  onPickMatchup?: (teamA: string, teamB: string) => void;
 }
 
 const SLOT_RADIUS = 'var(--radius-xl)';
@@ -109,7 +112,7 @@ function Slot({
       aria-label={`Pick Team ${label}`}
       aria-expanded={open}
       aria-haspopup="listbox"
-      className="flex flex-col items-center justify-center gap-2.5 px-2 py-5 touch-optimized transition-shadow active:opacity-70"
+      className="flex items-center justify-center px-2 py-6 touch-optimized transition-shadow active:opacity-70"
       style={{
         borderRadius: SLOT_RADIUS,
         background: SLOT_INNER,
@@ -118,7 +121,6 @@ function Slot({
       }}
     >
       <AddMark />
-      <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: '0.22em', color: 'var(--subtext)' }}>PICK TEAM</span>
     </button>
   );
 }
@@ -149,19 +151,18 @@ export default function BlankComparePicker({
   offenseData,
   onTeamAChange,
   onTeamBChange,
+  onPickMatchup,
 }: BlankComparePickerProps) {
   const [open, setOpen] = useState<'A' | 'B' | null>(null);
   const aRef = useRef<HTMLButtonElement>(null);
   const bRef = useRef<HTMLButtonElement>(null);
 
   return (
-    <div className="flex h-full flex-col items-center justify-center px-5" style={{ background: 'var(--bg-deep)' }}>
-      <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.26em', color: 'var(--gold-bright)' }}>NEW COMPARISON</p>
-      <p className="mt-1.5 mb-6 text-center" style={{ fontSize: 13, color: 'var(--subtext)' }}>
-        Pick two teams to compare
-      </p>
-
-      <div className="grid w-full max-w-sm grid-cols-[1fr_auto_1fr] items-stretch gap-2.5">
+    <div
+      className="flex h-full flex-col items-center gap-6 overflow-y-auto overscroll-contain px-5 pt-[clamp(16px,5vh,48px)] pb-[calc(var(--nav-h)+env(safe-area-inset-bottom)+12px)]"
+      style={{ background: 'var(--bg-deep)' }}
+    >
+      <div className="grid w-full max-w-sm shrink-0 grid-cols-[1fr_auto_1fr] items-stretch gap-2.5">
         <Slot team={teamA} label="A" open={open === 'A'} slotRef={aRef} onClick={() => setOpen((o) => (o === 'A' ? null : 'A'))} />
 
         <div
@@ -180,6 +181,8 @@ export default function BlankComparePicker({
 
         <Slot team={teamB} label="B" open={open === 'B'} slotRef={bRef} onClick={() => setOpen((o) => (o === 'B' ? null : 'B'))} />
       </div>
+
+      {onPickMatchup && <WeekMatchupPills onPick={onPickMatchup} />}
 
       {/* Inline anchored dropdowns (same picker as the wordmarks). */}
       {open === 'A' && (

@@ -46,7 +46,10 @@ export default function CompareTabBar({
   onAdd,
   canAdd = true,
 }: CompareTabBarProps) {
-  const showClose = comparisons.length > 1;
+  // Every tab can close — closing the last one leaves a blank "pick 2 teams"
+  // tab. Only a lone blank tab hides its × (closing it would change nothing).
+  const loneBlank = comparisons.length === 1 && !(comparisons[0].teamA && comparisons[0].teamB);
+  const showClose = !loneBlank;
 
   return (
     <div
@@ -86,12 +89,12 @@ export default function CompareTabBar({
                   e.stopPropagation();
                   onClose(c.id);
                 }}
-                className="grid place-items-center rounded-full transition-opacity hover:opacity-100"
+                className="grid place-items-center rounded-full transition-opacity hover:opacity-100 active:opacity-60"
                 style={{
                   width: 14,
                   height: 14,
-                  opacity: 0.7,
-                  color: isActive ? 'var(--text)' : 'var(--muted)',
+                  // Soft gold — visible, but quieter than the gold "+" (Neon Frame).
+                  color: `color-mix(in srgb, var(--gold-bright) ${isActive ? 70 : 50}%, transparent)`,
                 }}
               >
                 <X size={10} strokeWidth={2.5} />

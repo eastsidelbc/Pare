@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import { useNflStats } from '@/lib/useNflStats';
 import { useComparisons } from '@/components/ComparisonsProvider';
+import { useFillComparison } from '@/lib/comparisons/useFillComparison';
 import { abbrToTeamName } from '@/lib/teams';
 import { useIsMobile } from '@/lib/hooks/useIsMobile';
 import { APP_CONSTANTS } from '@/config/constants';
@@ -33,6 +34,7 @@ import OfflineStatusBanner from '@/components/OfflineStatusBanner';
 interface PaneHandlers {
   onTeamAChange: (t: string) => void;
   onTeamBChange: (t: string) => void;
+  onPickMatchup: (a: string, b: string) => void;
   onOffenseMetricsChange: (m: string[]) => void;
   onDefenseMetricsChange: (m: string[]) => void;
 }
@@ -194,6 +196,11 @@ export default function CompareWorkspace() {
   useEffect(() => {
     updateRef.current = updateComparison;
   }, [updateComparison]);
+  const fillComparison = useFillComparison();
+  const fillRef = useRef(fillComparison);
+  useEffect(() => {
+    fillRef.current = fillComparison;
+  }, [fillComparison]);
   const paneHandlersRef = useRef<Map<string, PaneHandlers>>(new Map());
   const getPaneHandlers = useCallback((id: string): PaneHandlers => {
     const cache = paneHandlersRef.current;
@@ -202,6 +209,7 @@ export default function CompareWorkspace() {
       h = {
         onTeamAChange: (t: string) => updateRef.current(id, { teamA: t }),
         onTeamBChange: (t: string) => updateRef.current(id, { teamB: t }),
+        onPickMatchup: (a: string, b: string) => fillRef.current(id, a, b),
         onOffenseMetricsChange: (m: string[]) =>
           updateRef.current(id, { settings: { offenseMetrics: m } }),
         onDefenseMetricsChange: (m: string[]) =>
@@ -359,6 +367,7 @@ export default function CompareWorkspace() {
                         isLoadingDefense={isLoadingDefense}
                         onTeamAChange={h.onTeamAChange}
                         onTeamBChange={h.onTeamBChange}
+                        onPickMatchup={h.onPickMatchup}
                         onOffenseMetricsChange={h.onOffenseMetricsChange}
                         onDefenseMetricsChange={h.onDefenseMetricsChange}
                       />

@@ -256,6 +256,15 @@ blurred deep backdrop. Rows are **40px** (`MENU_ROW_H`). Height follows the scre
 lists/pickers. Unknown teams (League Average) → muted. Color = `getTeamPalette()` (lifted, no
 clash logic — single team).
 
-**Empty / add states:** dashed gold-bright outline + `AddMark` (gold neon "+" ring) for "Pick
-team" slots and the tablet "Add comparison" cell; a filled slot wears the team-color frame +
-TeamMark + nickname wordmark. "VS" = small gold italic 900.
+**Empty / add states:** dashed gold-bright outline + `AddMark` (gold neon "+" ring) for the
+blank-comparison slots (no text — the "+" says it) and the tablet "Add comparison" cell; a filled
+slot wears the team-color frame + TeamMark + nickname wordmark. "VS" = small gold italic 900.
+Below the slots, `WeekMatchupPills`: this week's games as 36px pills (`AWAY vs HOME` TeamMarks,
+two-team-color wash like the tab pills, red dot = live) — one tap fills both teams.
+
+**Power Surge (`components/ui/StormCrackle.tsx`, rules in `lib/powerSurge.ts`):** a team ranked
+**top 5 in ≥ 3 of a card's metrics** gets a storm-crackle effect on its half of that card
+(Offense and Defense judged separately; ranks = the row badges, same per-game/total data).
+Chosen option "B·9": faint plasma web always on + edge arcs flaring at random (0.5–1.1 s on,
+1.5–3.5 s off), Subtle intensity, team color, CSS mask fading to the middle. One canvas per
+powered half, 30 fps, paused off-screen/hidden tab; reduced motion → still glow.

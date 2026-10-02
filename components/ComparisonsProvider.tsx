@@ -97,29 +97,37 @@ export function ComparisonsProvider({ children }: { children: React.ReactNode })
     };
   }, [hydrated, comparisons, activeId]);
 
+  // Latest committed list, for addComparison's synchronous cap answer. (React
+  // may run a setState updater later, so the updater can't report back.)
+  const comparisonsRef = useRef(comparisons);
+  useEffect(() => {
+    comparisonsRef.current = comparisons;
+  }, [comparisons]);
+
   const addComparison = useCallback((teamA: string, teamB: string): string | null => {
-    const created = seedComparison(teamA, teamB);
-    let added = false;
-    setComparisons((prev) => {
-      const result = addToCollection(prev, created, APP_CONSTANTS.MAX_COMPARISONS);
-      added = result.added;
-      return result.list;
-    });
-    if (!added) {
+    if (comparisonsRef.current.length >= APP_CONSTANTS.MAX_COMPARISONS) {
       console.warn(
         `⚠️ [comparisons] cap reached (${APP_CONSTANTS.MAX_COMPARISONS}) — addComparison ignored`,
       );
       return null;
     }
-    setActiveId(created.id);
+    const created = seedComparison(teamA, teamB);
+    setComparisons((prev) => {
+      const result = addToCollection(prev, created, APP_CONSTANTS.MAX_COMPARISONS);
+      // Activate inside the updater (same pattern as setActive/removeComparison)
+      // so we only switch tabs when the add really happened.
+      if (result.added) setActiveId(created.id);
+      return result.list;
+    });
     return created.id;
   }, []);
 
   const removeComparison = useCallback((id: string) => {
     setComparisons((prev) => {
       const next = removeFromCollection(prev, id);
-      // Invariant: always keep at least one comparison.
-      const ensured = next.length > 0 ? next : [seedComparison()];
+      // Invariant: always keep at least one comparison. Closing the LAST tab
+      // leaves a blank one → the "pick 2 teams" screen (same as tapping "+").
+      const ensured = next.length > 0 ? next : [seedComparison('', '')];
       setActiveId((currentActive) =>
         ensured.some((c) => c.id === currentActive) ? currentActive : ensured[0].id,
       );
