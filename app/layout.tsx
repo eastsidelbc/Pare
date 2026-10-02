@@ -1,13 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Geist } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { ComparisonsProvider } from "@/components/ComparisonsProvider";
 import BottomNav from "@/components/BottomNav";
 import { ScheduleProvider } from "@/components/schedule/ScheduleProvider";
 import { getCurrentWeekInfo, getCurrentWeekMatchups } from "@/lib/schedule";
-import { cn } from "@/lib/utils";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -86,7 +83,7 @@ export default async function RootLayout({
   ]);
   const initialWeek = initialMatchups[0]?.week ?? currentNflWeek;
   return (
-    <html lang="en" className={cn("font-sans", geist.variable)} suppressHydrationWarning>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
