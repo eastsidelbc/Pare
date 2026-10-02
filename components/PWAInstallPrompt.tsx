@@ -13,7 +13,8 @@ interface PWAInstallPromptProps {
 
 /**
  * Component that prompts users to install the PWA
- * Handles different installation flows for iOS, Android, and desktop
+ * Handles different installation flows for iOS, Android, and desktop.
+ * Uses the gold accent token (not raw purple palette classes).
  */
 export default function PWAInstallPrompt({ 
   className = '', 
@@ -110,7 +111,7 @@ export default function PWAInstallPrompt({
         className={`
           fixed bottom-4 left-4 right-4 z-50 max-w-md mx-auto
           bg-card/95 backdrop-blur-xs border border-border/50 rounded-xl
-          p-4 text-white shadow-2xl
+          p-4 text-text shadow-pop
           ${className}
         `}
         role="dialog"
@@ -135,7 +136,7 @@ export default function PWAInstallPrompt({
             onClick={handleDismiss}
             className="
               p-1 rounded-lg hover:bg-surface/50 transition-colors
-              focus:outline-hidden focus:ring-2 focus:ring-purple-500
+              focus:outline-hidden focus:ring-2 focus:ring-gold
             "
             aria-label="Dismiss install prompt"
           >
@@ -156,7 +157,7 @@ export default function PWAInstallPrompt({
               {instructions.steps.map((step, index) => (
                 <li key={index} className="flex items-start gap-2">
                   <span className="
-                    shrink-0 w-5 h-5 bg-purple-500 text-white text-xs 
+                    shrink-0 w-5 h-5 bg-gold text-bg text-xs 
                     rounded-full flex items-center justify-center mt-0.5
                   ">
                     {index + 1}
@@ -169,7 +170,7 @@ export default function PWAInstallPrompt({
             <ul className="text-sm text-text space-y-1">
               {instructions.steps.map((step, index) => (
                 <li key={index} className="flex items-start gap-2">
-                  <span className="text-purple-400 mt-1">•</span>
+                  <span className="text-gold mt-1">•</span>
                   {step}
                 </li>
               ))}
@@ -183,9 +184,9 @@ export default function PWAInstallPrompt({
             <button
               onClick={handleDismiss}
               className="
-                flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 
+                flex-1 px-4 py-2 bg-gold hover:bg-gold-bright text-bg
                 rounded-lg font-medium transition-colors
-                focus:outline-hidden focus:ring-2 focus:ring-purple-500
+                focus:outline-hidden focus:ring-2 focus:ring-gold
               "
             >
               {instructions.buttonText}
@@ -196,7 +197,7 @@ export default function PWAInstallPrompt({
                 onClick={handleDismiss}
                 className="
                   px-4 py-2 text-subtext hover:text-text transition-colors
-                  focus:outline-hidden focus:ring-2 focus:ring-purple-500 rounded-lg
+                  focus:outline-hidden focus:ring-2 focus:ring-gold rounded-lg
                 "
               >
                 Not now
@@ -206,16 +207,16 @@ export default function PWAInstallPrompt({
                 onClick={handleInstall}
                 disabled={isInstalling}
                 className="
-                  flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 
-                  disabled:bg-purple-600/50 disabled:cursor-not-allowed
+                  flex-1 px-4 py-2 bg-gold hover:bg-gold-bright text-bg
+                  disabled:bg-gold/50 disabled:cursor-not-allowed
                   rounded-lg font-medium transition-colors
-                  focus:outline-hidden focus:ring-2 focus:ring-purple-500
+                  focus:outline-hidden focus:ring-2 focus:ring-gold
                   flex items-center justify-center gap-2
                 "
               >
                 {isInstalling ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-bg"></div>
                     Installing...
                   </>
                 ) : (

@@ -22,4 +22,22 @@ jobs:
 
       - run: npm run check      # tsc --noEmit && eslint
 
+      # Design-token guard — fail if a raw Tailwind palette color class slips into
+      # components/ or app/. Only app/globals.css :root may hold literal values.
+      # Hex literals are printed for awareness but don't fail the build (the only
+      # expected ones are globals.css, layout.tsx themeColor, and global-error.tsx,
+      # which can't reference CSS vars).
+      - name: Design-token guard (no raw palette classes)
+        run: |
+          echo "Scanning components/ + app/ for raw palette color classes…"
+          if grep -rEn --include='*.tsx' --include='*.ts' \
+               '(bg|text|border|divide|from|to|via|ring|fill|stroke)-(slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-[0-9]' \
+               app components; then
+            echo "::error::Raw Tailwind palette color class found above — use design tokens (bg-card, text-subtext, bg-gold…). See docs/design-system.md."
+            exit 1
+          fi
+          echo "✓ No raw palette color classes."
+          echo "— hex literals (informational) —"
+          grep -rEn --include='*.tsx' --include='*.ts' '#[0-9a-fA-F]{6}' app components || echo "  (none)"
+
       - run: npm run test:run   # vitest run

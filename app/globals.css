@@ -151,6 +151,10 @@
     --badge-red:        #e5484d;
     --badge-red-deep:   #c93b40;
     --badge-slate:      #7c8698;
+
+    /* Warning / offline — semantic amber (its own token, not an accent) */
+    --warn:      #f59e0b; /* amber — offline/caution surface */
+    --warn-text: #713f12; /* dark amber — readable text on --warn */
   }
 
   /* Base surface + typography — applied globally so every screen is on-system */
