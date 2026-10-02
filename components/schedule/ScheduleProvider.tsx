@@ -17,6 +17,13 @@
  * No scroll DOM lives here — ScheduleScreen owns the scroller + refs and calls
  * these actions. Seeded from server-fetched initial data (see layout.tsx) so the
  * first paint is real content, not a skeleton.
+ *
+ * SCROLL SEEDING STRATEGY:
+ *  layout.tsx pre-fetches week N-1 (prevWeekMatchups) alongside the current week
+ *  so both are in state at first paint. The viewport starts at week N via
+ *  pendingScrollWeek — ScheduleScreen snaps there instantly before the browser
+ *  paints, so the user sees the current week and can scroll UP to week N-1
+ *  without first needing to scroll down to create scroll room.
  */
 
 'use client';
@@ -119,6 +126,8 @@ function clampWeek(w: number): number {
 export interface ScheduleProviderProps {
   initialWeek: number;
   initialMatchups: Matchup[];
+  /** Week N-1 matchups pre-fetched server-side so the user can scroll up immediately. */
+  prevWeekMatchups: Matchup[];
   currentNflWeek: number;
   children: React.ReactNode;
 }
@@ -126,23 +135,42 @@ export interface ScheduleProviderProps {
 export function ScheduleProvider({
   initialWeek,
   initialMatchups,
+  prevWeekMatchups,
   currentNflWeek,
   children,
 }: ScheduleProviderProps) {
   const seedWeek = clampWeek(initialWeek);
+  const seedPrevWeek = seedWeek - 1;
+  const hasPrevWeek = prevWeekMatchups.length > 0 && seedPrevWeek >= MIN_WEEK;
 
-  const [weeks, setWeeks] = useState<Record<number, WeekEntry>>(() => ({
-    [seedWeek]: {
-      week: seedWeek,
-      status: initialMatchups.length > 0 ? 'ready' : 'empty',
-      matchups: initialMatchups,
-    },
-  }));
-  const [min, setMin] = useState(seedWeek);
+  const [weeks, setWeeks] = useState<Record<number, WeekEntry>>(() => {
+    const entries: Record<number, WeekEntry> = {
+      [seedWeek]: {
+        week: seedWeek,
+        status: initialMatchups.length > 0 ? 'ready' : 'empty',
+        matchups: initialMatchups,
+      },
+    };
+    if (hasPrevWeek) {
+      entries[seedPrevWeek] = {
+        week: seedPrevWeek,
+        status: 'ready',
+        matchups: prevWeekMatchups,
+      };
+    }
+    return entries;
+  });
+  const [min, setMin] = useState(hasPrevWeek ? seedPrevWeek : seedWeek);
   const [max, setMax] = useState(seedWeek);
   const [activeWeek, setActiveWeek] = useState(seedWeek);
   const [openId, setOpenId] = useState<string | null>(null);
-  const [pendingScrollWeek, setPendingScrollWeek] = useState<number | null>(null);
+  // When we seed week N-1, we start with min = N-1 so week N-1 is at the top
+  // of the DOM. pendingScrollWeek=seedWeek tells ScheduleScreen to snap
+  // instantly to week N before the first paint, giving the user immediate
+  // upward scroll room without visible flash.
+  const [pendingScrollWeek, setPendingScrollWeek] = useState<number | null>(
+    hasPrevWeek ? seedWeek : null,
+  );
 
   // Latest-value refs so callbacks don't need to re-create on every change.
   const minRef = useRef(min);

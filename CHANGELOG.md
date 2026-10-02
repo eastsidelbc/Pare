@@ -21,13 +21,13 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Added 8 new tokens to `globals.css :root`: `--green-deep`, `--fire-deep`, `--badge-gold`, `--badge-gold-deep`, `--badge-gold-text`, `--badge-red`, `--badge-red-deep`, `--badge-slate`.
   - 3 intentional visual shifts: (1) BottomNav active tab + DivisionTable leader row tint: gold-bright→gold token; (2) CompactComparisonRow stat text: `#fff`→`--text`; (3) CompactComparisonRow empty track: `white/5`→`--border`.
   - Excluded per spec: `TeamDropdown.tsx` (skip entirely), black/white-alpha shadows/overlays, `app/global-error.tsx` (globals.css not loaded), `OfflineStatusBanner.tsx` (amber semantic warning), purple install CTAs in `PWAInstallPrompt.tsx`.
-  - All verification gates pass: `npm run lint` (0 errors), `npm run build` (14 pages). **NOT merged/deployed — awaiting human visual QA.**
+  - All verification gates pass: `npm run lint` (0 errors), `npm run build` (14 pages). Committed directly on `main` (pushed).
 - **Tailwind CSS v3 → v4 migration** (2026-10-01, branch `tailwind-v4`)
   - See: `docs/devnotes/2026-10-01-tailwind-v4-migration.md`.
   - Cleaned shadcn/tailwind-upgrade pollution from `main` (restored `app/globals.css`, `app/layout.tsx`, `package.json` from `origin/main`). Removed `components.json`, `components/ui/button.tsx`. Kept design-system token mapping in `tailwind.config.js`, `lib/utils.ts` cn(), and all component changes.
   - Ran `npx @tailwindcss/upgrade --yes` (stable 4.3.3): migrated `globals.css` to `@import 'tailwindcss'` + `@config` + `@utility` blocks; updated `postcss.config.mjs` to `@tailwindcss/postcss` (autoprefixer removed, bundled by v4); renamed utilities in 20 components (`flex-shrink-0`→`shrink-0`, `outline-none`→`outline-hidden`, `backdrop-blur-sm`→`backdrop-blur-xs`, `rounded`→`rounded-sm`, arbitrary min-h/w values to scale equivalents, gradient syntax).
   - Manual fixes: removed duplicate `addUtilities` plugin (`.touch-optimized`/`.focus-ring`) from `tailwind.config.js`; enhanced `@utility touch-optimized` with `-webkit-touch-callout`/`user-select` properties. All 21 dark tokens preserved exactly (`--card: #1a2235`, etc.). No shadcn/oklch vars.
-  - All verification gates pass: `npm run check` (0 errors), `npm run test:run` (29/29), `npm run build` (32 teams served, 14 pages rendered). **NOT pushed/merged/deployed — awaiting human visual QA.**
+  - All verification gates pass: `npm run check` (0 errors), `npm run test:run` (29/29), `npm run build` (32 teams served, 14 pages rendered). Fast-forward merged into `main` (pushed).
 
 ### Fixed
 - **Audit Wave 3 — correctness, logging, hygiene + test harness** (2026-10-01)

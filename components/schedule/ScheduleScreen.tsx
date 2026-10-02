@@ -15,6 +15,13 @@
  *
  * Respects the global shell rule: header + footer fixed, only this <main>
  * scrolls, no page scroll / bounce.
+ *
+ * INITIAL SNAP:
+ *  When ScheduleProvider seeds week N-1 server-side (min = N-1), the DOM starts
+ *  at the top showing week N-1. pendingScrollWeek = N, and the mount
+ *  useIsoLayoutEffect snaps instantly to week N before the browser paints.
+ *  The user lands on the current week and can immediately scroll up to N-1
+ *  without a visible flash or jump.
  */
 
 'use client';
@@ -24,7 +31,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 // Layout effects must run before paint on the client (scroll restore/anchor),
 // but useLayoutEffect warns during SSR — pick the safe one per environment.
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
-import { useSchedule } from './ScheduleProvider';
+import { useSchedule, type WeekStatus } from './ScheduleProvider';
 import WeekControl from './WeekControl';
 import WeekSection from './WeekSection';
 import { useLiveScores } from '@/lib/hooks/useLiveScores';
@@ -82,6 +89,15 @@ export default function ScheduleScreen() {
     }, delay);
   }, []);
 
+  // Tracks whether the mount useIsoLayoutEffect has already handled the initial
+  // snap — so the pendingScrollWeek useEffect doesn't fire smooth on first run.
+  const isInitialMount = useRef(true);
+
+  // Captures scroll height after a skeleton prepend so we can correct again
+  // when the skeleton inflates into real content (Fix C).
+  const postSkeletonScrollHeightRef = useRef<number | null>(null);
+  const prevMinStatusRef = useRef<WeekStatus | null>(null);
+
   // Live scores — polls the current NFL week while any loaded game is live,
   // and merges by id into the window. Free (direct to ESPN, browser-side).
   useLiveScores(currentNflWeek, allMatchups, patchLiveMatchups);
@@ -91,10 +107,27 @@ export default function ScheduleScreen() {
     else sectionEls.current.delete(week);
   }, []);
 
-  // Restore scroll offset on (re)mount — before paint, so there's no flash.
+  // On mount: restore a saved scroll offset, OR snap instantly to the pending
+  // week (current week N when N-1 is seeded above it). Runs before paint so
+  // there is no visible flash of the wrong week.
   useIsoLayoutEffect(() => {
     const el = mainRef.current;
-    if (el && scrollTopRef.current > 0) el.scrollTop = scrollTopRef.current;
+    if (!el) return;
+    // Navigation restore takes precedence (user is returning from Compare).
+    if (scrollTopRef.current > 0) {
+      el.scrollTop = scrollTopRef.current;
+      return;
+    }
+    // Initial seed: snap to the current week instantly before first paint.
+    if (pendingScrollWeek != null) {
+      const node = sectionEls.current.get(pendingScrollWeek);
+      if (node) {
+        node.scrollIntoView({ block: 'start', behavior: 'instant' });
+        isInitialMount.current = false;
+        clearPendingScroll();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Anchor the scroll when a scroll-driven prepend added content above.
@@ -103,16 +136,36 @@ export default function ScheduleScreen() {
     if (el && min < prevMinRef.current && anchorRef.current) {
       const { h, t } = anchorRef.current;
       el.scrollTop = t + (el.scrollHeight - h);
+      // Record height at skeleton time so we can correct again when the
+      // skeleton inflates to real content (Fix C).
+      postSkeletonScrollHeightRef.current = el.scrollHeight;
       anchorRef.current = null;
     }
     prevMinRef.current = min;
   }, [min]);
 
-  // Jump (arrows / dropdown) → smooth-scroll to the target. Retries across a few
-  // frames until the section is mounted, then ALWAYS clears the request (so
-  // re-picking the same week fires again, and it never gets stuck). `jumpingRef`
-  // pauses the edge-loader for the scroll so it can't interrupt the jump. The
-  // label isn't touched here — the scroll handler updates it as it travels.
+  // Fix C: when the top week transitions from skeleton→ready, the content
+  // grows and the viewport jumps up. Correct by adding the height delta.
+  const minWeekStatus = weeks[min]?.status ?? null;
+  useIsoLayoutEffect(() => {
+    const el = mainRef.current;
+    if (
+      el &&
+      minWeekStatus === 'ready' &&
+      prevMinStatusRef.current === 'loading' &&
+      postSkeletonScrollHeightRef.current !== null
+    ) {
+      el.scrollTop += el.scrollHeight - postSkeletonScrollHeightRef.current;
+      postSkeletonScrollHeightRef.current = null;
+    }
+    prevMinStatusRef.current = minWeekStatus;
+  }, [minWeekStatus]);
+
+  // Jump (arrows / dropdown) → scroll to the target. On the very first jump
+  // (initial mount snap that the useIsoLayoutEffect above didn't catch because
+  // WeekSection refs weren't registered in time), use 'instant'. All subsequent
+  // jumps use 'smooth'. Retries across a few frames until the section is
+  // mounted, then ALWAYS clears the request.
   useEffect(() => {
     if (pendingScrollWeek == null) return;
     let tries = 0;
@@ -120,9 +173,13 @@ export default function ScheduleScreen() {
     const attempt = () => {
       const node = sectionEls.current.get(pendingScrollWeek);
       if (node) {
-        jumpingRef.current = true;
-        node.scrollIntoView({ block: 'start', behavior: 'smooth' });
-        endJumpSoon(700); // fallback release if the scroll fires no events
+        const behavior: ScrollBehavior = isInitialMount.current ? 'instant' : 'smooth';
+        isInitialMount.current = false;
+        if (behavior === 'smooth') {
+          jumpingRef.current = true;
+          endJumpSoon(700);
+        }
+        node.scrollIntoView({ block: 'start', behavior });
         clearPendingScroll();
       } else if (tries++ < 20) {
         raf = requestAnimationFrame(attempt); // wait for the section to mount
@@ -176,7 +233,12 @@ export default function ScheduleScreen() {
 
       // 3) Edge → lazy-load neighbor weeks (both self-guard against re-entry).
       if (scrollingUp && el.scrollTop < EDGE_PX) {
-        anchorRef.current = { h: el.scrollHeight, t: el.scrollTop };
+        // Guard: only capture anchor ONCE per prepend cycle — overwriting it on
+        // every rAF frame during a continuous upward swipe corrupts the delta
+        // calculation (Fix B).
+        if (!anchorRef.current) {
+          anchorRef.current = { h: el.scrollHeight, t: el.scrollTop };
+        }
         prependWeek();
       }
       if (el.scrollHeight - el.scrollTop - el.clientHeight < EDGE_PX) {

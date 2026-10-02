@@ -4,7 +4,7 @@ import "./globals.css";
 import { ComparisonsProvider } from "@/components/ComparisonsProvider";
 import BottomNav from "@/components/BottomNav";
 import { ScheduleProvider } from "@/components/schedule/ScheduleProvider";
-import { getCurrentWeekInfo, getCurrentWeekMatchups } from "@/lib/schedule";
+import { getCurrentWeekInfo, getCurrentWeekMatchups, getMatchupsForWeek, MIN_WEEK } from "@/lib/schedule";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -74,14 +74,22 @@ export default async function RootLayout({
   // Gate SW registration using public env var evaluated at build time
   const enableSW = process.env.NEXT_PUBLIC_ENABLE_SW === 'true';
 
-  // Fetch the current week + its games server-side, and seed the persistent
-  // ScheduleProvider. Living in the (never-unmounting) layout is what makes
-  // the schedule survive Home↔Compare navigation without a refetch.
+  // Fetch current week + its games server-side in parallel, then fetch the
+  // previous week (also server-side, ISR-cached). Seeding both into
+  // ScheduleProvider means the user can scroll UP immediately on first load —
+  // week N-1 is already above them, no "scroll down first" workaround needed.
   const [{ week: currentNflWeek }, initialMatchups] = await Promise.all([
     getCurrentWeekInfo(),
     getCurrentWeekMatchups(),
   ]);
   const initialWeek = initialMatchups[0]?.week ?? currentNflWeek;
+
+  // Pre-load the previous week so it's ready above the current week.
+  // Skip at week 1 (nothing before it — hard stop).
+  const prevWeekMatchups = initialWeek > MIN_WEEK
+    ? await getMatchupsForWeek(initialWeek - 1)
+    : [];
+
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
@@ -147,6 +155,7 @@ export default async function RootLayout({
           <ScheduleProvider
             initialWeek={initialWeek}
             initialMatchups={initialMatchups}
+            prevWeekMatchups={prevWeekMatchups}
             currentNflWeek={currentNflWeek}
           >
             {children}
