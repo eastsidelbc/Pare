@@ -86,6 +86,16 @@ function CompactPanel({
     setActiveDropdown(null);
   }, [onTeamBChange]);
 
+  // Stable menu handlers (useCallback) so memoized rows don't ALL re-render when
+  // one menu opens. Before, an inline arrow here gave every row a new prop on
+  // every panel render → opening one badge re-rendered all 10 rows.
+  const handleDropdownToggle = useCallback((metricKey: string, team: 'A' | 'B') => {
+    setActiveDropdown((cur) =>
+      cur?.metricKey === metricKey && cur.team === team ? null : { metricKey, team },
+    );
+  }, []);
+  const closeDropdown = useCallback(() => setActiveDropdown(null), []);
+
   // Power Surge: a team ranked top 5 in ≥ 3 of this card's metrics gets the
   // storm-crackle effect on its half (same ranks/data as the row badges).
   const powered = usePowerSurge(transformedAllData, selectedMetrics, teamA, teamB, type);
@@ -140,13 +150,8 @@ function CompactPanel({
             activeDropdownTeam={activeDropdown?.metricKey === metricKey ? activeDropdown.team : null}
             onTeamAChange={handleTeamAChange}
             onTeamBChange={handleTeamBChange}
-            onDropdownToggle={(team) => {
-              if (activeDropdown?.metricKey === metricKey && activeDropdown?.team === team) {
-                setActiveDropdown(null);
-              } else {
-                setActiveDropdown({ metricKey, team });
-              }
-            }}
+            onDropdownToggle={handleDropdownToggle}
+            onDropdownClose={closeDropdown}
           />
         ))}
       </div>

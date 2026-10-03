@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ComparisonsProvider } from "@/components/ComparisonsProvider";
+import { NflStatsProvider } from "@/components/NflStatsProvider";
 import BottomNav from "@/components/BottomNav";
 import { ScheduleProvider } from "@/components/schedule/ScheduleProvider";
 import { getCurrentWeekInfo, getCurrentWeekMatchups, getMatchupsForWeek, MIN_WEEK } from "@/lib/schedule";
@@ -152,6 +153,7 @@ export default async function RootLayout({
       </head>
       <body className="font-sans antialiased overflow-x-hidden">
         <ComparisonsProvider>
+          <NflStatsProvider>
           <ScheduleProvider
             initialWeek={initialWeek}
             initialMatchups={initialMatchups}
@@ -163,6 +165,7 @@ export default async function RootLayout({
                 outside the compare swipe container, so it never re-mounts. */}
             <BottomNav />
           </ScheduleProvider>
+          </NflStatsProvider>
         </ComparisonsProvider>
       </body>
     </html>

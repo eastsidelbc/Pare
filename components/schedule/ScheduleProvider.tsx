@@ -38,7 +38,8 @@ import React, {
   type MutableRefObject,
 } from 'react';
 import { MIN_WEEK, MAX_WEEK, type Matchup } from '@/lib/schedule';
-import { useNflStats, type TeamData } from '@/lib/useNflStats';
+import type { TeamData } from '@/lib/useNflStats';
+import { useSharedNflStats } from '@/components/NflStatsProvider';
 
 /** Load state of a single week in the window. */
 export type WeekStatus = 'loading' | 'ready' | 'empty';
@@ -183,14 +184,15 @@ export function ScheduleProvider({
   // In-memory scroll offset — a ref so it survives navigation without re-render.
   const scrollTopRef = useRef(0);
 
-  // Shared NFL stats for every inline compare peek — fetched ONCE here.
+  // Shared NFL stats for every inline compare peek — one app-wide copy from
+  // <NflStatsProvider> (root layout), the same data the Compare tab reads.
   const {
     offenseData,
     defenseData,
     isLoading,
     isLoadingOffense,
     isLoadingDefense,
-  } = useNflStats();
+  } = useSharedNflStats();
 
   const toggleOpen = useCallback((id: string) => {
     setOpenId((prev) => (prev === id ? null : id));

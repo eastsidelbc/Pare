@@ -4,14 +4,12 @@
  * Two-line layout: Data line (padded) + Bar line (edge-to-edge)
  * LAYOUT: theScore compact structure (~48px total height)
  * STYLE: Neon Frame (Round 5 "R") — split-capsule bar in team colors, white stats
- * INTERACTION: Tap rank text (30th) to open dropdown; stat values roll (NumberFlow)
+ * INTERACTION: Tap rank text (30th) to open dropdown
  */
 
 'use client';
 
-import { memo } from 'react';
-import type React from 'react';
-import NumberFlow from '@number-flow/react';
+import { memo, useCallback } from 'react';
 import { AVAILABLE_METRICS } from '@/lib/metricsConfig';
 import { useRanking } from '@/lib/useRanking';
 import { useBarCalculation } from '@/lib/useBarCalculation';
@@ -22,11 +20,13 @@ import { getRankTier } from '@/lib/rankTier';
 import type { BarPalette } from '@/lib/teamColors';
 
 /**
- * StatValue — one stat number with a premium "odometer" roll (NumberFlow) when
- * it changes (team swap, PG/TOT toggle). Non-numeric cases fall back to plain
- * text: a missing metric shows "—", and a time value (MM:SS) shows as-is, since
- * neither rolls as a number. NumberFlow respects prefers-reduced-motion, so it
- * degrades to an instant swap for users who ask for less motion.
+ * StatValue — one stat number as plain text. A missing metric shows "—" and a
+ * time value (MM:SS) shows as-is.
+ *
+ * PERF (2026-10-03): this used to be a NumberFlow "odometer" roll. With 20 on
+ * screen, each one re-measured the page on every team swap (~375ms of forced
+ * layout at 4x CPU throttle) — the #1 cause of the swap freeze. The bars carry
+ * the motion now; numbers just swap.
  */
 const STAT_CLS = 'text-[15px] leading-[18px] font-bold text-text tabular-nums';
 
@@ -46,16 +46,8 @@ function StatValue({
   if (Number.isNaN(num)) return <span className={STAT_CLS}>—</span>;
 
   const digits = format === 'number' ? 0 : 1;
-  return (
-    <NumberFlow
-      className={STAT_CLS}
-      // Thinner roll mask = less built-in vertical padding (keeps rows compact)
-      style={{ '--number-flow-mask-height': '0.12em' } as React.CSSProperties}
-      value={num}
-      format={{ minimumFractionDigits: digits, maximumFractionDigits: digits }}
-      suffix={format === 'percentage' ? '%' : ''}
-    />
-  );
+  const text = num.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  return <span className={STAT_CLS}>{format === 'percentage' ? `${text}%` : text}</span>;
 }
 
 interface CompactComparisonRowProps {
@@ -70,7 +62,10 @@ interface CompactComparisonRowProps {
   activeDropdownTeam?: 'A' | 'B' | null;  // Which dropdown is open
   onTeamAChange?: (team: string) => void;  // Team change handler
   onTeamBChange?: (team: string) => void;  // Team change handler
-  onDropdownToggle?: (team: 'A' | 'B') => void;  // Toggle dropdown
+  /** Toggle this row's A/B menu (stable identity from the panel — keeps memo). */
+  onDropdownToggle?: (metricKey: string, team: 'A' | 'B') => void;
+  /** Close whichever menu is open (stable, idempotent). */
+  onDropdownClose?: () => void;
   /** Team bar colors for this matchup (lib/teamColors, resolved once per panel). */
   paletteA: BarPalette;
   paletteB: BarPalette;
@@ -88,6 +83,7 @@ function CompactComparisonRow({
   onTeamAChange,
   onTeamBChange,
   onDropdownToggle,
+  onDropdownClose,
   paletteA,
   paletteB,
 }: CompactComparisonRowProps) {
@@ -137,6 +133,11 @@ function CompactComparisonRow({
     metricName: metricConfig?.name ?? '',
   });
 
+  const toggleA = useCallback(() => onDropdownToggle?.(metricField, 'A'), [onDropdownToggle, metricField]);
+  const toggleB = useCallback(() => onDropdownToggle?.(metricField, 'B'), [onDropdownToggle, metricField]);
+  const closeMenu = useCallback(() => onDropdownClose?.(), [onDropdownClose]);
+  const noop = useCallback(() => {}, []);
+
   // Nothing to render without config/data (the hooks above have already run).
   if (!metricConfig || !teamAData || !teamBData) {
     return null;
@@ -174,13 +175,15 @@ function CompactComparisonRow({
             metricKey={metricField}
             currentTeam={teamA}
             panelType={panelType}
-            onTeamChange={onTeamAChange || (() => {})}
+            onTeamChange={onTeamAChange || noop}
             isOpen={activeDropdownTeam === 'A'}
-            onToggle={() => onDropdownToggle?.('A')}
+            onToggle={toggleA}
+            onClose={closeMenu}
             ranking={hasA && teamARanking ? { 
               rank: teamARanking.rank, 
               formattedRank: formatRank(teamARanking.rank),
-              isTied: teamARanking.isTied
+              isTied: teamARanking.isTied,
+              totalTeams: teamARanking.totalTeams
             } : null}
             position="left"
           />
@@ -200,13 +203,15 @@ function CompactComparisonRow({
             metricKey={metricField}
             currentTeam={teamB}
             panelType={panelType}
-            onTeamChange={onTeamBChange || (() => {})}
+            onTeamChange={onTeamBChange || noop}
             isOpen={activeDropdownTeam === 'B'}
-            onToggle={() => onDropdownToggle?.('B')}
+            onToggle={toggleB}
+            onClose={closeMenu}
             ranking={hasB && teamBRanking ? { 
               rank: teamBRanking.rank, 
               formattedRank: formatRank(teamBRanking.rank),
-              isTied: teamBRanking.isTied
+              isTied: teamBRanking.isTied,
+              totalTeams: teamBRanking.totalTeams
             } : null}
             position="right"
           />

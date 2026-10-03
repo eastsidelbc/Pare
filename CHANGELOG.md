@@ -18,6 +18,15 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - **Power Surge:** a team ranked top 5 in ≥ 3 of a card's metrics gets a subtle storm-crackle effect (team-color plasma web + random edge flares) on its half, fading to the middle (`lib/powerSurge.ts`, `lib/usePowerSurge.ts`, `components/ui/StormCrackle.tsx`). Chosen from the Power Surge / Storm Crackle labs (option B·9).
   - Week pills use plain white text instead of the small outlined TeamMark (easier to read); design-system §8 gains type-role rules (outlined display text only at 20px+). Pills also show kickoff day/time under the teams (live clock in red, "Final" after).
   - **Background ladder "C":** Compare background lifted from near-black #030409 to deep navy-slate #0a0d14 with cards one step lighter and a new `--nav-bg` token (darkest layer) for the bottom nav — all tokens in `globals.css`; team-color contrast re-checked against the new background (`COMPARE_BG`).
+  - **Design system §9 "Global rules":** Neon Frame becomes the app-wide standard (surface ladder, type roles, gold accent, no logos, where team color/glow is allowed, card types, motion, process); undecided patterns for Home/Standings/Leaders marked "TBD (mockup first)".
+
+### Performance
+- **Compare tab Pass 1 — smoother team swaps, rank menus, swipes** (2026-10-03, branch `perf/compare-pass1`)
+  - Audit: project doc `claude/perf-audit-compare-2026-10-03.md` (iPhone 14 Pro viewport, 4x CPU throttle, median of 3).
+  - Stat numbers are plain text (removed `@number-flow/react` — its roll forced ~375ms of layout per team swap).
+  - Rank-badge menus mount only while open (were 20 hidden Floating UI menus per pane); stable toggle/close handlers so opening one menu re-renders one row, not all.
+  - One app-wide stats copy (`components/NflStatsProvider.tsx`) shared by Home + Compare — opening Compare no longer refetches or flashes the skeleton; background refresh on return to the app after 10 min (keeps old numbers on screen / on error).
+  - Result (emulated): team swap 12→40 fps, tap→done 977→368ms; rank swap worst freeze 583→167ms; swipe 40→48 fps, worst frame 250→83ms; Home→Compare 0 API calls.
 
 ### Fixed
 - **"+" comparison tab now opens the new tab** (2026-10-02) — `ComparisonsProvider.addComparison` read the add result before React ran the state updater, so it logged a false "cap reached" and skipped `setActiveId`. Now activates inside the updater; cap answered from the committed list. Also fixes Home "Open full" + iPad "Add comparison".

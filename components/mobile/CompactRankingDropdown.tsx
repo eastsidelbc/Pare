@@ -7,11 +7,15 @@
  * No logo artwork. Height follows the screen (viewport minus bottom-nav reserve).
  * INTERACTION: Sleek dropdown — spring pop, blurred backdrop, staggered rows; listbox/option a11y
  * POSITIONING: Floating UI with auto-flip, shift, and boundary detection
+ * PERF (2026-10-03): the badge (trigger) is cheap and always rendered; the menu
+ *   (Floating UI + portal + 32-team ranking + sort) only MOUNTS while open, and
+ *   unmounts after its exit animation. A Compare pane has 20 badges — before,
+ *   every one carried a full hidden menu (60 with neighbor panes mounted).
  */
 
 'use client';
 
-import { useMemo, useEffect } from 'react';
+import { memo, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useFloating, flip, shift, offset, autoUpdate, useDismiss, useInteractions, FloatingPortal, size, inline } from '@floating-ui/react';
 import type { TeamData } from '@/lib/useNflStats';
@@ -31,8 +35,12 @@ interface CompactRankingDropdownProps {
   panelType: 'offense' | 'defense';
   onTeamChange: (teamName: string) => void;
   isOpen: boolean;
+  /** Trigger tap: open (or close if already open). */
   onToggle: () => void;
-  ranking: { rank: number; formattedRank: string; isTied: boolean } | null;
+  /** Close only (backdrop, outside tap, Esc, team picked). Idempotent — safe if
+   *  several close paths fire on the same tap. */
+  onClose: () => void;
+  ranking: { rank: number; formattedRank: string; isTied: boolean; totalTeams?: number } | null;
   position: 'left' | 'right'; // Team A = left (dropdown appears right), Team B = right (dropdown appears left)
 }
 
@@ -47,17 +55,25 @@ interface TeamWithRanking {
   formattedValue: string;
 }
 
-export default function CompactRankingDropdown({
+type RankingMenuProps = Omit<CompactRankingDropdownProps, 'onToggle' | 'ranking'> & {
+  triggerElement: HTMLElement;
+  /** Called after the exit animation finishes → parent unmounts the menu. */
+  onExited: () => void;
+};
+
+/** The open menu. Mounted only while open (+ its exit animation). */
+function RankingMenu({
   allData,
   metricKey,
   currentTeam,
   panelType,
   onTeamChange,
   isOpen,
-  onToggle,
-  ranking,
-  position
-}: CompactRankingDropdownProps) {
+  onClose,
+  position,
+  triggerElement,
+  onExited,
+}: RankingMenuProps) {
   
   const metric = AVAILABLE_METRICS[metricKey];
   
@@ -67,7 +83,8 @@ export default function CompactRankingDropdown({
   const { refs, context, x, y, strategy: floatingStrategy } = useFloating({
     strategy: 'fixed',  // Phase 2B: Use viewport positioning
     open: isOpen,
-    onOpenChange: onToggle,
+    onOpenChange: (open) => { if (!open) onClose(); },
+    elements: { reference: triggerElement },
     placement: position === 'left' ? 'right-start' : 'left-start',
     middleware: [
       offset(8), // 8px gap from trigger
@@ -98,7 +115,7 @@ export default function CompactRankingDropdown({
   });
 
   const { getFloatingProps } = useInteractions([
-    dismiss  // Removed useClick - we control state externally with isOpen/onToggle
+    dismiss  // No useClick — open/close is controlled by the parent (isOpen / onToggle / onClose)
   ]);
 
   // Phase 2H: Body scroll lock (mobile only)
@@ -171,57 +188,15 @@ export default function CompactRankingDropdown({
   
   const handleTeamSelect = (teamName: string) => {
     onTeamChange(teamName);
-    onToggle();
+    onClose();
   };
 
-  // Render rank badge (trigger button)
-  const renderRankBadge = () => {
-    const isAverage = isAverageTeam(currentTeam);
-
-    if (isAverage) {
-      return (
-        <span
-          className="inline-flex items-center gap-1 font-bold"
-          style={{ fontSize: '11px', color: 'var(--muted)' }}
-        >
-          <BarChart3 size={11} /> AVG
-        </span>
-      );
-    }
-
-    if (!ranking) {
-      return (
-        <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--muted)' }}>
-          N/A
-        </span>
-      );
-    }
-
-    // Custom tiered rank badge (no emoji). `totalTeams` = the actual ranked
-    // field size (may be < 32 while data is still loading) so the bottom-5 tier
-    // is based on the real count, not a hard-coded 32.
-    const totalTeams = allTeamRankings[currentTeam]?.totalTeams;
-    return <RankBadge rank={ranking.rank} isTied={ranking.isTied} totalTeams={totalTeams} effects />;
-  };
-  
   return (
     <>
-      {/* Trigger Button */}
-      <button
-        ref={refs.setReference}
-        onClick={onToggle}
-        className="inline-flex items-center leading-none transition-opacity active:opacity-50"
-        aria-label={`Ranked ${ranking?.formattedRank || 'N/A'} - tap to change`}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-      >
-        {renderRankBadge()}
-      </button>
-      
       {/* Dropdown Portal - renders at document.body level */}
       <FloatingPortal>
-        <AnimatePresence>
-          {isOpen && refs.reference.current && (  // Phase 2G: Guard null reference
+        <AnimatePresence onExitComplete={onExited}>
+          {isOpen && (
             <>
               {/* Backdrop — dim + subtle blur for depth */}
               <motion.div
@@ -231,7 +206,7 @@ export default function CompactRankingDropdown({
                 transition={{ duration: 0.18 }}
                 className="fixed inset-0 z-40"
                 style={menuBackdrop}
-                onClick={onToggle}
+                onClick={onClose}
               />
               
               {/* Dropdown Menu - Positioned by Floating UI */}
@@ -316,3 +291,52 @@ export default function CompactRankingDropdown({
     </>
   );
 }
+
+/**
+ * Rank badge trigger. Always rendered; owns no Floating UI state. The menu is
+ * mounted on open and kept mounted until its exit animation completes.
+ */
+function CompactRankingDropdown(props: CompactRankingDropdownProps) {
+  const { currentTeam, isOpen, onToggle, ranking } = props;
+  const [trigger, setTrigger] = useState<HTMLButtonElement | null>(null);
+  const [menuMounted, setMenuMounted] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) setMenuMounted(true);
+  }, [isOpen]);
+
+  let badge: ReactNode;
+  if (isAverageTeam(currentTeam)) {
+    badge = (
+      <span className="inline-flex items-center gap-1 font-bold" style={{ fontSize: '11px', color: 'var(--muted)' }}>
+        <BarChart3 size={11} /> AVG
+      </span>
+    );
+  } else if (!ranking) {
+    badge = <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--muted)' }}>N/A</span>;
+  } else {
+    // Tiered badge (no emoji). totalTeams = real ranked field size so the
+    // bottom-5 tier is right even while data is partial.
+    badge = <RankBadge rank={ranking.rank} isTied={ranking.isTied} totalTeams={ranking.totalTeams} effects />;
+  }
+
+  return (
+    <>
+      <button
+        ref={setTrigger}
+        onClick={onToggle}
+        className="inline-flex items-center leading-none transition-opacity active:opacity-50"
+        aria-label={`Ranked ${ranking?.formattedRank || 'N/A'} - tap to change`}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+      >
+        {badge}
+      </button>
+      {(isOpen || menuMounted) && trigger && (
+        <RankingMenu {...props} triggerElement={trigger} onExited={() => setMenuMounted(false)} />
+      )}
+    </>
+  );
+}
+
+export default memo(CompactRankingDropdown);

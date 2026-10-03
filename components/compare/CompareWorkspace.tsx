@@ -5,8 +5,9 @@
  * <ComparePane> for that comparison's teams. Swipe left/right (Framer Motion) or
  * tapping a tab in <CompareTabBar> changes the active comparison via the store.
  *
- * Data is fetched ONCE here (useNflStats) and shared to every pane as props, so
- * swiping never triggers a refetch — only the two selected teams differ per page.
+ * Data comes from the app-wide <NflStatsProvider> (root layout) and is shared
+ * to every pane as props — opening Compare or swiping never refetches; only the
+ * two selected teams differ per page.
  * The single-compare case = one comparison in the store, so /compare behaves as
  * before (plus a 1-tab indicator). Deep link ?home=&away= still works.
  */
@@ -19,7 +20,7 @@ import { motion, useMotionValue, animate, type PanInfo } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
-import { useNflStats } from '@/lib/useNflStats';
+import { useSharedNflStats } from '@/components/NflStatsProvider';
 import { useComparisons } from '@/components/ComparisonsProvider';
 import { useFillComparison } from '@/lib/comparisons/useFillComparison';
 import { abbrToTeamName } from '@/lib/teams';
@@ -58,7 +59,7 @@ export default function CompareWorkspace() {
     isLoadingDefense,
     offenseError,
     defenseError,
-  } = useNflStats();
+  } = useSharedNflStats();
 
   const {
     comparisons,

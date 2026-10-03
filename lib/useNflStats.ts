@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { APP_CONSTANTS } from '@/config/constants';
 import type { TeamStatsWithRanks } from '@/lib/types';
 import { transformApiResponseToTeamData } from '@/utils/teamDataTransform';
@@ -77,6 +77,12 @@ export function useNflStats(): UseNflStatsReturn {
   const [defenseDataFreshness, setDefenseDataFreshness] = useState<'fresh' | 'stale' | 'unavailable' | 'loading'>('loading');
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
+  // Background refresh (stale-while-revalidate): once a side has data, later
+  // refreshes keep showing it — no skeleton flash, and a failed refresh keeps
+  // the last good numbers instead of swapping the screen for an error.
+  const hasOffenseRef = useRef(false);
+  const hasDefenseRef = useRef(false);
+
   /**
    * Transforms API response data to UI-friendly format
    * Now dynamically maps ALL available metrics from PFR!
@@ -92,7 +98,7 @@ export function useNflStats(): UseNflStatsReturn {
     if (STATS_DEBUG) console.log(`🏈 [HOOK-${requestId}] Fetching offense data...`);
     
     try {
-      setIsLoadingOffense(true);
+      if (!hasOffenseRef.current) setIsLoadingOffense(true);
       setOffenseError(null);
       
       const response = await fetch(APP_CONSTANTS.API.ENDPOINTS.OFFENSE);
@@ -131,6 +137,7 @@ export function useNflStats(): UseNflStatsReturn {
       const transformedData = transformApiResponseToTeamData(apiData);
       
       setOffenseData(transformedData);
+      hasOffenseRef.current = transformedData.length > 0;
       setLastUpdated(apiData.updatedAt);
       
       // Set data freshness based on service worker cache status
@@ -158,8 +165,10 @@ export function useNflStats(): UseNflStatsReturn {
         type: error instanceof Error ? error.constructor.name : typeof error,
         stack: error instanceof Error ? error.stack : 'No stack'
       });
-      setOffenseError(errorMessage);
-      setOffenseDataFreshness('unavailable');
+      if (!hasOffenseRef.current) {
+        setOffenseError(errorMessage);
+        setOffenseDataFreshness('unavailable');
+      }
     } finally {
       setIsLoadingOffense(false);
     }
@@ -173,7 +182,7 @@ export function useNflStats(): UseNflStatsReturn {
     if (STATS_DEBUG) console.log(`🛡️ [HOOK-${requestId}] Fetching defense data...`);
     
     try {
-      setIsLoadingDefense(true);
+      if (!hasDefenseRef.current) setIsLoadingDefense(true);
       setDefenseError(null);
       
       const response = await fetch(APP_CONSTANTS.API.ENDPOINTS.DEFENSE);
@@ -212,6 +221,7 @@ export function useNflStats(): UseNflStatsReturn {
       const transformedData = transformApiResponseToTeamData(apiData);
       
       setDefenseData(transformedData);
+      hasDefenseRef.current = transformedData.length > 0;
       
       // Set data freshness based on service worker cache status
       if (cacheStatus === 'fresh') {
@@ -238,8 +248,10 @@ export function useNflStats(): UseNflStatsReturn {
         type: error instanceof Error ? error.constructor.name : typeof error,
         stack: error instanceof Error ? error.stack : 'No stack'
       });
-      setDefenseError(errorMessage);
-      setDefenseDataFreshness('unavailable');
+      if (!hasDefenseRef.current) {
+        setDefenseError(errorMessage);
+        setDefenseDataFreshness('unavailable');
+      }
     } finally {
       setIsLoadingDefense(false);
     }
