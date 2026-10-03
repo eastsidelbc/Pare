@@ -31,6 +31,17 @@ NFL team head-to-head stat comparison app — "Sleeper-tier" quality bar, live a
 - **When Kobe reports an issue:** confirm the root cause with him first; edit code only after his go-ahead.
 - **Cursor agents: no browser driving / screenshots to self-verify** — Kobe checks the UI himself. Cheap checks only (see Verification).
 
+## Speak up before you build (applies to every request)
+
+If anything Kobe asks for goes against standard practice or what an experienced pro would do, **stop and say so before implementing**. Never silently do it his way, and never silently "fix" it your way.
+
+- **Flag format (short):** what's off-standard → why it matters (concrete risk) → recommended alternative → tradeoff → ask "my recommendation or your way?" and wait.
+- **Loudness:** *Blocker* (security, data loss, licensing, breaks features, irreversible) → never proceed without his OK. *Strong* (readability, accessibility, performance, maintainability) → flag + recommend, wait. *Note* (minor judgment call) → one line, continue.
+- **Check every area:** code quality + existing patterns · architecture (no over/under-engineering, one source of truth) · security (no secrets in code, validation, least privilege) · performance (phone battery/CPU, bundle, network) · UI/UX (readability — e.g. outlined text only at 20px+ — contrast, 44pt touch targets, reduced motion, design-system consistency) · licensing (logos, fonts, data APIs) · deploy/ops risk.
+- **If he insists:** do it, and record the decision + reason (comment, dev note, or CHANGELOG) so it reads as deliberate.
+- **Own misses:** if you knew and didn't say, say so plainly and fix it. Don't guess — verify (code, docs, tests) before claiming.
+- **Answers:** concise; copy-paste commands (PowerShell 5: one per line, no `&&`); surgical fixes; code changes come with the key snippet + a short micro-learning + a small analogy.
+
 ## Data (ESPN + Sleeper — no CSV)
 
 All live from free public APIs — **no** CSV/PFR layer (removed 2026-10-01). Endpoints + gotchas: `DATA_SOURCES.md`.
