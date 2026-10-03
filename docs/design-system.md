@@ -259,8 +259,14 @@ clash logic — single team).
 **Empty / add states:** dashed gold-bright outline + `AddMark` (gold neon "+" ring) for the
 blank-comparison slots (no text — the "+" says it) and the tablet "Add comparison" cell; a filled
 slot wears the team-color frame + TeamMark + nickname wordmark. "VS" = small gold italic 900.
-Below the slots, `WeekMatchupPills`: this week's games as 36px pills (`AWAY vs HOME` TeamMarks,
-two-team-color wash like the tab pills, red dot = live) — one tap fills both teams.
+Below the slots, `WeekMatchupPills`: this week's games as pills (`AWAY vs HOME` in plain
+white 13px/700 text, two-team-color wash like the tab pills; second line = kickoff "Sun 1:00 PM",
+live clock in red, or "Final"; 44px tall) — one tap fills both teams.
+
+**Type roles (one family — Inter — styled by role):** *Display* (team wordmarks) = outlined 900,
+**20px and up only** — outlines thinner than the letter counters are hard to read at small sizes.
+*Controls* (nav, pills, buttons, list names) = solid 600–700, ~12–14px. *Labels* ("POINTS",
+"OFFENSE", "WEEK 5") = small uppercase, tracked, subtext/gold. *Numbers* = solid 800, tabular.
 
 **Power Surge (`components/ui/StormCrackle.tsx`, rules in `lib/powerSurge.ts`):** a team ranked
 **top 5 in ≥ 3 of a card's metrics** gets a storm-crackle effect on its half of that card

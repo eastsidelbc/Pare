@@ -6,9 +6,12 @@
  *   ( IND VS WAS )  ( NE VS BUF )
  *   ( NYG VS CHI )  ( ...       )
  *
+ * Abbreviations are plain white text (readable at pill size); the pill's
+ * two-team color wash carries the team identity.
  * Games come from the app-wide schedule store (<ScheduleProvider>, already
  * loaded for Home) — no extra fetch. Away = Team A (left), home = Team B, same
- * orientation as Home. Live games get a small red dot. If the week isn't
+ * orientation as Home. Under the teams: kickoff day + local time, the live
+ * clock in red while playing, or "Final". If the week isn't
  * loaded / is empty, renders nothing (the slots still work).
  */
 
@@ -17,7 +20,29 @@
 import { memo } from 'react';
 import { useSchedule } from '@/components/schedule/ScheduleProvider';
 import { getTeamPalette } from '@/lib/teamColors';
-import TeamMark from '@/components/ui/TeamMark';
+import { formatKickoff, type Matchup } from '@/lib/schedule';
+
+/**
+ * Pills are tap targets, so they use the "control" text style (plain, solid,
+ * 700) — NOT the outlined wordmark style, which only reads at 20px+.
+ * Team identity comes from the two-color wash behind the text.
+ */
+const ABBR_STYLE = {
+  minWidth: 30,
+  textAlign: 'center',
+  fontSize: 13,
+  fontWeight: 700,
+  letterSpacing: '0.04em',
+  color: 'var(--text)',
+} as const;
+
+/** Second line: kickoff (local time) → live clock (red) → "Final". */
+function statusLine(m: Matchup): { text: string; live: boolean } {
+  if (m.state === 'in') return { text: m.statusDetail || 'Live', live: true };
+  if (m.state === 'post') return { text: 'Final', live: false };
+  const { day, time } = formatKickoff(m.kickoff);
+  return { text: `${day} ${time}`, live: false };
+}
 
 interface WeekMatchupPillsProps {
   /** Called with (away team name, home team name). */
@@ -41,29 +66,30 @@ function WeekMatchupPills({ onPick }: WeekMatchupPillsProps) {
         {entry.matchups.map((m) => {
           const pa = getTeamPalette(m.away.name);
           const pb = getTeamPalette(m.home.name);
-          const live = m.state === 'in';
+          const status = statusLine(m);
           return (
             <button
               key={m.id}
               type="button"
               onClick={() => onPick(m.away.name, m.home.name)}
-              aria-label={`Compare ${m.away.name} vs ${m.home.name}${live ? ' (live)' : ''}`}
-              className="relative flex h-9 items-center justify-center gap-1 rounded-full touch-optimized active:opacity-60"
+              aria-label={`Compare ${m.away.name} vs ${m.home.name}, ${status.text}`}
+              className="flex h-11 flex-col items-center justify-center gap-[3px] rounded-full touch-optimized active:opacity-60"
               style={{
                 border: '1px solid var(--frame-mid)',
                 background: `linear-gradient(90deg, rgba(${pa?.rgb ?? '255, 255, 255'}, 0.14), var(--card-deep-mid) 50%, rgba(${pb?.rgb ?? '255, 255, 255'}, 0.14))`,
               }}
             >
-              <TeamMark teamName={m.away.name} size={12.5} />
-              <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: '0.14em', color: 'var(--muted)' }}>VS</span>
-              <TeamMark teamName={m.home.name} size={12.5} />
-              {live && (
-                <span
-                  aria-hidden="true"
-                  className="absolute right-2.5 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full"
-                  style={{ background: 'var(--red)', boxShadow: '0 0 6px var(--red)' }}
-                />
-              )}
+              <span className="flex items-center gap-1.5 leading-none">
+                <span style={ABBR_STYLE}>{m.away.abbr}</span>
+                <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: '0.14em', color: 'var(--muted)' }}>VS</span>
+                <span style={ABBR_STYLE}>{m.home.abbr}</span>
+              </span>
+              <span
+                className="leading-none tabular-nums"
+                style={{ fontSize: 9.5, fontWeight: 600, color: status.live ? 'var(--red)' : 'var(--subtext)' }}
+              >
+                {status.text}
+              </span>
             </button>
           );
         })}

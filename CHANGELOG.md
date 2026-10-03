@@ -16,6 +16,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Blank comparison: text removed, slots moved up, and **this week's games as one-tap pills** ("IND vs WAS") that fill both teams; an already-open pair jumps to its tab instead of duplicating (`lib/comparisons/useFillComparison.ts`).
   - Close × on comparison tabs / iPad cards is soft gold and always shown — closing the last one leaves a blank "pick 2 teams" tab (a lone blank tab hides its ×).
   - **Power Surge:** a team ranked top 5 in ≥ 3 of a card's metrics gets a subtle storm-crackle effect (team-color plasma web + random edge flares) on its half, fading to the middle (`lib/powerSurge.ts`, `lib/usePowerSurge.ts`, `components/ui/StormCrackle.tsx`). Chosen from the Power Surge / Storm Crackle labs (option B·9).
+  - Week pills use plain white text instead of the small outlined TeamMark (easier to read); design-system §8 gains type-role rules (outlined display text only at 20px+). Pills also show kickoff day/time under the teams (live clock in red, "Final" after).
 
 ### Fixed
 - **"+" comparison tab now opens the new tab** (2026-10-02) — `ComparisonsProvider.addComparison` read the add result before React ran the state updater, so it logged a false "cap reached" and skipped `setActiveId`. Now activates inside the updater; cap answered from the committed list. Also fixes Home "Open full" + iPad "Add comparison".
