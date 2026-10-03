@@ -117,7 +117,11 @@ export default function MatchupAccordion({
           >
             <div
               className="mt-2 overflow-hidden"
-              style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', background: 'var(--card)' }}
+              style={{
+                border: '1px solid var(--frame-mid)',
+                borderRadius: 'var(--radius-lg)',
+                background: 'linear-gradient(90deg, var(--card-deep-a), var(--card-deep-mid) 50%, var(--card-deep-b))',
+              }}
             >
               {matchup.state === 'post' && <PostGameBox matchup={matchup} />}
 

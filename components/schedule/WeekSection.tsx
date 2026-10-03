@@ -56,14 +56,14 @@ function DayLabel({ children }: { children: React.ReactNode }) {
       className="mb-2 mt-1 flex items-center gap-2"
       style={{
         fontSize: '10px',
-        fontWeight: 700,
-        letterSpacing: '2px',
+        fontWeight: 800,
+        letterSpacing: '0.2em',
         textTransform: 'uppercase',
-        color: 'var(--gold)',
+        color: 'var(--gold-bright)',
       }}
     >
       {children}
-      <span className="h-px flex-1" style={{ background: 'var(--border)' }} />
+      <span className="h-px flex-1" style={{ background: 'var(--hairline)' }} />
     </div>
   );
 }
@@ -77,7 +77,7 @@ function WeekDivider({ week }: { week: number }) {
       >
         Week {week}
       </span>
-      <span className="h-px flex-1" style={{ background: 'var(--border)' }} />
+      <span className="h-px flex-1" style={{ background: 'var(--hairline)' }} />
     </div>
   );
 }
@@ -106,7 +106,7 @@ function WeekSectionImpl({
       <WeekDivider week={entry.week} />
 
       {entry.status === 'loading' && (
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           {Array.from({ length: 14 }).map((_, i) => (
             <MatchupCardSkeleton key={i} />
           ))}
@@ -116,7 +116,11 @@ function WeekSectionImpl({
       {entry.status === 'empty' && (
         <div
           className="flex flex-col items-center gap-2 px-6 py-10 text-center"
-          style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)' }}
+          style={{
+            background: 'linear-gradient(90deg, var(--card-deep-a), var(--card-deep-mid) 50%, var(--card-deep-b))',
+            border: '1px solid var(--frame-mid)',
+            borderRadius: 'var(--radius-lg)',
+          }}
         >
           <div className="font-bold" style={{ fontSize: '14px', color: 'var(--text)' }}>
             No games this week
@@ -130,7 +134,7 @@ function WeekSectionImpl({
           {groups.map((group) => (
             <div key={group.label}>
               <DayLabel>{group.label}</DayLabel>
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {group.games.map((m) => (
                   <MatchupAccordion
                     key={m.id}

@@ -9,6 +9,10 @@
  *   • (scrolling)    the "N" is fed from the active week and updates on its own
  *
  * Presentational + local open/close only; no data or scroll logic here.
+ *
+ * STYLE (Home Round 1 pick "H1 · Inline", design-system §9): a glass capsule
+ * like the bottom nav (--nav-bg + --glass-edge), gold-bright "Week N"; the week
+ * list uses the shared Neon Frame menu look (components/ui/neonMenu.ts).
  */
 
 'use client';
@@ -16,6 +20,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { MIN_WEEK, MAX_WEEK, WEEK_DATE_RANGES } from '@/lib/schedule';
+import { MENU_ROW_H, menuHeader, menuRowStyle, menuSurface } from '@/components/ui/neonMenu';
 
 interface WeekControlProps {
   activeWeek: number;
@@ -63,8 +68,8 @@ export default function WeekControl({ activeWeek, onStep, onJump }: WeekControlP
   return (
     <div ref={rootRef} className="relative flex flex-none items-center">
       <div
-        className="flex items-center"
-        style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}
+        className="flex items-center rounded-full"
+        style={{ background: 'var(--nav-bg)', border: '1px solid var(--glass-edge)' }}
       >
         <StepButton label="Previous week" disabled={atMin} onClick={() => onStep(-1)}>
           <ChevronLeft size={17} />
@@ -75,8 +80,8 @@ export default function WeekControl({ activeWeek, onStep, onJump }: WeekControlP
           aria-haspopup="listbox"
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
-          className="flex h-9 items-center gap-1 px-2 font-bold tabular-nums touch-optimized active:opacity-70"
-          style={{ fontSize: '13px', color: 'var(--gold)' }}
+          className="flex h-9 items-center gap-1 whitespace-nowrap px-1.5 font-bold tabular-nums touch-optimized active:opacity-70"
+          style={{ fontSize: '13px', color: 'var(--gold-bright)' }}
         >
           Week {activeWeek}
           <ChevronDown
@@ -93,20 +98,19 @@ export default function WeekControl({ activeWeek, onStep, onJump }: WeekControlP
       {open && (
         <div
           role="listbox"
+          aria-label="Choose a week"
           className="absolute right-0 z-50 overflow-y-auto"
           style={{
+            ...menuSurface,
             top: 'calc(100% + 6px)',
-            width: 150,
-            maxHeight: 264,
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
+            width: 160,
+            maxHeight: MENU_ROW_H * 8 + 30,
             borderRadius: 'var(--radius-md)',
-            boxShadow: 'var(--shadow-pop)',
-            padding: 4,
             overscrollBehavior: 'contain',
           }}
         >
-          {ALL_WEEKS.map((w) => {
+          <div className="px-3 pb-1.5 pt-2.5" style={menuHeader}>Week</div>
+          {ALL_WEEKS.map((w, i) => {
             const isActive = w === activeWeek;
             return (
               <button
@@ -116,12 +120,12 @@ export default function WeekControl({ activeWeek, onStep, onJump }: WeekControlP
                 role="option"
                 aria-selected={isActive}
                 onClick={() => pick(w)}
-                className="flex w-full flex-col items-start gap-0.5 rounded-md px-3 py-2 text-left touch-optimized active:opacity-70"
-                style={{ background: isActive ? 'color-mix(in srgb, var(--gold) 14%, transparent)' : 'transparent' }}
+                className="flex w-full flex-col items-start justify-center gap-0.5 px-3 text-left touch-optimized active:opacity-70"
+                style={menuRowStyle(i, isActive)}
               >
                 <span
                   className="font-semibold tabular-nums"
-                  style={{ fontSize: '13px', color: isActive ? 'var(--gold)' : 'var(--text)' }}
+                  style={{ fontSize: '13px', color: isActive ? 'var(--gold-bright)' : 'var(--text)' }}
                 >
                   Week {w}
                 </span>

@@ -163,6 +163,7 @@
     --hairline: #1b2030; /* row dividers inside deep cards */
     --nav-bg: rgba(3, 4, 8, 0.94); /* floating bottom nav — the darkest layer, so it separates */
     --frame-mid: rgba(255, 255, 255, 0.15); /* neutral middle of the red→blue frame fade */
+    --glass-edge: rgba(255, 255, 255, 0.12); /* faint edge on glass capsules (bottom nav, Home week stepper) */
 
     /* Warning / offline — semantic amber (its own token, not an accent) */
     --warn:      #f59e0b; /* amber — offline/caution surface */
@@ -388,3 +389,17 @@
   animation: pare-spark 1.6s ease-out infinite;
 }
 .pare-ember { animation: pare-ember 1.2s ease-in-out infinite; }
+
+/* Live-game dot (Home game card). Opacity-only pulse on one 6px element. */
+@keyframes pare-live {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 1; }
+}
+.pare-live-dot {
+  width: 6px; height: 6px; border-radius: 50%; flex: none;
+  background: var(--red); box-shadow: 0 0 6px var(--red);
+  animation: pare-live 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pare-live-dot { animation: none; opacity: 1; }
+}

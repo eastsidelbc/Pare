@@ -7,6 +7,11 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Added
+- **Home "Neon Frame" — Frame Row game cards** (2026-10-03, branch `ui/home-neon-frame`)
+  - See: `docs/devnotes/2026-10-03-home-neon-frame.md`, recipe in `docs/design-system.md` §9 / §9.1. Picked from two mockup rounds ("Pare Home Redesign": A + H1 + D1, G1 · C2 · N3 · 24px).
+  - Game cards: team logos removed → 24px solid team-color abbreviations + nickname/record; 1.5px team-color frame with a subtle side glow (same palettes + clash swaps as Compare); live games get a red pulsing dot; winner marked with a gold arrow (loser's score stays white).
+  - Home page on `--bg-deep`; header bar + week stepper restyled as a glass capsule (new `--glass-edge` token, also used by the bottom nav); week list uses the shared neon menu look; day labels gold-bright with hairline rules; skeleton, empty state, inline peek container and box score on deep surfaces.
+  - Removed the unused `eslint-disable` in `ScheduleScreen.tsx`. Data, schedule logic, live polling and hook signatures untouched.
 - **Compare "Neon Frame" redesign — Round 5 R + Round 4 K gold nav** (2026-10-02, branch `ui/compare-neon-frame`)
   - See: `docs/devnotes/2026-10-02-compare-neon-frame.md`, rules in `docs/design-system.md` §8.
   - Split-capsule neon bars in each team's own color (lift / clash / fallback rules, `lib/teamColors.ts`); rank-tier effects (#1 gold ring + sparks, #2–5 soft breathe, #28–31 static red badge outline, #32 ember badge). Brighter card side glows (Round 5 S strength); inactive comparison tabs show their team colors dimmed.

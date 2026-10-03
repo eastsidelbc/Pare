@@ -68,3 +68,19 @@ describe('getTeamPalette', () => {
     expect(getTeamPalette('Avg Team')).toBeNull();
   });
 });
+
+describe('Home game card text (solid team-color abbreviations, 24px bold)', () => {
+  // WCAG "large text" (≥ 18.66px bold) needs 3:1. The card's lightest stop is
+  // --card-deep-a (#151520, globals.css) — check against it, the worst case.
+  const CARD_DEEP_A = '#151520';
+  it('every team line color reads as large text on the deep card, in every matchup', () => {
+    for (const a of NFL_TEAMS) {
+      for (const b of NFL_TEAMS) {
+        if (a.abbr === b.abbr) continue;
+        const r = getMatchupPalettes(a.name, b.name);
+        expect(contrastRatio(r.a.line, CARD_DEEP_A), `${a.abbr} (vs ${b.abbr})`).toBeGreaterThanOrEqual(3);
+        expect(contrastRatio(r.b.line, CARD_DEEP_A), `${b.abbr} (vs ${a.abbr})`).toBeGreaterThanOrEqual(3);
+      }
+    }
+  });
+});

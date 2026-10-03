@@ -281,3 +281,81 @@ live clock in red, or "Final"; 44px tall) — one tap fills both teams.
 Chosen option "B·9": faint plasma web always on + edge arcs flaring at random (0.5–1.1 s on,
 1.5–3.5 s off), Subtle intensity, team color, CSS mask fading to the middle. One canvas per
 powered half, 30 fps, paused off-screen/hidden tab; reduced motion → still glow.
+
+## 9. Global rules — Neon Frame app-wide (written 2026-10-03, Compare finished)
+
+Compare is the reference screen. Every other tab (Home, Standings, Leaders, and anything new)
+follows these rules. Where a pattern isn't decided yet it says **TBD (mockup first)** — those get
+designed with side-by-side mockups before code, then written here.
+
+**1. Surfaces (one ladder, tokens only).** Nav `--nav-bg` (darkest) < page `--bg-deep` < cards
+`--card-deep-*` gradient < raised/pressed states. Components never hardcode a surface color.
+Migration: a tab switches its page from `--bg` → `--bg-deep` and its cards from `--card` →
+the deep card recipe (§8). The old `--bg` (#0a0e1a) is already within a hair of `--bg-deep`, so
+the page change is low-risk; the visible change is the cards. When every tab is migrated, the
+old `--bg / --surface / --card` values get pointed at the deep tokens and retired.
+
+**2. Type roles (one family: Inter).**
+- *Display* — team wordmarks / big names: outlined 900, **20px and up only**.
+- *Controls* — nav, buttons, pills, list names: solid 600–700, ~12–14px, white (gold when active).
+- *Labels* — section/stat labels: ~9–11px, uppercase, tracked .14–.26em, `--subtext` (gold for a
+  section header that acts as a title).
+- *Numbers* — solid 800, `tabular-nums`, white. Never grey-out a "losing" number.
+
+**3. Accent.** `--gold-bright` = interactive/UI accent only (active nav, active toggle, "+", ×,
+headers like "WEEK 5", current-row marker). Team colors = identity only (never for UI state).
+Red = live / bad rank. Don't introduce new accent colors.
+
+**4. Team identity — no logo artwork anywhere.** Big context → nickname wordmark (§8 Hero).
+Small context → plain abbreviation (white text) or `TeamMark` at sizes where its outline is
+readable; team color carried by a wash, frame, or the mark — not by tinting body text.
+
+**5. Where team color + glow is allowed.** Single-matchup cards (Compare cards, a game card that
+pairs two teams): team-color frame + side glows. **Busy lists/tables (32 teams): color on the
+team mark only, rows stay neutral** — no frames or glows per row.
+
+**6. Card types.**
+- *Matchup card* (two teams): Neon Frame recipe (§8). Home game cards = **"Frame Row"** (§9.1 below).
+- *List / table card* (Standings divisions, Leaders lists): deep card surface, `--hairline`
+  row dividers, no team frames — **row recipe TBD (mockup first)**.
+- *Menus / dropdowns / sheets*: `components/ui/neonMenu.ts` (40px rows, screen-height).
+
+**7. Page chrome.** Bottom nav as in §8. Page header = **"H1 · Inline"** (Home, 2026-10-03): 52px
+bar on `--bg-deep` with a `--hairline` bottom edge; "Pare" (20px/900) + gold-bright "NFL" label on
+the left; controls on the right in a glass capsule (`--nav-bg` + `--glass-edge`, fully round,
+36px buttons) with the active value in gold-bright. Its dropdown uses `neonMenu.ts` (gold header,
+40px hairline rows, current row = gold edge). Section headers = **"D1 · Gold rule"**: gold-bright
+10px/800 uppercase label tracked .2em, then a `--hairline` rule; a "WEEK n" divider is the same in
+white 13px/900.
+
+**8. Motion & effects.** Effects carry meaning (rank tier, Power Surge) — no decoration-only
+animation. Opacity/transform only, ~30 fps canvases paused off-screen, everything has a
+`prefers-reduced-motion` still state. Effects are opt-in props so dense screens stay calm.
+
+**9. Layout & touch.** Mobile-first at 393px; iPad is an enhanced layout. Touch targets ≥ 44px
+tall where possible. App shell: header + nav fixed, only content scrolls.
+
+**10. Process.** New tab = (1) mockup rounds side by side, (2) Kobe picks, (3) write the picked
+recipe into this section, (4) build with tokens, (5) gate + phone/iPad screenshots. Anything that
+goes against these rules or standard practice gets flagged before building (CLAUDE.md).
+
+### 9.1 Home game card — "Frame Row" (Home Round 2 pick, 2026-10-03)
+
+Picked on the "Pare Home Redesign" mockup board: **A · Frame Row + H1 header + D1 day labels**, with
+dials **G1 subtle glow · C2 standard color · N3 solid name · 24px**. Component:
+`components/schedule/MatchupCard.tsx` (`MatchupCardSkeleton.tsx` matches its footprint).
+
+| Part | Recipe |
+|---|---|
+| Frame | 1.5px, `line` color team A → `--frame-mid` → team B, radius `--radius-lg`; colors from `getMatchupPalettes()` (same lift + clash swap as Compare) |
+| Glow (G1) | subtle side glow only: 14px blur at 25% per team. Compare's 34px / 34% is for one card — on a 16-card list it bleeds through the gaps |
+| Surface | deep card gradient `--card-deep-a → mid → b`, 64px min row, 9×12px padding |
+| Team | abbreviation **solid** in the team's `line` color, Inter 900, **24px** (every team ≥ 3:1 large-text contrast on `--card-deep-a`, unit-tested). Below: nickname 10px/600 `--subtext` + record `--muted` |
+| Center | pre: kickoff time 12px/700 white · network label · odds 9px `--muted` · live: red pulsing dot (`.pare-live-dot`) + clock 11px/700 red · final: "FINAL" label + odds |
+| Scores | 20px/800 white, tabular, inboard of each team. Winner = small gold-bright arrow; the loser's number stays white |
+| Open | gold-bright 1.5px ring + soft gold glow; the inline peek below is the Compare inline pane |
+| Motion | tap scale 0.985; live-dot opacity pulse only; reduced motion → static dot |
+
+Outlined abbreviations at 24px also passed the 20px rule (all 32 fit; widest, WAS, ≈ 59px in a
+≥ 85px cell), but solid was picked for scan speed — it's what most sports apps use for team text.
+

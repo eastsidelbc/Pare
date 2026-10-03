@@ -127,7 +127,6 @@ export default function ScheduleScreen() {
         clearPendingScroll();
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Anchor the scroll when a scroll-driven prepend added content above.
@@ -250,18 +249,18 @@ export default function ScheduleScreen() {
   let idxBase = 0;
 
   return (
-    <div className="flex flex-col overflow-hidden" style={{ height: 'var(--app-h, 100dvh)', background: 'var(--bg)' }}>
+    <div className="flex flex-col overflow-hidden" style={{ height: 'var(--app-h, 100dvh)', background: 'var(--bg-deep)' }}>
       {/* Fixed top bar — Pare (left) + week control (right, replaces season). */}
       <header
         className="flex-none border-b"
-        style={{ background: 'var(--surface)', borderColor: 'var(--border)', paddingTop: 'env(safe-area-inset-top)' }}
+        style={{ background: 'var(--bg-deep)', borderColor: 'var(--hairline)', paddingTop: 'env(safe-area-inset-top)' }}
       >
-        <div className="mx-auto flex h-14 w-full max-w-[600px] items-center justify-between px-4">
+        <div className="mx-auto flex h-[52px] w-full max-w-[600px] items-center justify-between px-4">
           <h1 className="font-black tracking-tight" style={{ fontSize: '20px', color: 'var(--text)' }}>
             Pare
             <span
               className="ml-1.5 font-bold"
-              style={{ fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)' }}
+              style={{ fontSize: '9.5px', letterSpacing: '0.26em', textTransform: 'uppercase', color: 'var(--gold-bright)' }}
             >
               NFL
             </span>

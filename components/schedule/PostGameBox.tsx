@@ -63,7 +63,7 @@ export default function PostGameBox({ matchup }: { matchup: Matchup }) {
 
   if (loading && !data) {
     return (
-      <div style={{ borderBottom: '1px solid var(--border)' }}>
+      <div style={{ borderBottom: '1px solid var(--hairline)' }}>
         <LoadingRows />
       </div>
     );
@@ -78,14 +78,14 @@ export default function PostGameBox({ matchup }: { matchup: Matchup }) {
   const rows = Array.from({ length: rowCount }, (_, i) => i);
 
   return (
-    <div className="p-3" style={{ borderBottom: '1px solid var(--border)' }}>
+    <div className="p-3" style={{ borderBottom: '1px solid var(--hairline)' }}>
       {/* Row-paired grid: away[i] and home[i] share a grid row → equal height →
           they stay aligned even when one side's line wraps. Continuous center
           divider sits in the middle of the column gap. */}
       <div className="relative">
         <div
           className="pointer-events-none absolute inset-y-0"
-          style={{ left: '50%', width: 1, background: 'var(--border)', transform: 'translateX(-0.5px)' }}
+          style={{ left: '50%', width: 1, background: 'var(--hairline)', transform: 'translateX(-0.5px)' }}
         />
         <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', columnGap: '24px', rowGap: '8px' }}>
           {rows.map((i) => (
@@ -99,7 +99,7 @@ export default function PostGameBox({ matchup }: { matchup: Matchup }) {
 
       {data.headline && (
         <>
-          <div className="mt-3 mb-2 h-px" style={{ background: 'var(--border)' }} />
+          <div className="mt-3 mb-2 h-px" style={{ background: 'var(--hairline)' }} />
           <p className="text-center italic" style={{ fontSize: '11px', lineHeight: 1.4, color: 'var(--subtext)' }}>
             {data.headline}
           </p>

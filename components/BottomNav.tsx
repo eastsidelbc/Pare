@@ -54,7 +54,7 @@ export default function BottomNav() {
           // Neon Frame (Round 4 "K"): darkest layer of the surface ladder (--nav-bg)
           // so the capsule separates from the page, with a faint edge.
           background: 'var(--nav-bg)',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
+          border: '1px solid var(--glass-edge)',
           boxShadow: 'var(--shadow-pop)',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',

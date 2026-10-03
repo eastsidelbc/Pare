@@ -1,48 +1,42 @@
 /**
- * MatchupCardSkeleton — shimmer placeholder matching MatchupCard's footprint.
- * Prevents layout shift while the schedule resolves.
+ * MatchupCardSkeleton — shimmer placeholder matching MatchupCard's footprint
+ * (Frame Row: 1.5px neutral frame, 64px row, abbr + label on each side, center
+ * status). Prevents layout shift while the schedule resolves.
  */
 
 'use client';
-
-function Circle() {
-  return <div className="skeleton flex-none rounded-lg" style={{ width: 38, height: 38 }} />;
-}
 
 function Line({ w, h = 10 }: { w: number; h?: number }) {
   return <div className="skeleton rounded-sm" style={{ width: w, height: h }} />;
 }
 
+function Side({ align }: { align: 'left' | 'right' }) {
+  return (
+    <div className={`flex flex-1 flex-col gap-1.5 ${align === 'right' ? 'items-end' : 'items-start'}`}>
+      <Line w={44} h={22} />
+      <Line w={58} h={9} />
+    </div>
+  );
+}
+
 export default function MatchupCardSkeleton() {
   return (
-    <div
-      className="flex items-center gap-3"
-      style={{
-        background: 'var(--card)',
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--radius-lg)',
-        padding: '12px 14px',
-      }}
-    >
-      <div className="flex flex-1 items-center gap-2.5">
-        <Circle />
-        <div className="space-y-1.5">
-          <Line w={34} h={12} />
-          <Line w={48} />
+    <div style={{ padding: 1.5, borderRadius: 'var(--radius-lg)', background: 'var(--frame-mid)' }}>
+      <div
+        className="flex items-center gap-3"
+        style={{
+          minHeight: 64,
+          padding: '9px 12px',
+          borderRadius: 'calc(var(--radius-lg) - 1.5px)',
+          background: 'linear-gradient(90deg, var(--card-deep-a), var(--card-deep-mid) 50%, var(--card-deep-b))',
+        }}
+      >
+        <Side align="left" />
+        <div className="flex flex-none flex-col items-center gap-1.5" style={{ width: 76 }}>
+          <Line w={44} h={11} />
+          <Line w={26} h={8} />
         </div>
-      </div>
-
-      <div className="flex flex-none flex-col items-center gap-1.5" style={{ minWidth: 56 }}>
-        <Line w={24} />
-        <Line w={36} />
-      </div>
-
-      <div className="flex flex-1 flex-row-reverse items-center gap-2.5">
-        <Circle />
-        <div className="flex flex-col items-end space-y-1.5">
-          <Line w={34} h={12} />
-          <Line w={48} />
-        </div>
+        <Side align="right" />
       </div>
     </div>
   );

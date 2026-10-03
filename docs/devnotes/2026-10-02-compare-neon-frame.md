@@ -114,10 +114,9 @@ signatures.
   side) → option C. Tokens: `--bg-deep` #0a0d14, cards #151520 / #0f121a / #121724, `--hairline`
   #1b2030, new `--nav-bg` rgba(3,4,8,.94) used by `BottomNav`. `COMPARE_BG` updated; all 58 tests
   pass (every team still ≥ 3:1, all 32×32 matchups distinct).
-- **Go global:** promote Neon Frame from Compare-only to app-wide rules (surfaces, card types,
-  type roles, gold accent, TeamMark/wordmarks instead of logos), then restyle Home `MatchupCard`,
-  Standings `DivisionTable`, Leaders. Busy screens (32-team Standings): team color on the mark
-  only, neutral rows.
+- **Go global:** rules written as design-system §9 (2026-10-03, Compare declared finished).
+  Next: restyle Home `MatchupCard` first (mockups), then Standings `DivisionTable`, Leaders.
+  Busy screens (32-team Standings): team color on the mark only, neutral rows.
 - Dropdown TeamMarks are outlined at 14–15px — same readability concern as the old pills
   (Kobe chose to leave them for now).
 - `PanelSkeleton` still uses the old panel shape.
