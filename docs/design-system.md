@@ -244,6 +244,10 @@ brighter. Numbers are all white (`--text`) — the trailing team is never greyed
 **Motion budget:** widths spring via framer-motion; glows are opacity-only CSS keyframes
 (`pare-*` in globals.css); blur layers only on top-5 sides; everything stops under
 `prefers-reduced-motion`. Effects are opt-in on `RankBadge` so Standings stay static.
+**Play on change, then settle** (perf Pass 2, 2026-10-03): every tier effect runs a short, finite
+burst when it mounts — first load, team swap, PG/TOT (`SplitCapsuleBar` `effectKey`, `RankBadge`
+keyed by team) — then holds a still state. The aura stays invisible while the bar slides (0.5s
+delay) so its blur isn't redrawn every spring frame. Nothing on Compare loops forever.
 Comparison tab pills: every pill is washed in its two teams' colors — 22% active, 14% inactive.
 
 **Nav (Round 4 K):** `--nav-bg` glass capsule (darkest surface); the active tab is a sliding gold neon outline
@@ -254,7 +258,9 @@ Comparison tab pills: every pill is washed in its two teams' colors — 22% acti
 
 **Menus & pickers (`components/ui/neonMenu.ts`):** team picker and rank list share one look —
 deep gradient card, `--frame-mid` edge, `--hairline` rows, gold-bright small-caps header,
-blurred deep backdrop. Rows are **40px** (`MENU_ROW_H`). Height follows the screen: Floating UI
+dimmed deep backdrop (plain dim, **no backdrop-filter blur** — a full-screen blur over animating
+cards re-blurs every frame on iPhone). Rows are **40px** (`MENU_ROW_H`), fading up with a
+CSS stagger (`.pare-row-in`). Height follows the screen: Floating UI
 `size()` with `MENU_VIEWPORT_PADDING` (bottom keeps clear of the nav) — ~12–16 rows on a
 14 Pro, ~24–26 on an iPad. Current row = 2px gold-bright edge + 8% gold tint.
 
@@ -280,7 +286,9 @@ live clock in red, or "Final"; 44px tall) — one tap fills both teams.
 (Offense and Defense judged separately; ranks = the row badges, same per-game/total data).
 Chosen option "B·9": faint plasma web always on + edge arcs flaring at random (0.5–1.1 s on,
 1.5–3.5 s off), Subtle intensity, team color, CSS mask fading to the middle. One canvas per
-powered half, 30 fps, paused off-screen/hidden tab; reduced motion → still glow.
+powered half, 30 fps, paused off-screen/hidden tab; reduced motion → still glow. Plays for
+4 s when it mounts (card appears / team swap), fades, then leaves the still glow and stops its
+frame loop (perf Pass 2).
 
 ## 9. Global rules — Neon Frame app-wide (written 2026-10-03, Compare finished)
 
@@ -300,7 +308,8 @@ old `--bg / --surface / --card` values get pointed at the deep tokens and retire
 - *Controls* — nav, buttons, pills, list names: solid 600–700, ~12–14px, white (gold when active).
 - *Labels* — section/stat labels: ~9–11px, uppercase, tracked .14–.26em, `--subtext` (gold for a
   section header that acts as a title).
-- *Numbers* — solid 800, `tabular-nums`, white. Never grey-out a "losing" number.
+- *Numbers* — solid 800, `tabular-nums`, white. Never grey-out a "losing" stat (Compare). Exception:
+  a **final game score** — the loser dims to `--muted` (§9.1), like every scoreboard.
 
 **3. Accent.** `--gold-bright` = interactive/UI accent only (active nav, active toggle, "+", ×,
 headers like "WEEK 5", current-row marker). Team colors = identity only (never for UI state).
@@ -331,6 +340,9 @@ white 13px/900.
 **8. Motion & effects.** Effects carry meaning (rank tier, Power Surge) — no decoration-only
 animation. Opacity/transform only, ~30 fps canvases paused off-screen, everything has a
 `prefers-reduced-motion` still state. Effects are opt-in props so dense screens stay calm.
+**Effects play on change, then settle** — a short finite burst, then a still state; never an
+infinite loop on a resting screen (small status signals like the live-game dot are the exception).
+No full-screen `backdrop-filter` blur over content that animates (use a plain dim).
 
 **9. Layout & touch.** Mobile-first at 393px; iPad is an enhanced layout. Touch targets ≥ 44px
 tall where possible. App shell: header + nav fixed, only content scrolls.
@@ -351,8 +363,9 @@ dials **G1 subtle glow · C2 standard color · N3 solid name · 24px**. Componen
 | Glow (G1) | subtle side glow only: 14px blur at 25% per team. Compare's 34px / 34% is for one card — on a 16-card list it bleeds through the gaps |
 | Surface | deep card gradient `--card-deep-a → mid → b`, 64px min row, 9×12px padding |
 | Team | abbreviation **solid** in the team's `line` color, Inter 900, **24px** (every team ≥ 3:1 large-text contrast on `--card-deep-a`, unit-tested). Below: nickname 10px/600 `--subtext` + record `--muted` |
-| Center | pre: kickoff time 12px/700 white · network label · odds 9px `--muted` · live: red pulsing dot (`.pare-live-dot`) + clock 11px/700 red · final: "FINAL" label + odds |
-| Scores | 20px/800 white, tabular, inboard of each team. Winner = small gold-bright arrow; the loser's number stays white |
+| Layout | grid `team 1fr · score 36px · center 64px · score 36px · team 1fr` — fixed, symmetric score slots |
+| Center | pre: kickoff time 12px/700 white · network label · odds 9px `--muted` on two lines (spread / O/U) so it never overflows 64px · live: red pulsing dot (`.pare-live-dot`) + clock 11px/700 red · final: "FINAL" label + the same two-line odds |
+| Scores | 20px/800, tabular, inboard of each team. Final: winner white, loser `--muted` (no arrow — too noisy) (same size/weight, ≈ 3.7:1 — still readable). Live and ties: both white (the lead can flip) |
 | Open | gold-bright 1.5px ring + soft gold glow; the inline peek below is the Compare inline pane |
 | Motion | tap scale 0.985; live-dot opacity pulse only; reduced motion → static dot |
 

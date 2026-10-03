@@ -5,7 +5,7 @@
  * deep gradient card, hairline rows, gold header. 40px rows with a <TeamMark>
  * (2–3 letter wordmark — no logo artwork). Height follows the screen: as tall
  * as the space below/above the trigger allows, minus the bottom-nav reserve.
- * INTERACTION: Sleek dropdown — spring pop, blurred backdrop, staggered rows; listbox/option a11y
+ * INTERACTION: Sleek dropdown — spring pop, dimmed backdrop, CSS-staggered rows; listbox/option a11y
  * POSITIONING: Floating UI with auto-flip, shift, and boundary detection
  */
 
@@ -171,18 +171,14 @@ export default function CompactTeamSelector({
                   const info = isAverage ? null : getTeamByName(team.team);
 
                   return (
-                    <motion.button
+                    <button
                       key={team.team}
                       role="option"
                       aria-selected={isCurrent}
                       aria-label={displayLabel}
                       onClick={() => handleTeamSelect(team.team)}
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.16, delay: Math.min(index, 18) * 0.012 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="flex w-full items-center gap-2 pl-1.5 pr-3.5 active:opacity-50"
-                      style={menuRowStyle(index, isCurrent)}
+                      className="pare-row-in flex w-full items-center gap-2 pl-1.5 pr-3.5 transition-transform active:scale-[0.98] active:opacity-50"
+                      style={{ ...menuRowStyle(index, isCurrent), animationDelay: `${Math.min(index, 18) * 12}ms` }}
                     >
                       {isAverage ? (
                         <span className="flex w-[38px] shrink-0 justify-center" style={{ color: 'var(--muted)' }}>
@@ -213,7 +209,7 @@ export default function CompactTeamSelector({
                       {isCurrent && (
                         <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: 'var(--gold-bright)', boxShadow: '0 0 6px var(--gold-bright)' }} />
                       )}
-                    </motion.button>
+                    </button>
                   );
                 })}
                   </div>

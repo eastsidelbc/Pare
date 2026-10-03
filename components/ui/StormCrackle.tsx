@@ -11,6 +11,10 @@
  *
  * Cost control: one small canvas per powered half, ~30 fps, paused while off
  * screen or the tab is hidden. prefers-reduced-motion → one still glow, no loop.
+ * PERF (Pass 2): PLAY ON CHANGE, THEN SETTLE — the storm plays for PLAY_S
+ * seconds after it mounts (card appears / team swap → new color re-runs the
+ * effect), fades out, then leaves the still glow and STOPS the frame loop.
+ * Before, it drew forever (~1/3 of the phone's idle CPU in the audit).
  * Purely decorative → aria-hidden, pointer-events none.
  */
 
@@ -30,6 +34,10 @@ const INTENSITY = 0.6; // "Subtle" from the lab
 const WEB_LEVEL = 0.45; // B2 steady level
 const FPS = 30;
 const FADE_S = 0.3;
+/** How long the storm plays before settling into the still glow (seconds). */
+const PLAY_S = 4;
+/** Fade-out time after PLAY_S before the loop stops (seconds). */
+const SETTLE_S = 0.6;
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 
@@ -63,15 +71,26 @@ function strokeBolt(ctx: CanvasRenderingContext2D, pts: Point[], rgb: string, a:
   ctx.restore();
 }
 
-function frame(ctx: CanvasRenderingContext2D, w: number, h: number, t: number, dt: number, s: State, rgb: string) {
-  // Program B·9: steady web, random edge flares.
-  if (t > s.flareUntil) {
+function frame(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  t: number,
+  dt: number,
+  s: State,
+  rgb: string,
+  settling = false,
+) {
+  // Program B·9: steady web, random edge flares. While settling, both fade to 0.
+  if (settling) {
+    s.flareOn = false;
+  } else if (t > s.flareUntil) {
     s.flareOn = !s.flareOn;
     s.flareUntil = t + (s.flareOn ? rnd(0.5, 1.1) : rnd(1.5, 3.5));
   }
   const k = Math.min(1, dt / FADE_S);
   s.env[0] += ((s.flareOn ? 1 : 0) - s.env[0]) * k;
-  s.env[1] += (WEB_LEVEL - s.env[1]) * k;
+  s.env[1] += ((settling ? 0 : WEB_LEVEL) - s.env[1]) * k;
   const edge = Math.min(1, s.env[0] * INTENSITY * 1.05);
   const web = Math.min(1, s.env[1] * INTENSITY * 1.05);
 
@@ -168,13 +187,14 @@ function StormCrackle({ side, rgb }: StormCrackleProps) {
       ctx.setTransform(side === 'b' ? -dpr : dpr, 0, 0, dpr, side === 'b' ? w * dpr : 0, 0);
       ctx.clearRect(0, 0, w, h);
     };
+    let settled = false;
     const resize = () => {
       const r = cv.getBoundingClientRect();
       w = r.width;
       h = r.height;
       cv.width = Math.round(w * dpr);
       cv.height = Math.round(h * dpr);
-      if (reduced && w > 0) {
+      if ((reduced || settled) && w > 0) {
         prepare();
         stillGlow(ctx, w, h, rgb);
       }
@@ -189,16 +209,29 @@ function StormCrackle({ side, rgb }: StormCrackleProps) {
     io.observe(cv);
 
     let raf = 0;
-    let last = performance.now();
+    const start = performance.now();
+    let last = start;
     let acc = 0;
     const loop = (now: number) => {
+      const elapsed = (now - start) / 1000;
+      // Done playing → draw the still glow once and stop the loop for good.
+      if (elapsed > PLAY_S + SETTLE_S) {
+        settled = true;
+        if (w > 0) {
+          prepare();
+          stillGlow(ctx, w, h, rgb);
+        }
+        return;
+      }
       raf = requestAnimationFrame(loop);
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       acc += dt;
       if (acc < 1 / FPS || !visible || document.hidden || w === 0) return;
       prepare();
-      frame(ctx, w, h, now / 1000, acc, s, rgb);
+      frame(ctx, w, h, now / 1000, acc, s, rgb, elapsed > PLAY_S);
+      // Settling: lay the still glow underneath so the hand-off is seamless.
+      if (elapsed > PLAY_S) stillGlow(ctx, w, h, rgb);
       acc = 0;
     };
     raf = requestAnimationFrame(loop);

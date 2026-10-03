@@ -5,7 +5,7 @@
  * Neon Frame "R" look (components/ui/neonMenu) — 40px rows:
  *   [rank badge] [TeamMark] Nickname ............ value
  * No logo artwork. Height follows the screen (viewport minus bottom-nav reserve).
- * INTERACTION: Sleek dropdown — spring pop, blurred backdrop, staggered rows; listbox/option a11y
+ * INTERACTION: Sleek dropdown — spring pop, dimmed backdrop, CSS-staggered rows; listbox/option a11y
  * POSITIONING: Floating UI with auto-flip, shift, and boundary detection
  * PERF (2026-10-03): the badge (trigger) is cheap and always rendered; the menu
  *   (Floating UI + portal + 32-team ranking + sort) only MOUNTS while open, and
@@ -245,18 +245,14 @@ function RankingMenu({
                   const rankTotal = item.ranking ? allTeamRankings[item.team.team]?.totalTeams : undefined;
 
                   return (
-                    <motion.button
+                    <button
                       key={item.team.team}
                       role="option"
                       aria-selected={isCurrent}
                       aria-label={`${item.ranking ? `${item.ranking.formattedRank}, ` : ''}${item.team.team}, ${item.formattedValue}`}
                       onClick={() => handleTeamSelect(item.team.team)}
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.16, delay: Math.min(index, 18) * 0.012 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="flex w-full items-center gap-1.5 pl-2 pr-3.5 active:opacity-50"
-                      style={menuRowStyle(index, isCurrent)}
+                      className="pare-row-in flex w-full items-center gap-1.5 pl-2 pr-3.5 transition-transform active:scale-[0.98] active:opacity-50"
+                      style={{ ...menuRowStyle(index, isCurrent), animationDelay: `${Math.min(index, 18) * 12}ms` }}
                     >
                       {/* Rank — same tiered badge as the row (static: no ember in lists) */}
                       <span className="flex w-[42px] shrink-0 justify-center">
@@ -279,7 +275,7 @@ function RankingMenu({
                       <span className="shrink-0 tabular-nums" style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--subtext)' }}>
                         {item.formattedValue}
                       </span>
-                    </motion.button>
+                    </button>
                   );
                 })}
                 </div>
@@ -317,7 +313,8 @@ function CompactRankingDropdown(props: CompactRankingDropdownProps) {
   } else {
     // Tiered badge (no emoji). totalTeams = real ranked field size so the
     // bottom-5 tier is right even while data is partial.
-    badge = <RankBadge rank={ranking.rank} isTied={ranking.isTied} totalTeams={ranking.totalTeams} effects />;
+    // key = team → a team swap re-mounts the badge so the #32 ember replays.
+    badge = <RankBadge key={currentTeam} rank={ranking.rank} isTied={ranking.isTied} totalTeams={ranking.totalTeams} effects />;
   }
 
   return (

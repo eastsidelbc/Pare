@@ -79,6 +79,7 @@ function CompactComparisonRow({
   teamBData,
   allData,
   panelType,
+  displayMode,
   activeDropdownTeam,
   onTeamAChange,
   onTeamBChange,
@@ -233,6 +234,7 @@ function CompactComparisonRow({
             tierA={getRankTier(teamARanking?.rank, teamARanking?.totalTeams)}
             tierB={getRankTier(teamBRanking?.rank, teamBRanking?.totalTeams)}
             height={10}
+            effectKey={`${teamA}|${teamB}|${displayMode}`}
           />
         ) : (
           /* No live data for one/both sides — neutral track, no fake bars. */

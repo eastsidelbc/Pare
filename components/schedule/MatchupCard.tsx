@@ -10,10 +10,12 @@
  *   └──────────────────────────────────────────┘
  *
  * Center by game state:
- *   • pre  → kickoff time, network, betting line (`<spread> · O/U <total>`). No scores.
+ *   • pre  → kickoff time, network, betting line on two lines (spread / O/U). No scores.
  *   • in   → live scores flank the center; red pulsing dot + clock (e.g. "Q3 5:20").
- *   • post → final scores flank "FINAL"; a small gold arrow marks the winner.
- *            The loser's number stays white (never grey out a number — §9 rule 2).
+ *   • post → final scores flank "FINAL": winner white, loser dimmed to --muted
+ *            (standard sports-app result treatment; §9.1). No arrow — the
+ *            brightness difference alone reads clearly (and isn't hue-based).
+ *            Live scores both stay white — the lead can still change.
  *
  * No logo artwork (licensing, §9 rule 4). Team colors come from the same
  * getMatchupPalettes() as Compare, so clash swaps (KC vs TB) match everywhere.
@@ -93,39 +95,37 @@ function TeamBlock({
   );
 }
 
-function WinMark({ side }: { side: 'left' | 'right' }) {
-  return (
-    <span aria-hidden style={{ fontSize: 9, color: 'var(--gold-bright)' }}>
-      {side === 'left' ? '◀' : '▶'}
-    </span>
-  );
-}
-
-function Score({ value, win, side }: { value: number | null; win: boolean; side: 'left' | 'right' }) {
+function Score({
+  value,
+  lose,
+}: {
+  value: number | null;
+  /** Final-game loser → dimmed. Never set while live (the lead can flip). */
+  lose: boolean;
+}) {
   return (
     <span
-      className="flex flex-none items-center justify-center gap-[3px] tabular-nums leading-none"
-      style={{ minWidth: 24, fontSize: 20, fontWeight: 800, color: 'var(--text)' }}
+      className="flex items-center justify-center tabular-nums leading-none"
+      style={{ fontSize: 20, fontWeight: 800, color: lose ? 'var(--muted)' : 'var(--text)' }}
     >
-      {win && side === 'right' && <WinMark side="right" />}
       {value ?? ''}
-      {win && side === 'left' && <WinMark side="left" />}
     </span>
   );
 }
 
-function oddsLine(odds: MatchupOdds | null): string | null {
-  if (!odds) return null;
-  return odds.overUnder != null ? `${odds.spread} · O/U ${odds.overUnder}` : odds.spread;
-}
-
-function OddsText({ line }: { line: string }) {
+/**
+ * Betting line as TWO short lines ("SEA -8.5" over "O/U 40.5") so it always fits
+ * the fixed 64px center column — one line ("SEA -8.5 · O/U 40.5", ~90px) used to
+ * spill into the score slots and bunch the scores up.
+ */
+function OddsText({ odds }: { odds: MatchupOdds }) {
+  const style = { fontSize: 9, fontWeight: 500, color: 'var(--muted)' } as const;
   return (
-    <span
-      className="whitespace-nowrap tabular-nums leading-none"
-      style={{ fontSize: 9, fontWeight: 500, color: 'var(--muted)' }}
-    >
-      {line}
+    <span className="flex flex-col items-center tabular-nums leading-none" style={{ gap: 2 }}>
+      <span className="whitespace-nowrap" style={style}>{odds.spread}</span>
+      {odds.overUnder != null && (
+        <span className="whitespace-nowrap" style={style}>O/U {odds.overUnder}</span>
+      )}
     </span>
   );
 }
@@ -133,8 +133,9 @@ function OddsText({ line }: { line: string }) {
 export default function MatchupCard({ matchup, isOpen = false, onToggle }: MatchupCardProps) {
   const { away, home, kickoff, state, statusDetail, awayScore, homeScore, winner, odds, awayRecord, homeRecord, network } = matchup;
   const { time } = formatKickoff(kickoff);
-  const line = oddsLine(odds);
   const showScores = state !== 'pre' && awayScore != null && homeScore != null;
+  // Only a FINAL game has a loser (ties → winner null → nobody dimmed).
+  const final = state === 'post';
 
   // Same resolver as Compare (lift → clash swap → fallback). Away = left = A.
   const { a, b } = useMemo(() => getMatchupPalettes(away.name, home.name), [away.name, home.name]);
@@ -163,7 +164,9 @@ export default function MatchupCard({ matchup, isOpen = false, onToggle }: Match
       <div
         className="grid items-center"
         style={{
-          gridTemplateColumns: '1fr auto 76px auto 1fr',
+          // Fixed, symmetric slots: team | score 36 | center 64 | score 36 | team.
+          // Scores always sit the same distance from the center on every card.
+          gridTemplateColumns: 'minmax(0, 1fr) 36px 64px 36px minmax(0, 1fr)',
           columnGap: 6,
           minHeight: 64,
           padding: '9px 12px',
@@ -173,14 +176,14 @@ export default function MatchupCard({ matchup, isOpen = false, onToggle }: Match
       >
         <TeamBlock abbr={away.abbr} nickname={away.nickname} record={awayRecord} palette={a} align="left" />
 
-        {showScores ? <Score value={awayScore} win={winner === 'away'} side="left" /> : <span />}
+        {showScores ? <Score value={awayScore} lose={final && winner === 'home'} /> : <span />}
 
         {/* Center — status-driven */}
         <div className="flex flex-col items-center text-center" style={{ gap: 3 }}>
           {state === 'post' ? (
             <>
               <span style={LABEL}>Final</span>
-              {line && <OddsText line={line} />}
+              {odds && <OddsText odds={odds} />}
             </>
           ) : state === 'in' ? (
             <span
@@ -196,12 +199,12 @@ export default function MatchupCard({ matchup, isOpen = false, onToggle }: Match
                 {time}
               </span>
               {network && <span style={LABEL}>{network}</span>}
-              {line && <OddsText line={line} />}
+              {odds && <OddsText odds={odds} />}
             </>
           )}
         </div>
 
-        {showScores ? <Score value={homeScore} win={winner === 'home'} side="right" /> : <span />}
+        {showScores ? <Score value={homeScore} lose={final && winner === 'away'} /> : <span />}
 
         <TeamBlock abbr={home.abbr} nickname={home.nickname} record={homeRecord} palette={b} align="right" />
       </div>

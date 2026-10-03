@@ -26,10 +26,14 @@ export const menuSurface: CSSProperties = {
   boxShadow: 'var(--shadow-pop), 0 0 24px color-mix(in srgb, var(--gold-bright) 10%, transparent)',
 };
 
+/**
+ * Dim behind an open menu. Plain dim, NO backdrop-filter blur (perf Pass 2):
+ * a full-screen blur over glowing/animating cards forces the phone to re-blur
+ * the whole screen every frame something underneath moves. Slightly darker
+ * (66% vs 60%) to keep the same "menu floats above" separation.
+ */
 export const menuBackdrop: CSSProperties = {
-  background: 'color-mix(in srgb, var(--bg-deep) 60%, transparent)',
-  backdropFilter: 'blur(4px)',
-  WebkitBackdropFilter: 'blur(4px)',
+  background: 'color-mix(in srgb, var(--bg-deep) 66%, transparent)',
 };
 
 export const menuHeader: CSSProperties = {

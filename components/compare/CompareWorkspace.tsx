@@ -14,7 +14,7 @@
 
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CompareTicker from './CompareTicker';
 import { motion, useMotionValue, animate, type PanInfo } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
@@ -142,6 +142,15 @@ export default function CompareWorkspace() {
     return () => window.removeEventListener('resize', measure);
   }, []);
 
+  // Windowing center that only moves once the slide has LANDED (perf Pass 3).
+  // Panes mount around `settledIndex`, so the next neighbor is built after the
+  // spring finishes — not mid-swipe — and inside startTransition, so React can
+  // pause that work if you touch the screen again.
+  const [settledIndex, setSettledIndex] = useState(activeIndex);
+  const settle = useCallback((i: number) => {
+    startTransition(() => setSettledIndex(i));
+  }, []);
+
   // Snap the track to the active page whenever active/width/count changes
   // (but not mid-drag — this only reacts to committed state).
   const prevIndexRef = useRef(activeIndex);
@@ -153,15 +162,17 @@ export default function CompareWorkspace() {
     // Adjacent moves (swipe / neighbor tap) still spring smoothly.
     if (distance > 1) {
       x.set(-activeIndex * width);
+      setSettledIndex(activeIndex); // instant jump → window moves now (urgent)
       return;
     }
     const controls = animate(x, -activeIndex * width, {
       type: 'spring',
       stiffness: 320,
       damping: 34,
+      onComplete: () => settle(activeIndex),
     });
     return controls.stop;
-  }, [activeIndex, width, comparisons.length, x]);
+  }, [activeIndex, width, comparisons.length, x, settle]);
 
   const handleDragEnd = useCallback(
     (_e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -336,11 +347,13 @@ export default function CompareWorkspace() {
               onDragEnd={handleDragEnd}
             >
               {comparisons.map((c, i) => {
-                // Windowing: only mount the active pane and its immediate neighbors
-                // (active ±1). Neighbors stay mounted so a swipe reveals a ready page
-                // (no blank flash); panes ≥2 away are virtualized (empty cell of the
-                // same width, preserving the track layout + drag constraints).
-                const isWindowed = Math.abs(i - activeIndex) <= 1;
+                // Windowing: mount the settled pane and its immediate neighbors
+                // (±1) — plus the active pane, always. Neighbors stay mounted so a
+                // swipe reveals a ready page (no blank flash); panes ≥2 away are
+                // virtualized (empty cell of the same width, preserving the track
+                // layout + drag constraints). The window follows `settledIndex`, so
+                // the new far neighbor mounts only after the slide lands.
+                const isWindowed = i === activeIndex || Math.abs(i - settledIndex) <= 1;
                 const h = getPaneHandlers(c.id);
                 return (
                   <div

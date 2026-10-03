@@ -9,7 +9,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ### Added
 - **Home "Neon Frame" — Frame Row game cards** (2026-10-03, branch `ui/home-neon-frame`)
   - See: `docs/devnotes/2026-10-03-home-neon-frame.md`, recipe in `docs/design-system.md` §9 / §9.1. Picked from two mockup rounds ("Pare Home Redesign": A + H1 + D1, G1 · C2 · N3 · 24px).
-  - Game cards: team logos removed → 24px solid team-color abbreviations + nickname/record; 1.5px team-color frame with a subtle side glow (same palettes + clash swaps as Compare); live games get a red pulsing dot; winner marked with a gold arrow (loser's score stays white).
+  - Game cards: team logos removed → 24px solid team-color abbreviations + nickname/record; 1.5px team-color frame with a subtle side glow (same palettes + clash swaps as Compare); live games get a red pulsing dot; final games: winner score white, loser dimmed to grey; scores in fixed symmetric slots with the betting line on two short lines (spread / O/U) so it never crowds them (live scores stay white).
   - Home page on `--bg-deep`; header bar + week stepper restyled as a glass capsule (new `--glass-edge` token, also used by the bottom nav); week list uses the shared neon menu look; day labels gold-bright with hairline rules; skeleton, empty state, inline peek container and box score on deep surfaces.
   - Removed the unused `eslint-disable` in `ScheduleScreen.tsx`. Data, schedule logic, live polling and hook signatures untouched.
 - **Compare "Neon Frame" redesign — Round 5 R + Round 4 K gold nav** (2026-10-02, branch `ui/compare-neon-frame`)
@@ -32,6 +32,14 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Rank-badge menus mount only while open (were 20 hidden Floating UI menus per pane); stable toggle/close handlers so opening one menu re-renders one row, not all.
   - One app-wide stats copy (`components/NflStatsProvider.tsx`) shared by Home + Compare — opening Compare no longer refetches or flashes the skeleton; background refresh on return to the app after 10 min (keeps old numbers on screen / on error).
   - Result (emulated): team swap 12→40 fps, tap→done 977→368ms; rank swap worst freeze 583→167ms; swipe 40→48 fps, worst frame 250→83ms; Home→Compare 0 API calls.
+- **Compare tab Pass 2 + 3 — effects play on change, then settle** (2026-10-03, branch `perf/compare-pass2`)
+  - Tier effects (bar aura breathe, #1 sparks, #32 ember, meeting-point flare) run a short finite burst on mount / team swap / PG↔TOT, then hold a still glow — nothing on Compare loops forever. Aura stays hidden while the bar slides so its blur isn't redrawn each spring frame (`SplitCapsuleBar` `effectKey`, `RankBadge` keyed by team).
+  - Power Surge canvas plays 4 s, fades, leaves the still glow and stops its frame loop.
+  - Menus: plain dim instead of a full-screen backdrop blur; row stagger moved from 33 framer animations to one CSS class (`.pare-row-in`).
+  - Swipe: the next neighbor pane mounts after the slide lands (inside `startTransition`), not mid-swipe.
+  - `useIsMobile` reads the width with `useSyncExternalStore` — Compare no longer builds the iPad 2×2 grid first and throws it away on phones.
+  - Design system §8/§9 motion rules updated (play on change → settle; no full-screen blur over animating content).
+  - Result (emulated, vs Pass 1): resting screen 55→60 fps with main-thread work 2041→363ms per 3s; team swap 42→49 fps, tap→done 388→271ms; menu open 32→45 fps; swipe 48→54 fps, worst frame 117→50ms, zero long tasks.
 
 ### Fixed
 - **"+" comparison tab now opens the new tab** (2026-10-02) — `ComparisonsProvider.addComparison` read the add result before React ran the state updater, so it logged a false "cap reached" and skipped `setActiveId`. Now activates inside the updater; cap answered from the committed list. Also fixes Home "Open full" + iPad "Add comparison".
