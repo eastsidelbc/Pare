@@ -63,7 +63,7 @@ const TEAM_COLORS: Readonly<Record<string, TeamColorSource>> = {
 };
 
 /** Background the bars sit on (Compare deep background, globals.css --bg-deep). */
-export const COMPARE_BG = '#030409';
+export const COMPARE_BG = '#0a0d14';
 /** Minimum contrast of a bar color against COMPARE_BG (WCAG non-text 3:1). */
 export const MIN_CONTRAST = 3;
 /** Below this CIE76 ΔE the two teams' colors read as "the same color". */

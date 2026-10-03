@@ -51,8 +51,9 @@ export default function BottomNav() {
         className="pointer-events-auto flex items-center gap-1 overflow-hidden rounded-full p-1"
         style={{
           height: 'var(--nav-pill-h)',
-          // Neon Frame (Round 4 "K"): near-black glass capsule with a faint edge.
-          background: 'color-mix(in srgb, var(--bg-deep) 85%, transparent)',
+          // Neon Frame (Round 4 "K"): darkest layer of the surface ladder (--nav-bg)
+          // so the capsule separates from the page, with a faint edge.
+          background: 'var(--nav-bg)',
           border: '1px solid rgba(255, 255, 255, 0.12)',
           boxShadow: 'var(--shadow-pop)',
           backdropFilter: 'blur(12px)',

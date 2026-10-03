@@ -70,7 +70,8 @@ of "+" → each lands on the new blank tab; cap holds at 8; no warnings.
 
 ## Full summary — what the Compare overhaul is (2026-10-02 → 10-03)
 
-**Look ("Neon Frame", Round 5 R + Round 4 K nav).** Near-black Compare background (`--bg-deep`),
+**Look ("Neon Frame", Round 5 R + Round 4 K nav).** Deep navy-slate Compare background (`--bg-deep`,
+lifted from near-black on 2026-10-03; nav is the darkest layer),
 deep-gradient cards wrapped in a 2px frame that fades team A color → neutral → team B color, with
 each team's glow spilling off its side. Team-name wordmarks (city · record over an outlined
 nickname) replace logos on Compare. Bottom nav: dark glass capsule, active tab = sliding gold
@@ -109,9 +110,10 @@ iPad, then mirrored to the PC repo; Kobe commits/pushes.
 signatures.
 
 ## Open items / next
-- **Background lightness:** `--bg-deep` (#030409) reads too dark next to the equally dark nav.
-  Plan: mock 3–4 levels side by side (≈ #0a0d14 deep navy-slate), then set a ladder
-  background < card, nav darkest; re-check team-color contrast (`COMPARE_BG` + tests).
+- ~~Background lightness~~ **Done (2026-10-03):** "Background ladder" study (4 levels side by
+  side) → option C. Tokens: `--bg-deep` #0a0d14, cards #151520 / #0f121a / #121724, `--hairline`
+  #1b2030, new `--nav-bg` rgba(3,4,8,.94) used by `BottomNav`. `COMPARE_BG` updated; all 58 tests
+  pass (every team still ≥ 3:1, all 32×32 matchups distinct).
 - **Go global:** promote Neon Frame from Compare-only to app-wide rules (surfaces, card types,
   type roles, gold accent, TeamMark/wordmarks instead of logos), then restyle Home `MatchupCard`,
   Standings `DivisionTable`, Leaders. Busy screens (32-team Standings): team color on the mark

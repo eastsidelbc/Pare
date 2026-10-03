@@ -208,7 +208,14 @@ The approved redesign direction. Live on **Compare only** for now; written as a 
 it can be promoted app-wide later (swap `--bg` → `--bg-deep`, `--card` → deep card gradient).
 Mockups: the "Pare Compare Redesign" canvas (rounds 1–5; R = the pick, nav = Round 4 K).
 
-**Surfaces:** page `--bg-deep` (#030409). Cards = 2px frame whose border fades
+**Surface ladder (tokens — change the look in `globals.css`, never in components):**
+`--nav-bg` (darkest, so the nav separates) < `--bg-deep` page (#0a0d14 deep navy-slate) <
+`--card-deep-*` cards (one step lighter, so they read as objects). Chosen as option "C" in the
+Background ladder study (2026-10-03) over near-black #030409: easier on the eyes, no OLED
+black-smear when scrolling, nav no longer melts into the page; glows lose only a little punch.
+Team-color contrast is computed against this background (`COMPARE_BG` in `lib/teamColors.ts`).
+
+**Surfaces:** page `--bg-deep`. Cards = 2px frame whose border fades
 team A color → `--frame-mid` → team B color, with each team's glow (34px, 34%) spilling off its side;
 inside, a `--card-deep-a → --card-deep-mid → --card-deep-b` gradient. Row dividers `--hairline`.
 
@@ -239,7 +246,7 @@ brighter. Numbers are all white (`--text`) — the trailing team is never greyed
 `prefers-reduced-motion`. Effects are opt-in on `RankBadge` so Standings stay static.
 Comparison tab pills: every pill is washed in its two teams' colors — 22% active, 14% inactive.
 
-**Nav (Round 4 K):** near-black glass capsule; the active tab is a sliding gold neon outline
+**Nav (Round 4 K):** `--nav-bg` glass capsule (darkest surface); the active tab is a sliding gold neon outline
 (`--gold-bright` border + glow). Sizing unchanged (`--nav-pill-h`).
 
 **Density rule:** on an iPhone 14 Pro in app mode (393×759 usable) Offense **and** Defense

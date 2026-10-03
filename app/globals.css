@@ -154,11 +154,14 @@
 
     /* "Neon Frame" (Compare redesign, Round 5 R) — deep surfaces. Scoped to
        Compare for now; promote to --bg/--card when the whole app adopts it. */
-    --bg-deep: #030409; /* Compare page background — near-black */
-    --card-deep-a: #0d0a10; /* card gradient, left (warm) */
-    --card-deep-mid: #06070c; /* card gradient, center */
-    --card-deep-b: #080b14; /* card gradient, right (cool) */
-    --hairline: #0f131c; /* row dividers inside deep cards */
+    /* Surface ladder (Background study option "C" — deep navy-slate, 2026-10-03):
+       nav (darkest) < page background < cards. Change the look here, not in components. */
+    --bg-deep: #0a0d14; /* Compare page background — deep navy-slate */
+    --card-deep-a: #151520; /* card gradient, left (warm) — one step above the background */
+    --card-deep-mid: #0f121a; /* card gradient, center */
+    --card-deep-b: #121724; /* card gradient, right (cool) */
+    --hairline: #1b2030; /* row dividers inside deep cards */
+    --nav-bg: rgba(3, 4, 8, 0.94); /* floating bottom nav — the darkest layer, so it separates */
     --frame-mid: rgba(255, 255, 255, 0.15); /* neutral middle of the red→blue frame fade */
 
     /* Warning / offline — semantic amber (its own token, not an accent) */
