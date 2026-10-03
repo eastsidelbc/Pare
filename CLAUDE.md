@@ -99,7 +99,7 @@ Bars grow inward and meet at the exact ratio; elite-vs-poor matchups get up to 3
 - **Tailwind v4.3** CSS-first: `app/globals.css` starts `@import 'tailwindcss'` + `@config '../tailwind.config.js'` (compat mode); custom classes are `@utility` blocks; PostCSS = `@tailwindcss/postcss`.
 - Tokens mapped in `tailwind.config.js`: `bg-bg/surface/card`, `border-border`, `text-text/subtext/muted`, `bg-gold/gold-bright/green/fire/red/blue`, `shadow-card/pop`. Tints via `color-mix(in srgb, var(--gold) N%, transparent)`.
 - **CVA + clsx + tailwind-merge** (`cn()`); components hand-built on Radix / `@floating-ui/react`. **No shadcn CLI.**
-- Motion: **framer-motion** (only animation lib) + `@number-flow/react` for rolling stat values. Respect `prefers-reduced-motion`.
+- Motion: **framer-motion** (only animation lib; `@number-flow/react` removed 2026-10-03 — stat numbers are plain text). Effects **play on change, then settle** — no infinite loops on a resting screen (design-system §9.8). Respect `prefers-reduced-motion`.
 - Pending (see latest dev notes): radius remap (`rounded-lg`=14 / `rounded-xl`=20), quadrant card-in-card fix, dropdown keyboard nav + focus trap, full `@theme` port.
 
 ## Hard guardrails (never violate)

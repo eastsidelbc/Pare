@@ -1,6 +1,8 @@
 # Dev Note — 2026-10-03 — Home "Neon Frame" (Frame Row game cards)
 
-Branch `ui/home-neon-frame`. Recipe: `docs/design-system.md` §9 (page header, day labels) + §9.1 (game card).
+**Status: COMPLETE (Kobe signed off 2026-10-03).** Branch `ui/home-neon-frame`.
+
+Recipe: `docs/design-system.md` §9 (page header, day labels) + §9.1 (game card).
 
 ## How it was picked
 Two mockup rounds on the "Pare Home Redesign" board (real 393×759 phones):
@@ -30,6 +32,23 @@ Playwright 393×759 + iPad 834×1194: Home, week menu, open accordion; a sandbox
 with pre / live / halftime / final + all 32 teams → no row overflow, every card 67px tall,
 widest abbreviation WAS ≈ 59px in an ≥ 85px cell. Clash swaps verified (KC vs TB, NYG vs BUF).
 Sandbox can't reach ESPN, so real records/odds and live polling need an on-device check.
+
+## Follow-ups after the first push (same day, from Kobe's on-device review)
+1. **Losing score dimmed on finals** — Kobe liked the old winner/loser contrast. Winner white, loser
+   `--muted`; live games and ties stay white (the lead can flip). §9 type-roles rule now says
+   "never grey a losing *stat* (Compare)" with final scores as the explicit exception (every
+   scoreboard does this).
+2. **Gold winner arrow removed** — "too much noise". The white/grey brightness difference carries the
+   result on its own and isn't hue-based, so it still reads for colorblind users.
+3. **Scores bunched against the odds on finals** — root cause: the 76px center held "FINAL" + a
+   one-line betting line (~90px, nowrap), which spilled into `auto`-width score columns. Fix: grid
+   `minmax(0,1fr) 36px 64px 36px minmax(0,1fr)` (fixed symmetric score slots) and odds on two short
+   lines (spread / O/U) for pre and final games. Checked: TEN–NYG, CIN–PIT, SEA–WAS, a 3-digit score,
+   "Q4 12:45", pre with and without odds. Pre cards with odds are ~6px taller (4-line center) —
+   accepted; option if wanted later: time + network on one line.
+
+Micro-learning kept for Kobe: `1fr` = share leftover space, `36px` = always exactly this, `auto` =
+whatever fits (so overflow can push it around).
 
 ## Open items
 - "Open full" button in the peek is still the old filled `--gold` (§9 says UI accent = gold-bright) — restyle with the peek pass.
