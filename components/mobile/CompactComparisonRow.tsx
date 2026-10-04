@@ -163,7 +163,9 @@ function CompactComparisonRow({
   };
   
   return (
-    <div className="relative">
+    // contain: layout — a bar resizing (team swap spring) can only re-layout its own
+    // row, never the whole card (perf Pass 4).
+    <div className="relative" style={{ contain: 'layout' }}>
       
       {/* LINE 1: Data + Ranks + Metric Name — 3-column grid, perfectly balanced */}
       <div className="px-3 pt-1 grid grid-cols-[1fr_auto_1fr] items-center gap-1">

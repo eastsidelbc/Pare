@@ -361,8 +361,11 @@
    short, finite burst when its element mounts (first load, team swap, PG/TOT),
    then holds a still state — nothing loops forever, so an idle Compare screen
    costs ~nothing. Components re-key the effect element to replay it.
-   Only transform/opacity animate, except the #32 ember (box-shadow on one tiny
-   badge, 3 pulses). prefers-reduced-motion (above) jumps straight to the end.
+   Only transform/opacity animate — and every animated effect sits on its OWN
+   GPU layer (will-change, perf Pass 4): on iPhone Safari an un-layered fading
+   glow made Safari repaint the whole card area ~7×/s for the ~5 s an effect
+   plays (seen in the 2026-10-03 Web Inspector recording).
+   prefers-reduced-motion (above) jumps straight to the end.
    ============================================================ */
 /* Bar aura: invisible while the bar slides into place (delay), then two
    breaths, then holds a steady glow. */
@@ -374,30 +377,38 @@
   82%  { opacity: 0.4; }
   100% { opacity: 0.7; }
 }
-@keyframes pare-soft {
-  0%, 100% { opacity: 0.75; }
-  50%      { opacity: 1; }
-}
 @keyframes pare-spark {
   0%   { transform: translateY(0) scale(1); opacity: 0; }
   20%  { opacity: 1; }
   100% { transform: translateY(-14px) scale(0.4); opacity: 0; }
 }
+/* #32 ember: the badge keeps a steady base glow; the flare is a separate
+   layer (::after) whose OPACITY pulses — box-shadow itself never animates
+   (animating box-shadow repaints every frame and can't run on the GPU). */
 @keyframes pare-ember {
-  0%, 100% { box-shadow: 0 0 6px rgba(239, 68, 68, 0.7), inset 0 0 4px rgba(255, 180, 120, 0.4); }
-  33%      { box-shadow: 0 0 14px rgba(255, 90, 60, 0.95), inset 0 0 6px rgba(255, 180, 120, 0.7); }
-  66%      { box-shadow: 0 0 4px rgba(239, 68, 68, 0.5), inset 0 0 2px rgba(255, 180, 120, 0.3); }
+  0%, 100% { opacity: 0; }
+  33%      { opacity: 1; }
+  66%      { opacity: 0.15; }
 }
 
-.pare-breathe { animation: pare-breathe 4.2s ease-in-out 0.5s 1 both; }      /* #2–5 slow + soft */
-.pare-breathe-fast { animation: pare-breathe 2.6s ease-in-out 0.5s 1 both; } /* #1 faster */
-.pare-soft { animation: pare-soft 2.6s ease-in-out 2 both; }
+.pare-breathe { animation: pare-breathe 4.2s ease-in-out 0.5s 1 both; will-change: opacity; }      /* #2–5 slow + soft */
+.pare-breathe-fast { animation: pare-breathe 2.6s ease-in-out 0.5s 1 both; will-change: opacity; } /* #1 faster */
 .pare-spark {
   position: absolute; width: 3px; height: 3px; border-radius: 50%;
   background: var(--gold-bright); box-shadow: 0 0 6px var(--gold-bright);
   animation: pare-spark 1.6s ease-out 0.5s 3 both; /* 3 rises, then gone */
+  will-change: transform, opacity;
 }
-.pare-ember { animation: pare-ember 1.2s ease-in-out 3 both; }
+.pare-ember {
+  position: relative;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.7), inset 0 0 4px rgba(255, 180, 120, 0.4);
+}
+.pare-ember::after {
+  content: ''; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none;
+  box-shadow: 0 0 14px rgba(255, 90, 60, 0.95), inset 0 0 6px rgba(255, 180, 120, 0.7);
+  animation: pare-ember 1.2s ease-in-out 3 both;
+  will-change: opacity;
+}
 
 /* Menu rows (team picker + rank list): staggered fade-up in pure CSS — one
    compositor animation per row instead of a JS animation object per row. */

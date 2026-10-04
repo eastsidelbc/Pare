@@ -56,8 +56,9 @@ export default function BottomNav() {
           background: 'var(--nav-bg)',
           border: '1px solid var(--glass-edge)',
           boxShadow: 'var(--shadow-pop)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
+          // No backdrop-filter blur (perf Pass 4): --nav-bg is 94% opaque, so the
+          // blur was invisible (pixel diff with vs without: max 2/255) but made the
+          // phone re-blur whatever scrolled or animated under the nav every frame.
         }}
       >
         {ITEMS.map((item) => {

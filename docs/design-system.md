@@ -248,9 +248,15 @@ brighter. Numbers are all white (`--text`) — the trailing team is never greyed
 burst when it mounts — first load, team swap, PG/TOT (`SplitCapsuleBar` `effectKey`, `RankBadge`
 keyed by team) — then holds a still state. The aura stays invisible while the bar slides (0.5s
 delay) so its blur isn't redrawn every spring frame. Nothing on Compare loops forever.
+**GPU layers (perf Pass 4, from the iPhone Web Inspector recording):** every animated effect
+class carries `will-change` (aura/ember → opacity, sparks → transform + opacity) so a fading glow
+redraws only itself — un-layered, Safari repainted the whole card area ~7×/s for the whole effect
+window. The #32 ember pulses an `::after` layer's opacity (box-shadow never animates). The
+bar meeting-point divider is static (opacity 0.9).
 Comparison tab pills: every pill is washed in its two teams' colors — 22% active, 14% inactive.
 
-**Nav (Round 4 K):** `--nav-bg` glass capsule (darkest surface); the active tab is a sliding gold neon outline
+**Nav (Round 4 K):** `--nav-bg` capsule (darkest surface; no backdrop blur — at 94% opacity it was
+invisible, pixel diff max 2/255, but cost a re-blur per frame); the active tab is a sliding gold neon outline
 (`--gold-bright` border + glow). Sizing unchanged (`--nav-pill-h`).
 
 **Density rule:** on an iPhone 14 Pro in app mode (393×759 usable) Offense **and** Defense
@@ -342,7 +348,9 @@ animation. Opacity/transform only, ~30 fps canvases paused off-screen, everythin
 `prefers-reduced-motion` still state. Effects are opt-in props so dense screens stay calm.
 **Effects play on change, then settle** — a short finite burst, then a still state; never an
 infinite loop on a resting screen (small status signals like the live-game dot are the exception).
-No full-screen `backdrop-filter` blur over content that animates (use a plain dim).
+No full-screen `backdrop-filter` blur over content that animates (use a plain dim), and no blur
+behind a surface that's nearly opaque anyway. Animated elements get `will-change` for the property
+they animate; never animate `box-shadow`, `filter` or size on a glow — fade an extra layer instead.
 
 **9. Layout & touch.** Mobile-first at 393px; iPad is an enhanced layout. Touch targets ≥ 44px
 tall where possible. App shell: header + nav fixed, only content scrolls.

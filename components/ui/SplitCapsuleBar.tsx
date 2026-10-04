@@ -153,9 +153,9 @@ function SplitCapsuleBar({
         </div>
       ))}
 
-      {/* Meeting point — short, flush with the tube, gentle fade (no stretch) */}
+      {/* Meeting point — short, flush with the tube, STATIC (no pulse: 20 of these
+          per screen pulsing cost a full repaint per frame on iPhone; Kobe OK'd). */}
       <motion.div
-        className="pare-soft"
         initial={{ left: '50%' }}
         animate={{ left: `${aP}%` }}
         transition={SPRING}
@@ -167,6 +167,7 @@ function SplitCapsuleBar({
           marginLeft: -1,
           borderRadius: 1,
           background: 'var(--text)',
+          opacity: 0.9, // ≈ the old pulse's average (0.75 ↔ 1)
           boxShadow: `0 0 5px color-mix(in srgb, var(--text) 80%, transparent), 0 0 10px rgba(${(aLeads ? paletteA : paletteB).rgb}, 0.7)`,
         }}
       />

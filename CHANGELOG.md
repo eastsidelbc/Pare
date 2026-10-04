@@ -40,6 +40,11 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - `useIsMobile` reads the width with `useSyncExternalStore` — Compare no longer builds the iPad 2×2 grid first and throws it away on phones.
   - Design system §8/§9 motion rules updated (play on change → settle; no full-screen blur over animating content).
   - Result (emulated, vs Pass 1): resting screen 55→60 fps with main-thread work 2041→363ms per 3s; team swap 42→49 fps, tap→done 388→271ms; menu open 32→45 fps; swipe 48→54 fps, worst frame 117→50ms, zero long tasks.
+- **Compare tab Pass 4 — fixes from the real-iPhone Safari recording** (2026-10-03, branch `perf/compare-pass4`)
+  - Recording showed Safari repainting the whole card area ~7×/s for ~5 s after every change (effect window), ~50–100ms per frame; idle afterwards was clean (~2.5% CPU).
+  - Every animated effect now sits on its own GPU layer (`will-change` on `.pare-breathe*`, `.pare-spark`, ember); #32 ember pulses an `::after` opacity instead of animating box-shadow; bar meeting-point divider made static (Kobe OK'd); stat rows get `contain: layout`.
+  - Bottom nav: removed the backdrop blur — the nav is 94% opaque, so it was invisible (pixel diff max 2/255) but re-blurred the content under it every frame.
+  - Sandbox (Chromium paint trace, 5 s after a team swap): repaints during seconds 2–5 of the effect window 120/s → 0; paint time 122 → ~60ms; raster 448 → ~330ms. FPS vs Pass 2: team swap 49→54, swap tap→done 271→239ms, rank swap 50→52, swipe 54→56.
 
 ### Fixed
 - **"+" comparison tab now opens the new tab** (2026-10-02) — `ComparisonsProvider.addComparison` read the add result before React ran the state updater, so it logged a false "cap reached" and skipped `setActiveId`. Now activates inside the updater; cap answered from the committed list. Also fixes Home "Open full" + iPad "Add comparison".
