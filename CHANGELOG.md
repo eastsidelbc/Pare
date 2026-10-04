@@ -27,6 +27,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ### Performance
 - **Compare tab Pass 1 — smoother team swaps, rank menus, swipes** (2026-10-03, branch `perf/compare-pass1`)
+  - See: `docs/devnotes/2026-10-03-compare-performance.md` (all four passes, method, results).
   - Audit: project doc `claude/perf-audit-compare-2026-10-03.md` (iPhone 14 Pro viewport, 4x CPU throttle, median of 3).
   - Stat numbers are plain text (removed `@number-flow/react` — its roll forced ~375ms of layout per team swap).
   - Rank-badge menus mount only while open (were 20 hidden Floating UI menus per pane); stable toggle/close handlers so opening one menu re-renders one row, not all.
