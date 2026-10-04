@@ -7,6 +7,10 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Added
+- **Standings "Neon Frame" — compact rows + playoff seeds** (2026-10-04, branch `ui/standings-neon-frame`)
+  - See: `docs/devnotes/2026-10-04-standings-neon-frame.md`, recipe in `docs/design-system.md` §9.2. Picked over three mockup rounds ("Pare Standings Redesign": C + ESPN columns · L2 · T2 · Hc → V5 Dense + quiet points → R2 Standards-fixed).
+  - New header toggle **Division / Conf / Playoffs**: division cards, a 16-team conference list by seed with a playoff line, and an "if the season ended today" playoff picture (seeds 1–7, Wild Card round, in the hunt).
+  - Seed chips from ESPN `playoffSeed` (new `seed` field in `lib/standings.ts`); team logos removed → 13px team-color abbreviations lifted to 4.5:1 where needed; ESPN columns W · L · PCT · PF · PA · STRK with PF/PA and losing streaks in secondary grey; gold leader tint; T column only when a tie exists league-wide; 32px static rows; toggle buttons get a 44px hit area.
 - **Home "Neon Frame" — Frame Row game cards** (2026-10-03, branch `ui/home-neon-frame`)
   - See: `docs/devnotes/2026-10-03-home-neon-frame.md`, recipe in `docs/design-system.md` §9 / §9.1. Picked from two mockup rounds ("Pare Home Redesign": A + H1 + D1, G1 · C2 · N3 · 24px).
   - Game cards: team logos removed → 24px solid team-color abbreviations + nickname/record; 1.5px team-color frame with a subtle side glow (same palettes + clash swaps as Compare); live games get a red pulsing dot; final games: winner score white, loser dimmed to grey; scores in fixed symmetric slots with the betting line on two short lines (spread / O/U) so it never crowds them (live scores stay white).

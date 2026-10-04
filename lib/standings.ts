@@ -47,6 +47,8 @@ export interface TeamStanding {
   streak: string;
   /** In-division record, e.g. "2-1". */
   divRecord: string;
+  /** Conference playoff seed from ESPN (`playoffSeed`): 1–7 in, 8–16 out; null if missing. */
+  seed: number | null;
 }
 
 export interface DivisionStandings {
@@ -95,6 +97,11 @@ function formatPct(v: number | undefined): string {
   return v >= 1 ? s : s.replace(/^0/, '');
 }
 
+/** ESPN sends 0 (or nothing) when a seed isn't set yet → null. */
+function toSeed(v: number | undefined): number | null {
+  return typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 16 ? v : null;
+}
+
 /** Map one ESPN entry → TeamStanding, or null if the team can't be resolved. */
 function mapEntry(entry: EspnEntry): { team: NflTeam; standing: TeamStanding } | null {
   const team = resolveTeam(entry.team?.abbreviation);
@@ -126,6 +133,7 @@ function mapEntry(entry: EspnEntry): { team: NflTeam; standing: TeamStanding } |
       diff,
       streak: disp(stats, 'streak') ?? '—',
       divRecord: disp(stats, 'divisionRecord') ?? '—',
+      seed: toSeed(num(stats, 'playoffSeed')),
     },
   };
 }

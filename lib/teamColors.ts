@@ -237,3 +237,35 @@ export function getTeamPalette(teamName: string): BarPalette | null {
   const src = teamSource(teamName);
   return src ? palette(src.bar) : null;
 }
+
+// ------------------------------------------------- list text (Standings rows)
+
+/** Lightest list surfaces team-color text sits on (globals.css --card-deep-a, and
+ *  the same card under the 8% --leader-tint). Contrast is checked against both. */
+export const LIST_CARD_BG = '#151520';
+export const LIST_LEADER_BG = '#272323';
+/** WCAG AA for small text (list abbreviations are 13px, well under "large text"). */
+export const LIST_MIN_CONTRAST = 4.5;
+
+const listColorCache = new Map<string, string>();
+
+/**
+ * Team color for SMALL text in dense lists (Standings, design-system §9.2).
+ * Starts from the same `line` color as Home/Compare, then mixes toward white only
+ * as far as needed to reach 4.5:1 on both list surfaces. Most teams are untouched;
+ * a handful (e.g. SF) get a few percent lighter. Unknown abbr → null.
+ */
+export function getListTeamColor(abbr: string): string | null {
+  const cached = listColorCache.get(abbr);
+  if (cached) return cached;
+  const src = TEAM_COLORS[abbr];
+  if (!src) return null;
+  const start = palette(src.bar).line;
+  let out = start;
+  for (let t = 0.02; t <= 0.6; t += 0.02) {
+    if (contrastRatio(out, LIST_CARD_BG) >= LIST_MIN_CONTRAST && contrastRatio(out, LIST_LEADER_BG) >= LIST_MIN_CONTRAST) break;
+    out = tint(start, t);
+  }
+  listColorCache.set(abbr, out);
+  return out;
+}

@@ -332,7 +332,7 @@ team mark only, rows stay neutral** — no frames or glows per row.
 **6. Card types.**
 - *Matchup card* (two teams): Neon Frame recipe (§8). Home game cards = **"Frame Row"** (§9.1 below).
 - *List / table card* (Standings divisions, Leaders lists): deep card surface, `--hairline`
-  row dividers, no team frames — **row recipe TBD (mockup first)**.
+  row dividers, no team frames. Standings row = **§9.2** (Leaders: TBD, mockup first).
 - *Menus / dropdowns / sheets*: `components/ui/neonMenu.ts` (40px rows, screen-height).
 
 **7. Page chrome.** Bottom nav as in §8. Page header = **"H1 · Inline"** (Home, 2026-10-03): 52px
@@ -380,3 +380,29 @@ dials **G1 subtle glow · C2 standard color · N3 solid name · 24px**. Componen
 Outlined abbreviations at 24px also passed the 20px rule (all 32 fit; widest, WAS, ≈ 59px in a
 ≥ 85px cell), but solid was picked for scan speed — it's what most sports apps use for team text.
 
+### 9.2 Standings — "C · Compact + seeds", R2 Standards-fixed (picked 2026-10-04)
+
+Picked on the "Pare Standings Redesign" board: Round 1 **C** (compact rows + playoff seeds) with
+**A's ESPN columns**, **L2** gold leader tint, **T2**, header **Hc**; Round 2 **V5 Dense** + V6 quiet
+points; Round 3 **R2 · Standards-fixed** (same look, every text-contrast check passing).
+Components: `components/standings/` — `StandingsScreen` (header + view state), `StandingsRow`
+(shared row recipe), `DivisionTable`, `ConferenceTable`, `PlayoffPicture`. Logic: `lib/standingsViews.ts`.
+
+| Part | Recipe |
+|---|---|
+| Header | H1 Inline (52px) + glass toggle **Division / Conf / Playoffs** (`--nav-bg` + `--glass-edge` capsule, 36px; buttons 30px drawn, **44px hit area** via `.pare-hit44`; active = gold-bright text + 1.5px inset ring + 8% gold) |
+| Card | deep gradient, 1px `--hairline` border, radius `--radius-lg`; title 10px/800 uppercase .18em, white, conference prefix `--subtext` (no gold on card titles — gold stays on the D1 labels) |
+| Columns | TEAM · W · L · (T) · PCT · PF · PA · STRK (ESPN / NFL.com set). Grid `minmax(64px,1.25fr) .5fr .5fr (.42fr) minmax(38px,1.1fr) .85fr .85fr .9fr`, 4px gap, 8px side padding — PCT's 38px floor keeps "1.000" whole at the 281px iPad card |
+| Column headers | 24px row, 10px/700, .06em, `--subtext` |
+| Row | **32px** (dense, read-only), hairline divider. Not tappable — if rows ever open a team page they must reach 44px (or a 44px hit area on the team cell) |
+| Team | seed chip + abbreviation 13px/900 in `getListTeamColor(abbr)` — the `line` color lifted toward white only as far as needed for **4.5:1** on the card and on the leader tint (unit-tested, all 32) |
+| Seed chip | 18px, radius 5, 10px/800. 1–4 division winner = filled `--seed-chip`, white; 5–7 wild card = 1px `--seed-edge` outline, `--subtext`; 8–16 = blank (Division) or plain `--subtext` number (Conf / hunt). Seeds = ESPN `playoffSeed` |
+| Numbers | 12px/700 white, tabular. PF / PA = `--subtext` 600 (secondary). Losing streak = `--subtext`. **Never `--muted` for small text** (3.7:1 fails AA; it's for 20px+ or decoration) |
+| Leader | Division view only: row 1 gets `--leader-tint` (gold-bright 8%) |
+| T column | hidden until any team in the league has a tie (`leagueHasTies`), then shown on every card — never per card |
+| Views | **Division** = CardGrid 270–340, maxCols 4 (one conference per row on iPad landscape). **Conf** = 16 teams by seed + dashed "Playoff line" after 7. **Playoffs** = "If the season ended today": seeds 1–7 (BYE / DIV / WC tags), Wild Card round 7@2 · 6@3 · 5@4 (44px rows), in the hunt 8–10. Conf / Playoffs = CardGrid 300–560, maxCols 2 |
+| Motion | none (the old 32-row fade-in stagger was removed). View switch scrolls content to top |
+
+Standards scorecard (R2): header hit area 44px ✓ · smallest text 10px (headers / chips — below Apple's
+11pt, accepted for dense column labels) · lowest small-text contrast 6.06:1 ✓ · worst team abbr ≥ 4.5:1 ✓ ·
+no clipping at 281px with or without T ✓.
