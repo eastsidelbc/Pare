@@ -1,0 +1,728 @@
+From bfcb416efa7b409fd76306b35886d7fbc1821b95 Mon Sep 17 00:00:00 2001
+From: Kobe <eastsidelongbeach763@gmail.com>
+Date: Sat, 3 Oct 2026 13:44:34 -0500
+Subject: [PATCH] perf(compare): Pass 1 - drop rolling numbers, lazy rank
+ menus, shared stats
+
+---
+ CHANGELOG.md                                 |   9 ++
+ app/layout.tsx                               |   3 +
+ components/NflStatsProvider.tsx              |  50 +++++++
+ components/compare/CompareWorkspace.tsx      |   9 +-
+ components/mobile/CompactComparisonRow.tsx   |  57 ++++----
+ components/mobile/CompactPanel.tsx           |  19 ++-
+ components/mobile/CompactRankingDropdown.tsx | 134 +++++++++++--------
+ components/schedule/ScheduleProvider.tsx     |   8 +-
+ lib/useNflStats.ts                           |  26 +++-
+ package-lock.json                            |  30 -----
+ package.json                                 |   1 -
+ 11 files changed, 213 insertions(+), 133 deletions(-)
+ create mode 100644 components/NflStatsProvider.tsx
+
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 70029f8..e5c53fc 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -18,6 +18,15 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
+   - **Power Surge:** a team ranked top 5 in ≥ 3 of a card's metrics gets a subtle storm-crackle effect (team-color plasma web + random edge flares) on its half, fading to the middle (`lib/powerSurge.ts`, `lib/usePowerSurge.ts`, `components/ui/StormCrackle.tsx`). Chosen from the Power Surge / Storm Crackle labs (option B·9).
+   - Week pills use plain white text instead of the small outlined TeamMark (easier to read); design-system §8 gains type-role rules (outlined display text only at 20px+). Pills also show kickoff day/time under the teams (live clock in red, "Final" after).
+   - **Background ladder "C":** Compare background lifted from near-black #030409 to deep navy-slate #0a0d14 with cards one step lighter and a new `--nav-bg` token (darkest layer) for the bottom nav — all tokens in `globals.css`; team-color contrast re-checked against the new background (`COMPARE_BG`).
++  - **Design system §9 "Global rules":** Neon Frame becomes the app-wide standard (surface ladder, type roles, gold accent, no logos, where team color/glow is allowed, card types, motion, process); undecided patterns for Home/Standings/Leaders marked "TBD (mockup first)".
++
++### Performance
++- **Compare tab Pass 1 — smoother team swaps, rank menus, swipes** (2026-10-03, branch `perf/compare-pass1`)
++  - Audit: project doc `claude/perf-audit-compare-2026-10-03.md` (iPhone 14 Pro viewport, 4x CPU throttle, median of 3).
++  - Stat numbers are plain text (removed `@number-flow/react` — its roll forced ~375ms of layout per team swap).
++  - Rank-badge menus mount only while open (were 20 hidden Floating UI menus per pane); stable toggle/close handlers so opening one menu re-renders one row, not all.
++  - One app-wide stats copy (`components/NflStatsProvider.tsx`) shared by Home + Compare — opening Compare no longer refetches or flashes the skeleton; background refresh on return to the app after 10 min (keeps old numbers on screen / on error).
++  - Result (emulated): team swap 12→40 fps, tap→done 977→368ms; rank swap worst freeze 583→167ms; swipe 40→48 fps, worst frame 250→83ms; Home→Compare 0 API calls.
+ 
+ ### Fixed
+ - **"+" comparison tab now opens the new tab** (2026-10-02) — `ComparisonsProvider.addComparison` read the add result before React ran the state updater, so it logged a false "cap reached" and skipped `setActiveId`. Now activates inside the updater; cap answered from the committed list. Also fixes Home "Open full" + iPad "Add comparison".
+diff --git a/app/layout.tsx b/app/layout.tsx
+index 9901281..8105ab7 100644
+--- a/app/layout.tsx
++++ b/app/layout.tsx
+@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
+ import { Inter } from "next/font/google";
+ import "./globals.css";
+ import { ComparisonsProvider } from "@/components/ComparisonsProvider";
++import { NflStatsProvider } from "@/components/NflStatsProvider";
+ import BottomNav from "@/components/BottomNav";
+ import { ScheduleProvider } from "@/components/schedule/ScheduleProvider";
+ import { getCurrentWeekInfo, getCurrentWeekMatchups, getMatchupsForWeek, MIN_WEEK } from "@/lib/schedule";
+@@ -152,6 +153,7 @@ export default async function RootLayout({
+       </head>
+       <body className="font-sans antialiased overflow-x-hidden">
+         <ComparisonsProvider>
++          <NflStatsProvider>
+           <ScheduleProvider
+             initialWeek={initialWeek}
+             initialMatchups={initialMatchups}
+@@ -163,6 +165,7 @@ export default async function RootLayout({
+                 outside the compare swipe container, so it never re-mounts. */}
+             <BottomNav />
+           </ScheduleProvider>
++          </NflStatsProvider>
+         </ComparisonsProvider>
+       </body>
+     </html>
+diff --git a/components/NflStatsProvider.tsx b/components/NflStatsProvider.tsx
+new file mode 100644
+index 0000000..1646e72
+--- /dev/null
++++ b/components/NflStatsProvider.tsx
+@@ -0,0 +1,50 @@
++/**
++ * NflStatsProvider — ONE shared copy of the offense/defense stats for the app.
++ *
++ * Mounted once in the root layout (persists across routes), so Home's inline
++ * peeks and the Compare workspace read the same data. Before (2026-10-03) the
++ * Compare page called useNflStats() itself → every visit re-downloaded both
++ * APIs and flashed the loading skeleton, even though Home already had them.
++ *
++ * Freshness: the server rebuilds stats every 10 min (route `revalidate`). When
++ * the app comes back to the foreground and our copy is older than that, we
++ * refresh in the background (useNflStats keeps showing the old numbers until
++ * the new ones land — no skeleton, no error swap).
++ */
++
++'use client';
++
++import { createContext, useContext, useEffect, useRef, type ReactNode } from 'react';
++import { useNflStats, type UseNflStatsReturn } from '@/lib/useNflStats';
++
++/** Match the API routes' `revalidate = 600`. */
++const STALE_AFTER_MS = 10 * 60 * 1000;
++
++const NflStatsContext = createContext<UseNflStatsReturn | null>(null);
++
++export function NflStatsProvider({ children }: { children: ReactNode }) {
++  const stats = useNflStats();
++  const { refreshData } = stats;
++
++  // Stamp the first load; refresh on foreground when stale.
++  const fetchedAtRef = useRef(Date.now());
++  useEffect(() => {
++    const onVisible = () => {
++      if (document.visibilityState !== 'visible') return;
++      if (Date.now() - fetchedAtRef.current < STALE_AFTER_MS) return;
++      fetchedAtRef.current = Date.now();
++      void refreshData();
++    };
++    document.addEventListener('visibilitychange', onVisible);
++    return () => document.removeEventListener('visibilitychange', onVisible);
++  }, [refreshData]);
++
++  return <NflStatsContext.Provider value={stats}>{children}</NflStatsContext.Provider>;
++}
++
++/** Read the shared stats. Must be used under <NflStatsProvider>. */
++export function useSharedNflStats(): UseNflStatsReturn {
++  const ctx = useContext(NflStatsContext);
++  if (!ctx) throw new Error('useSharedNflStats must be used within <NflStatsProvider>');
++  return ctx;
++}
+diff --git a/components/compare/CompareWorkspace.tsx b/components/compare/CompareWorkspace.tsx
+index 996ad5b..6398a9c 100644
+--- a/components/compare/CompareWorkspace.tsx
++++ b/components/compare/CompareWorkspace.tsx
+@@ -5,8 +5,9 @@
+  * <ComparePane> for that comparison's teams. Swipe left/right (Framer Motion) or
+  * tapping a tab in <CompareTabBar> changes the active comparison via the store.
+  *
+- * Data is fetched ONCE here (useNflStats) and shared to every pane as props, so
+- * swiping never triggers a refetch — only the two selected teams differ per page.
++ * Data comes from the app-wide <NflStatsProvider> (root layout) and is shared
++ * to every pane as props — opening Compare or swiping never refetches; only the
++ * two selected teams differ per page.
+  * The single-compare case = one comparison in the store, so /compare behaves as
+  * before (plus a 1-tab indicator). Deep link ?home=&away= still works.
+  */
+@@ -19,7 +20,7 @@ import { motion, useMotionValue, animate, type PanInfo } from 'framer-motion';
+ import { useSearchParams } from 'next/navigation';
+ import Link from 'next/link';
+ import { ChevronLeft } from 'lucide-react';
+-import { useNflStats } from '@/lib/useNflStats';
++import { useSharedNflStats } from '@/components/NflStatsProvider';
+ import { useComparisons } from '@/components/ComparisonsProvider';
+ import { useFillComparison } from '@/lib/comparisons/useFillComparison';
+ import { abbrToTeamName } from '@/lib/teams';
+@@ -58,7 +59,7 @@ export default function CompareWorkspace() {
+     isLoadingDefense,
+     offenseError,
+     defenseError,
+-  } = useNflStats();
++  } = useSharedNflStats();
+ 
+   const {
+     comparisons,
+diff --git a/components/mobile/CompactComparisonRow.tsx b/components/mobile/CompactComparisonRow.tsx
+index 77f7322..bc13288 100644
+--- a/components/mobile/CompactComparisonRow.tsx
++++ b/components/mobile/CompactComparisonRow.tsx
+@@ -4,14 +4,12 @@
+  * Two-line layout: Data line (padded) + Bar line (edge-to-edge)
+  * LAYOUT: theScore compact structure (~48px total height)
+  * STYLE: Neon Frame (Round 5 "R") — split-capsule bar in team colors, white stats
+- * INTERACTION: Tap rank text (30th) to open dropdown; stat values roll (NumberFlow)
++ * INTERACTION: Tap rank text (30th) to open dropdown
+  */
+ 
+ 'use client';
+ 
+-import { memo } from 'react';
+-import type React from 'react';
+-import NumberFlow from '@number-flow/react';
++import { memo, useCallback } from 'react';
+ import { AVAILABLE_METRICS } from '@/lib/metricsConfig';
+ import { useRanking } from '@/lib/useRanking';
+ import { useBarCalculation } from '@/lib/useBarCalculation';
+@@ -22,11 +20,13 @@ import { getRankTier } from '@/lib/rankTier';
+ import type { BarPalette } from '@/lib/teamColors';
+ 
+ /**
+- * StatValue — one stat number with a premium "odometer" roll (NumberFlow) when
+- * it changes (team swap, PG/TOT toggle). Non-numeric cases fall back to plain
+- * text: a missing metric shows "—", and a time value (MM:SS) shows as-is, since
+- * neither rolls as a number. NumberFlow respects prefers-reduced-motion, so it
+- * degrades to an instant swap for users who ask for less motion.
++ * StatValue — one stat number as plain text. A missing metric shows "—" and a
++ * time value (MM:SS) shows as-is.
++ *
++ * PERF (2026-10-03): this used to be a NumberFlow "odometer" roll. With 20 on
++ * screen, each one re-measured the page on every team swap (~375ms of forced
++ * layout at 4x CPU throttle) — the #1 cause of the swap freeze. The bars carry
++ * the motion now; numbers just swap.
+  */
+ const STAT_CLS = 'text-[15px] leading-[18px] font-bold text-text tabular-nums';
+ 
+@@ -46,16 +46,8 @@ function StatValue({
+   if (Number.isNaN(num)) return <span className={STAT_CLS}>—</span>;
+ 
+   const digits = format === 'number' ? 0 : 1;
+-  return (
+-    <NumberFlow
+-      className={STAT_CLS}
+-      // Thinner roll mask = less built-in vertical padding (keeps rows compact)
+-      style={{ '--number-flow-mask-height': '0.12em' } as React.CSSProperties}
+-      value={num}
+-      format={{ minimumFractionDigits: digits, maximumFractionDigits: digits }}
+-      suffix={format === 'percentage' ? '%' : ''}
+-    />
+-  );
++  const text = num.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
++  return <span className={STAT_CLS}>{format === 'percentage' ? `${text}%` : text}</span>;
+ }
+ 
+ interface CompactComparisonRowProps {
+@@ -70,7 +62,10 @@ interface CompactComparisonRowProps {
+   activeDropdownTeam?: 'A' | 'B' | null;  // Which dropdown is open
+   onTeamAChange?: (team: string) => void;  // Team change handler
+   onTeamBChange?: (team: string) => void;  // Team change handler
+-  onDropdownToggle?: (team: 'A' | 'B') => void;  // Toggle dropdown
++  /** Toggle this row's A/B menu (stable identity from the panel — keeps memo). */
++  onDropdownToggle?: (metricKey: string, team: 'A' | 'B') => void;
++  /** Close whichever menu is open (stable, idempotent). */
++  onDropdownClose?: () => void;
+   /** Team bar colors for this matchup (lib/teamColors, resolved once per panel). */
+   paletteA: BarPalette;
+   paletteB: BarPalette;
+@@ -88,6 +83,7 @@ function CompactComparisonRow({
+   onTeamAChange,
+   onTeamBChange,
+   onDropdownToggle,
++  onDropdownClose,
+   paletteA,
+   paletteB,
+ }: CompactComparisonRowProps) {
+@@ -137,6 +133,11 @@ function CompactComparisonRow({
+     metricName: metricConfig?.name ?? '',
+   });
+ 
++  const toggleA = useCallback(() => onDropdownToggle?.(metricField, 'A'), [onDropdownToggle, metricField]);
++  const toggleB = useCallback(() => onDropdownToggle?.(metricField, 'B'), [onDropdownToggle, metricField]);
++  const closeMenu = useCallback(() => onDropdownClose?.(), [onDropdownClose]);
++  const noop = useCallback(() => {}, []);
++
+   // Nothing to render without config/data (the hooks above have already run).
+   if (!metricConfig || !teamAData || !teamBData) {
+     return null;
+@@ -174,13 +175,15 @@ function CompactComparisonRow({
+             metricKey={metricField}
+             currentTeam={teamA}
+             panelType={panelType}
+-            onTeamChange={onTeamAChange || (() => {})}
++            onTeamChange={onTeamAChange || noop}
+             isOpen={activeDropdownTeam === 'A'}
+-            onToggle={() => onDropdownToggle?.('A')}
++            onToggle={toggleA}
++            onClose={closeMenu}
+             ranking={hasA && teamARanking ? { 
+               rank: teamARanking.rank, 
+               formattedRank: formatRank(teamARanking.rank),
+-              isTied: teamARanking.isTied
++              isTied: teamARanking.isTied,
++              totalTeams: teamARanking.totalTeams
+             } : null}
+             position="left"
+           />
+@@ -200,13 +203,15 @@ function CompactComparisonRow({
+             metricKey={metricField}
+             currentTeam={teamB}
+             panelType={panelType}
+-            onTeamChange={onTeamBChange || (() => {})}
++            onTeamChange={onTeamBChange || noop}
+             isOpen={activeDropdownTeam === 'B'}
+-            onToggle={() => onDropdownToggle?.('B')}
++            onToggle={toggleB}
++            onClose={closeMenu}
+             ranking={hasB && teamBRanking ? { 
+               rank: teamBRanking.rank, 
+               formattedRank: formatRank(teamBRanking.rank),
+-              isTied: teamBRanking.isTied
++              isTied: teamBRanking.isTied,
++              totalTeams: teamBRanking.totalTeams
+             } : null}
+             position="right"
+           />
+diff --git a/components/mobile/CompactPanel.tsx b/components/mobile/CompactPanel.tsx
+index 28f7e05..200d8b6 100644
+--- a/components/mobile/CompactPanel.tsx
++++ b/components/mobile/CompactPanel.tsx
+@@ -86,6 +86,16 @@ function CompactPanel({
+     setActiveDropdown(null);
+   }, [onTeamBChange]);
+ 
++  // Stable menu handlers (useCallback) so memoized rows don't ALL re-render when
++  // one menu opens. Before, an inline arrow here gave every row a new prop on
++  // every panel render → opening one badge re-rendered all 10 rows.
++  const handleDropdownToggle = useCallback((metricKey: string, team: 'A' | 'B') => {
++    setActiveDropdown((cur) =>
++      cur?.metricKey === metricKey && cur.team === team ? null : { metricKey, team },
++    );
++  }, []);
++  const closeDropdown = useCallback(() => setActiveDropdown(null), []);
++
+   // Power Surge: a team ranked top 5 in ≥ 3 of this card's metrics gets the
+   // storm-crackle effect on its half (same ranks/data as the row badges).
+   const powered = usePowerSurge(transformedAllData, selectedMetrics, teamA, teamB, type);
+@@ -140,13 +150,8 @@ function CompactPanel({
+             activeDropdownTeam={activeDropdown?.metricKey === metricKey ? activeDropdown.team : null}
+             onTeamAChange={handleTeamAChange}
+             onTeamBChange={handleTeamBChange}
+-            onDropdownToggle={(team) => {
+-              if (activeDropdown?.metricKey === metricKey && activeDropdown?.team === team) {
+-                setActiveDropdown(null);
+-              } else {
+-                setActiveDropdown({ metricKey, team });
+-              }
+-            }}
++            onDropdownToggle={handleDropdownToggle}
++            onDropdownClose={closeDropdown}
+           />
+         ))}
+       </div>
+diff --git a/components/mobile/CompactRankingDropdown.tsx b/components/mobile/CompactRankingDropdown.tsx
+index 456a378..9603806 100644
+--- a/components/mobile/CompactRankingDropdown.tsx
++++ b/components/mobile/CompactRankingDropdown.tsx
+@@ -7,11 +7,15 @@
+  * No logo artwork. Height follows the screen (viewport minus bottom-nav reserve).
+  * INTERACTION: Sleek dropdown — spring pop, blurred backdrop, staggered rows; listbox/option a11y
+  * POSITIONING: Floating UI with auto-flip, shift, and boundary detection
++ * PERF (2026-10-03): the badge (trigger) is cheap and always rendered; the menu
++ *   (Floating UI + portal + 32-team ranking + sort) only MOUNTS while open, and
++ *   unmounts after its exit animation. A Compare pane has 20 badges — before,
++ *   every one carried a full hidden menu (60 with neighbor panes mounted).
+  */
+ 
+ 'use client';
+ 
+-import { useMemo, useEffect } from 'react';
++import { memo, useEffect, useMemo, useState, type ReactNode } from 'react';
+ import { AnimatePresence, motion } from 'framer-motion';
+ import { useFloating, flip, shift, offset, autoUpdate, useDismiss, useInteractions, FloatingPortal, size, inline } from '@floating-ui/react';
+ import type { TeamData } from '@/lib/useNflStats';
+@@ -31,8 +35,12 @@ interface CompactRankingDropdownProps {
+   panelType: 'offense' | 'defense';
+   onTeamChange: (teamName: string) => void;
+   isOpen: boolean;
++  /** Trigger tap: open (or close if already open). */
+   onToggle: () => void;
+-  ranking: { rank: number; formattedRank: string; isTied: boolean } | null;
++  /** Close only (backdrop, outside tap, Esc, team picked). Idempotent — safe if
++   *  several close paths fire on the same tap. */
++  onClose: () => void;
++  ranking: { rank: number; formattedRank: string; isTied: boolean; totalTeams?: number } | null;
+   position: 'left' | 'right'; // Team A = left (dropdown appears right), Team B = right (dropdown appears left)
+ }
+ 
+@@ -47,17 +55,25 @@ interface TeamWithRanking {
+   formattedValue: string;
+ }
+ 
+-export default function CompactRankingDropdown({
++type RankingMenuProps = Omit<CompactRankingDropdownProps, 'onToggle' | 'ranking'> & {
++  triggerElement: HTMLElement;
++  /** Called after the exit animation finishes → parent unmounts the menu. */
++  onExited: () => void;
++};
++
++/** The open menu. Mounted only while open (+ its exit animation). */
++function RankingMenu({
+   allData,
+   metricKey,
+   currentTeam,
+   panelType,
+   onTeamChange,
+   isOpen,
+-  onToggle,
+-  ranking,
+-  position
+-}: CompactRankingDropdownProps) {
++  onClose,
++  position,
++  triggerElement,
++  onExited,
++}: RankingMenuProps) {
+   
+   const metric = AVAILABLE_METRICS[metricKey];
+   
+@@ -67,7 +83,8 @@ export default function CompactRankingDropdown({
+   const { refs, context, x, y, strategy: floatingStrategy } = useFloating({
+     strategy: 'fixed',  // Phase 2B: Use viewport positioning
+     open: isOpen,
+-    onOpenChange: onToggle,
++    onOpenChange: (open) => { if (!open) onClose(); },
++    elements: { reference: triggerElement },
+     placement: position === 'left' ? 'right-start' : 'left-start',
+     middleware: [
+       offset(8), // 8px gap from trigger
+@@ -98,7 +115,7 @@ export default function CompactRankingDropdown({
+   });
+ 
+   const { getFloatingProps } = useInteractions([
+-    dismiss  // Removed useClick - we control state externally with isOpen/onToggle
++    dismiss  // No useClick — open/close is controlled by the parent (isOpen / onToggle / onClose)
+   ]);
+ 
+   // Phase 2H: Body scroll lock (mobile only)
+@@ -171,57 +188,15 @@ export default function CompactRankingDropdown({
+   
+   const handleTeamSelect = (teamName: string) => {
+     onTeamChange(teamName);
+-    onToggle();
++    onClose();
+   };
+ 
+-  // Render rank badge (trigger button)
+-  const renderRankBadge = () => {
+-    const isAverage = isAverageTeam(currentTeam);
+-
+-    if (isAverage) {
+-      return (
+-        <span
+-          className="inline-flex items-center gap-1 font-bold"
+-          style={{ fontSize: '11px', color: 'var(--muted)' }}
+-        >
+-          <BarChart3 size={11} /> AVG
+-        </span>
+-      );
+-    }
+-
+-    if (!ranking) {
+-      return (
+-        <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--muted)' }}>
+-          N/A
+-        </span>
+-      );
+-    }
+-
+-    // Custom tiered rank badge (no emoji). `totalTeams` = the actual ranked
+-    // field size (may be < 32 while data is still loading) so the bottom-5 tier
+-    // is based on the real count, not a hard-coded 32.
+-    const totalTeams = allTeamRankings[currentTeam]?.totalTeams;
+-    return <RankBadge rank={ranking.rank} isTied={ranking.isTied} totalTeams={totalTeams} effects />;
+-  };
+-  
+   return (
+     <>
+-      {/* Trigger Button */}
+-      <button
+-        ref={refs.setReference}
+-        onClick={onToggle}
+-        className="inline-flex items-center leading-none transition-opacity active:opacity-50"
+-        aria-label={`Ranked ${ranking?.formattedRank || 'N/A'} - tap to change`}
+-        aria-haspopup="listbox"
+-        aria-expanded={isOpen}
+-      >
+-        {renderRankBadge()}
+-      </button>
+-      
+       {/* Dropdown Portal - renders at document.body level */}
+       <FloatingPortal>
+-        <AnimatePresence>
+-          {isOpen && refs.reference.current && (  // Phase 2G: Guard null reference
++        <AnimatePresence onExitComplete={onExited}>
++          {isOpen && (
+             <>
+               {/* Backdrop — dim + subtle blur for depth */}
+               <motion.div
+@@ -231,7 +206,7 @@ export default function CompactRankingDropdown({
+                 transition={{ duration: 0.18 }}
+                 className="fixed inset-0 z-40"
+                 style={menuBackdrop}
+-                onClick={onToggle}
++                onClick={onClose}
+               />
+               
+               {/* Dropdown Menu - Positioned by Floating UI */}
+@@ -316,3 +291,52 @@ export default function CompactRankingDropdown({
+     </>
+   );
+ }
++
++/**
++ * Rank badge trigger. Always rendered; owns no Floating UI state. The menu is
++ * mounted on open and kept mounted until its exit animation completes.
++ */
++function CompactRankingDropdown(props: CompactRankingDropdownProps) {
++  const { currentTeam, isOpen, onToggle, ranking } = props;
++  const [trigger, setTrigger] = useState<HTMLButtonElement | null>(null);
++  const [menuMounted, setMenuMounted] = useState(false);
++
++  useEffect(() => {
++    if (isOpen) setMenuMounted(true);
++  }, [isOpen]);
++
++  let badge: ReactNode;
++  if (isAverageTeam(currentTeam)) {
++    badge = (
++      <span className="inline-flex items-center gap-1 font-bold" style={{ fontSize: '11px', color: 'var(--muted)' }}>
++        <BarChart3 size={11} /> AVG
++      </span>
++    );
++  } else if (!ranking) {
++    badge = <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--muted)' }}>N/A</span>;
++  } else {
++    // Tiered badge (no emoji). totalTeams = real ranked field size so the
++    // bottom-5 tier is right even while data is partial.
++    badge = <RankBadge rank={ranking.rank} isTied={ranking.isTied} totalTeams={ranking.totalTeams} effects />;
++  }
++
++  return (
++    <>
++      <button
++        ref={setTrigger}
++        onClick={onToggle}
++        className="inline-flex items-center leading-none transition-opacity active:opacity-50"
++        aria-label={`Ranked ${ranking?.formattedRank || 'N/A'} - tap to change`}
++        aria-haspopup="listbox"
++        aria-expanded={isOpen}
++      >
++        {badge}
++      </button>
++      {(isOpen || menuMounted) && trigger && (
++        <RankingMenu {...props} triggerElement={trigger} onExited={() => setMenuMounted(false)} />
++      )}
++    </>
++  );
++}
++
++export default memo(CompactRankingDropdown);
+diff --git a/components/schedule/ScheduleProvider.tsx b/components/schedule/ScheduleProvider.tsx
+index 00f3965..696c575 100644
+--- a/components/schedule/ScheduleProvider.tsx
++++ b/components/schedule/ScheduleProvider.tsx
+@@ -38,7 +38,8 @@ import React, {
+   type MutableRefObject,
+ } from 'react';
+ import { MIN_WEEK, MAX_WEEK, type Matchup } from '@/lib/schedule';
+-import { useNflStats, type TeamData } from '@/lib/useNflStats';
++import type { TeamData } from '@/lib/useNflStats';
++import { useSharedNflStats } from '@/components/NflStatsProvider';
+ 
+ /** Load state of a single week in the window. */
+ export type WeekStatus = 'loading' | 'ready' | 'empty';
+@@ -183,14 +184,15 @@ export function ScheduleProvider({
+   // In-memory scroll offset — a ref so it survives navigation without re-render.
+   const scrollTopRef = useRef(0);
+ 
+-  // Shared NFL stats for every inline compare peek — fetched ONCE here.
++  // Shared NFL stats for every inline compare peek — one app-wide copy from
++  // <NflStatsProvider> (root layout), the same data the Compare tab reads.
+   const {
+     offenseData,
+     defenseData,
+     isLoading,
+     isLoadingOffense,
+     isLoadingDefense,
+-  } = useNflStats();
++  } = useSharedNflStats();
+ 
+   const toggleOpen = useCallback((id: string) => {
+     setOpenId((prev) => (prev === id ? null : id));
+diff --git a/lib/useNflStats.ts b/lib/useNflStats.ts
+index 047a5bc..71dc493 100644
+--- a/lib/useNflStats.ts
++++ b/lib/useNflStats.ts
+@@ -7,7 +7,7 @@
+ 
+ 'use client';
+ 
+-import { useState, useEffect, useCallback } from 'react';
++import { useState, useEffect, useCallback, useRef } from 'react';
+ import { APP_CONSTANTS } from '@/config/constants';
+ import type { TeamStatsWithRanks } from '@/lib/types';
+ import { transformApiResponseToTeamData } from '@/utils/teamDataTransform';
+@@ -77,6 +77,12 @@ export function useNflStats(): UseNflStatsReturn {
+   const [defenseDataFreshness, setDefenseDataFreshness] = useState<'fresh' | 'stale' | 'unavailable' | 'loading'>('loading');
+   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+ 
++  // Background refresh (stale-while-revalidate): once a side has data, later
++  // refreshes keep showing it — no skeleton flash, and a failed refresh keeps
++  // the last good numbers instead of swapping the screen for an error.
++  const hasOffenseRef = useRef(false);
++  const hasDefenseRef = useRef(false);
++
+   /**
+    * Transforms API response data to UI-friendly format
+    * Now dynamically maps ALL available metrics from PFR!
+@@ -92,7 +98,7 @@ export function useNflStats(): UseNflStatsReturn {
+     if (STATS_DEBUG) console.log(`🏈 [HOOK-${requestId}] Fetching offense data...`);
+     
+     try {
+-      setIsLoadingOffense(true);
++      if (!hasOffenseRef.current) setIsLoadingOffense(true);
+       setOffenseError(null);
+       
+       const response = await fetch(APP_CONSTANTS.API.ENDPOINTS.OFFENSE);
+@@ -131,6 +137,7 @@ export function useNflStats(): UseNflStatsReturn {
+       const transformedData = transformApiResponseToTeamData(apiData);
+       
+       setOffenseData(transformedData);
++      hasOffenseRef.current = transformedData.length > 0;
+       setLastUpdated(apiData.updatedAt);
+       
+       // Set data freshness based on service worker cache status
+@@ -158,8 +165,10 @@ export function useNflStats(): UseNflStatsReturn {
+         type: error instanceof Error ? error.constructor.name : typeof error,
+         stack: error instanceof Error ? error.stack : 'No stack'
+       });
+-      setOffenseError(errorMessage);
+-      setOffenseDataFreshness('unavailable');
++      if (!hasOffenseRef.current) {
++        setOffenseError(errorMessage);
++        setOffenseDataFreshness('unavailable');
++      }
+     } finally {
+       setIsLoadingOffense(false);
+     }
+@@ -173,7 +182,7 @@ export function useNflStats(): UseNflStatsReturn {
+     if (STATS_DEBUG) console.log(`🛡️ [HOOK-${requestId}] Fetching defense data...`);
+     
+     try {
+-      setIsLoadingDefense(true);
++      if (!hasDefenseRef.current) setIsLoadingDefense(true);
+       setDefenseError(null);
+       
+       const response = await fetch(APP_CONSTANTS.API.ENDPOINTS.DEFENSE);
+@@ -212,6 +221,7 @@ export function useNflStats(): UseNflStatsReturn {
+       const transformedData = transformApiResponseToTeamData(apiData);
+       
+       setDefenseData(transformedData);
++      hasDefenseRef.current = transformedData.length > 0;
+       
+       // Set data freshness based on service worker cache status
+       if (cacheStatus === 'fresh') {
+@@ -238,8 +248,10 @@ export function useNflStats(): UseNflStatsReturn {
+         type: error instanceof Error ? error.constructor.name : typeof error,
+         stack: error instanceof Error ? error.stack : 'No stack'
+       });
+-      setDefenseError(errorMessage);
+-      setDefenseDataFreshness('unavailable');
++      if (!hasDefenseRef.current) {
++        setDefenseError(errorMessage);
++        setDefenseDataFreshness('unavailable');
++      }
+     } finally {
+       setIsLoadingDefense(false);
+     }
+diff --git a/package-lock.json b/package-lock.json
+index 91c71c6..2117a03 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -9,7 +9,6 @@
+       "version": "0.1.0",
+       "dependencies": {
+         "@floating-ui/react": "^0.27.16",
+-        "@number-flow/react": "^0.6.2",
+         "@tailwindcss/typography": "^0.5.19",
+         "class-variance-authority": "^0.7.1",
+         "clsx": "^2.1.1",
+@@ -1568,20 +1567,6 @@
+         "node": ">=12.4.0"
+       }
+     },
+-    "node_modules/@number-flow/react": {
+-      "version": "0.6.2",
+-      "resolved": "https://registry.npmjs.org/@number-flow/react/-/react-0.6.2.tgz",
+-      "integrity": "sha512-WjZuV4aA+vhRCgCF+adGLgFVVAJ8vdvq6EchRT2FiBIgElTXtDOA3YgkcMr9UHpvpS9v4H70AB5wZv0D9jc3QA==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "esm-env": "^1.1.4",
+-        "number-flow": "0.6.2"
+-      },
+-      "peerDependencies": {
+-        "react": "^18 || ^19",
+-        "react-dom": "^18 || ^19"
+-      }
+-    },
+     "node_modules/@rollup/rollup-android-arm-eabi": {
+       "version": "4.63.6",
+       "resolved": "https://registry.npmjs.org/@rollup/rollup-android-arm-eabi/-/rollup-android-arm-eabi-4.63.6.tgz",
+@@ -4497,12 +4482,6 @@
+         "url": "https://opencollective.com/eslint"
+       }
+     },
+-    "node_modules/esm-env": {
+-      "version": "1.2.2",
+-      "resolved": "https://registry.npmjs.org/esm-env/-/esm-env-1.2.2.tgz",
+-      "integrity": "sha512-Epxrv+Nr/CaL4ZcFGPJIYLWFom+YeV1DqMLHJoEd9SYRxNbaFruBwfEX/kkHUJf55j2+TUbmDcmuilbP1TmXHA==",
+-      "license": "MIT"
+-    },
+     "node_modules/espree": {
+       "version": "10.4.0",
+       "resolved": "https://registry.npmjs.org/espree/-/espree-10.4.0.tgz",
+@@ -6232,15 +6211,6 @@
+         "url": "https://github.com/fb55/nth-check?sponsor=1"
+       }
+     },
+-    "node_modules/number-flow": {
+-      "version": "0.6.2",
+-      "resolved": "https://registry.npmjs.org/number-flow/-/number-flow-0.6.2.tgz",
+-      "integrity": "sha512-MCnImG4Q5vPwhSXnov56nOuyyKn6LC+Qd7II1UiKc+ACRtug5iAtn0+CwXNxM38AC5lSowEY+oYEtZX2qMnUyw==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "esm-env": "^1.1.4"
+-      }
+-    },
+     "node_modules/object-assign": {
+       "version": "4.1.1",
+       "resolved": "https://registry.npmjs.org/object-assign/-/object-assign-4.1.1.tgz",
+diff --git a/package.json b/package.json
+index 95a36b5..0ca6c63 100644
+--- a/package.json
++++ b/package.json
+@@ -16,7 +16,6 @@
+   },
+   "dependencies": {
+     "@floating-ui/react": "^0.27.16",
+-    "@number-flow/react": "^0.6.2",
+     "@tailwindcss/typography": "^0.5.19",
+     "class-variance-authority": "^0.7.1",
+     "clsx": "^2.1.1",
+-- 
+2.34.1
+

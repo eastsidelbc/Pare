@@ -59,7 +59,7 @@ All live from free public APIs — **no** CSV/PFR layer (removed 2026-10-01). En
 | Data | Refresh | Lag after ESPN |
 |---|---|---|
 | Live score / clock / final | browser polls ESPN every 15s while a game is live **or** 10 min before → 3h after kickoff (`lib/liveWindow.ts`) | ~15s |
-| Standings | `no-store` + `force-dynamic` | instant |
+| Standings | `no-store` + `force-dynamic` (ESPN ≈0.19s of a 0.22s TTFB — no cache needed); 5s timeout → last-good copy on ESPN failure; open tab re-fetches on return after 60s (`useRefreshOnReturn`) | instant |
 | Home schedule + `/api/schedule` | fetch cache 5 min (`LIVE_REVALIDATE_SECONDS`) | ≤5 min |
 | Compare offense/defense + W-L on Compare | route ISR + fetch cache 10 min (`REVALIDATE_SECONDS`) | ≤10 min |
 | Final box scores (yards-allowed) | per-game `unstable_cache` 24h | new finals next refresh |

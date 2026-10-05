@@ -5,6 +5,10 @@
  * toggle) + the single scroll region. The page (server component) fetches once and
  * hands the data down; switching views is pure client state over the same data — no
  * refetch. The T column follows the league-wide rule (`leagueHasTies`).
+ *
+ * Freshness: coming back to the app/tab after 60s+ quietly re-fetches the page
+ * (`useRefreshOnReturn`), so a game that ended while the app sat in the
+ * background shows up without leaving the tab.
  */
 
 'use client';
@@ -12,6 +16,7 @@
 import { useMemo, useRef, useState } from 'react';
 import type { ConferenceStandings } from '@/lib/standings';
 import { leagueHasTies } from '@/lib/standingsViews';
+import { useRefreshOnReturn } from '@/lib/hooks/useRefreshOnReturn';
 import CardGrid from '@/components/ui/CardGrid';
 import DivisionTable from './DivisionTable';
 import ConferenceTable from './ConferenceTable';
@@ -19,6 +24,9 @@ import PlayoffPicture from './PlayoffPicture';
 import { SectionLabel } from './StandingsRow';
 
 type View = 'division' | 'conference' | 'playoffs';
+
+/** Refresh on return if the standings on screen are at least this old. */
+const REFRESH_ON_RETURN_AFTER_MS = 60_000;
 
 const VIEWS: ReadonlyArray<{ id: View; label: string }> = [
   { id: 'division', label: 'Division' },
@@ -63,6 +71,7 @@ export default function StandingsScreen({ conferences }: { conferences: Conferen
   const [view, setView] = useState<View>('division');
   const mainRef = useRef<HTMLElement>(null);
   const showTies = useMemo(() => leagueHasTies(conferences), [conferences]);
+  useRefreshOnReturn(conferences, REFRESH_ON_RETURN_AFTER_MS);
 
   const changeView = (v: View) => {
     setView(v);

@@ -21,10 +21,17 @@ import {
   type NflTeam,
 } from './teams';
 import { APP_CONSTANTS } from '@/config/constants';
+import { createTtlCache, liveWithLastGood } from './apiCache';
 
 /** Public ESPN standings endpoint (free, no key). */
 const ESPN_STANDINGS_URL =
   'https://site.api.espn.com/apis/v2/sports/football/nfl/standings';
+
+/** Give up on ESPN after this long and serve the last good copy instead of hanging the page. */
+const ESPN_TIMEOUT_MS = 5_000;
+
+/** Last good standings, served only when ESPN fails (maxAge 0 = backup only, never "fresh"). */
+const lastGood = createTtlCache<ConferenceStandings[]>(0);
 
 /** Division display order within a conference. */
 const DIVISION_ORDER: readonly Division[] = ['North', 'South', 'East', 'West'];
@@ -154,58 +161,62 @@ function emptyConferences(): ConferenceStandings[] {
 /**
  * All standings, grouped NFC → AFC, each with its four divisions (North, South,
  * East, West), teams kept in ESPN's official standings order (real NFL
- * tiebreakers). Degrades to empty boxes on any failure so the tab never crashes.
+ * tiebreakers).
  *
- * Fetched `no-store` — fresh ESPN data on every request. Standings are live data
- * (records/points change the moment a game finalizes), and this is a single
- * cheap call, so there's no ISR cache to go stale. Route-level `force-dynamic`
- * keeps the page/route dynamic to match.
+ * Fetched `no-store` — fresh ESPN data on every request, so a finished game
+ * shows up as soon as ESPN has it (measured 2026-10-04 on the Mac mini: page
+ * TTFB 0.22s, of which ESPN ≈ 0.19s — fast enough that a cache isn't worth the
+ * staleness). Route-level `force-dynamic` keeps the page dynamic to match.
+ *
+ * Safety net: ESPN gets {@link ESPN_TIMEOUT_MS}; on an error, timeout or partial
+ * payload we serve the last good standings (per server process) instead of
+ * blank boxes. Empty boxes only if there has never been good data.
  */
 export async function getStandings(): Promise<ConferenceStandings[]> {
+  return liveWithLastGood(lastGood, fetchStandings, emptyConferences, 'standings');
+}
+
+/** One live ESPN fetch → grouped standings. Throws on any failure (caller falls back). */
+async function fetchStandings(): Promise<ConferenceStandings[]> {
   const url = `${ESPN_STANDINGS_URL}?season=${APP_CONSTANTS.SEASON}`;
 
-  try {
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`ESPN standings HTTP ${res.status}`);
-    const data = (await res.json()) as EspnStandingsResponse;
+  const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(ESPN_TIMEOUT_MS) });
+  if (!res.ok) throw new Error(`ESPN standings HTTP ${res.status}`);
+  const data = (await res.json()) as EspnStandingsResponse;
 
-    // Bucket every entry by conference + division using the static team map.
-    // ESPN returns entries already in official standings order (it applies the
-    // full NFL tiebreaker chain: head-to-head, division record, common games,
-    // conference record, strength of victory/schedule, …). We iterate in that
-    // order and never re-sort, so each division inherits ESPN's official order.
-    const buckets = new Map<string, TeamStanding[]>();
-    const keyOf = (c: Conference, d: Division) => `${c}-${d}`;
+  // Bucket every entry by conference + division using the static team map.
+  // ESPN returns entries already in official standings order (it applies the
+  // full NFL tiebreaker chain: head-to-head, division record, common games,
+  // conference record, strength of victory/schedule, …). We iterate in that
+  // order and never re-sort, so each division inherits ESPN's official order.
+  const buckets = new Map<string, TeamStanding[]>();
+  const keyOf = (c: Conference, d: Division) => `${c}-${d}`;
 
-    for (const child of data.children ?? []) {
-      for (const entry of child.standings?.entries ?? []) {
-        const mapped = mapEntry(entry);
-        if (!mapped) continue;
-        const { team, standing } = mapped;
-        const k = keyOf(team.conference, team.division);
-        const list = buckets.get(k) ?? [];
-        list.push(standing);
-        buckets.set(k, list);
-      }
+  for (const child of data.children ?? []) {
+    for (const entry of child.standings?.entries ?? []) {
+      const mapped = mapEntry(entry);
+      if (!mapped) continue;
+      const { team, standing } = mapped;
+      const k = keyOf(team.conference, team.division);
+      const list = buckets.get(k) ?? [];
+      list.push(standing);
+      buckets.set(k, list);
     }
-
-    const total = [...buckets.values()].reduce((n, l) => n + l.length, 0);
-    if (total < NFL_TEAMS.length) {
-      throw new Error(`ESPN standings mapped ${total}/${NFL_TEAMS.length} teams`);
-    }
-
-    const build = (conf: Conference): ConferenceStandings => ({
-      conference: conf,
-      divisions: DIVISION_ORDER.map((division) => ({
-        division,
-        label: `${conf} ${division}`,
-        teams: buckets.get(keyOf(conf, division)) ?? [],
-      })),
-    });
-
-    return [build('NFC'), build('AFC')];
-  } catch (err) {
-    console.error('❌ [standings] fetch failed — serving empty boxes:', err);
-    return emptyConferences();
   }
+
+  const total = [...buckets.values()].reduce((n, l) => n + l.length, 0);
+  if (total < NFL_TEAMS.length) {
+    throw new Error(`ESPN standings mapped ${total}/${NFL_TEAMS.length} teams`);
+  }
+
+  const build = (conf: Conference): ConferenceStandings => ({
+    conference: conf,
+    divisions: DIVISION_ORDER.map((division) => ({
+      division,
+      label: `${conf} ${division}`,
+      teams: buckets.get(keyOf(conf, division)) ?? [],
+    })),
+  });
+
+  return [build('NFC'), build('AFC')];
 }

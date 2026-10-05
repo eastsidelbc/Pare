@@ -6,10 +6,18 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ## [Unreleased]
 
+### Fixed
+- **Standings: never blank, never hangs, refreshes when you come back** (2026-10-04, `main`)
+  - See: `docs/devnotes/2026-10-04-standings-freshness.md`. Audit kept the live model (every visit = fresh ESPN, measured TTFB 0.22s with ESPN ≈ 0.19s) — no cache added.
+  - ESPN standings now time out after 5s; on an error, timeout or partial payload the page serves the last good standings instead of empty boxes (new `liveWithLastGood()` in `lib/apiCache.ts`, same backup-only pattern as the offense/defense routes). Empty boxes only if the server has never had good data.
+  - New `useRefreshOnReturn` hook: returning to the app/tab after 60s+ quietly re-renders Standings with fresh data (`router.refresh()` — keeps the chosen view and scroll, no skeleton). Covers the PWA sitting in the background while a game ends.
+  - Data shape, sort/tiebreak order and the page structure unchanged. Tests: `apiCache.test.ts`, `refreshOnReturn.test.ts` (76 total).
+
 ### Added
-- **Standings "Neon Frame" — compact rows + playoff seeds** (2026-10-04, branch `ui/standings-neon-frame`)
+- **Standings "Neon Frame" — compact rows + playoff seeds** (2026-10-04, branch `ui/standings-neon-frame`, merged to `main` at `56ddf86`)
   - See: `docs/devnotes/2026-10-04-standings-neon-frame.md`, recipe in `docs/design-system.md` §9.2. Picked over three mockup rounds ("Pare Standings Redesign": C + ESPN columns · L2 · T2 · Hc → V5 Dense + quiet points → R2 Standards-fixed).
   - New header toggle **Division / Conf / Playoffs**: division cards, a 16-team conference list by seed with a playoff line, and an "if the season ended today" playoff picture (seeds 1–7, Wild Card round, in the hunt).
+  - Deploy: standard Mac mini flow (pull → install → clean → build → `pm2 restart pare`); verify with `/api/health` commit and `"seed"` values in `/api/standings`.
   - Seed chips from ESPN `playoffSeed` (new `seed` field in `lib/standings.ts`); team logos removed → 13px team-color abbreviations lifted to 4.5:1 where needed; ESPN columns W · L · PCT · PF · PA · STRK with PF/PA and losing streaks in secondary grey; gold leader tint; T column only when a tie exists league-wide; 32px static rows; toggle buttons get a 44px hit area.
 - **Home "Neon Frame" — Frame Row game cards** (2026-10-03, branch `ui/home-neon-frame`)
   - See: `docs/devnotes/2026-10-03-home-neon-frame.md`, recipe in `docs/design-system.md` §9 / §9.1. Picked from two mockup rounds ("Pare Home Redesign": A + H1 + D1, G1 · C2 · N3 · 24px).

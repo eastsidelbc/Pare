@@ -1,0 +1,79 @@
+diff --git a/docs/design-system.md b/docs/design-system.md
+index 37c6042..33b3500 100644
+--- a/docs/design-system.md
++++ b/docs/design-system.md
+@@ -281,3 +281,56 @@ live clock in red, or "Final"; 44px tall) — one tap fills both teams.
+ Chosen option "B·9": faint plasma web always on + edge arcs flaring at random (0.5–1.1 s on,
+ 1.5–3.5 s off), Subtle intensity, team color, CSS mask fading to the middle. One canvas per
+ powered half, 30 fps, paused off-screen/hidden tab; reduced motion → still glow.
++
++## 9. Global rules — Neon Frame app-wide (written 2026-10-03, Compare finished)
++
++Compare is the reference screen. Every other tab (Home, Standings, Leaders, and anything new)
++follows these rules. Where a pattern isn't decided yet it says **TBD (mockup first)** — those get
++designed with side-by-side mockups before code, then written here.
++
++**1. Surfaces (one ladder, tokens only).** Nav `--nav-bg` (darkest) < page `--bg-deep` < cards
++`--card-deep-*` gradient < raised/pressed states. Components never hardcode a surface color.
++Migration: a tab switches its page from `--bg` → `--bg-deep` and its cards from `--card` →
++the deep card recipe (§8). The old `--bg` (#0a0e1a) is already within a hair of `--bg-deep`, so
++the page change is low-risk; the visible change is the cards. When every tab is migrated, the
++old `--bg / --surface / --card` values get pointed at the deep tokens and retired.
++
++**2. Type roles (one family: Inter).**
++- *Display* — team wordmarks / big names: outlined 900, **20px and up only**.
++- *Controls* — nav, buttons, pills, list names: solid 600–700, ~12–14px, white (gold when active).
++- *Labels* — section/stat labels: ~9–11px, uppercase, tracked .14–.26em, `--subtext` (gold for a
++  section header that acts as a title).
++- *Numbers* — solid 800, `tabular-nums`, white. Never grey-out a "losing" number.
++
++**3. Accent.** `--gold-bright` = interactive/UI accent only (active nav, active toggle, "+", ×,
++headers like "WEEK 5", current-row marker). Team colors = identity only (never for UI state).
++Red = live / bad rank. Don't introduce new accent colors.
++
++**4. Team identity — no logo artwork anywhere.** Big context → nickname wordmark (§8 Hero).
++Small context → plain abbreviation (white text) or `TeamMark` at sizes where its outline is
++readable; team color carried by a wash, frame, or the mark — not by tinting body text.
++
++**5. Where team color + glow is allowed.** Single-matchup cards (Compare cards, a game card that
++pairs two teams): team-color frame + side glows. **Busy lists/tables (32 teams): color on the
++team mark only, rows stay neutral** — no frames or glows per row.
++
++**6. Card types.**
++- *Matchup card* (two teams): Neon Frame recipe (§8). Home game cards follow this — **exact
++  layout TBD (mockup first)**.
++- *List / table card* (Standings divisions, Leaders lists): deep card surface, `--hairline`
++  row dividers, no team frames — **row recipe TBD (mockup first)**.
++- *Menus / dropdowns / sheets*: `components/ui/neonMenu.ts` (40px rows, screen-height).
++
++**7. Page chrome.** Bottom nav as in §8. Page header (title + week picker / filters) — **TBD
++(mockup first, with Home)**. Section headers: gold label + hairline rule.
++
++**8. Motion & effects.** Effects carry meaning (rank tier, Power Surge) — no decoration-only
++animation. Opacity/transform only, ~30 fps canvases paused off-screen, everything has a
++`prefers-reduced-motion` still state. Effects are opt-in props so dense screens stay calm.
++
++**9. Layout & touch.** Mobile-first at 393px; iPad is an enhanced layout. Touch targets ≥ 44px
++tall where possible. App shell: header + nav fixed, only content scrolls.
++
++**10. Process.** New tab = (1) mockup rounds side by side, (2) Kobe picks, (3) write the picked
++recipe into this section, (4) build with tokens, (5) gate + phone/iPad screenshots. Anything that
++goes against these rules or standard practice gets flagged before building (CLAUDE.md).
+diff --git a/docs/devnotes/2026-10-02-compare-neon-frame.md b/docs/devnotes/2026-10-02-compare-neon-frame.md
+index bb86a93..67a5f61 100644
+--- a/docs/devnotes/2026-10-02-compare-neon-frame.md
++++ b/docs/devnotes/2026-10-02-compare-neon-frame.md
+@@ -114,10 +114,9 @@ signatures.
+   side) → option C. Tokens: `--bg-deep` #0a0d14, cards #151520 / #0f121a / #121724, `--hairline`
+   #1b2030, new `--nav-bg` rgba(3,4,8,.94) used by `BottomNav`. `COMPARE_BG` updated; all 58 tests
+   pass (every team still ≥ 3:1, all 32×32 matchups distinct).
+-- **Go global:** promote Neon Frame from Compare-only to app-wide rules (surfaces, card types,
+-  type roles, gold accent, TeamMark/wordmarks instead of logos), then restyle Home `MatchupCard`,
+-  Standings `DivisionTable`, Leaders. Busy screens (32-team Standings): team color on the mark
+-  only, neutral rows.
++- **Go global:** rules written as design-system §9 (2026-10-03, Compare declared finished).
++  Next: restyle Home `MatchupCard` first (mockups), then Standings `DivisionTable`, Leaders.
++  Busy screens (32-team Standings): team color on the mark only, neutral rows.
+ - Dropdown TeamMarks are outlined at 14–15px — same readability concern as the old pills
+   (Kobe chose to leave them for now).
+ - `PanelSkeleton` still uses the old panel shape.

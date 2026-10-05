@@ -46,3 +46,33 @@ export function createTtlCache<T>(maxAgeMs: number): TtlCache<T> {
     },
   };
 }
+
+/**
+ * Live-first with a last-good fallback (the "backup only" pattern, as a helper).
+ *
+ * Always calls `fetcher` fresh. Success → remember it in `cache` and return it.
+ * Failure (HTTP error, timeout, bad payload) → return the last good copy, or
+ * `empty()` only if there has never been one since the server started.
+ * Pair it with `createTtlCache(0)` so the copy is never served as "fresh".
+ */
+export async function liveWithLastGood<T>(
+  cache: TtlCache<T>,
+  fetcher: () => Promise<T>,
+  empty: () => T,
+  label: string,
+): Promise<T> {
+  try {
+    const value = await fetcher();
+    cache.set(value);
+    return value;
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : String(err);
+    const stale = cache.getStale();
+    if (stale !== null) {
+      console.error(`⚠️ [${label}] fetch failed (${reason}) — serving last good copy`);
+      return stale;
+    }
+    console.error(`❌ [${label}] fetch failed (${reason}) — no good copy yet, serving empty`);
+    return empty();
+  }
+}

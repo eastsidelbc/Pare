@@ -1,6 +1,6 @@
 # Dev Note — 2026-10-04 — Standings "Neon Frame" (C · Compact + seeds, R2)
 
-**Status: built, pending Kobe's on-device check.** Branch `ui/standings-neon-frame`.
+**Status: merged to `main` at `56ddf86`** (branch `ui/standings-neon-frame`). Deploy + on-device check below.
 
 Recipe: `docs/design-system.md` §9.2.
 
@@ -40,6 +40,17 @@ Playwright with a sandbox-only fixture page (`app/standings-fixture`, never mirr
 1194×834 × Division / Conf / Playoffs × normal week and a stress week (17-0 · 1.000 · 540/412 · W17, plus a tie
 so T shows) → no clipped cell, no horizontal overflow, Division card 282px on iPad landscape, toggle hit area 44px.
 Sandbox can't reach ESPN: real seeds and records need an on-device check.
+
+## Ship (2026-10-04)
+- PC: committed on `ui/standings-neon-frame`, pushed, merged into `main` → `56ddf86`.
+- Mac mini deploy: `cd ~/Pare` → `git restore package-lock.json` → `git pull` → `npm install` → `npm run clean` →
+  `npm run build` → `pm2 restart pare` → `pm2 logs pare --lines 30` (watch for ESPN 429/403).
+- Post-deploy checks: `curl -s http://localhost:4000/api/health` (commit = 56ddf86, fresh `builtAt`) ·
+  `curl -s http://localhost:4000/api/standings | grep -o '"seed":[0-9]*' | head -5` (real seeds; all `null`
+  only means ESPN hasn't seeded yet — chips stay blank, nothing breaks).
+- On-device (iPhone 14 Pro app mode + iPad Pro 11"): Division / Conf / Playoffs, real seeds, leader tint,
+  toggle easy to hit. Self-hosted ISR note doesn't apply here (Standings is `force-dynamic`), but reload twice
+  if the old page shows.
 
 ## Notes / follow-ups
 - Conference order follows `getStandings()` (NFC first) — unchanged; the mockups showed AFC first.
