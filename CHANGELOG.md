@@ -12,6 +12,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - ESPN standings now time out after 5s; on an error, timeout or partial payload the page serves the last good standings instead of empty boxes (new `liveWithLastGood()` in `lib/apiCache.ts`, same backup-only pattern as the offense/defense routes). Empty boxes only if the server has never had good data.
   - New `useRefreshOnReturn` hook: returning to the app/tab after 60s+ quietly re-renders Standings with fresh data (`router.refresh()` — keeps the chosen view and scroll, no skeleton). Covers the PWA sitting in the background while a game ends.
   - Data shape, sort/tiebreak order and the page structure unchanged. Tests: `apiCache.test.ts`, `refreshOnReturn.test.ts` (76 total).
+  - Performance audit (sandbox, 4× CPU, median of 3): LCP 0.56s, view switch 83–131ms tap→paint, scroll 60 fps / 0 dropped, ~1% idle CPU, 0 running animations on iPhone 14 Pro + iPad portrait/landscape → no perf fixes needed. Table in the dev note.
 
 ### Added
 - **Standings "Neon Frame" — compact rows + playoff seeds** (2026-10-04, branch `ui/standings-neon-frame`, merged to `main` at `56ddf86`)
