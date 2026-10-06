@@ -16,6 +16,7 @@ import { useFavorites } from '@/components/FavoritesProvider';
 import { MAX_FAVORITES } from '@/lib/favorites/store';
 import { NFL_TEAMS, getTeamByAbbr } from '@/lib/teams';
 import { getTeamPalette } from '@/lib/teamColors';
+import TeamIdentity from '@/components/ui/TeamIdentity';
 
 const SECTION = { fontSize: 9.5, fontWeight: 800, letterSpacing: '0.26em', color: 'var(--gold-bright)' } as const;
 const PANEL = {
@@ -129,7 +130,9 @@ export default function YourTeamsScreen() {
                 }}
               >
                 <span className="tabular-nums" style={{ width: 14, fontSize: 11, fontWeight: 800, color: 'var(--muted)' }}>{i + 1}</span>
-                <span style={{ width: 50, fontSize: 20, fontWeight: 900, color: pal?.line ?? 'var(--text)' }}>{abbr}</span>
+                <TeamIdentity abbr={abbr} surface="favorites" size={34} slot={50} decorative>
+                  <span style={{ width: 50, fontSize: 20, fontWeight: 900, color: pal?.line ?? 'var(--text)' }}>{abbr}</span>
+                </TeamIdentity>
                 <span className="min-w-0 flex-1 truncate" style={{ fontSize: 12, fontWeight: 600, color: 'var(--subtext)' }}>{t.name}</span>
                 <IconButton label={`Move ${t.name} up`} onClick={() => moveFavorite(abbr, -1)} disabled={i === 0}>
                   <ArrowUp size={17} />
@@ -173,7 +176,9 @@ export default function YourTeamsScreen() {
                     className="flex w-full items-center gap-2.5 px-3.5 text-left touch-optimized active:opacity-60"
                     style={{ height: 44, borderTop: '1px solid var(--hairline)' }}
                   >
-                    <span style={{ width: 40, fontSize: 14, fontWeight: 900, color: pal?.line ?? 'var(--text)' }}>{t.abbr}</span>
+                    <TeamIdentity abbr={t.abbr} surface="favorites" size={24} slot={40} decorative>
+                      <span style={{ width: 40, fontSize: 14, fontWeight: 900, color: pal?.line ?? 'var(--text)' }}>{t.abbr}</span>
+                    </TeamIdentity>
                     <span className="flex-1" style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{t.name}</span>
                     <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--gold-bright)' }}>ADD</span>
                   </button>

@@ -325,7 +325,7 @@ Red = live / bad rank. Don't introduce new accent colors.
 **4. Team identity — logos OR names, behind one switch** (`config/teamIdentity.ts`, 2026-10-06).
 Every team mark renders through `components/ui/TeamIdentity.tsx`: `default` = `'logo'` | `'name'`
 plus per-surface `overrides` (`home`, `compareMenus`, `comparePills`, `compareHero`, `standings`,
-`leaders`, `teamMenu`). Logo mode = logo only (no abbreviation) — except Standings: logo + its team-color abbreviation (`withName`, wider TEAM column floor 92px only in logo mode) — local SVG in a fixed box sized to the old
+`leaders`, `teamMenu`, `favorites`). Logo mode = logo only (no abbreviation) — except Standings: logo + its team-color abbreviation (`withName`, wider TEAM column floor 92px only in logo mode) — local SVG in a fixed box sized to the old
 slot, `alt` = full team name (empty when the row already announces it); near-black / navy logos
 (`DARK_LOGOS`) get the `--logo-halo` light edge. **Name mode = the pre-logo markup, untouched**
 (TeamIdentity returns its children): big context → nickname wordmark (§8 Hero, which stays on
@@ -333,7 +333,7 @@ names via `compareHero: 'name'`); small context → plain abbreviation (white te
 sizes where its outline is readable; team color carried by a wash, frame, or the mark — not by
 tinting body text. **Licensing: NFL logos are trademarks — `default` MUST be `'name'` before any
 ads / Pro tier.** Logos on today = accepted risk while the app is pre-monetization (Kobe,
-2026-10-06). Not on the switch (always text): favorites grid, Your teams, blank-compare slots,
+2026-10-06). Not on the switch (always text): blank-compare slots,
 Compare tab chips, the "Compare KC vs…" button text.
 
 **5. Where team color + glow is allowed.** Single-matchup cards (Compare cards, a game card that
@@ -344,7 +344,11 @@ team mark only, rows stay neutral** — no frames or glows per row.
 - *Matchup card* (two teams): Neon Frame recipe (§8). Home game cards = **"Frame Row"** (§9.1 below).
 - *List / table card* (Standings divisions, Leaders lists): deep card surface, `--hairline`
   row dividers, no team frames. Standings row = **§9.2**, Leaders row = **§9.3**.
-- *Menus / dropdowns / sheets*: `components/ui/neonMenu.ts` (40px rows, screen-height).
+- *Menus / dropdowns*: `components/ui/neonMenu.ts` (40px rows, screen-height).
+- *Bottom sheets*: always `components/ui/BottomSheet.tsx` (backdrop + spring slide-up, `--radius-xl`
+  top corners). Close = backdrop tap, a button, or **swipe down** (past 25% of the height or a
+  quick flick). `grab="sheet"` for short sheets; `grab="header"` when the body scrolls, so only
+  the grabber + header drag and the list keeps native scroll.
 
 **7. Page chrome.** Bottom nav as in §8. Page header = **"H1 · Inline"** (Home, 2026-10-03): 52px
 bar on `--bg-deep` with a `--hairline` bottom edge; "Pare" (20px/900) + gold-bright "NFL" label on

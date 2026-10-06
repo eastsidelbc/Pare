@@ -10,8 +10,8 @@
 
 'use client';
 
+import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
 import { Star, GitCompareArrows } from 'lucide-react';
 import { useFavorites } from '@/components/FavoritesProvider';
 import { useComparisons } from '@/components/ComparisonsProvider';
@@ -19,6 +19,7 @@ import { getTeamByAbbr, type NflTeam } from '@/lib/teams';
 import { getTeamPalette, type BarPalette } from '@/lib/teamColors';
 import { MAX_FAVORITES } from '@/lib/favorites/store';
 import TeamIdentity from '@/components/ui/TeamIdentity';
+import BottomSheet from '@/components/ui/BottomSheet';
 import { getTeamIdentityMode } from '@/config/teamIdentity';
 
 const ACTION = {
@@ -40,7 +41,12 @@ export default function TeamQuickMenu() {
   const { quickTeam, closeQuickMenu, isFavorite, toggleFavorite, teams } = useFavorites();
   const { addComparison } = useComparisons();
 
-  const team = getTeamByAbbr(quickTeam);
+  const live = getTeamByAbbr(quickTeam);
+  // Keep the last team while the sheet slides out (quickTeam is already null by then).
+  const last = useRef(live);
+  if (live) last.current = live;
+  const team = live ?? last.current;
+  const open = live != null;
   const pal = team ? getTeamPalette(team.name) : null;
   const on = team ? isFavorite(team.abbr) : false;
   const full = !on && teams.length >= MAX_FAVORITES;
@@ -54,80 +60,54 @@ export default function TeamQuickMenu() {
     router.push('/compare');
   };
 
+  if (!team) return null; // never opened yet
+
   return (
-    <AnimatePresence>
-      {team && (
-        <>
-          <motion.button
-            key="backdrop"
-            type="button"
-            aria-label="Close menu"
-            onClick={closeQuickMenu}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50"
-            style={{ background: 'color-mix(in srgb, var(--bg-deep) 70%, transparent)' }}
-          />
-          <motion.section
-            key="menu"
-            role="dialog"
-            aria-modal="true"
-            aria-label={team.name}
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 380, damping: 36 }}
-            className="fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-[600px] flex-col gap-2.5 px-4 pt-2.5"
-            style={{
-              paddingBottom: 'calc(env(safe-area-inset-bottom) + 20px)',
-              borderRadius: 'var(--radius-xl) var(--radius-xl) 0 0',
-              background: 'var(--card-deep-mid)',
-              borderTop: '1px solid var(--glass-edge)',
-              boxShadow: 'var(--shadow-pop)',
-            }}
-          >
-            <div className="mx-auto h-1 w-9 rounded-full" style={{ background: 'var(--frame-mid)' }} aria-hidden />
-            {withLogo ? (
-              <div className="flex items-center gap-3">
-                <TeamIdentity abbr={team.abbr} surface="teamMenu" size={44} decorative>{null}</TeamIdentity>
-                <SheetTitle team={team} pal={pal} />
-              </div>
-            ) : (
-              <SheetTitle team={team} pal={pal} />
-            )}
-            <button
-              type="button"
-              onClick={() => toggleFavorite(team.abbr)}
-              aria-pressed={on}
-              disabled={full}
-              className="touch-optimized active:opacity-70"
-              style={{
-                ...ACTION,
-                color: on && pal ? pal.line : full ? 'var(--muted)' : 'var(--text)',
-                borderColor: on && pal ? pal.line : 'var(--frame-mid)',
-                boxShadow: on && pal ? `0 0 18px -6px rgba(${pal.rgb}, 0.8)` : 'none',
-              }}
-            >
-              <Star size={18} fill={on ? 'currentColor' : 'none'} strokeWidth={1.8} aria-hidden />
-              {on ? 'In Your teams · tap to remove' : full ? `Your teams is full (${MAX_FAVORITES})` : 'Add to Your teams'}
-            </button>
-            <button type="button" onClick={compare} className="touch-optimized active:opacity-70" style={ACTION}>
-              <GitCompareArrows size={17} aria-hidden />
-              Compare {team.abbr} vs…
-            </button>
-            <button
-              type="button"
-              onClick={closeQuickMenu}
-              className="touch-optimized active:opacity-70"
-              style={{ ...ACTION, background: 'transparent', border: '1px solid transparent', color: 'var(--subtext)' }}
-            >
-              Cancel
-            </button>
-          </motion.section>
-        </>
+    <BottomSheet
+      open={open}
+      onClose={closeQuickMenu}
+      label={team.name}
+      closeLabel="Close menu"
+      className="gap-2.5 px-4 pt-2.5"
+      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 20px)' }}
+    >
+      {withLogo ? (
+        <div className="flex items-center gap-3">
+          <TeamIdentity abbr={team.abbr} surface="teamMenu" size={44} decorative>{null}</TeamIdentity>
+          <SheetTitle team={team} pal={pal} />
+        </div>
+      ) : (
+        <SheetTitle team={team} pal={pal} />
       )}
-    </AnimatePresence>
+      <button
+        type="button"
+        onClick={() => toggleFavorite(team.abbr)}
+        aria-pressed={on}
+        disabled={full}
+        className="touch-optimized active:opacity-70"
+        style={{
+          ...ACTION,
+          color: on && pal ? pal.line : full ? 'var(--muted)' : 'var(--text)',
+          borderColor: on && pal ? pal.line : 'var(--frame-mid)',
+          boxShadow: on && pal ? `0 0 18px -6px rgba(${pal.rgb}, 0.8)` : 'none',
+        }}
+      >
+        <Star size={18} fill={on ? 'currentColor' : 'none'} strokeWidth={1.8} aria-hidden />
+        {on ? 'In Your teams · tap to remove' : full ? `Your teams is full (${MAX_FAVORITES})` : 'Add to Your teams'}
+      </button>
+      <button type="button" onClick={compare} className="touch-optimized active:opacity-70" style={ACTION}>
+        <GitCompareArrows size={17} aria-hidden />
+        Compare {team.abbr} vs…
+      </button>
+      <button
+        type="button"
+        onClick={closeQuickMenu}
+        className="touch-optimized active:opacity-70"
+        style={{ ...ACTION, background: 'transparent', border: '1px solid transparent', color: 'var(--subtext)' }}
+      >
+        Cancel
+      </button>
+    </BottomSheet>
   );
 }
 

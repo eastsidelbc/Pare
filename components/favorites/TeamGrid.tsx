@@ -13,6 +13,7 @@ import { Star } from 'lucide-react';
 import { NFL_TEAMS, type Conference, type NflTeam } from '@/lib/teams';
 import { getTeamPalette } from '@/lib/teamColors';
 import { MAX_FAVORITES } from '@/lib/favorites/store';
+import TeamIdentity from '@/components/ui/TeamIdentity';
 
 const DIVISIONS = ['East', 'North', 'South', 'West'] as const;
 
@@ -77,7 +78,9 @@ function TeamGrid({ selected, onToggle, conference, variant = 'chip' }: TeamGrid
                   style={{ gap: 3, fontSize: tile ? 17 : 14, fontWeight: 900, color: on && pal ? pal.line : 'var(--subtext)' }}
                 >
                   {on && <Star size={10} fill="currentColor" strokeWidth={0} aria-hidden />}
-                  {t.abbr}
+                  <TeamIdentity abbr={t.abbr} surface="favorites" size={tile ? 30 : 24} decorative>
+                    {t.abbr}
+                  </TeamIdentity>
                 </span>
                 {tile && <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--subtext)' }}>{t.nickname}</span>}
               </button>

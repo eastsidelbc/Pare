@@ -36,6 +36,11 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Perf (sandbox, 4× CPU, median of 3): LCP 0.25–0.29s, expand 50–56ms, TOT/PPG ~40ms, 60 fps / 0 dropped, ~2ms main-thread per 5s idle, 0 animations → no fixes needed. Details in the dev note.
 
 ### Added
+- **Swipe down to close bottom sheets + favorites logos** (2026-10-06, branch `ui/sheets-favorites-logos`)
+  - See: `docs/devnotes/2026-10-06-sheets-swipe-favorites-logos.md`.
+  - New shared `components/ui/BottomSheet.tsx`: every bottom sheet (team quick menu from Standings, the Home "Your teams" picker) now closes by swiping it down, as well as tapping outside. The picker drags from its top area so the team grid still scrolls.
+  - "Manage order & display" moved to the top of the Your teams picker.
+  - Logos on the favorites team chips (Home picker + first launch) and on /teams (your teams + add-search results) — new `favorites` surface in `config/teamIdentity.ts`.
 - **Team logos are back — logo ⇄ name switch** (2026-10-06, `ui/team-logo-switch` → `main` `1e527eb`; quick-menu logo `fc2ec58` on `ui/nav-styles`)
   - See: `docs/devnotes/2026-10-06-team-logo-switch.md`.
   - **Switch:** `config/teamIdentity.ts` → `default: 'logo' | 'name'` + per-surface `overrides` (`home`, `compareMenus`, `comparePills`, `compareHero`, `standings`, `leaders`, `teamMenu`). `default: 'name'` turns every logo off.
