@@ -1,7 +1,8 @@
 /**
  * MatchupHero — team-name wordmarks at the top of a comparison (Round 5 "R").
  *
- * Replaces team logos on Compare (licensing: names as text, no logo artwork).
+ * Wordmarks by default; config/teamIdentity.ts 'compareHero' = 'logo' swaps the
+ * nickname for the team logo (city · record line stays).
  *   KANSAS CITY · 4–1          BUFFALO · 3–2
  *   CHIEFS (outlined)          BILLS (outlined)
  * Each nickname is outlined in its team's bar color (lib/teamColors) with a soft
@@ -19,6 +20,7 @@ import type { TeamData } from '@/lib/useNflStats';
 import { getTeamByName } from '@/lib/teams';
 import type { BarPalette } from '@/lib/teamColors';
 import CompactTeamSelector from '@/components/mobile/CompactTeamSelector';
+import TeamIdentity from '@/components/ui/TeamIdentity';
 
 interface MatchupHeroProps {
   teamA: string;
@@ -89,19 +91,29 @@ function MatchupHero({
           {city}
           {record && <span style={{ color: 'var(--muted)', letterSpacing: '0.04em' }}>{` · ${record}`}</span>}
         </div>
-        <div
-          className="whitespace-nowrap"
-          style={{
-            fontSize,
-            fontWeight: 900,
-            lineHeight: 1.05,
-            color: 'transparent',
-            WebkitTextStroke: `${size === 'lg' ? 1.4 : 1.1}px ${pal.line}`,
-            textShadow: `0 0 16px rgba(${pal.rgb}, 0.55)`,
-          }}
+        {/* Logo mode: inline-block img follows the button's text-left/right, so A hugs
+            the left edge and B the right edge; align-bottom drops the baseline gap. */}
+        <TeamIdentity
+          abbr={team?.abbr ?? ''}
+          surface="compareHero"
+          size={size === 'lg' ? 40 : 32}
+          className="mt-1 inline-block align-bottom"
+          decorative
         >
-          {nickname}
-        </div>
+          <div
+            className="whitespace-nowrap"
+            style={{
+              fontSize,
+              fontWeight: 900,
+              lineHeight: 1.05,
+              color: 'transparent',
+              WebkitTextStroke: `${size === 'lg' ? 1.4 : 1.1}px ${pal.line}`,
+              textShadow: `0 0 16px rgba(${pal.rgb}, 0.55)`,
+            }}
+          >
+            {nickname}
+          </div>
+        </TeamIdentity>
       </button>
     );
   };

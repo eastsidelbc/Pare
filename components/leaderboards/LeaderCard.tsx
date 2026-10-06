@@ -3,8 +3,9 @@
  *
  * Same shell as a Standings division card (deep gradient, hairline border, white
  * small-caps title) with a tight 32px row: rank · team abbr · short name · value.
- * Shows the top 5; the 44px footer button shows all (up to 25) and back. No logos,
- * no headshots, no motion — calm on a dense screen.
+ * Shows the top 5; the 44px footer button shows all (up to 25) and back. The team
+ * cell is an 18px logo or the abbr per config/teamIdentity.ts ('leaders' surface).
+ * No headshots, no motion — calm on a dense screen.
  *
  * Client component for the expand toggle; types are imported type-only, so the
  * `server-only` `lib/leaders` module never enters this bundle.
@@ -16,6 +17,7 @@ import { useState, type CSSProperties } from 'react';
 import { ChevronDown } from 'lucide-react';
 import type { LeaderBoard, LeaderRow } from '@/lib/leaders';
 import { TeamAbbr } from '@/components/standings/StandingsRow';
+import TeamIdentity from '@/components/ui/TeamIdentity';
 import { shortPlayerName } from '@/lib/playerName';
 import { normalizeTeamAbbr } from '@/lib/teams';
 
@@ -110,7 +112,11 @@ function Row({ row, rank }: { row: LeaderRow; rank: number }) {
       </span>
       <span className="text-center">
         {/* ESPN sends a few legacy abbrs (WSH, JAC, LA) — map to ours so the team color applies. */}
-        <TeamAbbr abbr={normalizeTeamAbbr(row.teamAbbr)} size={11} />
+        {/* Logo mode: block + mx-auto centers the 18px img in the 30px column with no
+            inline line-box gap. Free agents (empty abbr) fall back to the abbr markup. */}
+        <TeamIdentity abbr={normalizeTeamAbbr(row.teamAbbr)} surface="leaders" size={18} className="mx-auto block">
+          <TeamAbbr abbr={normalizeTeamAbbr(row.teamAbbr)} size={11} />
+        </TeamIdentity>
       </span>
       <span className="truncate" title={row.name} style={{ fontSize: '12px', fontWeight: lead ? 700 : 600, color: 'var(--text)' }}>
         {shortPlayerName(row.name)}

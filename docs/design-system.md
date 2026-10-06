@@ -223,7 +223,7 @@ inside, a `--card-deep-a → --card-deep-mid → --card-deep-b` gradient. Row di
 ≥3:1 on `--bg-deep`; (2) clash → right side swaps to its alt, then left, then both;
 (3) fallback to `--green` / `--fire`. Every 32×32 matchup is unit-tested to stay distinct.
 
-**Team identity = wordmarks, not logos** (licensing): city + record small caps, nickname in
+**Team identity = wordmarks** (hero stays on names even when logos are on — §9 rule 4): city + record small caps, nickname in
 Inter 900 outlined (`-webkit-text-stroke`) in the team's line color with a soft glow.
 Component: `components/compare/MatchupHero.tsx`.
 
@@ -321,9 +321,19 @@ old `--bg / --surface / --card` values get pointed at the deep tokens and retire
 headers like "WEEK 5", current-row marker). Team colors = identity only (never for UI state).
 Red = live / bad rank. Don't introduce new accent colors.
 
-**4. Team identity — no logo artwork anywhere.** Big context → nickname wordmark (§8 Hero).
-Small context → plain abbreviation (white text) or `TeamMark` at sizes where its outline is
-readable; team color carried by a wash, frame, or the mark — not by tinting body text.
+**4. Team identity — logos OR names, behind one switch** (`config/teamIdentity.ts`, 2026-10-06).
+Every team mark renders through `components/ui/TeamIdentity.tsx`: `default` = `'logo'` | `'name'`
+plus per-surface `overrides` (`home`, `compareMenus`, `comparePills`, `compareHero`, `standings`,
+`leaders`). Logo mode = logo only (no abbreviation) — except Standings: logo + its team-color abbreviation (`withName`, wider TEAM column floor 92px only in logo mode) — local SVG in a fixed box sized to the old
+slot, `alt` = full team name (empty when the row already announces it); near-black / navy logos
+(`DARK_LOGOS`) get the `--logo-halo` light edge. **Name mode = the pre-logo markup, untouched**
+(TeamIdentity returns its children): big context → nickname wordmark (§8 Hero, which stays on
+names via `compareHero: 'name'`); small context → plain abbreviation (white text) or `TeamMark` at
+sizes where its outline is readable; team color carried by a wash, frame, or the mark — not by
+tinting body text. **Licensing: NFL logos are trademarks — `default` MUST be `'name'` before any
+ads / Pro tier.** Logos on today = accepted risk while the app is pre-monetization (Kobe,
+2026-10-06). Not on the switch (always text): favorites grid, Your teams, blank-compare slots,
+Compare tab chips.
 
 **5. Where team color + glow is allowed.** Single-matchup cards (Compare cards, a game card that
 pairs two teams): team-color frame + side glows. **Busy lists/tables (32 teams): color on the

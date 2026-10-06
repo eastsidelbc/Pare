@@ -17,16 +17,24 @@
 import type { CSSProperties } from 'react';
 import { Star } from 'lucide-react';
 import { useFavorites } from '@/components/FavoritesProvider';
+import TeamIdentity from '@/components/ui/TeamIdentity';
+import { getTeamIdentityMode } from '@/config/teamIdentity';
 import type { TeamStanding } from '@/lib/standings';
 import { seedKind } from '@/lib/standingsViews';
 import { getListTeamColor } from '@/lib/teamColors';
 
 export const ROW_H = 32;
 
+/**
+ * Team column: logo mode shows seed + logo + abbr + ★ (~90px), so it gets a wider floor;
+ * name mode keeps the original 64px. Read once — the switch is a build-time constant.
+ */
+const TEAM_COL = getTeamIdentityMode('standings') === 'logo' ? 'minmax(92px,1.45fr)' : 'minmax(64px,1.25fr)';
+
 /** Columns: team · W · L · (T) · PCT · PF · PA · STRK. PCT keeps a 38px floor so "1.000" never clips. */
 export function rowColumns(showTies: boolean): string {
   return [
-    'minmax(64px,1.25fr)',
+    TEAM_COL,
     'minmax(0,.5fr)',
     'minmax(0,.5fr)',
     ...(showTies ? ['minmax(0,.42fr)'] : []),
@@ -125,7 +133,9 @@ export function TeamRow({ team: t, showTies, leader = false, showOutSeed = false
     >
       <div className="flex min-w-0 items-center overflow-hidden" style={{ gap: 6 }}>
         <SeedChip seed={t.seed} showOutSeed={showOutSeed} />
-        <TeamAbbr abbr={t.abbr} />
+        <TeamIdentity abbr={t.abbr} surface="standings" size={20} decorative withName>
+          <TeamAbbr abbr={t.abbr} />
+        </TeamIdentity>
         {fav && (
           <Star size={10} fill="currentColor" strokeWidth={0} aria-hidden style={{ flex: 'none', marginLeft: -3, color: getListTeamColor(t.abbr) ?? 'var(--text)' }} />
         )}

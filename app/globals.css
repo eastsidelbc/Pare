@@ -167,6 +167,7 @@
     --leader-tint: rgba(245, 200, 66, 0.08); /* Standings division-leader row (gold-bright 8%) — lib/teamColors LIST_LEADER_BG mirrors it */
     --seed-chip: #232a3c; /* Standings seed chip fill — division winners (1–4) */
     --seed-edge: #5b6680; /* Standings seed chip outline — wild cards (5–7); ~3:1 on the deep card */
+    --logo-halo: drop-shadow(0 0 1px rgba(255, 255, 255, 0.55)); /* thin light edge on dark team logos (config/teamIdentity DARK_LOGOS) */
 
     /* Warning / offline — semantic amber (its own token, not an accent) */
     --warn:      #f59e0b; /* amber — offline/caution surface */
