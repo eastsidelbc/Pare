@@ -7,6 +7,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Fixed
+- **Home peek: no dead space above "Open full"** (2026-10-06, `main`) — the inline variant no longer inherits the Compare page's bottom-nav reserve (`MobileCompareLayout` `padBottom` → 8px for `inline`); "Open full" is now a gold neon capsule matching the nav's `ActivePill`.
 - **Schedule odds no longer stay blank for a whole session** (2026-10-06, `main`)
   - See: `docs/devnotes/2026-10-06-schedule-odds-freshness.md`.
   - Loaded weeks older than 5 min are quietly re-fetched (in-view week ±1) when they scroll into view or the app returns to the foreground — lines ESPN posts after a week loaded now appear without a reload. Merge never erases a line or rewinds a live game (`lib/scheduleRefresh.ts` + tests).

@@ -82,7 +82,13 @@ function MobileCompareLayout({
   const GAP = 6;
   // Phone: reserve just enough for the floating nav so Offense + Defense both fit
   // on one iPhone 14 Pro screen in app (standalone) mode.
-  const padBottom = isQuad ? GAP : 'calc(var(--nav-h) + env(safe-area-inset-bottom) + 6px)';
+  // Inline (Home peek) sits mid-scroll inside a card, so it gets no nav reserve —
+  // just a small gap before the card's own "Open full" button.
+  const padBottom = isQuad
+    ? GAP
+    : variant === 'inline'
+      ? 8
+      : 'calc(var(--nav-h) + env(safe-area-inset-bottom) + 6px)';
   const padRight = isQuad ? GAP : undefined;
   const padLeft = isQuad ? GAP : undefined; // undefined → px-3 (12px) for full/inline
   const padTop = isQuad ? GAP : undefined;  // undefined → py-2 (8px) for full/inline

@@ -143,17 +143,19 @@ export default function MatchupAccordion({
                 onDefenseMetricsChange={setDefMetrics}
               />
 
-              <div className="p-3 pt-0">
+              <div className="px-3 pb-3">
+                {/* Gold neon capsule — same ring/tint/glow as the nav's ActivePill. */}
                 <button
                   type="button"
                   onClick={openFull}
-                  className="flex w-full items-center justify-center gap-1.5 font-bold touch-optimized active:opacity-80"
+                  className="flex w-full items-center justify-center gap-1.5 rounded-full font-bold touch-optimized active:opacity-70"
                   style={{
-                    background: 'var(--gold)',
-                    color: 'var(--bg)',
-                    borderRadius: 'var(--radius-md)',
-                    padding: '11px',
-                    fontSize: '14px',
+                    height: 'var(--nav-pill-h)',
+                    border: '1.5px solid var(--gold-bright)',
+                    background: 'color-mix(in srgb, var(--gold-bright) 8%, transparent)',
+                    boxShadow: '0 0 12px color-mix(in srgb, var(--gold-bright) 35%, transparent)',
+                    color: 'var(--gold-bright)',
+                    fontSize: '13px',
                   }}
                 >
                   Open full <ArrowUpRight size={16} strokeWidth={2.5} />
