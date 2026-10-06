@@ -5,7 +5,10 @@
  * navigation between Home and Compare. That is what makes the schedule feel
  * "load once": weeks already fetched, the active week, the accordion, and the
  * scroll position all live here and are NOT thrown away when the Home route
- * unmounts. Coming back is instant with zero refetch.
+ * unmounts. Coming back is instant with zero refetch. A loaded week older than
+ * 5 min is quietly re-fetched + merged when it scrolls into view or the app
+ * returns to the foreground (see `refreshStaleWeeks`) — so lines ESPN posts
+ * after the week loaded still show up.
  *
  * Owns:
  *  • a CONTIGUOUS window of loaded weeks (`weeks[min..max]`), lazy-extended as
@@ -32,6 +35,7 @@ import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -41,6 +45,16 @@ import { MIN_WEEK, MAX_WEEK, type Matchup } from '@/lib/schedule';
 import type { TeamData } from '@/lib/useNflStats';
 import { useSharedNflStats } from '@/components/NflStatsProvider';
 import { useLiveScores } from '@/lib/hooks/useLiveScores';
+import { isDataStale } from '@/lib/hooks/useRefreshOnReturn';
+import { mergeRefreshedWeek } from '@/lib/scheduleRefresh';
+import { APP_CONSTANTS } from '@/config/constants';
+
+/**
+ * A loaded week older than this is re-fetched (quietly) when it scrolls into
+ * view or the app returns to the foreground. Matches the server's ESPN
+ * scoreboard cache (5 min) — refetching sooner would just get the same copy.
+ */
+const WEEK_STALE_AFTER_MS = APP_CONSTANTS.CACHE.LIVE_REVALIDATE_SECONDS * 1000;
 
 /** Load state of a single week in the window. */
 export type WeekStatus = 'loading' | 'ready' | 'empty';
@@ -185,6 +199,18 @@ export function ScheduleProvider({
   maxRef.current = max;
   const loadingTopRef = useRef(false);
   const loadingBottomRef = useRef(false);
+  const weeksRef = useRef(weeks);
+  weeksRef.current = weeks;
+  const activeWeekRef = useRef(activeWeek);
+  activeWeekRef.current = activeWeek;
+
+  // When each week's data was last fetched (ms). A ref, not state: stamping a
+  // refresh that changed nothing must not re-render the schedule. No entry =
+  // never loaded successfully → stale (retried on the next trigger).
+  const fetchedAtRef = useRef(
+    new Map<number, number>(hasPrevWeek ? [[seedWeek, Date.now()], [seedPrevWeek, Date.now()]] : [[seedWeek, Date.now()]]),
+  );
+  const refreshingRef = useRef<Set<number>>(new Set());
 
   // In-memory scroll offset — a ref so it survives navigation without re-render.
   const scrollTopRef = useRef(0);
@@ -213,12 +239,13 @@ export function ScheduleProvider({
     setWeeks((prev) => ({ ...prev, [target]: { week: target, status: 'loading', matchups: [] } }));
     setMax(target);
     fetchWeekMatchups(target)
-      .then((ms) =>
+      .then((ms) => {
+        fetchedAtRef.current.set(target, Date.now());
         setWeeks((prev) => ({
           ...prev,
           [target]: { week: target, status: ms.length > 0 ? 'ready' : 'empty', matchups: ms },
-        })),
-      )
+        }));
+      })
       .catch(() =>
         setWeeks((prev) => ({ ...prev, [target]: { week: target, status: 'empty', matchups: [] } })),
       )
@@ -237,12 +264,13 @@ export function ScheduleProvider({
     setWeeks((prev) => ({ ...prev, [target]: { week: target, status: 'loading', matchups: [] } }));
     setMin(target);
     fetchWeekMatchups(target)
-      .then((ms) =>
+      .then((ms) => {
+        fetchedAtRef.current.set(target, Date.now());
         setWeeks((prev) => ({
           ...prev,
           [target]: { week: target, status: ms.length > 0 ? 'ready' : 'empty', matchups: ms },
-        })),
-      )
+        }));
+      })
       .catch(() =>
         setWeeks((prev) => ({ ...prev, [target]: { week: target, status: 'empty', matchups: [] } })),
       )
@@ -254,15 +282,17 @@ export function ScheduleProvider({
   const resetTo = useCallback((w: number) => {
     loadingTopRef.current = false;
     loadingBottomRef.current = false;
+    fetchedAtRef.current.clear();
     setWeeks({ [w]: { week: w, status: 'loading', matchups: [] } });
     setMin(w);
     setMax(w);
     setActiveWeek(w);
     setPendingScrollWeek(w);
     fetchWeekMatchups(w)
-      .then((ms) =>
-        setWeeks({ [w]: { week: w, status: ms.length > 0 ? 'ready' : 'empty', matchups: ms } }),
-      )
+      .then((ms) => {
+        fetchedAtRef.current.set(w, Date.now());
+        setWeeks({ [w]: { week: w, status: ms.length > 0 ? 'ready' : 'empty', matchups: ms } });
+      })
       .catch(() => setWeeks({ [w]: { week: w, status: 'empty', matchups: [] } }));
   }, []);
 
@@ -292,6 +322,66 @@ export function ScheduleProvider({
     },
     [appendWeek, prependWeek, resetTo],
   );
+
+  /**
+   * Quietly re-fetch the in-view week (±1) if its data is older than
+   * WEEK_STALE_AFTER_MS — no skeleton, merged in place. Without this a week
+   * loaded before ESPN posted its lines stays blank for the whole session (the
+   * live poll only covers the current week). Failures keep what's on screen.
+   */
+  const refreshStaleWeeks = useCallback((around: number) => {
+    const now = Date.now();
+    for (let w = around - 1; w <= around + 1; w++) {
+      const entry = weeksRef.current[w];
+      if (!entry || entry.status === 'loading' || refreshingRef.current.has(w)) continue;
+      const fetchedAt = fetchedAtRef.current.get(w);
+      if (fetchedAt !== undefined && !isDataStale(fetchedAt, now, WEEK_STALE_AFTER_MS)) continue;
+
+      refreshingRef.current.add(w);
+      fetchWeekMatchups(w)
+        .then((fresh) => {
+          if (fresh.length === 0) return; // ESPN failure → keep, retry next trigger
+          fetchedAtRef.current.set(w, Date.now());
+          setWeeks((prev) => {
+            const cur = prev[w];
+            // Window was reset / week is reloading meanwhile → that fetch wins.
+            if (!cur || cur.status === 'loading') return prev;
+            const merged = mergeRefreshedWeek(cur.matchups, fresh);
+            if (!merged) return prev;
+            return { ...prev, [w]: { week: w, status: 'ready', matchups: merged } };
+          });
+        })
+        .catch(() => {
+          // Best-effort — keep what's on screen.
+        })
+        .finally(() => {
+          refreshingRef.current.delete(w);
+        });
+    }
+  }, []);
+
+  // Check the in-view week whenever it changes (scrolling / jumping) …
+  useEffect(() => {
+    refreshStaleWeeks(activeWeek);
+  }, [activeWeek, refreshStaleWeeks]);
+
+  // … and when the app comes back to the foreground. The installed iPhone app
+  // resumes the same page for days instead of reloading it; `pageshow` covers
+  // iOS restoring it from the back/forward cache.
+  useEffect(() => {
+    const onResume = () => {
+      if (document.visibilityState === 'visible') refreshStaleWeeks(activeWeekRef.current);
+    };
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) onResume();
+    };
+    document.addEventListener('visibilitychange', onResume);
+    window.addEventListener('pageshow', onPageShow);
+    return () => {
+      document.removeEventListener('visibilitychange', onResume);
+      window.removeEventListener('pageshow', onPageShow);
+    };
+  }, [refreshStaleWeeks]);
 
   const patchLiveMatchups = useCallback((live: Matchup[]) => {
     if (live.length === 0) return;
