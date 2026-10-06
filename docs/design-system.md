@@ -407,26 +407,28 @@ Standards scorecard (R2): header hit area 44px ✓ · smallest text 10px (header
 11pt, accepted for dense column labels) · lowest small-text contrast 6.06:1 ✓ · worst team abbr ≥ 4.5:1 ✓ ·
 no clipping at 281px with or without T ✓.
 
-### 9.3 Leaders — "Standings match" + Rookies (picked 2026-10-04)
+### 9.3 Leaders — R3 "edge-to-edge" + Rookies (final pick 2026-10-06)
 
-Picked on the "Pare Rookie Leaders" board: Round 3 option **1 · Standings match** (over Compare glow,
-Hero #1, Stat bars and Flat), then two spacing tweaks from Kobe (tighter rank · team · name; rank
-centered between the card edge and the team). Components: `app/leaderboards/page.tsx`,
-`components/leaderboards/LeaderCard.tsx`, `FantasyBoards.tsx`, `grid.ts`. Data: `lib/leaders.ts`, `lib/fantasy.ts`.
+History: "Pare Rookie Leaders" Round 3 option 1 "Standings match" (2026-10-04, built in `786cdf6`), then
+the "Pare Leaders Redesign v2" canvas R3 pick (2026-10-06): 2 across on iPhone, rows pushed to the card
+edges with short names, plain Fantasy header, 44px expand button, header jump capsule.
+Components: `app/leaderboards/page.tsx` (header), `components/leaderboards/JumpNav.tsx`, `components/leaderboards/LeaderCard.tsx`,
+`FantasyBoards.tsx`, `grid.ts`, `RefreshOnReturn.tsx`. Names: `lib/playerName.ts`. Data: `lib/leaders.ts`, `lib/fantasy.ts`.
 
 | Part | Recipe |
 |---|---|
-| Header | H1 Inline (52px, `--bg-deep`, hairline bottom): "Pare" + gold-bright "LEADERS" label |
-| Page order | Fantasy (PPR) → Offense → Defense → Special Teams → **ROOKIES** divider → Rookie Offense → Rookie Defense → Rookie Special Teams |
-| Section labels | D1 · Gold rule (`SectionLabel` from Standings). Rookie sections say "Rookie …" so you always know where you are mid-scroll |
-| Rookies divider | white 13px/900 .14em "ROOKIES" + `--subtext` "{season} CLASS" + hairline — same voice as the Home "WEEK n" divider |
-| Card | = §9.2 list card: deep gradient, 1px `--hairline`, `--radius-lg`; title 10px/800 .18em uppercase white. No logos, no headshots |
-| Row | 32px, hairline top. Grid `12px · 28px · 1fr · auto`, column-gap 3px, padding 0 10px 0 3px. Rank 10px/700 `--subtext`, centered (left padding = gap → evenly between edge and team). Team abbr 12px/900 `getListTeamColor` (4.5:1). Name 12px/600 truncate. Value 12px/800 white tabular. #1 row `--leader-tint` |
-| Expand | top 5 → all (≤25); the whole card is the toggle (`role=button`, Enter/Space); footer "Show all N" 32px 10px/700 `--subtext` + chevron. No animation |
-| Fantasy toggle | Total / PPG glass capsule (`--nav-bg` + `--glass-edge`, 36px), buttons 30px drawn + `.pare-hit44`; active gold-bright + 1.5px inset ring + 8% gold. Sticky header on solid `--bg-deep` (no backdrop blur) |
-| Grid | `LEADER_GRID`: CardGrid min 170 · max 300 · maxCols 5 · gap 10 → 2 across on iPhone, 4 on iPad portrait, 5 landscape |
-| Rookie data | Rookie = Sleeper `years_exp === 0`, matched to ESPN by id or normalized name + team (`lib/rookieMatch.ts`). Each rookie board scans ESPN's top 300 for that stat, keeps rookies, top 25. Empty rookie boards hide; no rookie list → the whole Rookies block hides |
-| Motion | none |
+| Header | H1 Inline (52px, `--bg-deep`, hairline bottom): "Pare" + gold-bright "LEADERS" + glass **jump capsule** FAN · OFF · DEF · ST · R (Standings capsule: `--nav-bg` + `--glass-edge`, 36px; links 30px drawn, ≥30px wide, `.pare-hit44`, 11px/700 `--subtext`, full `aria-label` "Jump to Rookies"). Plain anchors → `#lb-fan/off/def/st/rookies` (sections carry `scroll-margin-top: 8px`). **You-are-here:** the section at the top of the scroll area wears the active look (gold-bright text + 1.5px gold ring + 8% gold, same as every glass toggle), following you as you scroll; instant swap, no animation (`components/leaderboards/JumpNav.tsx`, rAF-throttled passive scroll; at the bottom the last section wins). R shows only when the Rookies block renders and stays lit through all rookie sections |
+| Page | `--bg-deep`, **12px side gutter** (`px-3`) on header + content |
+| Page order | Fantasy → Offense → Defense → Special Teams → **ROOKIES** divider → Rookie Offense → Rookie Defense → Rookie Special Teams |
+| Section labels | D1 · Gold rule (`SectionLabel`). Fantasy = plain "FANTASY" label (not sticky, no position switcher — all 6 boards show) + TOT / PPG glass toggle on the right (30px drawn, 44px tap, active gold-bright ring + 8% gold) |
+| Rookies divider | white 13px/900 .14em "ROOKIES" + `--subtext` "{season} CLASS" + hairline (Home "WEEK n" voice) |
+| Card | §9.2 list card: deep gradient, 1px `--hairline`, `--radius-lg`. Title 11px/800 .14em uppercase white, padding 10/6/8/7. No logos, no headshots |
+| Row | **32px**, hairline top. Grid `14px · 30px · 1fr · auto`, column-gap 4px, padding **0 6px 0 3px** (numbers close to both card edges). Rank 11px/700 `--subtext`, **right-aligned** tabular (#1: gold-bright 800). Team abbr 11px/900 `getListTeamColor(normalizeTeamAbbr(abbr))`, centered in its 30px slot. Name 12px/600 white, **short form** "J. Smith-Njigba" (`shortPlayerName`: keeps "C.J.", "DK"; full name in `title`), ellipsis if still long. Value 12px/800 white tabular. #1 row `--leader-tint` |
+| Expand | top 5 → all (≤25) via a real **44px footer `<button>`** "All 25 ⌄" / "Show top 5 ⌃" (12px/700 `--subtext`). iPhone: the open card spans both columns (`max-sm:col-span-full`); iPad: opens in place. No animation |
+| Grid | `LEADER_GRID`: CardGrid min 170 · max 300 · maxCols 5 · gap 8 → 2 across iPhone 393, 4 iPad portrait, 5 landscape. CardGrid now enforces `maxCols` in the track minimum, uses `auto-fill` (short sections keep the same card width) and `align-items: start` (an open card doesn't stretch its row-mates) |
+| Rookie data | Sleeper `years_exp === 0` matched to ESPN by id or normalized name + team (`lib/rookieMatch.ts`); each rookie board scans ESPN's top 300; empty rookie boards hide |
+| Motion | none. 0 running animations at rest |
 
-Standards: smallest text 10px (titles/ranks — same accepted exception as §9.2) · toggle 44px hit area ✓ ·
-team abbr ≥ 4.5:1 ✓ · names truncate on 2-up phone cards (accepted for the density).
+Standards: touch targets — expand 44px, toggle + jump links 44px tap area ✓ · smallest text 10px only on the shared D1
+section labels (Standings exception); rows/titles/links ≥ 11px ✓ · contrast: white 16.5:1, `--subtext` 7.1:1 (6.1 on the
+leader tint), gold-bright 11.4:1, team abbr ≥ 4.5:1 ✓ · WCAG 2.5.8 24px ✓ · names truncate only past ~13 chars on iPhone.

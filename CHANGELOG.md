@@ -7,6 +7,10 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Fixed
+- **Schedule odds no longer stay blank for a whole session** (2026-10-06, `main`)
+  - See: `docs/devnotes/2026-10-06-schedule-odds-freshness.md`.
+  - Loaded weeks older than 5 min are quietly re-fetched (in-view week ±1) when they scroll into view or the app returns to the foreground — lines ESPN posts after a week loaded now appear without a reload. Merge never erases a line or rewinds a live game (`lib/scheduleRefresh.ts` + tests).
+  - `public/sw.js` is now a kill switch: devices that installed the old PWA service worker drop its `pare-*` caches and unregister it (it served `/api/*` from cache first with no max age). Old worker → `_to-delete/2026-10-06-sw-pwa-cache/`.
 - **Odds stay on current-week finals; Compare pills show live/final scores** (2026-10-05, branch `feat/favorites`)
   - See: `docs/devnotes/2026-10-05-favorites-your-teams.md` ("Bundled fixes").
   - The live poll no longer erases the server's closing line when ESPN drops odds on a final (`odds: l.odds ?? m.odds` in `ScheduleProvider.patchLiveMatchups`).
@@ -18,6 +22,13 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - New `useRefreshOnReturn` hook: returning to the app/tab after 60s+ quietly re-renders Standings with fresh data (`router.refresh()` — keeps the chosen view and scroll, no skeleton). Covers the PWA sitting in the background while a game ends.
   - Data shape, sort/tiebreak order and the page structure unchanged. Tests: `apiCache.test.ts`, `refreshOnReturn.test.ts` (76 total).
   - Performance audit (sandbox, 4× CPU, median of 3): LCP 0.56s, view switch 83–131ms tap→paint, scroll 60 fps / 0 dropped, ~1% idle CPU, 0 running animations on iPhone 14 Pro + iPad portrait/landscape → no perf fixes needed. Table in the dev note.
+
+### Changed
+- **Leaders R3 "edge-to-edge" + freshness fix + perf audit** (2026-10-06, branch `ui/leaders-neon-frame`, on top of `786cdf6`)
+  - Look (picked on "Pare Leaders Redesign v2"): rows pushed to the card edges (32px, `14px · 30px · 1fr · auto`, rank right-aligned 11px, #1 gold), short names "J. Smith-Njigba" (`lib/playerName.ts`, full name on hover/VoiceOver via `title`), 12px page gutter + 8px gaps, plain FANTASY header with a TOT/PPG toggle (no sticky bar), 44px "All 25" button (the open card spans both columns on iPhone), header jump capsule **FAN · OFF · DEF · ST · R** whose gold ring follows the section you're reading. ESPN legacy abbrs (WSH/JAC/LA) now get their team color. Recipe: `docs/design-system.md` §9.3.
+  - `CardGrid` (shared): `maxCols` is now really enforced (Leaders packed 6 across at 1194px), `auto-fill` keeps card widths equal in short sections, `align-items: start` so an open card doesn't stretch its row. Standings layout verified unchanged at 393/834/1194.
+  - Freshness: leaders update within ~40 min of ESPN (was up to ~6h). ESPN boards, rookie scans and Sleeper stats sit in `unstable_cache` for 30 min over no-store fetches with timeouts; a failed/empty/reshaped/hung response keeps the previous data (cached copy, then in-memory last-good) instead of blanking the board — also across a restart. Sleeper player map no longer caches `{}` for 24h. Page `revalidate` 21600 → 300 (what it really was). `RefreshOnReturn`: coming back after 10+ min refreshes the data.
+  - Perf (sandbox, 4× CPU, median of 3): LCP 0.25–0.29s, expand 50–56ms, TOT/PPG ~40ms, 60 fps / 0 dropped, ~2ms main-thread per 5s idle, 0 animations → no fixes needed. Details in the dev note.
 
 ### Added
 - **Favorites — "Your teams"** (2026-10-05, branch `feat/favorites`)

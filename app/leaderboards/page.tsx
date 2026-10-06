@@ -7,6 +7,8 @@
  * Rookie Offense → Rookie Defense → Rookie Special Teams. Rookie boards are the same
  * stat boards filtered to first-year players; an empty rookie board is hidden, and
  * the whole Rookies block hides if none have data.
+ * Header: "H1 · Inline" + a glass jump capsule (FAN · OFF · DEF · ST · R) — in-page
+ * anchors into the one scroll region; the current section wears the gold ring (JumpNav).
  */
 
 import { getAllLeaderboards, type LeaderBoard, type LeaderSection } from '@/lib/leaders';
@@ -15,18 +17,29 @@ import LeaderCard from '@/components/leaderboards/LeaderCard';
 import FantasyBoards from '@/components/leaderboards/FantasyBoards';
 import { LEADER_GRID } from '@/components/leaderboards/grid';
 import CardGrid from '@/components/ui/CardGrid';
+import RefreshOnReturn from '@/components/leaderboards/RefreshOnReturn';
+import JumpNav, { type JumpLink } from '@/components/leaderboards/JumpNav';
 import { SectionLabel } from '@/components/standings/StandingsRow';
 
-// Page-level ISR hint. NOTE: the effective page refresh is ~5 min, because the
-// root layout's schedule fetch (5 min) is shorter and Next uses the smallest
-// window on the page. The ESPN/Sleeper board DATA itself is still held ~6h at
-// the fetch layer (lib/leaders.ts, lib/fantasy.ts), so re-renders are cheap.
-export const revalidate = 21600;
+// Page ISR window: 5 min. (It was 21600 on paper, but the root layout's 5-min schedule
+// fetch already pulled the real window down to 300s — now it says so.) Board DATA is
+// fetch-cached 30 min in lib/leaders.ts + lib/fantasy.ts, so most re-renders are cheap.
+// Must stay a literal.
+export const revalidate = 300;
 
-const SECTIONS: { key: LeaderSection; label: string }[] = [
-  { key: 'offense', label: 'Offense' },
-  { key: 'defense', label: 'Defense' },
-  { key: 'special', label: 'Special Teams' },
+const SECTIONS: { key: LeaderSection; label: string; id: string }[] = [
+  { key: 'offense', label: 'Offense', id: 'lb-off' },
+  { key: 'defense', label: 'Defense', id: 'lb-def' },
+  { key: 'special', label: 'Special Teams', id: 'lb-st' },
+];
+
+/** Header jump links → section ids. "R" only shows when the Rookies block does. */
+const JUMPS: JumpLink[] = [
+  { label: 'FAN', id: 'lb-fan', name: 'Fantasy' },
+  { label: 'OFF', id: 'lb-off', name: 'Offense' },
+  { label: 'DEF', id: 'lb-def', name: 'Defense' },
+  { label: 'ST', id: 'lb-st', name: 'Special Teams' },
+  { label: 'R', id: 'lb-rookies', name: 'Rookies' },
 ];
 
 const ROOKIE_SECTIONS: { key: LeaderSection; label: string }[] = [
@@ -45,14 +58,18 @@ export default async function LeaderboardsPage() {
     boards: boards.filter((b) => b.section === s.key && b.leaders.length > 0),
   })).filter((s) => s.boards.length > 0);
 
+  // Stamp of this render — the client re-fetches on return once it's 10+ min old.
+  const renderedAt = Date.now();
+
   return (
     <div className="flex flex-col overflow-hidden" style={{ height: 'var(--app-h, 100dvh)', background: 'var(--bg-deep)' }}>
+      <RefreshOnReturn renderedAt={renderedAt} />
       {/* Fixed top bar — §9 "H1 · Inline". */}
       <header
         className="flex-none border-b"
         style={{ background: 'var(--bg-deep)', borderColor: 'var(--hairline)', paddingTop: 'env(safe-area-inset-top)' }}
       >
-        <div className="mx-auto flex h-[52px] w-full max-w-[1440px] items-center px-4">
+        <div className="mx-auto flex h-[52px] w-full max-w-[1440px] items-center justify-between gap-2 px-3">
           <h1 className="whitespace-nowrap font-black tracking-tight" style={{ fontSize: '20px', color: 'var(--text)' }}>
             Pare
             <span
@@ -62,6 +79,9 @@ export default async function LeaderboardsPage() {
               Leaders
             </span>
           </h1>
+          <JumpNav
+            links={JUMPS.filter((j) => (j.id === 'lb-fan' ? fantasy.length > 0 : j.id === 'lb-rookies' ? rookieGroups.length > 0 : true))}
+          />
         </div>
       </header>
 
@@ -74,20 +94,21 @@ export default async function LeaderboardsPage() {
           paddingBottom: 'calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px)',
         }}
       >
-        <div className="mx-auto w-full max-w-[1440px] px-4 pt-1">
-          {fantasy.length > 0 && <FantasyBoards boards={fantasy} label="Fantasy (PPR)" />}
+        <div className="mx-auto w-full max-w-[1440px] px-3 pt-1">
+          {fantasy.length > 0 && <FantasyBoards id="lb-fan" boards={fantasy} label="Fantasy" />}
 
-          {SECTIONS.map(({ key, label }) => (
-            <BoardSection key={key} label={label} boards={boards.filter((b) => b.section === key)} />
+          {SECTIONS.map(({ key, label, id }) => (
+            <BoardSection key={key} id={id} label={label} boards={boards.filter((b) => b.section === key)} />
           ))}
 
           {rookieGroups.length > 0 && (
-            <>
+            // One wrapper = one jump target, so "R" stays lit through all rookie sections.
+            <div id="lb-rookies" style={{ scrollMarginTop: 8 }}>
               <RookiesDivider season={season} />
               {rookieGroups.map(({ key, label, boards: rb }) => (
                 <BoardSection key={key} label={label} boards={rb} />
               ))}
-            </>
+            </div>
           )}
         </div>
       </main>
@@ -95,10 +116,10 @@ export default async function LeaderboardsPage() {
   );
 }
 
-function BoardSection({ label, boards }: { label: string; boards: LeaderBoard[] }) {
+function BoardSection({ label, boards, id }: { label: string; boards: LeaderBoard[]; id?: string }) {
   if (boards.length === 0) return null;
   return (
-    <section className="mb-4">
+    <section id={id} className="mb-4" style={{ scrollMarginTop: 8 }}>
       <SectionLabel>{label}</SectionLabel>
       <CardGrid {...LEADER_GRID}>
         {boards.map((board) => (
@@ -123,3 +144,4 @@ function RookiesDivider({ season }: { season: number }) {
     </div>
   );
 }
+

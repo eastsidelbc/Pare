@@ -60,13 +60,14 @@ All live from free public APIs — **no** CSV/PFR layer (removed 2026-10-01). En
 |---|---|---|
 | Live score / clock / final | browser polls ESPN every 15s while a game is live **or** 10 min before → 3h after kickoff (`lib/liveWindow.ts`) | ~15s |
 | Standings | `no-store` + `force-dynamic` (ESPN ≈0.19s of a 0.22s TTFB — no cache needed); 5s timeout → last-good copy on ESPN failure; open tab re-fetches on return after 60s (`useRefreshOnReturn`) | instant |
-| Home schedule + `/api/schedule` | fetch cache 5 min (`LIVE_REVALIDATE_SECONDS`) | ≤5 min |
+| Home schedule + `/api/schedule` | fetch cache 5 min (`LIVE_REVALIDATE_SECONDS`); a loaded week >5 min old is re-fetched (week ±1) on scroll-into-view / app foreground (`ScheduleProvider.refreshStaleWeeks`) | ≤5 min after you look |
 | Compare offense/defense + W-L on Compare | route ISR + fetch cache 10 min (`REVALIDATE_SECONDS`) | ≤10 min |
 | Final box scores (yards-allowed) | per-game `unstable_cache` 24h | new finals next refresh |
-| Leaderboards | fetch cache 6h | ≤6h |
+| Leaderboards (+ rookies, fantasy) | page ISR 5 min (`revalidate = 300`); board rows / rookie scans / Sleeper stats in `unstable_cache` 30 min over **no-store** fetches with timeouts (5s / 10s / 8s); failed or empty → previous cached copy, then in-memory last-good; Sleeper player map 24h (never caches `{}`); open tab re-fetches on return after 10 min | ≤~40 min worst case |
 
 - **One timer per data type.** The offense/defense routes' in-memory copy is a *last-good backup* only (served on ESPN failure) — never in front of ISR.
 - **Never nest** `unstable_cache` / cached `fetch` inside `unstable_cache` — Next silently bypasses nested caches.
+- **A fetch timeout is ignored when Next refreshes a stale *cached* fetch during ISR** (`signal` dropped, `patch-fetch.js`) — a hung upstream then freezes regeneration until restart. For upstreams that can hang, use `unstable_cache` around a `no-store` fetch + `AbortSignal.timeout` and throw on empty (Leaders pattern, `docs/devnotes/2026-10-06-leaders-neon-frame-rookies.md`).
 - **Never judge prod freshness against `npm run dev`** (dev doesn't cache). Compare prod to prod: `curl.exe -sI https://pare.gg/<path>` → `cache-control`, `x-nextjs-cache`. Self-hosted ISR serves the old copy on the first hit after the window ("reload twice").
 - Route-file `export const revalidate` must be a literal — keep `600` in sync with `REVALIDATE_SECONDS`.
 - Planned: on-demand `revalidatePath()` endpoint pinged when a game goes final (stats within ~1–2 min).
@@ -168,8 +169,8 @@ pm2 logs pare                   # watch for ESPN 429/403
 | Max comparisons | 8 (`APP_CONSTANTS.MAX_COMPARISONS`) |
 | Special rows filtered | `Avg Team`, `League Total`, `Avg Tm/G`, `Avg/TmG` |
 | Tie notation / tolerance | `T-12th` / `0.001` |
-| Data freshness | live 15s · standings instant · schedule 5 min · stats 10 min · leaders 6h |
-| Service worker default | OFF (`NEXT_PUBLIC_ENABLE_SW=true` to enable; off on pare.gg) |
+| Data freshness | live 15s · standings instant · schedule 5 min · stats 10 min · leaders ≤~40 min |
+| Service worker | `public/sw.js` = kill switch (clears `pare-*` caches + unregisters old installs, 2026-10-06); `NEXT_PUBLIC_ENABLE_SW` off on pare.gg |
 
 ## End Session → Vault Brain
 

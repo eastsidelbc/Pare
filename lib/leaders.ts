@@ -3,8 +3,9 @@
  *
  * Turns ESPN's public `byathlete` statistics endpoint into typed `LeaderBoard[]`
  * for the Leaderboards tab. Same free, CORS-open ESPN family the schedule uses;
- * fetched server-side and cached ~6h (see `/api/leaders`), so we never hammer
- * ESPN no matter how many viewers.
+ * fetched server-side and cached 30 min, so we never hammer ESPN no matter how many
+ * viewers. Every ESPN call has a timeout, and a failed or empty board falls back to
+ * the last good copy held in memory (freshness audit 2026-10-06).
  *
  * One ESPN call per board (sorted by that board's stat). Each athlete row comes
  * back with EVERY stat column for its category; we pull the target value by
@@ -16,13 +17,21 @@ import 'server-only';
 import { unstable_cache } from 'next/cache';
 import { getFantasyBoards, getRookieIndex } from './fantasy';
 import { isRookieRow, type RookieIndex } from './rookieMatch';
+import { createTtlCache, liveWithLastGood, type TtlCache } from './apiCache';
 
 /** Public ESPN per-athlete statistics endpoint (free, no key). */
 const ESPN_BYATHLETE_URL =
   'https://site.web.api.espn.com/apis/common/v3/sports/football/nfl/statistics/byathlete';
 
-/** Cache window for a board fetch (6h) — matches the stats cadence. */
-const REVALIDATE_SECONDS = 6 * 60 * 60;
+/**
+ * Cache window for a board fetch (30 min). Worst case after a game ends ≈ this + the
+ * page's 5-min ISR window + ESPN's own lag — inside the "about an hour" bar.
+ */
+const REVALIDATE_SECONDS = 30 * 60;
+
+/** Give up on a hung ESPN call (25-row board / 300-row rookie scan). */
+const BOARD_TIMEOUT_MS = 5_000;
+const DEEP_TIMEOUT_MS = 10_000;
 
 /** How many leaders to keep per board (UI shows top N, expand shows the rest). */
 const BOARD_LIMIT = 25;
@@ -144,7 +153,7 @@ interface EspnByAthlete {
  * Fetch one board's rows from ESPN, sorted by its stat (best first).
  * Throws on any failure so callers decide the fallback.
  */
-async function fetchRows(board: BoardConfig, limit: number, init: RequestInit): Promise<LeaderRow[]> {
+async function fetchRows(board: BoardConfig, limit: number, init: RequestInit, timeoutMs: number): Promise<LeaderRow[]> {
   const params = new URLSearchParams({
     region: 'us',
     lang: 'en',
@@ -155,7 +164,7 @@ async function fetchRows(board: BoardConfig, limit: number, init: RequestInit): 
   });
   const url = `${ESPN_BYATHLETE_URL}?${params.toString()}`;
 
-  const res = await fetch(url, init);
+  const res = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) });
   if (!res.ok) throw new Error(`ESPN byathlete HTTP ${res.status}`);
   const data = (await res.json()) as EspnByAthlete;
 
@@ -189,29 +198,63 @@ async function fetchRows(board: BoardConfig, limit: number, init: RequestInit): 
   return leaders;
 }
 
-/** Fetch + map a single board from ESPN. Returns an empty board on any failure. */
-async function fetchBoard(board: BoardConfig): Promise<LeaderBoard> {
-  try {
-    const leaders = await fetchRows(board, BOARD_LIMIT, { next: { revalidate: REVALIDATE_SECONDS } });
-    return { key: board.key, label: board.label, section: board.section, leaders };
-  } catch (err) {
-    console.error(`❌ [leaders] "${board.key}" fetch failed:`, err);
-    return { key: board.key, label: board.label, section: board.section, leaders: [] };
+/**
+ * Last good rows per board, in this server process (backup only — same pattern as
+ * Standings and the offense/defense routes). `createTtlCache(0)` = never "fresh",
+ * only ever served when a live fetch fails.
+ */
+const lastGood = new Map<string, TtlCache<LeaderRow[]>>();
+function backupFor(key: string): TtlCache<LeaderRow[]> {
+  let c = lastGood.get(key);
+  if (!c) {
+    c = createTtlCache<LeaderRow[]>(0);
+    lastGood.set(key, c);
   }
+  return c;
+}
+
+/**
+ * One board's top-25 rows, cached 30 min as the parsed result.
+ * Why `unstable_cache` + a no-store fetch (not a cached fetch): Next drops the fetch's
+ * timeout signal when it refreshes a stale cached fetch during a page regeneration, so a
+ * hung ESPN call would freeze regeneration until a restart (proven in the sandbox). With
+ * no-store the 5s timeout always applies, and `unstable_cache` keeps serving the previous
+ * good rows when a refresh throws — even across a server restart. Error / timeout /
+ * reshaped / EMPTY list all throw, so nothing bad is ever cached.
+ */
+const getBoardRows = unstable_cache(
+  async (boardKey: string): Promise<LeaderRow[]> => {
+    const board = BOARDS.find((b) => b.key === boardKey);
+    if (!board) return [];
+    const rows = await fetchRows(board, BOARD_LIMIT, { cache: 'no-store' }, BOARD_TIMEOUT_MS);
+    if (rows.length === 0) throw new Error('empty list');
+    return rows;
+  },
+  ['leaders-board-rows-v1'],
+  { revalidate: REVALIDATE_SECONDS, tags: ['leaders-board-rows'] }
+);
+
+/**
+ * A single board. Failure → the last good rows held in memory, or an empty board only if
+ * this server has never had good data for it (cold start during an outage).
+ */
+async function fetchBoard(board: BoardConfig): Promise<LeaderBoard> {
+  const leaders = await liveWithLastGood(backupFor(board.key), () => getBoardRows(board.key), () => [], `leaders:${board.key}`);
+  return { key: board.key, label: board.label, section: board.section, leaders };
 }
 
 /**
  * The deep (300-row) list for one board, trimmed and cached as the SMALL result.
  * The raw ESPN response at this depth is large, so — same pattern as the Sleeper
  * player map — we fetch it raw (no-store) and let `unstable_cache` hold the trimmed
- * rows for the same 6h window as the other boards. A failure or an empty list throws,
+ * rows for the same 30-min window as the other boards. A failure or an empty list throws,
  * so nothing bad gets cached.
  */
 const getDeepRows = unstable_cache(
   async (boardKey: string): Promise<LeaderRow[]> => {
     const board = BOARDS.find((b) => b.key === boardKey);
     if (!board) return [];
-    const rows = await fetchRows(board, ROOKIE_SCAN_LIMIT, { cache: 'no-store' });
+    const rows = await fetchRows(board, ROOKIE_SCAN_LIMIT, { cache: 'no-store' }, DEEP_TIMEOUT_MS);
     if (rows.length === 0) throw new Error('empty list');
     // Drop image URLs (unused on Leaders) to keep the cached copy small.
     return rows.map((r) => ({ ...r, teamLogo: null, headshot: null }));
@@ -220,21 +263,18 @@ const getDeepRows = unstable_cache(
   { revalidate: REVALIDATE_SECONDS, tags: ['leaders-deep-rows'] }
 );
 
-/** One rookie board: the deep list filtered to rookies, top 25. Empty on failure. */
+/** One rookie board: the deep list filtered to rookies, top 25. */
 async function fetchRookieBoard(board: BoardConfig, rookies: RookieIndex): Promise<LeaderBoard> {
   const section = ROOKIE_SECTION[board.section] ?? board.section;
   const key = `rookie-${board.key}`;
-  try {
-    const rows = await getDeepRows(board.key);
-    const leaders = rows
-      .filter((r) => isRookieRow(rookies, r))
-      .slice(0, BOARD_LIMIT)
-      .map((r, i) => ({ ...r, rank: i + 1 }));
-    return { key, label: board.label, section, leaders };
-  } catch (err) {
-    console.error(`❌ [leaders] rookie "${board.key}" fetch failed:`, err);
-    return { key, label: board.label, section, leaders: [] };
-  }
+  // The deep list itself falls back to its last good copy; an empty rookie FILTER
+  // result is valid (e.g. no rookie punter) and simply hides the card.
+  const rows = await liveWithLastGood(backupFor(key), () => getDeepRows(board.key), () => [], `leaders:${key}`);
+  const leaders = rows
+    .filter((r) => isRookieRow(rookies, r))
+    .slice(0, BOARD_LIMIT)
+    .map((r, i) => ({ ...r, rank: i + 1 }));
+  return { key, label: board.label, section, leaders };
 }
 
 /** Rookie versions of every stat board. No rookie list (Sleeper down) → none. */

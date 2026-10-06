@@ -41,11 +41,15 @@ export default function CardGrid({
   const style: CSSProperties = {
     display: 'grid',
     gap,
-    // auto-fit counts columns by the track's MAX when it's a definite length, so a
-    // fixed px max (e.g. 340px) makes `minCard` irrelevant to packing. Using `1fr`
-    // as the max makes the column COUNT driven by `minCard` (as intended) and lets
-    // cards grow to fill the row; `maxCard` still caps card width via `maxWidth` below.
-    gridTemplateColumns: `repeat(auto-fit, minmax(min(${minCard}px, 100%), 1fr))`,
+    // Column COUNT comes from the track minimum: at least `minCard` wide, and never
+    // narrower than 1/maxCols of the row — so the row can't hold more than `maxCols`
+    // (before, maxCols only capped the grid's width, and a wide screen still packed
+    // 6 Leaders cards at 1194px). `auto-fill` (not auto-fit) keeps empty tracks, so a
+    // section with fewer cards than columns keeps the same card width instead of
+    // stretching 2 cards across the whole row. `maxCard` still caps width via maxWidth.
+    gridTemplateColumns: `repeat(auto-fill, minmax(max(min(${minCard}px, 100%), calc((100% - ${(maxCols - 1) * gap}px) / ${maxCols})), 1fr))`,
+    // An expanded card grows alone; its row-mates keep their own height.
+    alignItems: 'start',
     // Cap the row at `maxCols` cards: width = N cards + the gaps between them.
     maxWidth: maxCols * maxCard + (maxCols - 1) * gap,
   };

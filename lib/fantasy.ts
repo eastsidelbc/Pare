@@ -6,7 +6,9 @@
  * single pair of Sleeper responses:
  *   • the season stats  (keyed by numeric player id; D/ST keyed by team abbr)
  *   • the player map     (id → name/position/team) — needed to identify + group
- * Both are fetched once here and cached (stats 6h, the big player map 24h).
+ * Both are fetched once here and cached (stats 30 min, the big player map 24h). Each
+ * call has a timeout; a failed or empty response falls back to the last good copy and is
+ * never cached (freshness audit 2026-10-06).
  *
  * D/ST detection: Sleeper carries two entries per team — a bare team-abbr key
  * (the defense unit, what we want) and a "TEAM_xxx" key (team totals, skipped).
@@ -18,10 +20,13 @@ import type { LeaderBoard, LeaderRow, LeaderSection } from './leaders';
 import { getCurrentWeekInfo } from './schedule';
 import { getTeamByAbbr, normalizeTeamAbbr, type NflTeam } from './teams';
 import { rookieKey, type RookieIndex } from './rookieMatch';
+import { createTtlCache, liveWithLastGood } from './apiCache';
 
 const SLEEPER_STATS_URL = 'https://api.sleeper.app/v1/stats/nfl/regular';
 const SLEEPER_PLAYERS_URL = 'https://api.sleeper.app/v1/players/nfl';
-const STATS_REVALIDATE = 6 * 60 * 60; // 6h — scores change through the week
+const STATS_REVALIDATE = 30 * 60; // 30 min — same window as the ESPN boards (lib/leaders.ts)
+const STATS_TIMEOUT_MS = 8_000;
+const PLAYERS_TIMEOUT_MS = 20_000; // the raw player map is ~20MB
 const PLAYERS_TTL_SECONDS = 24 * 60 * 60; // 24h — revalidate window for the cached (trimmed) player map
 const BOARD_SIZE = 50; // send extra candidates so the client can re-rank by PPG
 const FANTASY: LeaderSection = 'fantasy';
@@ -65,15 +70,11 @@ function normalizeAbbr(raw: string): string {
   return normalizeTeamAbbr(stripped);
 }
 
-async function fetchJson<T>(url: string, init: RequestInit, label: string): Promise<T | null> {
-  try {
-    const res = await fetch(url, init);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return (await res.json()) as T;
-  } catch (err) {
-    console.error(`❌ [fantasy] ${label} failed:`, err);
-    return null;
-  }
+/** Fetch JSON with a timeout. Throws on HTTP error / timeout / bad JSON — callers pick the fallback. */
+async function fetchJson<T>(url: string, init: RequestInit, timeoutMs: number): Promise<T> {
+  const res = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return (await res.json()) as T;
 }
 
 /** Slimmed player record — only what the boards need (keeps the cached map tiny). */
@@ -95,14 +96,11 @@ interface SlimPlayer {
  * result (24h). The trimmed map caches fine and is shared across requests/invocations,
  * so the 20MB download happens at most once per revalidate — and the route stays static.
  */
-const getPlayerMap = unstable_cache(
+const getCachedPlayerMap = unstable_cache(
   async (): Promise<Record<string, SlimPlayer>> => {
-    const raw = await fetchJson<Record<string, SleeperPlayer>>(
-      SLEEPER_PLAYERS_URL,
-      { cache: 'no-store' },
-      'players map'
-    );
-    if (!raw) return {};
+    // Throws on failure (never returns {}), so unstable_cache never stores an empty map
+    // for 24h — it keeps serving the previous good one instead.
+    const raw = await fetchJson<Record<string, SleeperPlayer>>(SLEEPER_PLAYERS_URL, { cache: 'no-store' }, PLAYERS_TIMEOUT_MS);
 
     const slim: Record<string, SlimPlayer> = {};
     for (const [id, p] of Object.entries(raw)) {
@@ -119,12 +117,56 @@ const getPlayerMap = unstable_cache(
         ...(isRookie && hasEspnId ? { rookieEspnId: String(p.espn_id) } : {}),
       };
     }
+    if (Object.keys(slim).length === 0) throw new Error('empty player map');
     return slim;
   },
   // v3: the slim map gained `rookie` + `rookieEspnId` — new key so an old cached copy isn't reused.
   ['sleeper-player-map-v3'],
   { revalidate: PLAYERS_TTL_SECONDS, tags: ['sleeper-player-map'] }
 );
+
+/** Last good player map / season stats in this server process (backup only). */
+const playerMapBackup = createTtlCache<Record<string, SlimPlayer>>(0);
+const statsBackup = createTtlCache<Record<string, SleeperStat>>(0);
+
+/** The slim player map, or the last good one, or {} only if this server never had one. */
+// Fantasy boards and the rookie index both ask for the map in the same render; share one
+// in-flight call so a cold cache downloads the ~20MB file once, not twice.
+let playerMapInFlight: Promise<Record<string, SlimPlayer>> | null = null;
+function getPlayerMap(): Promise<Record<string, SlimPlayer>> {
+  playerMapInFlight ??= liveWithLastGood(playerMapBackup, () => getCachedPlayerMap(), () => ({}), 'fantasy:players').finally(
+    () => {
+      playerMapInFlight = null;
+    },
+  );
+  return playerMapInFlight;
+}
+
+/**
+ * This season's Sleeper stats, trimmed to the 3 fields we use and cached 30 min.
+ * Same pattern as the ESPN boards (lib/leaders.ts getBoardRows): no-store fetch so the
+ * timeout always applies, `unstable_cache` keeps the previous good copy when a refresh
+ * throws, and an empty response throws so it's never cached.
+ */
+const getCachedSeasonStats = unstable_cache(
+  async (season: number): Promise<Record<string, SleeperStat>> => {
+    const raw = await fetchJson<Record<string, SleeperStat>>(`${SLEEPER_STATS_URL}/${season}`, { cache: 'no-store' }, STATS_TIMEOUT_MS);
+    const slim: Record<string, SleeperStat> = {};
+    for (const [id, st] of Object.entries(raw ?? {})) {
+      if (!st) continue;
+      slim[id] = { pts_ppr: st.pts_ppr, pts_std: st.pts_std, gp: st.gp };
+    }
+    if (Object.keys(slim).length === 0) throw new Error('empty stats');
+    return slim;
+  },
+  ['sleeper-season-stats-v1'],
+  { revalidate: STATS_REVALIDATE, tags: ['sleeper-season-stats'] }
+);
+
+/** Season stats, or the last good copy in memory, or {} only if never fetched. */
+function getSeasonStats(season: number): Promise<Record<string, SleeperStat>> {
+  return liveWithLastGood(statsBackup, () => getCachedSeasonStats(season), () => ({}), 'fantasy:stats');
+}
 
 /**
  * This season's rookies (Sleeper `years_exp === 0`, on a team), ready to match ESPN rows:
@@ -163,15 +205,8 @@ function emptyBoards(): LeaderBoard[] {
 /** Every fantasy board (QB/RB/WR/TE/K/D-ST), all from Sleeper. */
 export async function getFantasyBoards(): Promise<LeaderBoard[]> {
   const { season } = await getCurrentWeekInfo();
-  const [playerMap, stats] = await Promise.all([
-    getPlayerMap(),
-    fetchJson<Record<string, SleeperStat>>(
-      `${SLEEPER_STATS_URL}/${season}`,
-      { next: { revalidate: STATS_REVALIDATE } },
-      'stats'
-    ),
-  ]);
-  if (!stats) return emptyBoards();
+  const [playerMap, stats] = await Promise.all([getPlayerMap(), getSeasonStats(season)]);
+  if (Object.keys(stats).length === 0) return emptyBoards();
   const skill: SkillRow[] = [];
   const dst: { team: NflTeam; points: number; games: number }[] = [];
 

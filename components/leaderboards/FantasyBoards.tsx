@@ -6,10 +6,9 @@
  * the top 25 by points per game, filtered to players with enough games so a
  * one-game fluke can't top the board.
  *
- * Look (§9.3): "D1 · Gold rule" label + the same glass capsule toggle as the
- * Standings header (30px drawn, 44px tap area). The header sticks while the
- * section is in view, on a solid --bg-deep (no backdrop blur — it re-blurred every
- * scroll frame on iPhone).
+ * Look (§9.3): a plain "D1 · Gold rule" FANTASY label like every other section, with
+ * the same glass TOT | PPG capsule as the Standings header (30px drawn, 44px tap area)
+ * on the right. Not sticky, no position switcher — all six boards show (Kobe, R3).
  */
 
 'use client';
@@ -23,12 +22,12 @@ import { LEADER_GRID } from './grid';
 const DISPLAY_COUNT = 25;
 type Mode = 'total' | 'ppg';
 
-const MODES: ReadonlyArray<{ id: Mode; label: string }> = [
-  { id: 'total', label: 'Total' },
-  { id: 'ppg', label: 'PPG' },
+const MODES: ReadonlyArray<{ id: Mode; label: string; long: string }> = [
+  { id: 'total', label: 'TOT', long: 'Total points' },
+  { id: 'ppg', label: 'PPG', long: 'Points per game' },
 ];
 
-export default function FantasyBoards({ boards, label }: { boards: LeaderBoard[]; label: string }) {
+export default function FantasyBoards({ boards, label, id }: { boards: LeaderBoard[]; label: string; id?: string }) {
   const [mode, setMode] = useState<Mode>('total');
 
   // Min games for PPG — half the deepest player's game count (rounded up), so a
@@ -54,11 +53,8 @@ export default function FantasyBoards({ boards, label }: { boards: LeaderBoard[]
   }, [boards, mode, minGames]);
 
   return (
-    <section>
-      <div
-        className="sticky top-0 z-20 flex items-center gap-2"
-        style={{ background: 'var(--bg-deep)', paddingTop: 6, paddingBottom: 6, marginBottom: 4 }}
-      >
+    <section id={id} className="mb-4" style={{ scrollMarginTop: 8 }}>
+      <div className="mb-2 mt-1 flex items-center gap-2">
         <span
           className="whitespace-nowrap"
           style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--gold-bright)' }}
@@ -72,14 +68,15 @@ export default function FantasyBoards({ boards, label }: { boards: LeaderBoard[]
           className="flex flex-none items-center rounded-full"
           style={{ height: 36, padding: 3, gap: 2, background: 'var(--nav-bg)', border: '1px solid var(--glass-edge)' }}
         >
-          {MODES.map(({ id, label: text }) => {
-            const on = id === mode;
+          {MODES.map(({ id: m, label: text, long }) => {
+            const on = m === mode;
             return (
               <button
-                key={id}
+                key={m}
                 type="button"
                 aria-pressed={on}
-                onClick={() => setMode(id)}
+                aria-label={long}
+                onClick={() => setMode(m)}
                 // pare-hit44: looks 30px tall, taps like 44px (Apple HIG).
                 className="pare-hit44 touch-optimized rounded-full px-3 font-bold active:opacity-70"
                 style={{
