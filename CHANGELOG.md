@@ -31,6 +31,12 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Perf (sandbox, 4× CPU, median of 3): LCP 0.25–0.29s, expand 50–56ms, TOT/PPG ~40ms, 60 fps / 0 dropped, ~2ms main-thread per 5s idle, 0 animations → no fixes needed. Details in the dev note.
 
 ### Added
+- **Team logo ⇄ name switch — logos are back** (2026-10-06, branch `ui/team-logo-switch`)
+  - See: `docs/devnotes/2026-10-06-team-logo-switch.md`.
+  - Logos on Home cards, Compare team picker + rank dropdown + week pills, Standings (all 3 views) and Leaders (incl. fantasy D/ST + rookies). Logo only, no abbreviation — Standings shows logo + team-color abbreviation; screen readers get the full team name.
+  - One switch: `config/teamIdentity.ts` → `default: 'logo' | 'name'` + per-surface `overrides`. Compare hero (and the Home inline compare) stays on the nickname wordmarks via `compareHero: 'name'`. Name mode renders the old markup untouched (`TeamIdentity` returns its children), so flipping back is pixel-identical.
+  - Dark logos (Raiders, Colts, Giants, Jaguars, Commanders, Bears, Texans, Broncos, Cowboys, Rams, Packers, Bills) get a thin light edge (`--logo-halo`). Local SVGs, fixed-size box (no layout shift), lazy + async decode.
+  - Licensing: NFL logos are trademarks — accepted risk pre-monetization; `default` must be `'name'` before ads / Pro (design-system §9 rule 4). Unused `components/TeamLogo.tsx` → `_to-delete/2026-10-06-team-logo-legacy/`. Tests: `teamIdentity.test.ts` (vitest now uses the automatic JSX runtime so it can render components to a string).
 - **Favorites — "Your teams"** (2026-10-05, branch `feat/favorites`)
   - See: `docs/devnotes/2026-10-05-favorites-your-teams.md`. Picked on the "Pare Favorites" board (look A2, all 5 setup entry points).
   - Pick up to 3 favorite teams (saved on the device, `pare:favorites`). On Home their games move into a "★ Your teams" group at the top of each week, with a team-color star by the abbreviation and an outer team-color aura on that side of the card (static, no animation). Current week shows a "Pick your teams" prompt until you pick.

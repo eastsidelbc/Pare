@@ -3,7 +3,7 @@
  * 
  * Team picker dropdown (Floating UI). Neon Frame "R" look (components/ui/neonMenu):
  * deep gradient card, hairline rows, gold header. 40px rows with a <TeamMark>
- * (2–3 letter wordmark — no logo artwork). Height follows the screen: as tall
+ * (2–3 letter wordmark), or the team logo when config/teamIdentity.ts 'compareMenus' = 'logo'. Height follows the screen: as tall
  * as the space below/above the trigger allows, minus the bottom-nav reserve.
  * INTERACTION: Sleek dropdown — spring pop, dimmed backdrop, CSS-staggered rows; listbox/option a11y
  * POSITIONING: Floating UI with auto-flip, shift, and boundary detection
@@ -22,6 +22,7 @@ import { isAverageTeam, isNonSelectableSpecialTeam, getTeamDisplayLabel } from '
 import { BarChart3, Star } from 'lucide-react';
 import { useFavorites } from '@/components/FavoritesProvider';
 import TeamMark from '@/components/ui/TeamMark';
+import TeamIdentity from '@/components/ui/TeamIdentity';
 import { getTeamByName } from '@/lib/teams';
 import { MENU_VIEWPORT_PADDING, menuBackdrop, menuHeader, menuMaxHeight, menuRowStyle, menuSurface } from '@/components/ui/neonMenu';
 
@@ -148,7 +149,9 @@ export default function CompactTeamSelector({
               <BarChart3 size={16} />
             </span>
           ) : (
-            <TeamMark teamName={team.team} size={15} />
+            <TeamIdentity abbr={info?.abbr ?? ''} surface="compareMenus" size={24} slot={38} decorative>
+              <TeamMark teamName={team.team} size={15} />
+            </TeamIdentity>
           )}
 
           {/* City (small caps) over nickname — the wordmark voice, compressed */}

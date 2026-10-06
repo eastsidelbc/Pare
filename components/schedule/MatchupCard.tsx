@@ -17,7 +17,8 @@
  *            brightness difference alone reads clearly (and isn't hue-based).
  *            Live scores both stay white — the lead can still change.
  *
- * No logo artwork (licensing, §9 rule 4). Team colors come from the same
+ * Abbreviation or team logo per the Home switch (config/teamIdentity.ts →
+ * <TeamIdentity>; name mode renders the abbreviation unchanged). Team colors come from the same
  * getMatchupPalettes() as Compare, so clash swaps (KC vs TB) match everywhere.
  * Tapping toggles the inline compare peek (handled by <MatchupAccordion>);
  * the open card wears a gold-bright ring.
@@ -36,6 +37,7 @@ import { Star } from 'lucide-react';
 import { formatKickoff, type Matchup, type MatchupOdds } from '@/lib/schedule';
 import { getMatchupPalettes, type BarPalette } from '@/lib/teamColors';
 import { useFavorites } from '@/components/FavoritesProvider';
+import TeamIdentity from '@/components/ui/TeamIdentity';
 
 /** Outer team-color aura for a favorite side (A2 "medium"). L = away/left, R = home/right. */
 function favoriteAura(rgb: string, side: 'L' | 'R'): string {
@@ -90,7 +92,10 @@ function TeamBlock({
         style={{ gap: 4, fontSize: 24, fontWeight: 900, lineHeight: 1, letterSpacing: '0.01em', color: palette.line }}
       >
         {favorite && isRight && <Star size={13} fill="currentColor" strokeWidth={0} aria-label="Your team" />}
-        {abbr}
+        {/* Logo mode: 26px → team column 26 + 4 + 15 = 45px, inside the row's 46px content box
+            (64 − 2×9 padding) → no card height change. Decorative: the card button's aria-label
+            already names both teams. */}
+        <TeamIdentity abbr={abbr} surface="home" size={26} decorative>{abbr}</TeamIdentity>
         {favorite && !isRight && <Star size={13} fill="currentColor" strokeWidth={0} aria-label="Your team" />}
       </div>
       <div

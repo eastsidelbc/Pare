@@ -4,6 +4,7 @@
  * first teams out. Seeds are ESPN's (`playoffSeed`), so this is "if the season ended today".
  */
 
+import TeamIdentity from '@/components/ui/TeamIdentity';
 import type { ConferenceStandings, TeamStanding } from '@/lib/standings';
 import { DIVISION_WINNER_SEEDS, playoffPicture } from '@/lib/standingsViews';
 import { EmptyRows, HeaderRow, ListCard, ROW_H, SeedChip, TeamAbbr, TeamRow } from './StandingsRow';
@@ -36,7 +37,9 @@ function SeedRow({ team: t, last }: { team: TeamStanding; last: boolean }) {
     >
       <div className="flex min-w-0 items-center overflow-hidden" style={{ gap: 6 }}>
         <SeedChip seed={t.seed} />
-        <TeamAbbr abbr={t.abbr} />
+        <TeamIdentity abbr={t.abbr} surface="standings" size={20} decorative withName>
+          <TeamAbbr abbr={t.abbr} />
+        </TeamIdentity>
         <span className="truncate" style={{ fontSize: '10px', fontWeight: 600, color: 'var(--subtext)' }}>{t.nickname}</span>
       </div>
       <span className="text-center tabular-nums" style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)' }}>{record(t)}</span>
@@ -55,7 +58,9 @@ function Side({ team: t, right }: { team: TeamStanding; right?: boolean }) {
   return (
     <div className={`flex min-w-0 items-center gap-1.5 ${right ? 'flex-row-reverse' : ''}`}>
       <SeedChip seed={t.seed} />
-      <TeamAbbr abbr={t.abbr} size={15} />
+      <TeamIdentity abbr={t.abbr} surface="standings" size={22} decorative withName>
+        <TeamAbbr abbr={t.abbr} size={15} />
+      </TeamIdentity>
       <span className="tabular-nums" style={{ fontSize: '11px', fontWeight: 700, color: 'var(--subtext)' }}>{record(t)}</span>
     </div>
   );

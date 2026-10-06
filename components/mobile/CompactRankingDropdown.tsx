@@ -4,7 +4,7 @@
  * Rank-badge dropdown (Floating UI): every team ranked by this metric.
  * Neon Frame "R" look (components/ui/neonMenu) — 40px rows:
  *   [rank badge] [TeamMark] Nickname ............ value
- * No logo artwork. Height follows the screen (viewport minus bottom-nav reserve).
+ * TeamMark becomes the team logo when config/teamIdentity.ts 'compareMenus' = 'logo'. Height follows the screen (viewport minus bottom-nav reserve).
  * INTERACTION: Sleek dropdown — spring pop, dimmed backdrop, CSS-staggered rows; listbox/option a11y
  * POSITIONING: Floating UI with auto-flip, shift, and boundary detection
  * PERF (2026-10-03): the badge (trigger) is cheap and always rendered; the menu
@@ -24,7 +24,8 @@ import { AVAILABLE_METRICS, formatMetricValue } from '@/lib/metricsConfig';
 import { isAverageTeam, isNonSelectableSpecialTeam } from '@/utils/teamHelpers';
 import { BarChart3 } from 'lucide-react';
 import TeamMark from '@/components/ui/TeamMark';
-import { getTeamByName } from '@/lib/teams';
+import TeamIdentity from '@/components/ui/TeamIdentity';
+import { getTeamByName, teamNameToAbbr } from '@/lib/teams';
 import { MENU_VIEWPORT_PADDING, menuBackdrop, menuHeader, menuMaxHeight, menuRowStyle, menuSurface } from '@/components/ui/neonMenu';
 import RankBadge from '@/components/ui/RankBadge';
 
@@ -263,7 +264,13 @@ function RankingMenu({
                         )}
                       </span>
 
-                      {isAverage ? <span className="w-[35px] shrink-0" /> : <TeamMark teamName={item.team.team} size={14} />}
+                      {isAverage ? (
+                        <span className="w-[35px] shrink-0" />
+                      ) : (
+                        <TeamIdentity abbr={teamNameToAbbr(item.team.team) ?? ''} surface="compareMenus" size={22} slot={35} decorative>
+                          <TeamMark teamName={item.team.team} size={14} />
+                        </TeamIdentity>
+                      )}
 
                       <span
                         className="min-w-0 flex-1 truncate text-left"

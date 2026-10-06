@@ -25,6 +25,7 @@
 import { memo } from 'react';
 import { useSchedule } from '@/components/schedule/ScheduleProvider';
 import { getTeamPalette } from '@/lib/teamColors';
+import TeamIdentity from '@/components/ui/TeamIdentity';
 import { formatKickoff, type Matchup } from '@/lib/schedule';
 
 /**
@@ -102,7 +103,9 @@ function WeekMatchupPills({ onPick }: WeekMatchupPillsProps) {
               }}
             >
               <span className="flex items-center gap-1.5 leading-none">
-                <span style={ABBR_STYLE}>{m.away.abbr}</span>
+                <TeamIdentity abbr={m.away.abbr} surface="comparePills" size={20} slot={30} decorative>
+                  <span style={ABBR_STYLE}>{m.away.abbr}</span>
+                </TeamIdentity>
                 {hasScores ? (
                   <>
                     <PillScore value={m.awayScore ?? 0} lose={final && m.winner === 'home'} />
@@ -112,7 +115,9 @@ function WeekMatchupPills({ onPick }: WeekMatchupPillsProps) {
                 ) : (
                   <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: '0.14em', color: 'var(--muted)' }}>VS</span>
                 )}
-                <span style={ABBR_STYLE}>{m.home.abbr}</span>
+                <TeamIdentity abbr={m.home.abbr} surface="comparePills" size={20} slot={30} decorative>
+                  <span style={ABBR_STYLE}>{m.home.abbr}</span>
+                </TeamIdentity>
               </span>
               <span
                 className="leading-none tabular-nums"

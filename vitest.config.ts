@@ -10,6 +10,9 @@ export default defineConfig({
   resolve: {
     alias: { '@': root },
   },
+  // tsconfig keeps `jsx: preserve` for Next; tests that render a component to a
+  // string (react-dom/server) need the automatic runtime instead.
+  esbuild: { jsx: 'automatic' },
   test: {
     // Pure-logic tests only (no DOM) — ranking, bar/data math, store, helpers.
     environment: 'node',
