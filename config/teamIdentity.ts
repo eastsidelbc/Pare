@@ -18,7 +18,8 @@ export type TeamIdentitySurface =
   | 'comparePills'
   | 'compareHero'
   | 'standings'
-  | 'leaders';
+  | 'leaders'
+  | 'teamMenu'; // team quick-menu sheet (tap a team on Standings)
 
 export interface TeamIdentityConfig {
   default: TeamIdentityMode;

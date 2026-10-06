@@ -41,6 +41,7 @@ Rule + licensing: `docs/design-system.md` §9 rule 4.
 | Standings rows | `standings/StandingsRow.tsx` (TeamRow) | 20 + abbr | `withName` (logo + TeamAbbr); TEAM column `minmax(92px,1.45fr)` in logo mode (was 64px — seed+logo+abbr+★ ≈ 90px), name mode unchanged |
 | Playoff seeds / wild-card sides | `standings/PlayoffPicture.tsx` | 20 / 22 + abbr | 32px / 44px rows, `withName` |
 | Leaders | `leaderboards/LeaderCard.tsx` | 18 | 30px column, `mx-auto block` |
+| Team quick menu (tap a team on Standings) | `favorites/TeamQuickMenu.tsx` | 44 | left of the city + nickname title; surface `teamMenu` (added after merge) |
 
 `TeamAbbr` (exported from StandingsRow, shared with Leaders) is untouched — call sites are wrapped.
 

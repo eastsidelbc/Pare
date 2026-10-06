@@ -15,9 +15,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Star, GitCompareArrows } from 'lucide-react';
 import { useFavorites } from '@/components/FavoritesProvider';
 import { useComparisons } from '@/components/ComparisonsProvider';
-import { getTeamByAbbr } from '@/lib/teams';
-import { getTeamPalette } from '@/lib/teamColors';
+import { getTeamByAbbr, type NflTeam } from '@/lib/teams';
+import { getTeamPalette, type BarPalette } from '@/lib/teamColors';
 import { MAX_FAVORITES } from '@/lib/favorites/store';
+import TeamIdentity from '@/components/ui/TeamIdentity';
+import { getTeamIdentityMode } from '@/config/teamIdentity';
 
 const ACTION = {
   height: 52,
@@ -42,6 +44,8 @@ export default function TeamQuickMenu() {
   const pal = team ? getTeamPalette(team.name) : null;
   const on = team ? isFavorite(team.abbr) : false;
   const full = !on && teams.length >= MAX_FAVORITES;
+  // Logo mode: logo left of the city + nickname header. Name mode: header markup unchanged.
+  const withLogo = getTeamIdentityMode('teamMenu') === 'logo';
 
   const compare = () => {
     if (!team) return;
@@ -84,20 +88,14 @@ export default function TeamQuickMenu() {
             }}
           >
             <div className="mx-auto h-1 w-9 rounded-full" style={{ background: 'var(--frame-mid)' }} aria-hidden />
-            <div className="px-0.5 pb-1 pt-1">
-              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--subtext)' }}>
-                {team.location}
+            {withLogo ? (
+              <div className="flex items-center gap-3">
+                <TeamIdentity abbr={team.abbr} surface="teamMenu" size={44} decorative>{null}</TeamIdentity>
+                <SheetTitle team={team} pal={pal} />
               </div>
-              <div
-                style={{
-                  fontSize: 30, fontWeight: 900, lineHeight: 1.05, textTransform: 'uppercase', color: 'transparent',
-                  WebkitTextStroke: `1.4px ${pal?.line ?? 'var(--text)'}`,
-                  textShadow: pal ? `0 0 16px rgba(${pal.rgb}, 0.55)` : undefined,
-                }}
-              >
-                {team.nickname}
-              </div>
-            </div>
+            ) : (
+              <SheetTitle team={team} pal={pal} />
+            )}
             <button
               type="button"
               onClick={() => toggleFavorite(team.abbr)}
@@ -130,5 +128,25 @@ export default function TeamQuickMenu() {
         </>
       )}
     </AnimatePresence>
+  );
+}
+
+/** Sheet title: city small caps over the outlined nickname wordmark. */
+function SheetTitle({ team, pal }: { team: NflTeam; pal: BarPalette | null }) {
+  return (
+    <div className="px-0.5 pb-1 pt-1">
+      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--subtext)' }}>
+        {team.location}
+      </div>
+      <div
+        style={{
+          fontSize: 30, fontWeight: 900, lineHeight: 1.05, textTransform: 'uppercase', color: 'transparent',
+          WebkitTextStroke: `1.4px ${pal?.line ?? 'var(--text)'}`,
+          textShadow: pal ? `0 0 16px rgba(${pal.rgb}, 0.55)` : undefined,
+        }}
+      >
+        {team.nickname}
+      </div>
+    </div>
   );
 }

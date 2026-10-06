@@ -257,7 +257,8 @@ Comparison tab pills: every pill is washed in its two teams' colors — 22% acti
 
 **Nav (Round 4 K):** `--nav-bg` capsule (darkest surface; no backdrop blur — at 94% opacity it was
 invisible, pixel diff max 2/255, but cost a re-blur per frame); the active tab is a sliding gold neon outline
-(`--gold-bright` border + glow). Sizing unchanged (`--nav-pill-h`).
+(`--gold-bright` border + glow). Sizing unchanged (`--nav-pill-h`). The nav is one instance of the
+shared **glass toggle** recipe (§9 rule 7) — `ActivePill` layoutId `'nav-active-pill'` (reserved for the nav).
 
 **Density rule:** on an iPhone 14 Pro in app mode (393×759 usable) Offense **and** Defense
 (5 + 5 default metrics) fit without scrolling. Re-check with any change to row/hero height.
@@ -324,7 +325,7 @@ Red = live / bad rank. Don't introduce new accent colors.
 **4. Team identity — logos OR names, behind one switch** (`config/teamIdentity.ts`, 2026-10-06).
 Every team mark renders through `components/ui/TeamIdentity.tsx`: `default` = `'logo'` | `'name'`
 plus per-surface `overrides` (`home`, `compareMenus`, `comparePills`, `compareHero`, `standings`,
-`leaders`). Logo mode = logo only (no abbreviation) — except Standings: logo + its team-color abbreviation (`withName`, wider TEAM column floor 92px only in logo mode) — local SVG in a fixed box sized to the old
+`leaders`, `teamMenu`). Logo mode = logo only (no abbreviation) — except Standings: logo + its team-color abbreviation (`withName`, wider TEAM column floor 92px only in logo mode) — local SVG in a fixed box sized to the old
 slot, `alt` = full team name (empty when the row already announces it); near-black / navy logos
 (`DARK_LOGOS`) get the `--logo-halo` light edge. **Name mode = the pre-logo markup, untouched**
 (TeamIdentity returns its children): big context → nickname wordmark (§8 Hero, which stays on
@@ -333,7 +334,7 @@ sizes where its outline is readable; team color carried by a wash, frame, or the
 tinting body text. **Licensing: NFL logos are trademarks — `default` MUST be `'name'` before any
 ads / Pro tier.** Logos on today = accepted risk while the app is pre-monetization (Kobe,
 2026-10-06). Not on the switch (always text): favorites grid, Your teams, blank-compare slots,
-Compare tab chips.
+Compare tab chips, the "Compare KC vs…" button text.
 
 **5. Where team color + glow is allowed.** Single-matchup cards (Compare cards, a game card that
 pairs two teams): team-color frame + side glows. **Busy lists/tables (32 teams): color on the
@@ -349,7 +350,20 @@ team mark only, rows stay neutral** — no frames or glows per row.
 bar on `--bg-deep` with a `--hairline` bottom edge; "Pare" (20px/900) + gold-bright "NFL" label on
 the left; controls on the right in a glass capsule (`--nav-bg` + `--glass-edge`, fully round,
 36px buttons) with the active value in gold-bright. Its dropdown uses `neonMenu.ts` (gold header,
-40px hairline rows, current row = gold edge). Section headers = **"D1 · Gold rule"**: gold-bright
+40px hairline rows, current row = gold edge).
+**Glass toggle (one recipe — bottom nav + every header capsule: Standings view, Fantasy TOT/PPG,
+Leaders jump nav; 2026-10-06):** capsule `--nav-bg` + `--glass-edge`, fully round (headers: 36px,
+items 30px drawn + `.pare-hit44` 44px tap; nav: `--nav-pill-h`). Active item = **sliding gold pill**
+`components/ui/ActivePill.tsx` (1.5px `--gold-bright` border, 8% gold fill, static 0 0 12px 35% glow,
+framer `layoutId` spring 420/34, `will-change: transform`, reduced motion → instant) + label
+gold-bright 700. Inactive = `--glass-off` 500 (4.70:1 on `--nav-bg`; `--muted` was 4.2 — fails AA at
+11–12px), no glow. Label color fades `.2s`. Styles live in `components/ui/glassControl.tsx`
+(`glassColor`, `glassCapsule`, `GlassLabel` — reserves the bold width so 500↔700 never shifts
+neighbours). Font size stays per control (nav 12px; headers 11.5px, jump 11px + .06em). Every
+control gets its own `LayoutGroup` + unique `layoutId` (`standings-view`, `fantasy-mode`,
+`leaders-jump`) so a pill never flies between controls. Not on this recipe: Home week stepper
+(no on/off state), Compare tab chips (team-color wash, closable), FirstLaunch AFC/NFC.
+Section headers = **"D1 · Gold rule"**: gold-bright
 10px/800 uppercase label tracked .2em, then a `--hairline` rule; a "WEEK n" divider is the same in
 white 13px/900.
 
@@ -400,7 +414,7 @@ Components: `components/standings/` — `StandingsScreen` (header + view state),
 
 | Part | Recipe |
 |---|---|
-| Header | H1 Inline (52px) + glass toggle **Division / Conf / Playoffs** (`--nav-bg` + `--glass-edge` capsule, 36px; buttons 30px drawn, **44px hit area** via `.pare-hit44`; active = gold-bright text + 1.5px inset ring + 8% gold) |
+| Header | H1 Inline (52px) + glass toggle **Division / Conf / Playoffs** (`--nav-bg` + `--glass-edge` capsule, 36px; buttons 30px drawn, **44px hit area** via `.pare-hit44`; glass toggle recipe §9 rule 7 — sliding gold pill `'standings-view'`, 11.5px, `--glass-off` 500 → gold-bright 700) |
 | Card | deep gradient, 1px `--hairline` border, radius `--radius-lg`; title 10px/800 uppercase .18em, white, conference prefix `--subtext` (no gold on card titles — gold stays on the D1 labels) |
 | Columns | TEAM · W · L · (T) · PCT · PF · PA · STRK (ESPN / NFL.com set). Grid `minmax(64px,1.25fr) .5fr .5fr (.42fr) minmax(38px,1.1fr) .85fr .85fr .9fr`, 4px gap, 8px side padding — PCT's 38px floor keeps "1.000" whole at the 281px iPad card |
 | Column headers | 24px row, 10px/700, .06em, `--subtext` |
@@ -411,7 +425,7 @@ Components: `components/standings/` — `StandingsScreen` (header + view state),
 | Leader | Division view only: row 1 gets `--leader-tint` (gold-bright 8%) |
 | T column | hidden until any team in the league has a tie (`leagueHasTies`), then shown on every card — never per card |
 | Views | **Division** = CardGrid 270–340, maxCols 4 (one conference per row on iPad landscape). **Conf** = 16 teams by seed + dashed "Playoff line" after 7. **Playoffs** = "If the season ended today": seeds 1–7 (BYE / DIV / WC tags), Wild Card round 7@2 · 6@3 · 5@4 (44px rows), in the hunt 8–10. Conf / Playoffs = CardGrid 300–560, maxCols 2 |
-| Motion | none (the old 32-row fade-in stagger was removed). View switch scrolls content to top |
+| Motion | one sliding pill on the view toggle (transform spring on change, then still; reduced motion → instant). Nothing else (the old 32-row fade-in stagger was removed). View switch scrolls content to top |
 
 Standards scorecard (R2): header hit area 44px ✓ · smallest text 10px (headers / chips — below Apple's
 11pt, accepted for dense column labels) · lowest small-text contrast 6.06:1 ✓ · worst team abbr ≥ 4.5:1 ✓ ·
@@ -427,18 +441,18 @@ Components: `app/leaderboards/page.tsx` (header), `components/leaderboards/JumpN
 
 | Part | Recipe |
 |---|---|
-| Header | H1 Inline (52px, `--bg-deep`, hairline bottom): "Pare" + gold-bright "LEADERS" + glass **jump capsule** FAN · OFF · DEF · ST · R (Standings capsule: `--nav-bg` + `--glass-edge`, 36px; links 30px drawn, ≥30px wide, `.pare-hit44`, 11px/700 `--subtext`, full `aria-label` "Jump to Rookies"). Plain anchors → `#lb-fan/off/def/st/rookies` (sections carry `scroll-margin-top: 8px`). **You-are-here:** the section at the top of the scroll area wears the active look (gold-bright text + 1.5px gold ring + 8% gold, same as every glass toggle), following you as you scroll; instant swap, no animation (`components/leaderboards/JumpNav.tsx`, rAF-throttled passive scroll; at the bottom the last section wins). R shows only when the Rookies block renders and stays lit through all rookie sections |
+| Header | H1 Inline (52px, `--bg-deep`, hairline bottom): "Pare" + gold-bright "LEADERS" + glass **jump capsule** FAN · OFF · DEF · ST · R (Standings capsule: `--nav-bg` + `--glass-edge`, 36px; links 30px drawn, ≥30px wide, `.pare-hit44`, 11px .06em, glass toggle recipe §9 rule 7 (`--glass-off` 500 → gold-bright 700), full `aria-label` "Jump to Rookies"). Plain anchors → `#lb-fan/off/def/st/rookies` (sections carry `scroll-margin-top: 8px`). **You-are-here:** the section at the top of the scroll area wears the sliding gold pill (`ActivePill` `'leaders-jump'`), following you as you scroll — it slides only when the section changes, never per scroll frame; a tapped link stays lit until you scroll by hand, so a short section can't flip the pill twice (`components/leaderboards/JumpNav.tsx`, rAF-throttled passive scroll; at the bottom the last section wins). R shows only when the Rookies block renders and stays lit through all rookie sections |
 | Page | `--bg-deep`, **12px side gutter** (`px-3`) on header + content |
 | Page order | Fantasy → Offense → Defense → Special Teams → **ROOKIES** divider → Rookie Offense → Rookie Defense → Rookie Special Teams |
-| Section labels | D1 · Gold rule (`SectionLabel`). Fantasy = plain "FANTASY" label (not sticky, no position switcher — all 6 boards show) + TOT / PPG glass toggle on the right (30px drawn, 44px tap, active gold-bright ring + 8% gold) |
+| Section labels | D1 · Gold rule (`SectionLabel`). Fantasy = plain "FANTASY" label (not sticky, no position switcher — all 6 boards show) + TOT / PPG glass toggle on the right (30px drawn, 44px tap, glass toggle recipe — sliding gold pill `'fantasy-mode'`) |
 | Rookies divider | white 13px/900 .14em "ROOKIES" + `--subtext` "{season} CLASS" + hairline (Home "WEEK n" voice) |
 | Card | §9.2 list card: deep gradient, 1px `--hairline`, `--radius-lg`. Title 11px/800 .14em uppercase white, padding 10/6/8/7. No logos, no headshots |
 | Row | **32px**, hairline top. Grid `14px · 30px · 1fr · auto`, column-gap 4px, padding **0 6px 0 3px** (numbers close to both card edges). Rank 11px/700 `--subtext`, **right-aligned** tabular (#1: gold-bright 800). Team abbr 11px/900 `getListTeamColor(normalizeTeamAbbr(abbr))`, centered in its 30px slot. Name 12px/600 white, **short form** "J. Smith-Njigba" (`shortPlayerName`: keeps "C.J.", "DK"; full name in `title`), ellipsis if still long. Value 12px/800 white tabular. #1 row `--leader-tint` |
 | Expand | top 5 → all (≤25) via a real **44px footer `<button>`** "All 25 ⌄" / "Show top 5 ⌃" (12px/700 `--subtext`). iPhone: the open card spans both columns (`max-sm:col-span-full`); iPad: opens in place. No animation |
 | Grid | `LEADER_GRID`: CardGrid min 170 · max 300 · maxCols 5 · gap 8 → 2 across iPhone 393, 4 iPad portrait, 5 landscape. CardGrid now enforces `maxCols` in the track minimum, uses `auto-fill` (short sections keep the same card width) and `align-items: start` (an open card doesn't stretch its row-mates) |
 | Rookie data | Sleeper `years_exp === 0` matched to ESPN by id or normalized name + team (`lib/rookieMatch.ts`); each rookie board scans ESPN's top 300; empty rookie boards hide |
-| Motion | none. 0 running animations at rest |
+| Motion | two sliding pills (jump capsule, TOT/PPG) — transform spring on change, then still; reduced motion → instant. 0 running animations at rest |
 
-Standards: touch targets — expand 44px, toggle + jump links 44px tap area ✓ · smallest text 10px only on the shared D1
+Standards: touch targets — expand 44px, toggle + jump links 44px tap area ✓ · inactive toggle/jump labels `--glass-off` 4.70:1 ✓ · smallest text 10px only on the shared D1
 section labels (Standings exception); rows/titles/links ≥ 11px ✓ · contrast: white 16.5:1, `--subtext` 7.1:1 (6.1 on the
 leader tint), gold-bright 11.4:1, team abbr ≥ 4.5:1 ✓ · WCAG 2.5.8 24px ✓ · names truncate only past ~13 chars on iPhone.
