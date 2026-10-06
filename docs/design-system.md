@@ -332,7 +332,7 @@ team mark only, rows stay neutral** — no frames or glows per row.
 **6. Card types.**
 - *Matchup card* (two teams): Neon Frame recipe (§8). Home game cards = **"Frame Row"** (§9.1 below).
 - *List / table card* (Standings divisions, Leaders lists): deep card surface, `--hairline`
-  row dividers, no team frames. Standings row = **§9.2** (Leaders: TBD, mockup first).
+  row dividers, no team frames. Standings row = **§9.2**, Leaders row = **§9.3**.
 - *Menus / dropdowns / sheets*: `components/ui/neonMenu.ts` (40px rows, screen-height).
 
 **7. Page chrome.** Bottom nav as in §8. Page header = **"H1 · Inline"** (Home, 2026-10-03): 52px
@@ -406,3 +406,27 @@ Components: `components/standings/` — `StandingsScreen` (header + view state),
 Standards scorecard (R2): header hit area 44px ✓ · smallest text 10px (headers / chips — below Apple's
 11pt, accepted for dense column labels) · lowest small-text contrast 6.06:1 ✓ · worst team abbr ≥ 4.5:1 ✓ ·
 no clipping at 281px with or without T ✓.
+
+### 9.3 Leaders — "Standings match" + Rookies (picked 2026-10-04)
+
+Picked on the "Pare Rookie Leaders" board: Round 3 option **1 · Standings match** (over Compare glow,
+Hero #1, Stat bars and Flat), then two spacing tweaks from Kobe (tighter rank · team · name; rank
+centered between the card edge and the team). Components: `app/leaderboards/page.tsx`,
+`components/leaderboards/LeaderCard.tsx`, `FantasyBoards.tsx`, `grid.ts`. Data: `lib/leaders.ts`, `lib/fantasy.ts`.
+
+| Part | Recipe |
+|---|---|
+| Header | H1 Inline (52px, `--bg-deep`, hairline bottom): "Pare" + gold-bright "LEADERS" label |
+| Page order | Fantasy (PPR) → Offense → Defense → Special Teams → **ROOKIES** divider → Rookie Offense → Rookie Defense → Rookie Special Teams |
+| Section labels | D1 · Gold rule (`SectionLabel` from Standings). Rookie sections say "Rookie …" so you always know where you are mid-scroll |
+| Rookies divider | white 13px/900 .14em "ROOKIES" + `--subtext` "{season} CLASS" + hairline — same voice as the Home "WEEK n" divider |
+| Card | = §9.2 list card: deep gradient, 1px `--hairline`, `--radius-lg`; title 10px/800 .18em uppercase white. No logos, no headshots |
+| Row | 32px, hairline top. Grid `12px · 28px · 1fr · auto`, column-gap 3px, padding 0 10px 0 3px. Rank 10px/700 `--subtext`, centered (left padding = gap → evenly between edge and team). Team abbr 12px/900 `getListTeamColor` (4.5:1). Name 12px/600 truncate. Value 12px/800 white tabular. #1 row `--leader-tint` |
+| Expand | top 5 → all (≤25); the whole card is the toggle (`role=button`, Enter/Space); footer "Show all N" 32px 10px/700 `--subtext` + chevron. No animation |
+| Fantasy toggle | Total / PPG glass capsule (`--nav-bg` + `--glass-edge`, 36px), buttons 30px drawn + `.pare-hit44`; active gold-bright + 1.5px inset ring + 8% gold. Sticky header on solid `--bg-deep` (no backdrop blur) |
+| Grid | `LEADER_GRID`: CardGrid min 170 · max 300 · maxCols 5 · gap 10 → 2 across on iPhone, 4 on iPad portrait, 5 landscape |
+| Rookie data | Rookie = Sleeper `years_exp === 0`, matched to ESPN by id or normalized name + team (`lib/rookieMatch.ts`). Each rookie board scans ESPN's top 300 for that stat, keeps rookies, top 25. Empty rookie boards hide; no rookie list → the whole Rookies block hides |
+| Motion | none |
+
+Standards: smallest text 10px (titles/ranks — same accepted exception as §9.2) · toggle 44px hit area ✓ ·
+team abbr ≥ 4.5:1 ✓ · names truncate on 2-up phone cards (accepted for the density).

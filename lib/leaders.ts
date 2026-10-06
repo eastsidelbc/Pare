@@ -13,7 +13,9 @@
  * also hands us the player's league rank for free.
  */
 import 'server-only';
-import { getFantasyBoards } from './fantasy';
+import { unstable_cache } from 'next/cache';
+import { getFantasyBoards, getRookieIndex } from './fantasy';
+import { isRookieRow, type RookieIndex } from './rookieMatch';
 
 /** Public ESPN per-athlete statistics endpoint (free, no key). */
 const ESPN_BYATHLETE_URL =
@@ -25,7 +27,28 @@ const REVALIDATE_SECONDS = 6 * 60 * 60;
 /** How many leaders to keep per board (UI shows top N, expand shows the rest). */
 const BOARD_LIMIT = 25;
 
-export type LeaderSection = 'offense' | 'defense' | 'special' | 'fantasy';
+/**
+ * Rookie boards scan this deep into ESPN's list, then keep only rookies.
+ * The league top 25 has almost no rookies, so we need the long list. 300 covers
+ * every rookie with meaningful numbers (ESPN accepts limit up to 1000; checked live).
+ */
+const ROOKIE_SCAN_LIMIT = 300;
+
+export type LeaderSection =
+  | 'offense'
+  | 'defense'
+  | 'special'
+  | 'fantasy'
+  | 'rookieOffense'
+  | 'rookieDefense'
+  | 'rookieSpecial';
+
+/** Which rookie section each stat section's boards land in. */
+const ROOKIE_SECTION: Partial<Record<LeaderSection, LeaderSection>> = {
+  offense: 'rookieOffense',
+  defense: 'rookieDefense',
+  special: 'rookieSpecial',
+};
 
 /** A single board's identity + how to pull it from ESPN. */
 export interface BoardConfig {
@@ -101,7 +124,7 @@ interface EspnAthleteCategory {
   ranks?: string[];
 }
 interface EspnAthleteRef {
-  id?: string;
+  id?: string | number;
   displayName?: string;
   teamShortName?: string;
   teamLogos?: { href?: string }[];
@@ -117,51 +140,59 @@ interface EspnByAthlete {
   athletes?: EspnAthleteEntry[];
 }
 
-/** Fetch + map a single board from ESPN. Returns an empty board on any failure. */
-async function fetchBoard(board: BoardConfig): Promise<LeaderBoard> {
+/**
+ * Fetch one board's rows from ESPN, sorted by its stat (best first).
+ * Throws on any failure so callers decide the fallback.
+ */
+async function fetchRows(board: BoardConfig, limit: number, init: RequestInit): Promise<LeaderRow[]> {
   const params = new URLSearchParams({
     region: 'us',
     lang: 'en',
     contentorigin: 'espn',
     isqualified: 'false',
-    limit: String(BOARD_LIMIT),
+    limit: String(limit),
     sort: `${board.category}.${board.statKey}:desc`,
   });
   const url = `${ESPN_BYATHLETE_URL}?${params.toString()}`;
 
+  const res = await fetch(url, init);
+  if (!res.ok) throw new Error(`ESPN byathlete HTTP ${res.status}`);
+  const data = (await res.json()) as EspnByAthlete;
+
+  // Column index of this stat within its category (per-athlete arrays align to it).
+  // Match case-insensitively: the sort key is camelCase (e.g. "defensiveInterceptions")
+  // but ESPN returns the category name lowercased (e.g. "defensiveinterceptions").
+  const cat_ = board.category.toLowerCase();
+  const respCat = data.categories?.find((c) => c.name?.toLowerCase() === cat_);
+  const idx = respCat?.names?.indexOf(board.statKey) ?? -1;
+  if (idx < 0) throw new Error(`stat "${board.statKey}" not in category "${board.category}"`);
+
+  const leaders: LeaderRow[] = [];
+  for (const entry of data.athletes ?? []) {
+    const a = entry.athlete;
+    const cat = entry.categories?.find((c) => c.name?.toLowerCase() === cat_);
+    const value = cat?.values?.[idx];
+    if (!a?.displayName || value == null || Number.isNaN(value)) continue;
+
+    leaders.push({
+      rank: Number(cat?.ranks?.[idx]) || leaders.length + 1,
+      athleteId: a.id != null ? String(a.id) : '',
+      name: a.displayName,
+      teamAbbr: a.teamShortName ?? '',
+      teamLogo: a.teamLogos?.[0]?.href ?? null,
+      headshot: a.headshot?.href ?? null,
+      position: a.position?.abbreviation ?? '',
+      value,
+      displayValue: cat?.totals?.[idx] ?? String(value),
+    });
+  }
+  return leaders;
+}
+
+/** Fetch + map a single board from ESPN. Returns an empty board on any failure. */
+async function fetchBoard(board: BoardConfig): Promise<LeaderBoard> {
   try {
-    const res = await fetch(url, { next: { revalidate: REVALIDATE_SECONDS } });
-    if (!res.ok) throw new Error(`ESPN byathlete HTTP ${res.status}`);
-    const data = (await res.json()) as EspnByAthlete;
-
-    // Column index of this stat within its category (per-athlete arrays align to it).
-    // Match case-insensitively: the sort key is camelCase (e.g. "defensiveInterceptions")
-    // but ESPN returns the category name lowercased (e.g. "defensiveinterceptions").
-    const cat_ = board.category.toLowerCase();
-    const respCat = data.categories?.find((c) => c.name?.toLowerCase() === cat_);
-    const idx = respCat?.names?.indexOf(board.statKey) ?? -1;
-    if (idx < 0) throw new Error(`stat "${board.statKey}" not in category "${board.category}"`);
-
-    const leaders: LeaderRow[] = [];
-    for (const entry of data.athletes ?? []) {
-      const a = entry.athlete;
-      const cat = entry.categories?.find((c) => c.name?.toLowerCase() === cat_);
-      const value = cat?.values?.[idx];
-      if (!a?.displayName || value == null || Number.isNaN(value)) continue;
-
-      leaders.push({
-        rank: Number(cat?.ranks?.[idx]) || leaders.length + 1,
-        athleteId: a.id ?? '',
-        name: a.displayName,
-        teamAbbr: a.teamShortName ?? '',
-        teamLogo: a.teamLogos?.[0]?.href ?? null,
-        headshot: a.headshot?.href ?? null,
-        position: a.position?.abbreviation ?? '',
-        value,
-        displayValue: cat?.totals?.[idx] ?? String(value),
-      });
-    }
-
+    const leaders = await fetchRows(board, BOARD_LIMIT, { next: { revalidate: REVALIDATE_SECONDS } });
     return { key: board.key, label: board.label, section: board.section, leaders };
   } catch (err) {
     console.error(`❌ [leaders] "${board.key}" fetch failed:`, err);
@@ -169,11 +200,56 @@ async function fetchBoard(board: BoardConfig): Promise<LeaderBoard> {
   }
 }
 
-/** All boards (stat + fantasy), fetched in parallel. Failures degrade to empty boards. */
+/**
+ * The deep (300-row) list for one board, trimmed and cached as the SMALL result.
+ * The raw ESPN response at this depth is large, so — same pattern as the Sleeper
+ * player map — we fetch it raw (no-store) and let `unstable_cache` hold the trimmed
+ * rows for the same 6h window as the other boards. A failure or an empty list throws,
+ * so nothing bad gets cached.
+ */
+const getDeepRows = unstable_cache(
+  async (boardKey: string): Promise<LeaderRow[]> => {
+    const board = BOARDS.find((b) => b.key === boardKey);
+    if (!board) return [];
+    const rows = await fetchRows(board, ROOKIE_SCAN_LIMIT, { cache: 'no-store' });
+    if (rows.length === 0) throw new Error('empty list');
+    // Drop image URLs (unused on Leaders) to keep the cached copy small.
+    return rows.map((r) => ({ ...r, teamLogo: null, headshot: null }));
+  },
+  ['leaders-deep-rows-v1'],
+  { revalidate: REVALIDATE_SECONDS, tags: ['leaders-deep-rows'] }
+);
+
+/** One rookie board: the deep list filtered to rookies, top 25. Empty on failure. */
+async function fetchRookieBoard(board: BoardConfig, rookies: RookieIndex): Promise<LeaderBoard> {
+  const section = ROOKIE_SECTION[board.section] ?? board.section;
+  const key = `rookie-${board.key}`;
+  try {
+    const rows = await getDeepRows(board.key);
+    const leaders = rows
+      .filter((r) => isRookieRow(rookies, r))
+      .slice(0, BOARD_LIMIT)
+      .map((r, i) => ({ ...r, rank: i + 1 }));
+    return { key, label: board.label, section, leaders };
+  } catch (err) {
+    console.error(`❌ [leaders] rookie "${board.key}" fetch failed:`, err);
+    return { key, label: board.label, section, leaders: [] };
+  }
+}
+
+/** Rookie versions of every stat board. No rookie list (Sleeper down) → none. */
+async function getRookieBoards(): Promise<LeaderBoard[]> {
+  const rookies = await getRookieIndex();
+  if (rookies.nameTeam.size === 0 && rookies.espnIds.size === 0) return [];
+  return Promise.all(BOARDS.map((b) => fetchRookieBoard(b, rookies)));
+}
+
+/** All boards (stat + fantasy + rookie), fetched in parallel. Failures degrade to empty boards. */
 export async function getAllLeaderboards(): Promise<LeaderBoard[]> {
-  const [statBoards, fantasyBoards] = await Promise.all([
+  const [statBoards, fantasyBoards, rookieBoards] = await Promise.all([
     Promise.all(BOARDS.map(fetchBoard)),
     getFantasyBoards(),
+    getRookieBoards(),
   ]);
-  return [...statBoards, ...fantasyBoards];
+  return [...statBoards, ...fantasyBoards, ...rookieBoards];
 }

@@ -17,6 +17,7 @@ import { unstable_cache } from 'next/cache';
 import type { LeaderBoard, LeaderRow, LeaderSection } from './leaders';
 import { getCurrentWeekInfo } from './schedule';
 import { getTeamByAbbr, normalizeTeamAbbr, type NflTeam } from './teams';
+import { rookieKey, type RookieIndex } from './rookieMatch';
 
 const SLEEPER_STATS_URL = 'https://api.sleeper.app/v1/stats/nfl/regular';
 const SLEEPER_PLAYERS_URL = 'https://api.sleeper.app/v1/players/nfl';
@@ -36,6 +37,10 @@ interface SleeperPlayer {
   last_name?: string;
   position?: string;
   team?: string | null;
+  /** 0 during a player's first NFL season (rookie). */
+  years_exp?: number | null;
+  /** ESPN athlete id (string or number in Sleeper's feed). */
+  espn_id?: string | number | null;
 }
 
 /** Player boards, in display order (D/ST is appended after). */
@@ -76,6 +81,10 @@ interface SlimPlayer {
   name: string;
   position: string;
   team: string;
+  /** true in a player's first NFL season (Sleeper `years_exp === 0`). */
+  rookie?: true;
+  /** ESPN athlete id — rookies only, and only when Sleeper has it (rare). */
+  rookieEspnId?: string;
 }
 
 /**
@@ -100,13 +109,40 @@ const getPlayerMap = unstable_cache(
       if (!p?.position) continue;
       const name = p.full_name ?? `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim();
       if (!name) continue;
-      slim[id] = { name, position: p.position, team: p.team ?? '' };
+      const isRookie = p.years_exp === 0;
+      const hasEspnId = p.espn_id != null && p.espn_id !== '';
+      slim[id] = {
+        name,
+        position: p.position,
+        team: p.team ?? '',
+        ...(isRookie ? { rookie: true as const } : {}),
+        ...(isRookie && hasEspnId ? { rookieEspnId: String(p.espn_id) } : {}),
+      };
     }
     return slim;
   },
-  ['sleeper-player-map'],
+  // v3: the slim map gained `rookie` + `rookieEspnId` — new key so an old cached copy isn't reused.
+  ['sleeper-player-map-v3'],
   { revalidate: PLAYERS_TTL_SECONDS, tags: ['sleeper-player-map'] }
 );
+
+/**
+ * This season's rookies (Sleeper `years_exp === 0`, on a team), ready to match ESPN rows:
+ * by ESPN id when Sleeper has one, otherwise by normalized name + team (lib/rookieMatch).
+ * Rides on the same cached player map as the fantasy boards — no extra download.
+ * Empty when Sleeper is unavailable (the Rookies sections then hide).
+ */
+export async function getRookieIndex(): Promise<RookieIndex> {
+  const map = await getPlayerMap();
+  const espnIds = new Set<string>();
+  const nameTeam = new Set<string>();
+  for (const p of Object.values(map)) {
+    if (!p.rookie || !p.team) continue;
+    if (p.rookieEspnId) espnIds.add(p.rookieEspnId);
+    nameTeam.add(rookieKey(p.name, p.team));
+  }
+  return { espnIds, nameTeam };
+}
 
 interface SkillRow {
   id: string;

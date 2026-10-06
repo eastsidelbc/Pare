@@ -4,8 +4,12 @@
  * The server sends up to 50 candidates per board (scored by total points). This
  * component re-ranks per mode: Total shows the top 25 by season points; PPG shows
  * the top 25 by points per game, filtered to players with enough games so a
- * one-game fluke can't top the board. Rank/label styling matches the other
- * sections; the toggle mirrors the compare panel's PG|TOT control.
+ * one-game fluke can't top the board.
+ *
+ * Look (§9.3): "D1 · Gold rule" label + the same glass capsule toggle as the
+ * Standings header (30px drawn, 44px tap area). The header sticks while the
+ * section is in view, on a solid --bg-deep (no backdrop blur — it re-blurred every
+ * scroll frame on iPhone).
  */
 
 'use client';
@@ -14,9 +18,15 @@ import { useMemo, useState } from 'react';
 import type { LeaderBoard, LeaderRow } from '@/lib/leaders';
 import LeaderCard from './LeaderCard';
 import CardGrid from '@/components/ui/CardGrid';
+import { LEADER_GRID } from './grid';
 
 const DISPLAY_COUNT = 25;
 type Mode = 'total' | 'ppg';
+
+const MODES: ReadonlyArray<{ id: Mode; label: string }> = [
+  { id: 'total', label: 'Total' },
+  { id: 'ppg', label: 'PPG' },
+];
 
 export default function FantasyBoards({ boards, label }: { boards: LeaderBoard[]; label: string }) {
   const [mode, setMode] = useState<Mode>('total');
@@ -45,56 +55,48 @@ export default function FantasyBoards({ boards, label }: { boards: LeaderBoard[]
 
   return (
     <section>
-      {/* Section header — label + embedded Total | PPG toggle.
-          Sticks to the top of the scroll area while the fantasy section is in
-          view (so the toggle is always reachable), then releases into the stat
-          sections. Glass blur so cards slide under it cleanly. */}
       <div
-        className="sticky top-0 z-20 mb-3 flex items-center gap-3"
-        style={{
-          background: 'color-mix(in srgb, var(--bg) 86%, transparent)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          paddingTop: 8,
-          paddingBottom: 8,
-        }}
+        className="sticky top-0 z-20 flex items-center gap-2"
+        style={{ background: 'var(--bg-deep)', paddingTop: 6, paddingBottom: 6, marginBottom: 4 }}
       >
         <span
-          className="font-black tracking-tight"
-          style={{ fontSize: '13px', letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--gold)' }}
+          className="whitespace-nowrap"
+          style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--gold-bright)' }}
         >
           {label}
         </span>
-        <span className="h-px flex-1" style={{ background: 'var(--border)' }} />
+        <span className="h-px flex-1" style={{ background: 'var(--hairline)' }} />
         <div
-          className="flex items-center"
-          style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: 3 }}
+          role="group"
+          aria-label="Fantasy points"
+          className="flex flex-none items-center rounded-full"
+          style={{ height: 36, padding: 3, gap: 2, background: 'var(--nav-bg)', border: '1px solid var(--glass-edge)' }}
         >
-          {(['total', 'ppg'] as const).map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => setMode(m)}
-              aria-pressed={mode === m}
-              className="touch-optimized px-2.5 py-1 active:opacity-70"
-              style={{
-                fontSize: '10px',
-                fontWeight: 700,
-                letterSpacing: '1px',
-                textTransform: 'uppercase',
-                borderRadius: 6,
-                background: mode === m ? 'color-mix(in srgb, var(--gold) 15%, transparent)' : 'transparent',
-                color: mode === m ? 'var(--gold)' : 'var(--muted)',
-                transition: 'color .15s, background .15s',
-              }}
-            >
-              {m === 'total' ? 'Total' : 'PPG'}
-            </button>
-          ))}
+          {MODES.map(({ id, label: text }) => {
+            const on = id === mode;
+            return (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={on}
+                onClick={() => setMode(id)}
+                // pare-hit44: looks 30px tall, taps like 44px (Apple HIG).
+                className="pare-hit44 touch-optimized rounded-full px-3 font-bold active:opacity-70"
+                style={{
+                  height: 30, fontSize: '11.5px',
+                  color: on ? 'var(--gold-bright)' : 'var(--subtext)',
+                  background: on ? 'color-mix(in srgb, var(--gold-bright) 8%, transparent)' : 'transparent',
+                  boxShadow: on ? 'inset 0 0 0 1.5px var(--gold-bright)' : 'none',
+                }}
+              >
+                {text}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      <CardGrid minCard={200} maxCard={300} maxCols={5}>
+      <CardGrid {...LEADER_GRID}>
         {view.map((b) => (
           <LeaderCard key={b.key} board={b} />
         ))}

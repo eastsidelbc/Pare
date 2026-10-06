@@ -1,18 +1,21 @@
 /**
- * Leaderboards — the third tab.
+ * Leaderboards — the fourth tab (design-system §9.3 "Standings match").
  *
- * Server component: fetches every board once via `getAllLeaderboards()` (ESPN
- * data cached ~6h; page re-renders ~every 5 min) and renders the fixed-header + single-scroll shell used across the
- * app. Grouped into Offense / Defense / Special Teams sections.
- *
- * The polished, interactive card lives in `components/leaderboards/LeaderCard`
- * (client) — headshots, tap-to-expand to the full top 25, entrance animations.
+ * Server component: fetches every board once via `getAllLeaderboards()` and renders
+ * the fixed-header + single-scroll shell used across the app.
+ * Order: Fantasy (PPR) → Offense → Defense → Special Teams → ROOKIES divider →
+ * Rookie Offense → Rookie Defense → Rookie Special Teams. Rookie boards are the same
+ * stat boards filtered to first-year players; an empty rookie board is hidden, and
+ * the whole Rookies block hides if none have data.
  */
 
-import { getAllLeaderboards, type LeaderSection } from '@/lib/leaders';
+import { getAllLeaderboards, type LeaderBoard, type LeaderSection } from '@/lib/leaders';
+import { getCurrentWeekInfo } from '@/lib/schedule';
 import LeaderCard from '@/components/leaderboards/LeaderCard';
 import FantasyBoards from '@/components/leaderboards/FantasyBoards';
+import { LEADER_GRID } from '@/components/leaderboards/grid';
 import CardGrid from '@/components/ui/CardGrid';
+import { SectionLabel } from '@/components/standings/StandingsRow';
 
 // Page-level ISR hint. NOTE: the effective page refresh is ~5 min, because the
 // root layout's schedule fetch (5 min) is shorter and Next uses the smallest
@@ -21,28 +24,40 @@ import CardGrid from '@/components/ui/CardGrid';
 export const revalidate = 21600;
 
 const SECTIONS: { key: LeaderSection; label: string }[] = [
-  { key: 'fantasy', label: 'Fantasy (PPR)' },
   { key: 'offense', label: 'Offense' },
   { key: 'defense', label: 'Defense' },
   { key: 'special', label: 'Special Teams' },
 ];
 
+const ROOKIE_SECTIONS: { key: LeaderSection; label: string }[] = [
+  { key: 'rookieOffense', label: 'Rookie Offense' },
+  { key: 'rookieDefense', label: 'Rookie Defense' },
+  { key: 'rookieSpecial', label: 'Rookie Special Teams' },
+];
+
 export default async function LeaderboardsPage() {
-  const boards = await getAllLeaderboards();
+  const [boards, { season }] = await Promise.all([getAllLeaderboards(), getCurrentWeekInfo()]);
+
+  const fantasy = boards.filter((b) => b.section === 'fantasy');
+  const rookieGroups = ROOKIE_SECTIONS.map((s) => ({
+    ...s,
+    // Hide empty rookie boards (e.g. no rookie punter yet).
+    boards: boards.filter((b) => b.section === s.key && b.leaders.length > 0),
+  })).filter((s) => s.boards.length > 0);
 
   return (
-    <div className="flex flex-col overflow-hidden" style={{ height: 'var(--app-h, 100dvh)', background: 'var(--bg)' }}>
-      {/* Fixed top bar — matches the schedule header. */}
+    <div className="flex flex-col overflow-hidden" style={{ height: 'var(--app-h, 100dvh)', background: 'var(--bg-deep)' }}>
+      {/* Fixed top bar — §9 "H1 · Inline". */}
       <header
         className="flex-none border-b"
-        style={{ background: 'var(--surface)', borderColor: 'var(--border)', paddingTop: 'env(safe-area-inset-top)' }}
+        style={{ background: 'var(--bg-deep)', borderColor: 'var(--hairline)', paddingTop: 'env(safe-area-inset-top)' }}
       >
-        <div className="mx-auto flex h-14 w-full max-w-[1440px] items-center justify-between px-4">
-          <h1 className="font-black tracking-tight" style={{ fontSize: '20px', color: 'var(--text)' }}>
+        <div className="mx-auto flex h-[52px] w-full max-w-[1440px] items-center px-4">
+          <h1 className="whitespace-nowrap font-black tracking-tight" style={{ fontSize: '20px', color: 'var(--text)' }}>
             Pare
             <span
               className="ml-1.5 font-bold"
-              style={{ fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)' }}
+              style={{ fontSize: '9.5px', letterSpacing: '0.26em', textTransform: 'uppercase', color: 'var(--gold-bright)' }}
             >
               Leaders
             </span>
@@ -59,41 +74,52 @@ export default async function LeaderboardsPage() {
           paddingBottom: 'calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px)',
         }}
       >
-        <div className="mx-auto w-full max-w-[1440px] px-4 pt-4 space-y-6">
-          {SECTIONS.map(({ key, label }) => {
-            const sectionBoards = boards.filter((b) => b.section === key);
-            if (sectionBoards.length === 0) return null;
-            // Fantasy renders through a client component that owns the Total|PPG toggle.
-            if (key === 'fantasy') {
-              return <FantasyBoards key={key} boards={sectionBoards} label={label} />;
-            }
-            return (
-              <section key={key}>
-                <SectionLabel>{label}</SectionLabel>
-                <CardGrid minCard={200} maxCard={300} maxCols={5}>
-                  {sectionBoards.map((board) => (
-                    <LeaderCard key={board.key} board={board} />
-                  ))}
-                </CardGrid>
-              </section>
-            );
-          })}
+        <div className="mx-auto w-full max-w-[1440px] px-4 pt-1">
+          {fantasy.length > 0 && <FantasyBoards boards={fantasy} label="Fantasy (PPR)" />}
+
+          {SECTIONS.map(({ key, label }) => (
+            <BoardSection key={key} label={label} boards={boards.filter((b) => b.section === key)} />
+          ))}
+
+          {rookieGroups.length > 0 && (
+            <>
+              <RookiesDivider season={season} />
+              {rookieGroups.map(({ key, label, boards: rb }) => (
+                <BoardSection key={key} label={label} boards={rb} />
+              ))}
+            </>
+          )}
         </div>
       </main>
     </div>
   );
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function BoardSection({ label, boards }: { label: string; boards: LeaderBoard[] }) {
+  if (boards.length === 0) return null;
   return (
-    <div className="mb-3 flex items-center gap-3">
-      <span
-        className="font-black tracking-tight"
-        style={{ fontSize: '13px', letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--gold)' }}
-      >
-        {children}
+    <section className="mb-4">
+      <SectionLabel>{label}</SectionLabel>
+      <CardGrid {...LEADER_GRID}>
+        {boards.map((board) => (
+          <LeaderCard key={board.key} board={board} />
+        ))}
+      </CardGrid>
+    </section>
+  );
+}
+
+/** Big divider before the rookie sections — same voice as the Home "WEEK n" divider (§9.7). */
+function RookiesDivider({ season }: { season: number }) {
+  return (
+    <div className="mb-1 mt-6 flex items-center gap-2.5">
+      <span style={{ fontSize: '13px', fontWeight: 900, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text)' }}>
+        Rookies
       </span>
-      <span className="h-px flex-1" style={{ background: 'var(--border)' }} />
+      <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--subtext)' }}>
+        {season} class
+      </span>
+      <span className="h-px flex-1" style={{ background: 'var(--hairline)' }} />
     </div>
   );
 }

@@ -15,6 +15,10 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Performance audit (sandbox, 4× CPU, median of 3): LCP 0.56s, view switch 83–131ms tap→paint, scroll 60 fps / 0 dropped, ~1% idle CPU, 0 running animations on iPhone 14 Pro + iPad portrait/landscape → no perf fixes needed. Table in the dev note.
 
 ### Added
+- **Leaders "Neon Frame" + Rookie leaderboards** (2026-10-06, branch `ui/leaders-neon-frame`)
+  - See: `docs/devnotes/2026-10-06-leaders-neon-frame-rookies.md`, recipe in `docs/design-system.md` §9.3. Picked on the "Pare Rookie Leaders" board (Round 3 option 1 "Standings match" + two spacing tweaks).
+  - Leaders now uses the Standings look: deep page, H1 header, gold section rules, deep list cards with tight 32px rows (rank · team-color abbr · name · value), gold tint on #1, glass Total/PPG toggle. ESPN team logos removed. 2 cards across on iPhone, 4 on iPad portrait, 5 landscape. No entrance/expand animations.
+  - New **Rookies** block under Special Teams: Rookie Offense / Defense / Special Teams — the same 12 stat boards filtered to first-year players (Sleeper `years_exp = 0` matched to ESPN by id or normalized name + team — Sleeper rarely has rookies' ESPN ids; ESPN list scanned 300 deep, cached 6h as the trimmed result). Empty rookie boards hide.
 - **Standings "Neon Frame" — compact rows + playoff seeds** (2026-10-04, branch `ui/standings-neon-frame`, merged to `main` at `56ddf86`)
   - See: `docs/devnotes/2026-10-04-standings-neon-frame.md`, recipe in `docs/design-system.md` §9.2. Picked over three mockup rounds ("Pare Standings Redesign": C + ESPN columns · L2 · T2 · Hc → V5 Dense + quiet points → R2 Standards-fixed).
   - New header toggle **Division / Conf / Playoffs**: division cards, a 16-team conference list by seed with a playoff line, and an "if the season ended today" playoff picture (seeds 1–7, Wild Card round, in the hunt).
