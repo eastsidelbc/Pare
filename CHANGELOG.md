@@ -7,6 +7,11 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Fixed
+- **Odds stay on current-week finals; Compare pills show live/final scores** (2026-10-05, branch `feat/favorites`)
+  - See: `docs/devnotes/2026-10-05-favorites-your-teams.md` ("Bundled fixes").
+  - The live poll no longer erases the server's closing line when ESPN drops odds on a final (`odds: l.odds ?? m.odds` in `ScheduleProvider.patchLiveMatchups`).
+  - Compare preset pills show scores for live + final games (`IND 24 · 17 WAS`, loser dimmed on finals).
+  - Live-score poll moved from `ScheduleScreen` into the layout-mounted `ScheduleProvider`, so pills keep updating while you're on Compare (same single poll, no extra network).
 - **Standings: never blank, never hangs, refreshes when you come back** (2026-10-04, `main`)
   - See: `docs/devnotes/2026-10-04-standings-freshness.md`. Audit kept the live model (every visit = fresh ESPN, measured TTFB 0.22s with ESPN ≈ 0.19s) — no cache added.
   - ESPN standings now time out after 5s; on an error, timeout or partial payload the page serves the last good standings instead of empty boxes (new `liveWithLastGood()` in `lib/apiCache.ts`, same backup-only pattern as the offense/defense routes). Empty boxes only if the server has never had good data.
@@ -15,6 +20,11 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Performance audit (sandbox, 4× CPU, median of 3): LCP 0.56s, view switch 83–131ms tap→paint, scroll 60 fps / 0 dropped, ~1% idle CPU, 0 running animations on iPhone 14 Pro + iPad portrait/landscape → no perf fixes needed. Table in the dev note.
 
 ### Added
+- **Favorites — "Your teams"** (2026-10-05, branch `feat/favorites`)
+  - See: `docs/devnotes/2026-10-05-favorites-your-teams.md`. Picked on the "Pare Favorites" board (look A2, all 5 setup entry points).
+  - Pick up to 3 favorite teams (saved on the device, `pare:favorites`). On Home their games move into a "★ Your teams" group at the top of each week, with a team-color star by the abbreviation and an outer team-color aura on that side of the card (static, no animation). Current week shows a "Pick your teams" prompt until you pick.
+  - Set favorites from: first-launch screen (once), Home header star sheet, Compare team picker star (favorites listed first), Standings row quick menu (Add to Your teams / Compare vs…), and the new `/teams` screen (reorder, remove, Pin + Glow switches).
+  - Files: new `lib/favorites/store.ts` (+ tests), `components/FavoritesProvider.tsx`, `components/favorites/*`, `app/teams/page.tsx`; edits to `app/layout.tsx`, `MatchupCard`, `WeekSection`, `ScheduleScreen`, `CompactTeamSelector`, `StandingsRow`.
 - **Leaders "Neon Frame" + Rookie leaderboards** (2026-10-06, branch `ui/leaders-neon-frame`)
   - See: `docs/devnotes/2026-10-06-leaders-neon-frame-rookies.md`, recipe in `docs/design-system.md` §9.3. Picked on the "Pare Rookie Leaders" board (Round 3 option 1 "Standings match" + two spacing tweaks).
   - Leaders now uses the Standings look: deep page, H1 header, gold section rules, deep list cards with tight 32px rows (rank · team-color abbr · name · value), gold tint on #1, glass Total/PPG toggle. ESPN team logos removed. 2 cards across on iPhone, 4 on iPad portrait, 5 landscape. No entrance/expand animations.
