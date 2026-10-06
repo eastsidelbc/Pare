@@ -9,10 +9,15 @@
  * Abbreviations are plain white text (readable at pill size); the pill's
  * two-team color wash carries the team identity.
  * Games come from the app-wide schedule store (<ScheduleProvider>, already
- * loaded for Home) — no extra fetch. Away = Team A (left), home = Team B, same
- * orientation as Home. Under the teams: kickoff day + local time, the live
- * clock in red while playing, or "Final". If the week isn't
- * loaded / is empty, renders nothing (the slots still work).
+ * loaded for Home) — no extra fetch, and its live poll keeps these updating
+ * while you sit on Compare. Away = Team A (left), home = Team B, same
+ * orientation as Home.
+ *
+ *   pre   →  ( IND VS WAS )      / "Sun 12:00 PM"
+ *   live  →  ( IND 14 · 10 WAS ) / clock in red   (both scores white)
+ *   final →  ( IND 24 · 17 WAS ) / "Final"        (loser's score dimmed, like Home)
+ *
+ * If the week isn't loaded / is empty, renders nothing (the slots still work).
  */
 
 'use client';
@@ -35,6 +40,18 @@ const ABBR_STYLE = {
   letterSpacing: '0.04em',
   color: 'var(--text)',
 } as const;
+
+/** Score next to each abbr (live/final). Same size as the abbr, tabular digits. */
+function PillScore({ value, lose }: { value: number; lose: boolean }) {
+  return (
+    <span
+      className="tabular-nums"
+      style={{ fontSize: 13, fontWeight: 800, color: lose ? 'var(--muted)' : 'var(--text)' }}
+    >
+      {value}
+    </span>
+  );
+}
 
 /** Second line: kickoff (local time) → live clock (red) → "Final". */
 function statusLine(m: Matchup): { text: string; live: boolean } {
@@ -67,12 +84,17 @@ function WeekMatchupPills({ onPick }: WeekMatchupPillsProps) {
           const pa = getTeamPalette(m.away.name);
           const pb = getTeamPalette(m.home.name);
           const status = statusLine(m);
+          // Scores show once the game has started (live or final).
+          const hasScores = m.state !== 'pre' && m.awayScore != null && m.homeScore != null;
+          // Only a FINAL game has a loser (ties → winner null → nobody dimmed).
+          const final = m.state === 'post';
+          const scoreLabel = hasScores ? ` ${m.awayScore} to ${m.homeScore}` : '';
           return (
             <button
               key={m.id}
               type="button"
               onClick={() => onPick(m.away.name, m.home.name)}
-              aria-label={`Compare ${m.away.name} vs ${m.home.name}, ${status.text}`}
+              aria-label={`Compare ${m.away.name} vs ${m.home.name}, ${status.text}${scoreLabel}`}
               className="flex h-11 flex-col items-center justify-center gap-[3px] rounded-full touch-optimized active:opacity-60"
               style={{
                 border: '1px solid var(--frame-mid)',
@@ -81,7 +103,15 @@ function WeekMatchupPills({ onPick }: WeekMatchupPillsProps) {
             >
               <span className="flex items-center gap-1.5 leading-none">
                 <span style={ABBR_STYLE}>{m.away.abbr}</span>
-                <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: '0.14em', color: 'var(--muted)' }}>VS</span>
+                {hasScores ? (
+                  <>
+                    <PillScore value={m.awayScore ?? 0} lose={final && m.winner === 'home'} />
+                    <span aria-hidden style={{ fontSize: 9, fontWeight: 800, color: 'var(--muted)' }}>·</span>
+                    <PillScore value={m.homeScore ?? 0} lose={final && m.winner === 'away'} />
+                  </>
+                ) : (
+                  <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: '0.14em', color: 'var(--muted)' }}>VS</span>
+                )}
                 <span style={ABBR_STYLE}>{m.home.abbr}</span>
               </span>
               <span

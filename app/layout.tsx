@@ -5,6 +5,8 @@ import { ComparisonsProvider } from "@/components/ComparisonsProvider";
 import { NflStatsProvider } from "@/components/NflStatsProvider";
 import BottomNav from "@/components/BottomNav";
 import { ScheduleProvider } from "@/components/schedule/ScheduleProvider";
+import { FavoritesProvider } from "@/components/FavoritesProvider";
+import FavoritesOverlays from "@/components/favorites/FavoritesOverlays";
 import { getCurrentWeekInfo, getCurrentWeekMatchups, getMatchupsForWeek, MIN_WEEK } from "@/lib/schedule";
 
 const inter = Inter({
@@ -160,10 +162,14 @@ export default async function RootLayout({
             prevWeekMatchups={prevWeekMatchups}
             currentNflWeek={currentNflWeek}
           >
-            {children}
-            {/* Single persistent footer — rendered once, outside every route and
-                outside the compare swipe container, so it never re-mounts. */}
-            <BottomNav />
+            <FavoritesProvider>
+              {children}
+              {/* Single persistent footer — rendered once, outside every route and
+                  outside the compare swipe container, so it never re-mounts. */}
+              <BottomNav />
+              {/* Your-teams sheet, Standings quick menu, first launch, toast. */}
+              <FavoritesOverlays />
+            </FavoritesProvider>
           </ScheduleProvider>
           </NflStatsProvider>
         </ComparisonsProvider>
