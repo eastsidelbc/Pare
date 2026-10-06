@@ -7,16 +7,19 @@
  * one-game fluke can't top the board.
  *
  * Look (§9.3): a plain "D1 · Gold rule" FANTASY label like every other section, with
- * the same glass TOT | PPG capsule as the Standings header (30px drawn, 44px tap area)
- * on the right. Not sticky, no position switcher — all six boards show (Kobe, R3).
+ * the same glass TOT | PPG capsule as the Standings header (30px drawn, 44px tap area,
+ * sliding gold pill — `ActivePill` 'fantasy-mode') on the right. Not sticky, no position switcher — all six boards show (Kobe, R3).
  */
 
 'use client';
 
 import { useMemo, useState } from 'react';
+import { LayoutGroup } from 'framer-motion';
 import type { LeaderBoard, LeaderRow } from '@/lib/leaders';
 import LeaderCard from './LeaderCard';
 import CardGrid from '@/components/ui/CardGrid';
+import ActivePill from '@/components/ui/ActivePill';
+import { GlassLabel, glassCapsule } from '@/components/ui/glassControl';
 import { LEADER_GRID } from './grid';
 
 const DISPLAY_COUNT = 25;
@@ -62,35 +65,33 @@ export default function FantasyBoards({ boards, label, id }: { boards: LeaderBoa
           {label}
         </span>
         <span className="h-px flex-1" style={{ background: 'var(--hairline)' }} />
-        <div
-          role="group"
-          aria-label="Fantasy points"
-          className="flex flex-none items-center rounded-full"
-          style={{ height: 36, padding: 3, gap: 2, background: 'var(--nav-bg)', border: '1px solid var(--glass-edge)' }}
-        >
-          {MODES.map(({ id: m, label: text, long }) => {
-            const on = m === mode;
-            return (
-              <button
-                key={m}
-                type="button"
-                aria-pressed={on}
-                aria-label={long}
-                onClick={() => setMode(m)}
-                // pare-hit44: looks 30px tall, taps like 44px (Apple HIG).
-                className="pare-hit44 touch-optimized rounded-full px-3 font-bold active:opacity-70"
-                style={{
-                  height: 30, fontSize: '11.5px',
-                  color: on ? 'var(--gold-bright)' : 'var(--subtext)',
-                  background: on ? 'color-mix(in srgb, var(--gold-bright) 8%, transparent)' : 'transparent',
-                  boxShadow: on ? 'inset 0 0 0 1.5px var(--gold-bright)' : 'none',
-                }}
-              >
-                {text}
-              </button>
-            );
-          })}
-        </div>
+        <LayoutGroup id="fantasy-mode">
+          <div
+            role="group"
+            aria-label="Fantasy points"
+            className="flex flex-none items-center rounded-full"
+            style={glassCapsule}
+          >
+            {MODES.map(({ id: m, label: text, long }) => {
+              const on = m === mode;
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  aria-pressed={on}
+                  aria-label={long}
+                  onClick={() => setMode(m)}
+                  // pare-hit44: looks 30px tall, taps like 44px (Apple HIG).
+                  className="pare-hit44 touch-optimized relative rounded-full px-3 active:opacity-70"
+                  style={{ height: 30, fontSize: '11.5px' }}
+                >
+                  {on && <ActivePill layoutId="fantasy-mode" />}
+                  <GlassLabel active={on}>{text}</GlassLabel>
+                </button>
+              );
+            })}
+          </div>
+        </LayoutGroup>
       </div>
 
       <CardGrid {...LEADER_GRID}>

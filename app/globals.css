@@ -164,6 +164,7 @@
     --nav-bg: rgba(3, 4, 8, 0.94); /* floating bottom nav — the darkest layer, so it separates */
     --frame-mid: rgba(255, 255, 255, 0.15); /* neutral middle of the red→blue frame fade */
     --glass-edge: rgba(255, 255, 255, 0.12); /* faint edge on glass capsules (bottom nav, Home week stepper) */
+    --glass-off: #737a88; /* inactive label on a glass toggle (nav + header capsules) — 4.70:1 on --nav-bg, as greyed-out as --muted but passes AA */
     --leader-tint: rgba(245, 200, 66, 0.08); /* Standings division-leader row (gold-bright 8%) — lib/teamColors LIST_LEADER_BG mirrors it */
     --seed-chip: #232a3c; /* Standings seed chip fill — division winners (1–4) */
     --seed-edge: #5b6680; /* Standings seed chip outline — wild cards (5–7); ~3:1 on the deep card */

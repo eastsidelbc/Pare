@@ -24,6 +24,11 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Performance audit (sandbox, 4× CPU, median of 3): LCP 0.56s, view switch 83–131ms tap→paint, scroll 60 fps / 0 dropped, ~1% idle CPU, 0 running animations on iPhone 14 Pro + iPad portrait/landscape → no perf fixes needed. Table in the dev note.
 
 ### Changed
+- **Header toggles match the bottom nav — one "glass toggle" recipe** (2026-10-06, `main`)
+  - Standings Division/Conf/Playoffs, Fantasy TOT/PPG and the Leaders jump capsule now use the nav's sliding gold pill (new `components/ui/ActivePill.tsx`, framer `layoutId` spring 420/34, static glow, `will-change: transform`, reduced motion → instant) and its label styles (new `components/ui/glassControl.tsx`: 500 inactive → 700 active, `GlassLabel` reserves the bold width so neighbours don't shift). BottomNav uses the same two pieces; its look, sizing and `'nav-active-pill'` are unchanged.
+  - New token `--glass-off` (#737a88) for inactive labels on every glass toggle, nav included: 4.70:1 on `--nav-bg` (nav's `--muted` was 4.2:1 — failed AA at 12px; headers' `--subtext` was 7.9:1 but brighter than the nav).
+  - JumpNav: a tapped link stays lit until the next manual scroll (wheel/touch/key), so a short section near the bottom can't make the pill slide twice. Scroll-follow logic otherwise unchanged; the pill moves only when the section changes.
+  - Recipe: `docs/design-system.md` §9 rule 7 (+ §8 Nav, §9.2, §9.3).
 - **Leaders R3 "edge-to-edge" + freshness fix + perf audit** (2026-10-06, branch `ui/leaders-neon-frame`, on top of `786cdf6`)
   - Look (picked on "Pare Leaders Redesign v2"): rows pushed to the card edges (32px, `14px · 30px · 1fr · auto`, rank right-aligned 11px, #1 gold), short names "J. Smith-Njigba" (`lib/playerName.ts`, full name on hover/VoiceOver via `title`), 12px page gutter + 8px gaps, plain FANTASY header with a TOT/PPG toggle (no sticky bar), 44px "All 25" button (the open card spans both columns on iPhone), header jump capsule **FAN · OFF · DEF · ST · R** whose gold ring follows the section you're reading. ESPN legacy abbrs (WSH/JAC/LA) now get their team color. Recipe: `docs/design-system.md` §9.3.
   - `CardGrid` (shared): `maxCols` is now really enforced (Leaders packed 6 across at 1194px), `auto-fill` keeps card widths equal in short sections, `align-items: start` so an open card doesn't stretch its row. Standings layout verified unchanged at 393/834/1194.
@@ -31,12 +36,14 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Perf (sandbox, 4× CPU, median of 3): LCP 0.25–0.29s, expand 50–56ms, TOT/PPG ~40ms, 60 fps / 0 dropped, ~2ms main-thread per 5s idle, 0 animations → no fixes needed. Details in the dev note.
 
 ### Added
-- **Team logo ⇄ name switch — logos are back** (2026-10-06, branch `ui/team-logo-switch`)
+- **Team logos are back — logo ⇄ name switch** (2026-10-06, `ui/team-logo-switch` → `main` `1e527eb`; quick-menu logo `fc2ec58` on `ui/nav-styles`)
   - See: `docs/devnotes/2026-10-06-team-logo-switch.md`.
-  - Logos on Home cards, Compare team picker + rank dropdown + week pills, Standings (all 3 views + the team quick-menu sheet) and Leaders (incl. fantasy D/ST + rookies). Logo only, no abbreviation — Standings shows logo + team-color abbreviation; screen readers get the full team name.
-  - One switch: `config/teamIdentity.ts` → `default: 'logo' | 'name'` + per-surface `overrides`. Compare hero (and the Home inline compare) stays on the nickname wordmarks via `compareHero: 'name'`. Name mode renders the old markup untouched (`TeamIdentity` returns its children), so flipping back is pixel-identical.
-  - Dark logos (Raiders, Colts, Giants, Jaguars, Commanders, Bears, Texans, Broncos, Cowboys, Rams, Packers, Bills) get a thin light edge (`--logo-halo`). Local SVGs, fixed-size box (no layout shift), lazy + async decode.
-  - Licensing: NFL logos are trademarks — accepted risk pre-monetization; `default` must be `'name'` before ads / Pro (design-system §9 rule 4). Unused `components/TeamLogo.tsx` → `_to-delete/2026-10-06-team-logo-legacy/`. Tests: `teamIdentity.test.ts` (vitest now uses the automatic JSX runtime so it can render components to a string).
+  - **Switch:** `config/teamIdentity.ts` → `default: 'logo' | 'name'` + per-surface `overrides` (`home`, `compareMenus`, `comparePills`, `compareHero`, `standings`, `leaders`, `teamMenu`). `default: 'name'` turns every logo off.
+  - **Where:** Home cards, Compare team picker + rank dropdown + week pills, Standings (all 3 views — logo **plus** team-color abbreviation), the team quick-menu sheet (logo by the city + nickname), Leaders (stat, fantasy incl. D/ST, rookies). Compare hero (and the Home inline compare) stays on the nickname wordmarks via `compareHero: 'name'`.
+  - **How:** new `components/ui/TeamIdentity.tsx` wraps each surface's existing abbreviation markup and returns it untouched in name mode → flipping back is pixel-identical. Logo mode = local SVG in a fixed box sized to the old slot (no layout shift), lazy + async decode, full team name for screen readers. Standings TEAM column widens (64 → 92px floor) only in logo mode.
+  - Dark logos (Raiders, Colts, Giants, Jaguars, Commanders, Bears, Texans, Broncos, Cowboys, Rams, Packers, Bills) get a thin light edge (`--logo-halo`).
+  - **Licensing:** NFL logos are trademarks — accepted risk pre-monetization; `default` must be `'name'` before ads / Pro (design-system §9 rule 4).
+  - Unused `components/TeamLogo.tsx` → `_to-delete/2026-10-06-team-logo-legacy/`. Tests: `teamIdentity.test.ts` (117 total); vitest now uses the automatic JSX runtime so it can render components to a string.
 - **Favorites — "Your teams"** (2026-10-05, branch `feat/favorites`)
   - See: `docs/devnotes/2026-10-05-favorites-your-teams.md`. Picked on the "Pare Favorites" board (look A2, all 5 setup entry points).
   - Pick up to 3 favorite teams (saved on the device, `pare:favorites`). On Home their games move into a "★ Your teams" group at the top of each week, with a team-color star by the abbreviation and an outer team-color aura on that side of the card (static, no animation). Current week shows a "Pick your teams" prompt until you pick.

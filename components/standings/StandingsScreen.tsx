@@ -14,10 +14,13 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
+import { LayoutGroup } from 'framer-motion';
 import type { ConferenceStandings } from '@/lib/standings';
 import { leagueHasTies } from '@/lib/standingsViews';
 import { useRefreshOnReturn } from '@/lib/hooks/useRefreshOnReturn';
 import CardGrid from '@/components/ui/CardGrid';
+import ActivePill from '@/components/ui/ActivePill';
+import { GlassLabel, glassCapsule } from '@/components/ui/glassControl';
 import DivisionTable from './DivisionTable';
 import ConferenceTable from './ConferenceTable';
 import PlayoffPicture from './PlayoffPicture';
@@ -36,34 +39,32 @@ const VIEWS: ReadonlyArray<{ id: View; label: string }> = [
 
 function ViewToggle({ view, onChange }: { view: View; onChange: (v: View) => void }) {
   return (
-    <div
-      role="group"
-      aria-label="Standings view"
-      className="flex flex-none items-center rounded-full"
-      style={{ height: 36, padding: 3, gap: 2, background: 'var(--nav-bg)', border: '1px solid var(--glass-edge)' }}
-    >
-      {VIEWS.map(({ id, label }) => {
-        const on = id === view;
-        return (
-          <button
-            key={id}
-            type="button"
-            aria-pressed={on}
-            onClick={() => onChange(id)}
-            // pare-hit44: looks 30px tall, taps like 44px (Apple HIG).
-            className="pare-hit44 touch-optimized rounded-full px-2 font-bold active:opacity-70"
-            style={{
-              height: 30, fontSize: '11.5px',
-              color: on ? 'var(--gold-bright)' : 'var(--subtext)',
-              background: on ? 'color-mix(in srgb, var(--gold-bright) 8%, transparent)' : 'transparent',
-              boxShadow: on ? 'inset 0 0 0 1.5px var(--gold-bright)' : 'none',
-            }}
-          >
-            {label}
-          </button>
-        );
-      })}
-    </div>
+    <LayoutGroup id="standings-view">
+      <div
+        role="group"
+        aria-label="Standings view"
+        className="flex flex-none items-center rounded-full"
+        style={glassCapsule}
+      >
+        {VIEWS.map(({ id, label }) => {
+          const on = id === view;
+          return (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={on}
+              onClick={() => onChange(id)}
+              // pare-hit44: looks 30px tall, taps like 44px (Apple HIG).
+              className="pare-hit44 touch-optimized relative rounded-full px-2 active:opacity-70"
+              style={{ height: 30, fontSize: '11.5px' }}
+            >
+              {on && <ActivePill layoutId="standings-view" />}
+              <GlassLabel active={on}>{label}</GlassLabel>
+            </button>
+          );
+        })}
+      </div>
+    </LayoutGroup>
   );
 }
 

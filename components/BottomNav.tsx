@@ -10,6 +10,8 @@
  * The gold active-highlight is a single shared element (framer-motion
  * `layoutId`), so on each route change it SLIDES from the old tab to the new one
  * instead of blinking on/off — a smooth spring across Home / Compare / Leaders.
+ * Pill + label colors are the shared glass-toggle recipe (`ActivePill`, `glassControl`),
+ * also used by the header capsules; this nav owns layoutId 'nav-active-pill'.
  *
  * A centered, rounded capsule floating just above the bottom edge, iOS
  * safe-area aware. The full-width outer wrapper is click-through
@@ -20,8 +22,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion } from 'framer-motion';
 import { CalendarDays, GitCompareArrows, ListOrdered, Trophy, type LucideIcon } from 'lucide-react';
+import ActivePill from '@/components/ui/ActivePill';
+import { glassColor, GLASS_COLOR_TRANSITION } from '@/components/ui/glassControl';
 
 interface NavItem {
   href: string;
@@ -63,7 +66,7 @@ export default function BottomNav() {
       >
         {ITEMS.map((item) => {
           const active = item.isActive(pathname);
-          const color = active ? 'var(--gold-bright)' : 'var(--muted)';
+          const color = glassColor(active);
           const Icon = item.icon;
           return (
             <Link
@@ -74,21 +77,10 @@ export default function BottomNav() {
               className="relative flex h-full items-center gap-1.5 rounded-full px-2.5 touch-optimized active:opacity-70"
             >
               {/* Sliding gold neon outline — one shared element that glides between tabs. */}
-              {active && (
-                <motion.span
-                  layoutId="nav-active-pill"
-                  className="absolute inset-0 rounded-full"
-                  style={{
-                    border: '1.5px solid var(--gold-bright)',
-                    background: 'color-mix(in srgb, var(--gold-bright) 8%, transparent)',
-                    boxShadow: '0 0 12px color-mix(in srgb, var(--gold-bright) 35%, transparent)',
-                  }}
-                  transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-                />
-              )}
+              {active && <ActivePill layoutId="nav-active-pill" />}
               <Icon
                 size={16}
-                style={{ color, position: 'relative', zIndex: 1, transition: 'color .2s' }}
+                style={{ color, position: 'relative', zIndex: 1, transition: GLASS_COLOR_TRANSITION }}
                 strokeWidth={active ? 2.4 : 2}
               />
               <span
@@ -98,7 +90,7 @@ export default function BottomNav() {
                   color,
                   position: 'relative',
                   zIndex: 1,
-                  transition: 'color .2s',
+                  transition: GLASS_COLOR_TRANSITION,
                 }}
               >
                 {item.label}
