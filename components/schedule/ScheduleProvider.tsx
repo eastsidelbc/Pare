@@ -40,6 +40,7 @@ import React, {
 import { MIN_WEEK, MAX_WEEK, type Matchup } from '@/lib/schedule';
 import type { TeamData } from '@/lib/useNflStats';
 import { useSharedNflStats } from '@/components/NflStatsProvider';
+import { useLiveScores } from '@/lib/hooks/useLiveScores';
 
 /** Load state of a single week in the window. */
 export type WeekStatus = 'loading' | 'ready' | 'empty';
@@ -107,8 +108,12 @@ function differsLive(a: Matchup, b: Matchup): boolean {
     a.awayRecord !== b.awayRecord ||
     a.homeRecord !== b.homeRecord ||
     a.network !== b.network ||
-    (a.odds?.spread ?? null) !== (b.odds?.spread ?? null) ||
-    (a.odds?.overUnder ?? null) !== (b.odds?.overUnder ?? null)
+    // Odds only count as a change when the poll HAS a line. A poll with no
+    // line (ESPN often drops it once a game is final) must never erase the
+    // closing line the server already attached.
+    (b.odds != null &&
+      ((a.odds?.spread ?? null) !== b.odds.spread ||
+        (a.odds?.overUnder ?? null) !== b.odds.overUnder))
   );
 }
 
@@ -311,7 +316,8 @@ export function ScheduleProvider({
             awayScore: l.awayScore,
             homeScore: l.homeScore,
             winner: l.winner,
-            odds: l.odds,
+            // Update a line, never erase one (keeps server closing odds on finals).
+            odds: l.odds ?? m.odds,
             awayRecord: l.awayRecord,
             homeRecord: l.homeRecord,
             network: l.network,
@@ -337,6 +343,12 @@ export function ScheduleProvider({
     }
     return out;
   }, [orderedWeeks, weeks]);
+
+  // Live scores — polls the current NFL week while any loaded game is live and
+  // merges by id. Lives HERE (layout-mounted), not in ScheduleScreen, so it
+  // keeps running on every tab: Home cards and the Compare preset pills both
+  // read this one store. Free (direct to ESPN, browser-side).
+  useLiveScores(currentNflWeek, allMatchups, patchLiveMatchups);
 
   const stats = useMemo<ScheduleStats>(
     () => ({ offenseData, defenseData, isLoading, isLoadingOffense, isLoadingDefense }),

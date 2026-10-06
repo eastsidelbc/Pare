@@ -129,8 +129,10 @@ export function mapEspnScoreboard(data: EspnScoreboard, fallbackWeek = 1): Match
     }
 
     // Betting line — keep ESPN's line whenever it's present, regardless of game
-    // state. ESPN ships the (closing) line in the scoreboard for live/final games
-    // too, so completed matchups retain their odds instead of losing them.
+    // state. ESPN does NOT reliably keep it once a game is final, so this can be
+    // null for finals: the server fills it via attachClosingOdds (lib/schedule),
+    // and the client live-poll merge never overwrites a known line with null
+    // (ScheduleProvider.patchLiveMatchups).
     const rawOdds = competition?.odds?.[0];
     const odds: MatchupOdds | null =
       rawOdds?.details

@@ -6,9 +6,17 @@
  * Numbers are white + tabular; PF/PA and a losing streak use --subtext (secondary,
  * still ≥ 4.5:1). Team color lives on the abbreviation only (rows stay neutral, §9.5).
  * Static — no animation.
+ *
+ * Favorites (Setup 4): each team row is a button — tap opens the team quick menu
+ * (Add to Your teams · Compare vs…). Favorite teams show a small star after the
+ * abbreviation. The menu (not a star in the row) keeps tap targets ≥ 44pt.
  */
 
+'use client';
+
 import type { CSSProperties } from 'react';
+import { Star } from 'lucide-react';
+import { useFavorites } from '@/components/FavoritesProvider';
 import type { TeamStanding } from '@/lib/standings';
 import { seedKind } from '@/lib/standingsViews';
 import { getListTeamColor } from '@/lib/teamColors';
@@ -100,11 +108,15 @@ interface TeamRowProps {
 }
 
 export function TeamRow({ team: t, showTies, leader = false, showOutSeed = false, last = false }: TeamRowProps) {
+  const { isFavorite, openQuickMenu } = useFavorites();
+  const fav = isFavorite(t.abbr);
   const seedLabel = t.seed == null ? '' : t.seed <= 7 ? `, seed ${t.seed}` : `, seed ${t.seed}, outside the playoffs`;
   return (
-    <div
-      className="grid items-center"
-      aria-label={`${t.name}${seedLabel}: ${t.wins} wins, ${t.losses} losses${t.ties ? `, ${t.ties} ties` : ''}`}
+    <button
+      type="button"
+      onClick={() => openQuickMenu(t.abbr)}
+      className="grid w-full items-center text-left touch-optimized active:opacity-60"
+      aria-label={`${t.name}${fav ? ', in Your teams' : ''}${seedLabel}: ${t.wins} wins, ${t.losses} losses${t.ties ? `, ${t.ties} ties` : ''}. Open team menu`}
       style={{
         ...ROW_BASE, gridTemplateColumns: rowColumns(showTies), height: ROW_H,
         background: leader ? 'var(--leader-tint)' : 'transparent',
@@ -114,6 +126,9 @@ export function TeamRow({ team: t, showTies, leader = false, showOutSeed = false
       <div className="flex min-w-0 items-center overflow-hidden" style={{ gap: 6 }}>
         <SeedChip seed={t.seed} showOutSeed={showOutSeed} />
         <TeamAbbr abbr={t.abbr} />
+        {fav && (
+          <Star size={10} fill="currentColor" strokeWidth={0} aria-hidden style={{ flex: 'none', marginLeft: -3, color: getListTeamColor(t.abbr) ?? 'var(--text)' }} />
+        )}
       </div>
       <Num>{t.wins}</Num>
       <Num>{t.losses}</Num>
@@ -122,7 +137,7 @@ export function TeamRow({ team: t, showTies, leader = false, showOutSeed = false
       <Num secondary>{t.pointsFor}</Num>
       <Num secondary>{t.pointsAgainst}</Num>
       <Num secondary={t.streak.startsWith('L')}>{t.streak}</Num>
-    </div>
+    </button>
   );
 }
 

@@ -9,12 +9,19 @@
  * each mounted week lays out at its real height — that keeps jump/scroll targets
  * exact. Memoized so scrolling and the header label updating never re-render a
  * week that didn't change.
+ *
+ * Favorites (A2): when the pin setting is on, games with a "Your teams" team
+ * move into a "★ Your teams" group at the top of the week (moved, not
+ * duplicated). The current week shows a "Pick your teams" prompt while the
+ * list is empty.
  */
 
 'use client';
 
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
+import { Star } from 'lucide-react';
 import MatchupAccordion from './MatchupAccordion';
+import { useFavorites } from '@/components/FavoritesProvider';
 import MatchupCardSkeleton from './MatchupCardSkeleton';
 import type { WeekEntry } from './ScheduleProvider';
 import { type Matchup } from '@/lib/schedule';
@@ -33,6 +40,8 @@ interface WeekSectionProps {
   defenseLoading: boolean;
   /** Register this section's DOM node (or null on unmount) for scroll tracking. */
   registerSection: (week: number, el: HTMLElement | null) => void;
+  /** The live NFL week → shows the "Pick your teams" prompt when none are picked. */
+  isCurrentWeek?: boolean;
 }
 
 function groupByDay(matchups: Matchup[]): { label: string; games: Matchup[] }[] {
@@ -68,6 +77,32 @@ function DayLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+/** Empty-state nudge (current week only) — opens the Your-teams sheet. */
+function PickTeamsPrompt({ onOpen }: { onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="mb-4 flex w-full items-center gap-3 text-left touch-optimized active:opacity-80"
+      style={{
+        minHeight: 60,
+        padding: '0 16px',
+        borderRadius: 'var(--radius-lg)',
+        border: '1px dashed color-mix(in srgb, var(--gold-bright) 50%, transparent)',
+        background: 'color-mix(in srgb, var(--gold-bright) 5%, transparent)',
+      }}
+    >
+      <Star size={20} strokeWidth={1.8} style={{ color: 'var(--gold-bright)', flex: 'none' }} aria-hidden />
+      <span>
+        <span className="block" style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>Pick your teams</span>
+        <span className="block" style={{ marginTop: 2, fontSize: 11, color: 'var(--subtext)' }}>
+          Their games pin to the top of every week
+        </span>
+      </span>
+    </button>
+  );
+}
+
 function WeekDivider({ week }: { week: number }) {
   return (
     <div className="mb-3 mt-1 flex items-center gap-3" data-week-divider={week}>
@@ -93,9 +128,40 @@ function WeekSectionImpl({
   offenseLoading,
   defenseLoading,
   registerSection,
+  isCurrentWeek = false,
 }: WeekSectionProps) {
-  const groups = entry.status === 'ready' ? groupByDay(entry.matchups) : [];
+  const { teams: favTeams, pin, hydrated, openSheet } = useFavorites();
+
+  // Split favorites out (pin on) → "Your teams" group first, rest by day.
+  const { pinned, groups } = useMemo(() => {
+    if (entry.status !== 'ready') return { pinned: [] as Matchup[], groups: [] as ReturnType<typeof groupByDay> };
+    if (!pin || favTeams.length === 0) return { pinned: [] as Matchup[], groups: groupByDay(entry.matchups) };
+    const isFav = (m: Matchup) => favTeams.includes(m.away.abbr) || favTeams.includes(m.home.abbr);
+    // Pin order follows the Your-teams order (first favorite's game first).
+    const rank = (m: Matchup) => {
+      const ia = favTeams.indexOf(m.away.abbr);
+      const ih = favTeams.indexOf(m.home.abbr);
+      return Math.min(ia < 0 ? 99 : ia, ih < 0 ? 99 : ih);
+    };
+    const fav = entry.matchups.filter(isFav).sort((x, y) => rank(x) - rank(y));
+    return { pinned: fav, groups: groupByDay(entry.matchups.filter((m) => !isFav(m))) };
+  }, [entry.status, entry.matchups, pin, favTeams]);
+
   let running = indexBase;
+  const renderRow = (m: Matchup) => (
+    <MatchupAccordion
+      key={m.id}
+      matchup={m}
+      index={running++}
+      isOpen={openId === m.id}
+      onToggle={() => onToggle(m.id)}
+      offenseData={offenseData}
+      defenseData={defenseData}
+      isLoading={statsLoading}
+      isLoadingOffense={offenseLoading}
+      isLoadingDefense={defenseLoading}
+    />
+  );
 
   return (
     <section
@@ -104,6 +170,8 @@ function WeekSectionImpl({
       className="pt-2"
     >
       <WeekDivider week={entry.week} />
+
+      {isCurrentWeek && hydrated && favTeams.length === 0 && <PickTeamsPrompt onOpen={openSheet} />}
 
       {entry.status === 'loading' && (
         <div className="space-y-2">
@@ -131,25 +199,20 @@ function WeekSectionImpl({
 
       {entry.status === 'ready' && (
         <div className="space-y-4">
+          {pinned.length > 0 && (
+            <div>
+              <DayLabel>
+                <Star size={11} fill="currentColor" strokeWidth={0} aria-hidden />
+                Your teams
+              </DayLabel>
+              {/* A touch more gap than day groups so the outer auras don't touch. */}
+              <div className="space-y-2.5">{pinned.map(renderRow)}</div>
+            </div>
+          )}
           {groups.map((group) => (
             <div key={group.label}>
               <DayLabel>{group.label}</DayLabel>
-              <div className="space-y-2">
-                {group.games.map((m) => (
-                  <MatchupAccordion
-                    key={m.id}
-                    matchup={m}
-                    index={running++}
-                    isOpen={openId === m.id}
-                    onToggle={() => onToggle(m.id)}
-                    offenseData={offenseData}
-                    defenseData={defenseData}
-                    isLoading={statsLoading}
-                    isLoadingOffense={offenseLoading}
-                    isLoadingDefense={defenseLoading}
-                  />
-                ))}
-              </div>
+              <div className="space-y-2">{group.games.map(renderRow)}</div>
             </div>
           ))}
         </div>

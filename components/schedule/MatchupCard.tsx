@@ -21,14 +21,27 @@
  * getMatchupPalettes() as Compare, so clash swaps (KC vs TB) match everywhere.
  * Tapping toggles the inline compare peek (handled by <MatchupAccordion>);
  * the open card wears a gold-bright ring.
+ *
+ * Favorites ("Your teams", Favorites A2): a favorite team gets a small star in
+ * its own color next to its abbreviation, and — when the glow setting is on —
+ * an OUTER aura on its side of the card (outside the frame only; the inside
+ * stays dark). Static: no animation, so 16 cards cost nothing extra.
  */
 
 'use client';
 
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { Star } from 'lucide-react';
 import { formatKickoff, type Matchup, type MatchupOdds } from '@/lib/schedule';
 import { getMatchupPalettes, type BarPalette } from '@/lib/teamColors';
+import { useFavorites } from '@/components/FavoritesProvider';
+
+/** Outer team-color aura for a favorite side (A2 "medium"). L = away/left, R = home/right. */
+function favoriteAura(rgb: string, side: 'L' | 'R'): string {
+  const x = side === 'L' ? -10 : 10;
+  return `${x}px 0 26px -6px rgba(${rgb}, 0.6), 0 0 16px -3px rgba(${rgb}, 0.3)`;
+}
 
 interface MatchupCardProps {
   matchup: Matchup;
@@ -57,12 +70,15 @@ function TeamBlock({
   record,
   palette,
   align,
+  favorite = false,
 }: {
   abbr: string;
   nickname: string;
   record: string | null;
   palette: BarPalette;
   align: 'left' | 'right';
+  /** In "Your teams" → small star in the team color beside the abbreviation. */
+  favorite?: boolean;
 }) {
   const isRight = align === 'right';
   const rec = formatRecord(record);
@@ -70,10 +86,12 @@ function TeamBlock({
     <div className={`min-w-0 ${isRight ? 'text-right' : 'text-left'}`}>
       {/* Solid team color (N3) — 24px bold text clears WCAG large-text 3:1 on the deep card. */}
       <div
-        className="whitespace-nowrap"
-        style={{ fontSize: 24, fontWeight: 900, lineHeight: 1, letterSpacing: '0.01em', color: palette.line }}
+        className={`flex items-center whitespace-nowrap ${isRight ? 'justify-end' : ''}`}
+        style={{ gap: 4, fontSize: 24, fontWeight: 900, lineHeight: 1, letterSpacing: '0.01em', color: palette.line }}
       >
+        {favorite && isRight && <Star size={13} fill="currentColor" strokeWidth={0} aria-label="Your team" />}
         {abbr}
+        {favorite && !isRight && <Star size={13} fill="currentColor" strokeWidth={0} aria-label="Your team" />}
       </div>
       <div
         className="truncate"
@@ -140,15 +158,22 @@ export default function MatchupCard({ matchup, isOpen = false, onToggle }: Match
   // Same resolver as Compare (lift → clash swap → fallback). Away = left = A.
   const { a, b } = useMemo(() => getMatchupPalettes(away.name, home.name), [away.name, home.name]);
 
+  const { isFavorite, glow } = useFavorites();
+  const favAway = isFavorite(away.abbr);
+  const favHome = isFavorite(home.abbr);
+
   // Frame: line color → neutral → line color (same as CompactPanel), but 1.5px and a
   // SUBTLE side glow (G1: 14px / 25%) — Home stacks ~16 cards, Compare shows one.
+  // A favorite side swaps its subtle glow for the stronger outer aura (glow setting on).
+  const sideA = favAway && glow ? favoriteAura(a.rgb, 'L') : `-9px 0 14px -10px rgba(${a.rgb}, 0.25)`;
+  const sideB = favHome && glow ? favoriteAura(b.rgb, 'R') : `9px 0 14px -10px rgba(${b.rgb}, 0.25)`;
   const frameStyle = {
     padding: 1.5,
     borderRadius: 'var(--radius-lg)',
     background: `linear-gradient(90deg, ${a.line}, var(--frame-mid) 50%, ${b.line})`,
     boxShadow: isOpen
-      ? '0 0 0 1.5px var(--gold-bright), 0 0 14px color-mix(in srgb, var(--gold-bright) 25%, transparent)'
-      : `-9px 0 14px -10px rgba(${a.rgb}, 0.25), 9px 0 14px -10px rgba(${b.rgb}, 0.25)`,
+      ? `0 0 0 1.5px var(--gold-bright), 0 0 14px color-mix(in srgb, var(--gold-bright) 25%, transparent)${favAway || favHome ? `, ${sideA}, ${sideB}` : ''}`
+      : `${sideA}, ${sideB}`,
   };
 
   return (
@@ -156,7 +181,7 @@ export default function MatchupCard({ matchup, isOpen = false, onToggle }: Match
       type="button"
       onClick={onToggle}
       aria-expanded={isOpen}
-      aria-label={`Compare ${away.name} at ${home.name}`}
+      aria-label={`${favAway || favHome ? 'Your team: ' : ''}Compare ${away.name} at ${home.name}`}
       whileTap={{ scale: 0.985 }}
       className="block w-full touch-optimized"
       style={frameStyle}
@@ -174,7 +199,7 @@ export default function MatchupCard({ matchup, isOpen = false, onToggle }: Match
           background: 'linear-gradient(90deg, var(--card-deep-a), var(--card-deep-mid) 50%, var(--card-deep-b))',
         }}
       >
-        <TeamBlock abbr={away.abbr} nickname={away.nickname} record={awayRecord} palette={a} align="left" />
+        <TeamBlock abbr={away.abbr} nickname={away.nickname} record={awayRecord} palette={a} align="left" favorite={favAway} />
 
         {showScores ? <Score value={awayScore} lose={final && winner === 'home'} /> : <span />}
 
@@ -206,7 +231,7 @@ export default function MatchupCard({ matchup, isOpen = false, onToggle }: Match
 
         {showScores ? <Score value={homeScore} lose={final && winner === 'away'} /> : <span />}
 
-        <TeamBlock abbr={home.abbr} nickname={home.nickname} record={homeRecord} palette={b} align="right" />
+        <TeamBlock abbr={home.abbr} nickname={home.nickname} record={homeRecord} palette={b} align="right" favorite={favHome} />
       </div>
     </motion.button>
   );

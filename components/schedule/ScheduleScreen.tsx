@@ -34,7 +34,8 @@ const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : use
 import { useSchedule, type WeekStatus } from './ScheduleProvider';
 import WeekControl from './WeekControl';
 import WeekSection from './WeekSection';
-import { useLiveScores } from '@/lib/hooks/useLiveScores';
+import { Star } from 'lucide-react';
+import { useFavorites } from '@/components/FavoritesProvider';
 
 /** Distance (px) from an edge at which we start loading the neighbor week. */
 const EDGE_PX = 700;
@@ -48,7 +49,6 @@ export default function ScheduleScreen() {
     min,
     activeWeek,
     currentNflWeek,
-    allMatchups,
     stats,
     openId,
     toggleOpen,
@@ -59,8 +59,10 @@ export default function ScheduleScreen() {
     appendWeek,
     prependWeek,
     jumpToWeek,
-    patchLiveMatchups,
   } = useSchedule();
+
+  // Header star → Your-teams sheet. Filled gold once at least one team is picked.
+  const { teams: favTeams, openSheet } = useFavorites();
 
   const mainRef = useRef<HTMLElement>(null);
   const sectionEls = useRef<Map<number, HTMLElement>>(new Map());
@@ -98,9 +100,8 @@ export default function ScheduleScreen() {
   const postSkeletonScrollHeightRef = useRef<number | null>(null);
   const prevMinStatusRef = useRef<WeekStatus | null>(null);
 
-  // Live scores — polls the current NFL week while any loaded game is live,
-  // and merges by id into the window. Free (direct to ESPN, browser-side).
-  useLiveScores(currentNflWeek, allMatchups, patchLiveMatchups);
+  // Live scores now poll inside <ScheduleProvider> (layout-mounted) so they
+  // keep updating on every screen — Home cards AND the Compare preset pills.
 
   const registerSection = useCallback((week: number, el: HTMLElement | null) => {
     if (el) sectionEls.current.set(week, el);
@@ -265,11 +266,28 @@ export default function ScheduleScreen() {
               NFL
             </span>
           </h1>
-          <WeekControl
-            activeWeek={activeWeek}
-            onStep={(dir) => jumpToWeek(activeWeek + dir)}
-            onJump={(w) => jumpToWeek(w)}
-          />
+          <div className="flex items-center" style={{ gap: 2 }}>
+            <button
+              type="button"
+              onClick={openSheet}
+              aria-label={favTeams.length ? `Your teams (${favTeams.length})` : 'Pick your teams'}
+              className="flex items-center justify-center rounded-full touch-optimized active:opacity-70"
+              style={{ width: 44, height: 44 }}
+            >
+              <Star
+                size={20}
+                strokeWidth={1.8}
+                fill={favTeams.length ? 'currentColor' : 'none'}
+                style={{ color: 'var(--gold-bright)' }}
+                aria-hidden
+              />
+            </button>
+            <WeekControl
+              activeWeek={activeWeek}
+              onStep={(dir) => jumpToWeek(activeWeek + dir)}
+              onJump={(w) => jumpToWeek(w)}
+            />
+          </div>
         </div>
       </header>
 
@@ -303,6 +321,7 @@ export default function ScheduleScreen() {
                 offenseLoading={stats.isLoadingOffense}
                 defenseLoading={stats.isLoadingDefense}
                 registerSection={registerSection}
+                isCurrentWeek={w === currentNflWeek}
               />
             );
           })}
