@@ -9,7 +9,7 @@ export const TEAM_IDENTITY = {
 } as const satisfies TeamIdentityConfig;
 ```
 Surfaces: `home` · `compareMenus` · `comparePills` · `compareHero` · `standings` · `leaders` ·
-`teamMenu`. Override one: `overrides: { compareHero: 'name', leaders: 'name' }`.
+`teamMenu` · `favorites`. Override one: `overrides: { compareHero: 'name', leaders: 'name' }`.
 Rule + licensing: `docs/design-system.md` §9 rule 4.
 
 ## Why
@@ -23,6 +23,7 @@ pre-monetization, with a one-line way to return to names before ads / Pro.
 | 1 | Switch + `TeamIdentity` + tests; Home, Compare, Standings, Leaders wired (4 parallel agents) | `1fc0266` on `ui/team-logo-switch`, merged to `main` in `1e527eb` |
 | 2 | Standings shows logo **+ abbreviation** (Kobe's ask) — `withName` prop, wider TEAM column in logo mode | in `1fc0266` |
 | 3 | Team quick-menu sheet (tap a team on Standings) shows the logo by the city + nickname title — new `teamMenu` surface | `fc2ec58` on `ui/nav-styles` |
+| 4 | Favorites get logos (Home star sheet grid, first launch, /teams) — new `favorites` surface | `ui/sheets-favorites-logos` — `docs/devnotes/2026-10-06-sheets-swipe-favorites-logos.md` |
 
 ## How it works (`components/ui/TeamIdentity.tsx`)
 ```tsx
@@ -62,11 +63,12 @@ pre-monetization, with a one-line way to return to names before ads / Pro.
 | `standings` | `standings/PlayoffPicture.tsx` | 20 / 22 + abbr | seed rows / wild-card sides, `withName` |
 | `leaders` | `leaderboards/LeaderCard.tsx` | 18 | 30px column, `mx-auto block`; covers stat, fantasy (D/ST = that defense's logo) and rookie boards |
 | `teamMenu` | `favorites/TeamQuickMenu.tsx` | 44 | left of the city + nickname title (`SheetTitle`); name mode = title alone, unchanged |
+| `favorites` | `favorites/TeamGrid.tsx` (Home star sheet + first launch) | 24 chip / 30 tile | replaces the abbr inside the chip; ★ stays beside it |
+| `favorites` | `favorites/YourTeamsScreen.tsx` (/teams) | 34 / 24 | your-team rows slot 50 · add-search results slot 40 |
 
 `TeamAbbr` (exported from StandingsRow, shared with Leaders) is untouched — call sites are wrapped.
 
-**Always text (not on the switch):** favorites `TeamGrid`, Your teams screen, `BlankComparePicker`
-slots, Compare tab chips, the "Compare KC vs…" button text.
+**Always text (not on the switch):** `BlankComparePicker` slots, Compare tab chips, the "Compare KC vs…" button text.
 
 ## Verification
 - `npm run check` · `npm run test:run` (117; `lib/__tests__/teamIdentity.test.ts`: resolver,

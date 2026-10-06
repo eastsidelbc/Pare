@@ -19,7 +19,8 @@ export type TeamIdentitySurface =
   | 'compareHero'
   | 'standings'
   | 'leaders'
-  | 'teamMenu'; // team quick-menu sheet (tap a team on Standings)
+  | 'teamMenu' // team quick-menu sheet (tap a team on Standings)
+  | 'favorites'; // Your teams: Home star sheet grid, first launch, /teams (manage order & display)
 
 export interface TeamIdentityConfig {
   default: TeamIdentityMode;
