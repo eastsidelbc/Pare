@@ -13,7 +13,8 @@ import { describe, it, expect, vi, beforeAll } from 'vitest';
 // useRanking is a hook only because of useMemo — run its body directly.
 vi.mock('react', () => ({ useMemo: (fn: () => unknown) => fn() }));
 
-import { useRanking, calculateBulkRanking, type RankingResult } from '../useRanking';
+// Aliased: the hook runs in plain loops here (useMemo is mocked), which rules-of-hooks would flag.
+import { useRanking as rankWithHook, calculateBulkRanking, type RankingResult } from '../useRanking';
 import type { TeamData } from '../useNflStats';
 import { NFL_TEAMS } from '../teams';
 import { getAvailableMetrics } from '../metricsConfig';
@@ -76,7 +77,7 @@ describe('ranking snapshot (useRanking + calculateBulkRanking)', () => {
       for (const metric of metrics) {
         for (const higherIsBetter of [true, false]) {
           for (const team of targets) {
-            out[`${metric}|${higherIsBetter ? 'hi' : 'lo'}|${team}`] = fmt(useRanking(rows, metric, team, { higherIsBetter }));
+            out[`${metric}|${higherIsBetter ? 'hi' : 'lo'}|${team}`] = fmt(rankWithHook(rows, metric, team, { higherIsBetter }));
           }
           const bulk = calculateBulkRanking(rows, metric, targets, { higherIsBetter });
           for (const team of targets) {
@@ -84,13 +85,13 @@ describe('ranking snapshot (useRanking + calculateBulkRanking)', () => {
           }
         }
         // Special rows included.
-        out[`${metric}|incl-special|${rows[0].team}`] = fmt(useRanking(rows, metric, rows[0].team, { excludeSpecialTeams: false }));
-        out[`${metric}|incl-special|Avg Team`] = fmt(useRanking(rows, metric, 'Avg Team', { excludeSpecialTeams: false }));
+        out[`${metric}|incl-special|${rows[0].team}`] = fmt(rankWithHook(rows, metric, rows[0].team, { excludeSpecialTeams: false }));
+        out[`${metric}|incl-special|Avg Team`] = fmt(rankWithHook(rows, metric, 'Avg Team', { excludeSpecialTeams: false }));
       }
       // Guards: empty data / empty metric / empty target.
-      out['guard|empty-data'] = fmt(useRanking([], metrics[0], rows[0].team));
-      out['guard|empty-metric'] = fmt(useRanking(rows, '', rows[0].team));
-      out['guard|empty-team'] = fmt(useRanking(rows, metrics[0], ''));
+      out['guard|empty-data'] = fmt(rankWithHook([], metrics[0], rows[0].team));
+      out['guard|empty-metric'] = fmt(rankWithHook(rows, '', rows[0].team));
+      out['guard|empty-team'] = fmt(rankWithHook(rows, metrics[0], ''));
       out['guard|bulk-empty'] = JSON.stringify(calculateBulkRanking([], metrics[0], [rows[0].team]));
       expect(out).toMatchSnapshot();
     });
