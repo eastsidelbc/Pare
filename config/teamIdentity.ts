@@ -20,7 +20,8 @@ export type TeamIdentitySurface =
   | 'standings'
   | 'leaders'
   | 'teamMenu' // team quick-menu sheet (tap a team on Standings)
-  | 'favorites'; // Your teams: Home star sheet grid, first launch, /teams (manage order & display)
+  | 'favorites' // Your teams: Home star sheet grid, first launch, /teams (manage order & display)
+  | 'myTeam'; // My Team (Sleeper) roster rows, look-ahead strip, player sheet
 
 export interface TeamIdentityConfig {
   default: TeamIdentityMode;

@@ -23,7 +23,8 @@ import { getSeasonSchedule } from './seasonSchedule';
 import { sleeperProvider } from './sleeper/adapter';
 import { receptionFormat } from './sleeper/scoring';
 import { getWeekLines } from './sleeper/statLines';
-import type { FantasyRoster, LeagueDetail, ScoringRules } from './types';
+import type { LeagueBundle } from './apiTypes';
+import type { ScoringRules } from './types';
 
 const MIN = 60_000;
 
@@ -69,20 +70,7 @@ function getFpa(season: number, completedWeeks: readonly number[], rules: Scorin
   );
 }
 
-export interface LeagueBundle {
-  season: number;
-  week: number;
-  completedWeeks: number[];
-  league: Omit<LeagueDetail, 'scoring'> & { format: ReturnType<typeof receptionFormat> };
-  roster: FantasyRoster;
-  schedule: TeamSchedule;
-  fpa: FpaTable;
-  defenseLog: DefenseGame[];
-  offenseLog: OffenseGame[];
-  /** Where injury tags come from (decided by rule in P0a). */
-  injurySource: 'sleeper';
-  generatedAt: string;
-}
+export type { LeagueBundle } from './apiTypes';
 
 /** null = the user has no roster in this league. */
 export async function buildLeagueBundle(leagueId: string, userId: string): Promise<LeagueBundle | null> {

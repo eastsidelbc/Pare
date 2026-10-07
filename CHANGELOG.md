@@ -49,6 +49,9 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
     - `lib/espnBoxscore.ts`: pure box-score parsing + yards-allowed aggregation moved out of `espnStats`. Compare's defense output is unchanged (live before/after identical, parity tests); the box-score cache key is now `final-boxscore-v2`.
     - `fantasy.ts` player map adds injury status (key v4).
     - `apiCache.ts` adds `createKeyedCache` + `createCallBudget`.
+  - **P3 skeleton UI** (see `docs/devnotes/2026-10-07-my-team-p3-skeleton.md`):
+    - `/my-team` is reachable by URL only (no nav tab, no new colors). It has onboarding, a league switcher, the Season / Last 4 toggle, Starters / Bench / collapsed IR+Taxi with "Good · #24" chips, injury tags, a 5-week look-ahead strip with BYE, and a player sheet with "why" stats + Open in Compare.
+    - The dev-only `/sandbox/my-team` shows every state from synthetic data and returns 404 in production.
 - **Site footer + /about page** (2026-10-06, branch `chore/footer-about`)
   - See: `docs/devnotes/2026-10-06-footer-about.md`.
   - `components/SiteFooter.tsx` at the end of each tab's scroll content (Home, Standings, Leaders, About): ≥1024px full footer (wordmark + tagline, Pare / Company columns, © line + "not affiliated" disclaimer); below that a one-line "© {year} Pare LLC · About". Legal column hidden until Privacy/Terms exist. Not on Compare (no-scroll fit screen).
