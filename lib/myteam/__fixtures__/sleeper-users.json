@@ -1,0 +1,104 @@
+[
+ {
+  "avatar": null,
+  "display_name": "user_3",
+  "is_bot": false,
+  "is_owner": null,
+  "league_id": "1407819819000041472",
+  "metadata": {},
+  "settings": null,
+  "user_id": "100000000000000001"
+ },
+ {
+  "avatar": null,
+  "display_name": "user_4",
+  "is_bot": false,
+  "is_owner": null,
+  "league_id": "1407819819000041472",
+  "metadata": {},
+  "settings": null,
+  "user_id": "100000000000000002"
+ },
+ {
+  "avatar": null,
+  "display_name": "user_1",
+  "is_bot": false,
+  "is_owner": true,
+  "league_id": "1407819819000041472",
+  "metadata": {},
+  "settings": null,
+  "user_id": "100000000000000003"
+ },
+ {
+  "avatar": null,
+  "display_name": "user_5",
+  "is_bot": false,
+  "is_owner": null,
+  "league_id": "1407819819000041472",
+  "metadata": {
+   "team_name": "Team 1"
+  },
+  "settings": null,
+  "user_id": "100000000000000004"
+ },
+ {
+  "avatar": null,
+  "display_name": "user_6",
+  "is_bot": false,
+  "is_owner": null,
+  "league_id": "1407819819000041472",
+  "metadata": {},
+  "settings": null,
+  "user_id": "100000000000000005"
+ },
+ {
+  "avatar": null,
+  "display_name": "user_7",
+  "is_bot": false,
+  "is_owner": null,
+  "league_id": "1407819819000041472",
+  "metadata": {},
+  "settings": null,
+  "user_id": "100000000000000006"
+ },
+ {
+  "avatar": null,
+  "display_name": "user_8",
+  "is_bot": false,
+  "is_owner": null,
+  "league_id": "1407819819000041472",
+  "metadata": {},
+  "settings": null,
+  "user_id": "100000000000000007"
+ },
+ {
+  "avatar": null,
+  "display_name": "user_9",
+  "is_bot": false,
+  "is_owner": null,
+  "league_id": "1407819819000041472",
+  "metadata": {},
+  "settings": null,
+  "user_id": "100000000000000008"
+ },
+ {
+  "avatar": null,
+  "display_name": "user_10",
+  "is_bot": false,
+  "is_owner": null,
+  "league_id": "1407819819000041472",
+  "metadata": {},
+  "settings": null,
+  "user_id": "100000000000000009"
+ },
+ {
+  "avatar": null,
+  "display_name": "user_11",
+  "is_bot": false,
+  "is_owner": null,
+  "league_id": "1407819819000041472",
+  "metadata": {},
+  "settings": null,
+  "user_id": "100000000000000010"
+ }
+]
