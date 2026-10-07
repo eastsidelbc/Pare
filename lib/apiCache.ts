@@ -76,3 +76,112 @@ export async function liveWithLastGood<T>(
     return empty();
   }
 }
+
+// ──────────────────────────────────────────────────────────────────────────
+//  Keyed cache + call budget (My Team: per-user / per-league Sleeper data)
+// ──────────────────────────────────────────────────────────────────────────
+
+export interface KeyedCacheOptions {
+  /** How long a value is fresh. */
+  ttlMs: number;
+  /** Max keys kept; least-recently-used keys are evicted past this. */
+  max: number;
+  /** Clock (tests). */
+  now?: () => number;
+}
+
+export interface KeyedCache<T> {
+  /**
+   * Fresh hit → cached value. Otherwise run `fetcher` (one in-flight call per
+   * key). Success → stored. Failure → the key's last good (stale) value if
+   * there is one, else the error is rethrown.
+   */
+  get(key: string, fetcher: () => Promise<T>, label?: string): Promise<T>;
+  /** Number of keys held (fresh or stale). */
+  size(): number;
+}
+
+/**
+ * Bounded in-memory LRU with per-key last-good + in-flight dedupe. Memory only
+ * (never `unstable_cache`), so per-user data like usernames is never written
+ * to disk. Lives for the server process, like createTtlCache.
+ */
+export function createKeyedCache<T>({ ttlMs, max, now = Date.now }: KeyedCacheOptions): KeyedCache<T> {
+  const entries = new Map<string, { value: T; at: number }>();
+  const inFlight = new Map<string, Promise<T>>();
+
+  const remember = (key: string, value: T) => {
+    entries.delete(key);
+    entries.set(key, { value, at: now() });
+    while (entries.size > max) {
+      const oldest = entries.keys().next().value;
+      if (oldest === undefined) break;
+      entries.delete(oldest);
+    }
+  };
+
+  return {
+    get(key, fetcher, label = 'keyed-cache') {
+      const hit = entries.get(key);
+      if (hit && now() - hit.at < ttlMs) {
+        // Refresh LRU position without resetting the freshness clock.
+        entries.delete(key);
+        entries.set(key, hit);
+        return Promise.resolve(hit.value);
+      }
+      const pending = inFlight.get(key);
+      if (pending) return pending;
+
+      const run = fetcher()
+        .then((value) => {
+          remember(key, value);
+          return value;
+        })
+        .catch((err: unknown) => {
+          const stale = entries.get(key);
+          if (stale) {
+            const reason = err instanceof Error ? err.message : String(err);
+            console.error(`⚠️ [${label}] fetch failed (${reason}) — serving last good copy`);
+            return stale.value;
+          }
+          throw err;
+        })
+        .finally(() => {
+          inFlight.delete(key);
+        });
+      inFlight.set(key, run);
+      return run;
+    },
+    size() {
+      return entries.size;
+    },
+  };
+}
+
+export interface CallBudget {
+  /** Take one call from the budget; false = over the limit for this window. */
+  tryTake(): boolean;
+  /** Calls still available in the current window. */
+  remaining(): number;
+}
+
+/** Sliding-window call budget (e.g. Sleeper: stay well under 1000 calls/min per IP). */
+export function createCallBudget({ limit, windowMs, now = Date.now }: { limit: number; windowMs: number; now?: () => number }): CallBudget {
+  const stamps: number[] = [];
+  const prune = () => {
+    const cutoff = now() - windowMs;
+    while (stamps.length > 0 && stamps[0] <= cutoff) stamps.shift();
+  };
+  return {
+    tryTake() {
+      prune();
+      if (stamps.length >= limit) return false;
+      stamps.push(now());
+      return true;
+    },
+    remaining() {
+      prune();
+      return Math.max(0, limit - stamps.length);
+    },
+  };
+}

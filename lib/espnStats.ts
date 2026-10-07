@@ -18,6 +18,15 @@ import { NFL_TEAMS, resolveTeamByAbbr } from '@/lib/teams';
 import { getCurrentWeekInfo } from '@/lib/schedule';
 import { APP_CONSTANTS } from '@/config/constants';
 import { logger } from '@/utils/logger';
+import {
+  aggregateYardsAllowed,
+  parseGameBox,
+  toTeamGameLines,
+  type EspnSummaryResponse,
+  type GameTeamBox,
+  type TeamGameLine,
+  type YardsAllowed,
+} from '@/lib/espnBoxscore';
 
 // ---- ESPN response shape (only the bits we read) ----
 interface EspnStat {
@@ -280,16 +289,9 @@ const ESPN_SUMMARY_URL =
 /** Summary concurrency cap so we don't hammer ESPN. */
 const SUMMARY_BATCH_SIZE = 8;
 
-/** Per-team aggregated yards allowed (season totals) + games counted. */
-export interface YardsAllowed {
-  total_yards: number;
-  pass_yds: number;
-  rush_yds: number;
-  /** Opponent third-down conversions/attempts (for attempts-weighted %). */
-  td3Conv: number;
-  td3Att: number;
-  games: number;
-}
+// Pure parsing + aggregation live in lib/espnBoxscore.ts (unit-tested); this
+// file keeps the fetching and the per-game cache.
+export type { YardsAllowed, TeamGameLine } from '@/lib/espnBoxscore';
 
 interface EspnScoreboardCompetitor {
   team?: { id?: string };
@@ -304,30 +306,6 @@ interface EspnScoreboardEvent {
 }
 interface EspnScoreboardResponse {
   events?: EspnScoreboardEvent[];
-}
-
-interface EspnSummaryStat {
-  name?: string;
-  value?: number;
-  displayValue?: string;
-}
-interface EspnSummaryTeam {
-  team?: { id?: string };
-  statistics?: EspnSummaryStat[];
-}
-interface EspnSummaryResponse {
-  boxscore?: { teams?: EspnSummaryTeam[] };
-}
-
-/** One team's offensive output in a single game. */
-interface GameTeamYards {
-  teamId: string;
-  total: number;
-  pass: number;
-  rush: number;
-  /** Third-down conversions / attempts (from `thirdDownEff`, e.g. "5-12"). */
-  td3Conv: number;
-  td3Att: number;
 }
 
 async function fetchJsonWithTimeout<T>(url: string): Promise<T> {
@@ -373,52 +351,23 @@ async function getFinalEventIds(week: number): Promise<string[]> {
   return ids;
 }
 
-/** Reads both teams' offensive total/net-pass/rush yards from a game summary. */
-async function fetchGameYards(eventId: string): Promise<GameTeamYards[] | null> {
+/** Reads both teams' box-score lines from a game summary (null = required yards missing). */
+async function fetchGameBox(eventId: string): Promise<GameTeamBox[] | null> {
   const url = `${ESPN_SUMMARY_URL}?event=${eventId}`;
   const data = await fetchJsonWithTimeout<EspnSummaryResponse>(url);
-  const teams = data.boxscore?.teams ?? [];
-  if (teams.length !== 2) return null;
-
-  const statVal = (t: EspnSummaryTeam, name: string): number | null => {
-    const s = t.statistics?.find((x) => x.name === name);
-    if (!s) return null;
-    if (typeof s.value === 'number' && Number.isFinite(s.value)) return s.value;
-    const n = parseFloat(String(s.displayValue ?? '').replace(/,/g, ''));
-    return Number.isFinite(n) ? n : null;
-  };
-
-  // Parse "conv-att" (e.g. "5-12") from the thirdDownEff entry. Best-effort:
-  // a missing/odd value contributes 0/0 (i.e. doesn't skew the % denominator).
-  const thirdDown = (t: EspnSummaryTeam): { conv: number; att: number } => {
-    const s = t.statistics?.find((x) => x.name === 'thirdDownEff');
-    const m = String(s?.displayValue ?? '').match(/^\s*(\d+)\s*-\s*(\d+)\s*$/);
-    if (!m) return { conv: 0, att: 0 };
-    return { conv: parseInt(m[1], 10), att: parseInt(m[2], 10) };
-  };
-
-  const out: GameTeamYards[] = [];
-  for (const t of teams) {
-    const id = t.team?.id;
-    const total = statVal(t, 'totalYards');
-    const pass = statVal(t, 'netPassingYards');
-    const rush = statVal(t, 'rushingYards');
-    if (!id || total === null || pass === null || rush === null) {
-      // A required field is missing on this game — skip the whole game.
-      logger.error(
-        { context: 'DEFENSE-AGG' },
-        `Missing box-score yards on event ${eventId} (team ${id ?? '?'})`,
-      );
-      return null;
-    }
-    const td = thirdDown(t);
-    out.push({ teamId: id, total, pass, rush, td3Conv: td.conv, td3Att: td.att });
+  const { teams, missingTeam } = parseGameBox(data);
+  if (!teams && missingTeam) {
+    // A required field is missing on this game — skip the whole game.
+    logger.error(
+      { context: 'DEFENSE-AGG' },
+      `Missing box-score yards on event ${eventId} (team ${missingTeam})`,
+    );
   }
-  return out;
+  return teams;
 }
 
 /**
- * Per-game cache for FINISHED games' box-score yards (~24h).
+ * Per-game cache for FINISHED games' box scores (~24h).
  *
  * Why: the yards-allowed aggregation used to re-download EVERY box score of the
  * season on each refresh (~16 per finished week, ~270 by Week 18). A final box
@@ -430,15 +379,19 @@ async function fetchGameYards(eventId: string): Promise<GameTeamYards[] | null> 
  * Incomplete box scores THROW instead of returning null, because
  * `unstable_cache` never stores a thrown error — so a partial box score right at
  * the final whistle is retried next refresh instead of being frozen for 24h.
+ *
+ * v2 (2026-10-07, My Team): each entry also carries points, TDs by type, INT,
+ * sacks, fumbles, turnovers, red-zone trips and drives — new key so old
+ * yards-only entries aren't reused.
  */
-function getGameYards(eventId: string): Promise<GameTeamYards[]> {
+function getGameBox(eventId: string): Promise<GameTeamBox[]> {
   return unstable_cache(
     async () => {
-      const yards = await fetchGameYards(eventId);
-      if (!yards) throw new Error(`incomplete box score for event ${eventId}`);
-      return yards;
+      const box = await fetchGameBox(eventId);
+      if (!box) throw new Error(`incomplete box score for event ${eventId}`);
+      return box;
     },
-    ['final-boxscore-yards', eventId],
+    ['final-boxscore-v2', eventId],
     {
       revalidate: APP_CONSTANTS.CACHE.FINAL_BOXSCORE_REVALIDATE_SECONDS,
       tags: ['final-boxscore-yards'],
@@ -447,22 +400,11 @@ function getGameYards(eventId: string): Promise<GameTeamYards[]> {
 }
 
 /**
- * Computes each team's yards ALLOWED (total / net-pass / rush) by summing its
- * OPPONENTS' offensive yards across all completed 2026 regular-season games.
- *
- * Returns a map keyed by the app's team name. Teams with no completed games
- * (e.g. a team whose Week 1 game hasn't finished) are simply absent → the UI
- * keeps showing "—" for them. Also logs an internal consistency check
- * (Σ allowed === Σ gained, both from the same box scores) that needs no
- * external source.
- *
- * Throws only if it can't compute anything, so the route can keep serving the
- * Step-3 points-allowed with "—" yards.
- *
- * Internal: returns a plain object; the public API wraps it back into a Map —
- * call site in defense/route.ts unchanged.
+ * Every completed regular-season game up to the current week, with its week
+ * and both teams' box-score lines (`teams: null` = box score failed/incomplete).
+ * Throws only if there are no completed games at all.
  */
-async function _fetchDefenseYardsAllowed(): Promise<Record<string, YardsAllowed>> {
+async function loadFinalGames(): Promise<Array<{ week: number; eventId: string; teams: GameTeamBox[] | null }>> {
   // Upper bound = current week (completed games only live at or before it).
   let currentWeek: number;
   try {
@@ -482,109 +424,72 @@ async function _fetchDefenseYardsAllowed(): Promise<Record<string, YardsAllowed>
       return [] as string[];
     }),
   );
-  const eventIds = idLists.flat();
-  if (eventIds.length === 0) {
+  // Keep each event's week (My Team needs per-week logs for "Last 4").
+  const events = idLists.flatMap((ids, i) => ids.map((eventId) => ({ eventId, week: weeks[i] })));
+  if (events.length === 0) {
     throw new Error('no completed games found for yards aggregation');
   }
 
-  const games = await inBatches(eventIds, SUMMARY_BATCH_SIZE, (id) =>
-    getGameYards(id).catch((err) => {
+  return inBatches(events, SUMMARY_BATCH_SIZE, async ({ eventId, week }) => ({
+    week,
+    eventId,
+    teams: await getGameBox(eventId).catch((err) => {
       logger.error(
         { context: 'DEFENSE-AGG' },
-        `Summary ${id} failed: ${err instanceof Error ? err.message : String(err)}`,
+        `Summary ${eventId} failed: ${err instanceof Error ? err.message : String(err)}`,
       );
       return null;
     }),
-  );
+  }));
+}
 
+/**
+ * Computes each team's yards ALLOWED (total / net-pass / rush) by summing its
+ * OPPONENTS' offensive yards across all completed 2026 regular-season games.
+ *
+ * Returns a map keyed by the app's team name. Teams with no completed games
+ * (e.g. a team whose Week 1 game hasn't finished) are simply absent → the UI
+ * keeps showing "—" for them. Also logs an internal consistency check
+ * (Σ allowed === Σ gained, both from the same box scores) that needs no
+ * external source.
+ *
+ * Throws only if it can't compute anything, so the route can keep serving the
+ * Step-3 points-allowed with "—" yards.
+ *
+ * Internal: returns a plain object; the public API wraps it back into a Map —
+ * call site in defense/route.ts unchanged.
+ */
+async function _fetchDefenseYardsAllowed(): Promise<Record<string, YardsAllowed>> {
+  const games = await loadFinalGames();
   const idToName = new Map(NFL_TEAMS.map((t) => [String(t.espnId), t.name]));
-  const allowed = new Map<string, YardsAllowed>();
-  const gained = new Map<string, { total: number; pass: number; rush: number }>();
-
-  const ensureAllowed = (name: string): YardsAllowed => {
-    let v = allowed.get(name);
-    if (!v) {
-      v = { total_yards: 0, pass_yds: 0, rush_yds: 0, td3Conv: 0, td3Att: 0, games: 0 };
-      allowed.set(name, v);
-    }
-    return v;
-  };
-  const ensureGained = (name: string) => {
-    let v = gained.get(name);
-    if (!v) {
-      v = { total: 0, pass: 0, rush: 0 };
-      gained.set(name, v);
-    }
-    return v;
-  };
-
-  let counted = 0;
-  let skipped = 0;
-  for (const g of games) {
-    if (!g || g.length !== 2) {
-      skipped++;
-      continue;
-    }
-    const [x, y] = g;
-    const nameX = idToName.get(x.teamId);
-    const nameY = idToName.get(y.teamId);
-    if (!nameX || !nameY) {
-      skipped++;
-      continue;
-    }
-
-    // Each team is ALLOWED its opponent's offensive yards + third-down eff.
-    const aX = ensureAllowed(nameX);
-    aX.total_yards += y.total;
-    aX.pass_yds += y.pass;
-    aX.rush_yds += y.rush;
-    aX.td3Conv += y.td3Conv;
-    aX.td3Att += y.td3Att;
-    aX.games += 1;
-
-    const aY = ensureAllowed(nameY);
-    aY.total_yards += x.total;
-    aY.pass_yds += x.pass;
-    aY.rush_yds += x.rush;
-    aY.td3Conv += x.td3Conv;
-    aY.td3Att += x.td3Att;
-    aY.games += 1;
-
-    // Each team GAINED its own offensive yards (consistency bookkeeping only).
-    const gX = ensureGained(nameX);
-    gX.total += x.total;
-    gX.pass += x.pass;
-    gX.rush += x.rush;
-    const gY = ensureGained(nameY);
-    gY.total += y.total;
-    gY.pass += y.pass;
-    gY.rush += y.rush;
-
-    counted++;
-  }
+  const { allowed, gained, counted, skipped } = aggregateYardsAllowed(
+    games.map((g) => g.teams),
+    idToName,
+  );
 
   if (counted === 0) {
     throw new Error('no usable game box scores for yards aggregation');
   }
 
   // Internal consistency: Σ allowed === Σ gained (both from the box scores).
-  const aTotal = [...allowed.values()].reduce((s, v) => s + v.total_yards, 0);
-  const aPass = [...allowed.values()].reduce((s, v) => s + v.pass_yds, 0);
-  const aRush = [...allowed.values()].reduce((s, v) => s + v.rush_yds, 0);
-  const gTotal = [...gained.values()].reduce((s, v) => s + v.total, 0);
-  const gPass = [...gained.values()].reduce((s, v) => s + v.pass, 0);
-  const gRush = [...gained.values()].reduce((s, v) => s + v.rush, 0);
+  const a = Object.values(allowed);
+  const g = Object.values(gained);
+  const aTotal = a.reduce((s, v) => s + v.total_yards, 0);
+  const aPass = a.reduce((s, v) => s + v.pass_yds, 0);
+  const aRush = a.reduce((s, v) => s + v.rush_yds, 0);
+  const gTotal = g.reduce((s, v) => s + v.total, 0);
+  const gPass = g.reduce((s, v) => s + v.pass, 0);
+  const gRush = g.reduce((s, v) => s + v.rush, 0);
 
   logger.performance(
     { context: 'DEFENSE-AGG' },
-    `Aggregated ${counted} games (skipped ${skipped}), ${allowed.size} teams. ` +
+    `Aggregated ${counted} games (skipped ${skipped}), ${a.length} teams. ` +
       `CONSISTENCY allowed/gained → total=${aTotal}/${gTotal} (${aTotal === gTotal ? 'MATCH' : 'MISMATCH'}) ` +
       `pass=${aPass}/${gPass} (${aPass === gPass ? 'MATCH' : 'MISMATCH'}) ` +
       `rush=${aRush}/${gRush} (${aRush === gRush ? 'MATCH' : 'MISMATCH'})`,
   );
 
-  // Convert Map → plain object (public API turns it back into a Map).
-  return Object.fromEntries(allowed);
+  return allowed;
 }
 
 /**
@@ -595,9 +500,21 @@ async function _fetchDefenseYardsAllowed(): Promise<Record<string, YardsAllowed>
  * nested inside it (Next bypasses nested unstable_cache + fetch caching), which
  * forced a full re-download of every season box score on each refresh. Now the
  * week scoreboards use the normal 10-min fetch cache and finished box scores
- * use the 24h per-game cache in getGameYards().
+ * use the 24h per-game cache in getGameBox().
  */
 export async function fetchDefenseYardsAllowed(): Promise<Map<string, YardsAllowed>> {
   const obj = await _fetchDefenseYardsAllowed();
   return new Map(Object.entries(obj));
+}
+
+/**
+ * Per-team, per-week game lines (each team's offense + what it allowed), for
+ * My Team's Season / Last-4 windows. Same scoreboards + per-game cache as the
+ * yards aggregation — no extra ESPN calls once those are warm. Must not be
+ * called from inside an `unstable_cache`.
+ */
+export async function getTeamGameLog(): Promise<TeamGameLine[]> {
+  const games = await loadFinalGames();
+  const idToAbbr = new Map(NFL_TEAMS.map((t) => [String(t.espnId), t.abbr]));
+  return toTeamGameLines(games, idToAbbr);
 }

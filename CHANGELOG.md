@@ -42,6 +42,13 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - `scripts/my-team-spike.mjs` + anonymized fixtures in `lib/myteam/__fixtures__/` (P0a). Decisions by rule: weekly stats from `api.sleeper.com`; injuries from the Sleeper player map.
   - `lib/myteam/`: normalized types + `FantasyProvider` interface, Sleeper scoring → rules, roster normalizer (co-owner + pre-draft handled), FPA engine (matches Sleeper's own `fan_pts_allow_*` 160/160), Season / Last-4 rating with tiers ("Good · #24"), per-position "why" stats, `pare:myteam` store (not wired to any UI yet).
   - `lib/ranking.ts`: the one tie-aware ranking core; `useRanking` / `calculateBulkRanking` delegate to it (signatures unchanged; snapshot-guarded).
+  - **P2 server layer** (see `docs/devnotes/2026-10-07-my-team-p2-server.md`):
+    - New routes `GET /api/myteam/user` and `GET /api/myteam/league` (private, no-store; not linked from any UI yet).
+    - Sleeper adapter with memory-only keyed caches and a global 600 calls/min budget.
+    - Weekly stat lines, the season schedule (a failed week is never a bye) and the league bundle.
+    - `lib/espnBoxscore.ts`: pure box-score parsing + yards-allowed aggregation moved out of `espnStats`. Compare's defense output is unchanged (live before/after identical, parity tests); the box-score cache key is now `final-boxscore-v2`.
+    - `fantasy.ts` player map adds injury status (key v4).
+    - `apiCache.ts` adds `createKeyedCache` + `createCallBudget`.
 - **Site footer + /about page** (2026-10-06, branch `chore/footer-about`)
   - See: `docs/devnotes/2026-10-06-footer-about.md`.
   - `components/SiteFooter.tsx` at the end of each tab's scroll content (Home, Standings, Leaders, About): ≥1024px full footer (wordmark + tagline, Pare / Company columns, © line + "not affiliated" disclaimer); below that a one-line "© {year} Pare LLC · About". Legal column hidden until Privacy/Terms exist. Not on Compare (no-scroll fit screen).

@@ -1,6 +1,7 @@
 /** Test helpers: load P0a fixtures (anonymized) and synthetic fixtures. */
 import { readFileSync } from 'node:fs';
-import { isFantasyPosition, type PlayerGameLine } from '../types';
+import type { PlayerGameLine } from '../types';
+import { toGameLines as mapLines } from '../sleeper/map';
 
 export function loadFixture<T>(name: string): T {
   return JSON.parse(readFileSync(new URL(`../__fixtures__/${name}`, import.meta.url), 'utf8')) as T;
@@ -16,12 +17,7 @@ export interface SleeperComLine {
   stats: Record<string, number>;
 }
 
-/** Fixture lines → engine lines (the P2 adapter does the same mapping). */
+/** Fixture lines → engine lines via the production mapper (lib/myteam/sleeper/map.ts). */
 export function toGameLines(lines: readonly SleeperComLine[]): PlayerGameLine[] {
-  const out: PlayerGameLine[] = [];
-  for (const l of lines) {
-    if (!isFantasyPosition(l.player.position)) continue;
-    out.push({ playerId: l.player_id, position: l.player.position, team: l.team, opponent: l.opponent, week: l.week, stats: l.stats });
-  }
-  return out;
+  return mapLines(lines);
 }
