@@ -171,6 +171,7 @@ pm2 logs pare                   # watch for ESPN 429/403
 | Tie notation / tolerance | `T-12th` / `0.001` |
 | Data freshness | live 15s · standings instant · schedule 5 min · stats 10 min · leaders ≤~40 min |
 | Logos vs names | `config/teamIdentity.ts` — flip `default` (`'logo'` ⇄ `'name'`); per-surface `overrides`. Must be `'name'` before ads/Pro (trademarks) |
+| In-app detector | `lib/platform.ts` — inline head script sets `<html data-app="ios">` when the UA contains `Pare-iOS` (set in `ios/Pare/Web/WebViewContainer.swift`). CSS: `[data-app="ios"] …`; client: `isInIosApp()`. Never `headers()` (keeps pages static/ISR). Hides `.site-footer`; reuse for the logo switch |
 | Service worker | `public/sw.js` = kill switch (clears `pare-*` caches + unregisters old installs, 2026-10-06); `NEXT_PUBLIC_ENABLE_SW` off on pare.gg |
 
 ## End Session → Vault Brain

@@ -37,6 +37,12 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Perf (sandbox, 4× CPU, median of 3): LCP 0.25–0.29s, expand 50–56ms, TOT/PPG ~40ms, 60 fps / 0 dropped, ~2ms main-thread per 5s idle, 0 animations → no fixes needed. Details in the dev note.
 
 ### Added
+- **Site footer + /about page** (2026-10-06, branch `chore/footer-about`)
+  - See: `docs/devnotes/2026-10-06-footer-about.md`.
+  - `components/SiteFooter.tsx` at the end of each tab's scroll content (Home, Standings, Leaders, About): ≥1024px full footer (wordmark + tagline, Pare / Company columns, © line + "not affiliated" disclaimer); below that a one-line "© {year} Pare LLC · About". Legal column hidden until Privacy/Terms exist. Not on Compare (no-scroll fit screen).
+  - `app/about/page.tsx`: H1 Inline shell + one deep card (Pare LLC, support@pare.gg, data disclaimer). Static.
+  - Hidden in the iOS app: `lib/platform.ts` inline script sets `<html data-app="ios">` from the wrapper UA (`Pare-iOS`) before paint; CSS hides `.site-footer`. No `headers()` — `/`, `/leaderboards`, `/about` stay static/ISR.
+- **Logos off by default** (2026-10-06, `main`, `4be957d`) — `config/teamIdentity.ts` `default: 'name'`.
 - **Swipe down to close bottom sheets + favorites logos** (2026-10-06, branch `ui/sheets-favorites-logos`)
   - See: `docs/devnotes/2026-10-06-sheets-swipe-favorites-logos.md`.
   - New shared `components/ui/BottomSheet.tsx`: every bottom sheet (team quick menu from Standings, the Home "Your teams" picker) now closes by swiping it down, as well as tapping outside. The picker drags from its top area so the team grid still scrolls.

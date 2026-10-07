@@ -7,6 +7,7 @@ import BottomNav from "@/components/BottomNav";
 import { ScheduleProvider } from "@/components/schedule/ScheduleProvider";
 import { FavoritesProvider } from "@/components/FavoritesProvider";
 import FavoritesOverlays from "@/components/favorites/FavoritesOverlays";
+import { IN_APP_SCRIPT } from "@/lib/platform";
 import { getCurrentWeekInfo, getCurrentWeekMatchups, getMatchupsForWeek, MIN_WEEK } from "@/lib/schedule";
 
 const inter = Inter({
@@ -103,6 +104,10 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Pare NFL" />
+        {/* In-app marker: <html data-app="ios"> inside the iOS wrapper, set before
+            paint from the user agent (lib/platform.ts) — no server headers(), so
+            pages stay static / ISR. CSS hides web-only chrome off it. */}
+        <script dangerouslySetInnerHTML={{ __html: IN_APP_SCRIPT }} />
         {/* Authoritative viewport height for standalone PWAs: iOS can report
             100dvh taller than the real usable area, clipping the bottom of the
             fixed app shell. Drive it from window.innerHeight instead. */}

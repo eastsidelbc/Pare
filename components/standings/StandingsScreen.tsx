@@ -19,6 +19,7 @@ import type { ConferenceStandings } from '@/lib/standings';
 import { leagueHasTies } from '@/lib/standingsViews';
 import { useRefreshOnReturn } from '@/lib/hooks/useRefreshOnReturn';
 import CardGrid from '@/components/ui/CardGrid';
+import SiteFooter from '@/components/SiteFooter';
 import ActivePill from '@/components/ui/ActivePill';
 import { GlassLabel, glassCapsule } from '@/components/ui/glassControl';
 import DivisionTable from './DivisionTable';
@@ -146,6 +147,7 @@ export default function StandingsScreen({ conferences }: { conferences: Conferen
             </section>
           )}
         </div>
+        <SiteFooter />
       </main>
     </div>
   );
