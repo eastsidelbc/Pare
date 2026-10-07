@@ -5,7 +5,7 @@
  *
  * Two variants by width (CSS only, no JS):
  * - ≥1024px (`lg`): full footer — wordmark + tagline, link columns, legal line.
- * - <1024px: one compact line — "© {year} Pare LLC · About".
+ * - <1024px: one compact line — "© {year} Pare LLC · About · Privacy".
  *
  * Hidden inside the iOS app via `[data-app="ios"] .site-footer` (lib/platform.ts).
  * Styles (link hover, gold focus ring): `.site-footer*` in app/globals.css.
@@ -34,9 +34,9 @@ const COLUMNS: ReadonlyArray<{ title: string; links: ReadonlyArray<FooterLink> }
       { label: 'Contact', href: `mailto:${SUPPORT_EMAIL}`, external: true },
     ],
   },
-  // Legal: only routes that exist. Add Privacy / Terms here once their pages ship —
+  // Legal: only routes that exist. Add Terms here once its page ships —
   // an empty column is hidden, so there are never dead links.
-  { title: 'Legal', links: [] },
+  { title: 'Legal', links: [{ label: 'Privacy', href: '/privacy' }] },
 ];
 
 function FooterAnchor({ link, className }: { link: FooterLink; className: string }) {
@@ -93,6 +93,10 @@ export default function SiteFooter() {
         © {year} Pare LLC ·{' '}
         <Link href="/about" className="site-footer-link pare-hit44 inline-block underline underline-offset-2">
           About
+        </Link>
+        {' · '}
+        <Link href="/privacy" className="site-footer-link pare-hit44 inline-block underline underline-offset-2">
+          Privacy
         </Link>
       </p>
     </footer>

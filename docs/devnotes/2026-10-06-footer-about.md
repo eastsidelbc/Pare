@@ -15,5 +15,22 @@ Branch `chore/footer-about`. CHANGELOG `[Unreleased] → Added`.
 - **Home is infinite-scroll downward** (weeks append near the bottom), so the footer sits below the loaded weeks and is "final" only once the last week has loaded. Standard feed behaviour; accepted.
 - **Year** comes from `new Date()` at render: static pages re-render every 5 min (ISR), so it rolls over within minutes of New Year.
 
+## Privacy audit (backs `/privacy`)
+Searched `app components lib utils config public` for external URLs, storage APIs and request logging.
+
+| Area | Finding |
+|---|---|
+| Browser → third-party | **ESPN `site.api.espn.com`**: scoreboard polled every 15s in the live window (`lib/hooks/useLiveScores.ts`) and the game `summary` when a final's box score opens (`lib/hooks/useGameSummary.ts`). ESPN sees visitor IP + UA (+ `pare.gg` origin as Referer, per `strict-origin-when-cross-origin`). Nothing else |
+| Server → third-party | ESPN (`site.api`, `sports.core.api`, `site.web.api`), Sleeper `api.sleeper.app`. No visitor data passed |
+| Fonts | `next/font/google` — downloaded at build, self-hosted; no runtime Google request |
+| Images | Team logos local `/images/nfl-logos/*.svg`. ESPN logo/headshot URLs exist in data (`lib/fantasy.ts`, `lib/leaders.ts`) but aren't rendered |
+| Scripts / analytics / ads | None |
+| localStorage | `pare:favorites`, `pare:comparisons`. No sessionStorage, IndexedDB or cookies set by the app |
+| Service worker | `public/sw.js` kill switch only deletes `pare-*` caches; registration off on pare.gg |
+| Server logs | App never reads IP / UA headers; no request logging. Cloudflare (edge) processes IPs on its side |
+| `/api/preferences` | Stub — returns `{}`, stores nothing |
+
+Spec said "stats are fetched by our server, not your device" — false for live scores / box scores, so the policy discloses ESPN instead.
+
 ## Verify
 `npm run check`, `npm run test:run` (121 pass), `npm run build` (in a scratch copy — dev was running on :4000). Built HTML for `/`, `/leaderboards`, `/about` contains the footer + the in-app script.

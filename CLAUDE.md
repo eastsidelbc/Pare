@@ -172,6 +172,7 @@ pm2 logs pare                   # watch for ESPN 429/403
 | Data freshness | live 15s · standings instant · schedule 5 min · stats 10 min · leaders ≤~40 min |
 | Logos vs names | `config/teamIdentity.ts` — flip `default` (`'logo'` ⇄ `'name'`); per-surface `overrides`. Must be `'name'` before ads/Pro (trademarks) |
 | In-app detector | `lib/platform.ts` — inline head script sets `<html data-app="ios">` when the UA contains `Pare-iOS` (set in `ios/Pare/Web/WebViewContainer.swift`). CSS: `[data-app="ios"] …`; client: `isInIosApp()`. Never `headers()` (keeps pages static/ISR). Hides `.site-footer`; reuse for the logo switch |
+| Privacy policy | Privacy policy at `/privacy` (`app/privacy/page.tsx`) — update it **BEFORE** adding accounts, analytics, ads, or any data collection (and when the browser starts loading a new third-party domain). Today: localStorage `pare:favorites` + `pare:comparisons`, no own cookies; browser hits ESPN directly for live scores + box scores |
 | Service worker | `public/sw.js` = kill switch (clears `pare-*` caches + unregisters old installs, 2026-10-06); `NEXT_PUBLIC_ENABLE_SW` off on pare.gg |
 
 ## End Session → Vault Brain

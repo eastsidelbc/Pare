@@ -6,6 +6,7 @@
  * SiteFooter at the end of the scroll content. Static — no data fetching.
  */
 
+import Link from 'next/link';
 import SiteFooter from '@/components/SiteFooter';
 
 export const metadata = { title: 'About · Pare' };
@@ -67,6 +68,11 @@ export default function AboutPage() {
             </p>
             <p style={{ color: 'var(--subtext)' }}>
               Stats from public sources. Not affiliated with the NFL or any league or team.
+            </p>
+            <p>
+              <Link href="/privacy" className="site-footer-link underline underline-offset-2" style={{ fontSize: 'inherit' }}>
+                Privacy Policy
+              </Link>
             </p>
           </section>
         </div>
