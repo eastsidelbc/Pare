@@ -96,7 +96,7 @@ Snapshot: 2026 season, ESPN week 5 = Sleeper week 5, last completed week 4. The 
 | **Injury source** | **Sleeper player map (≤24h)** | ESPN met 3 of 4 conditions (32/32 teams, 81 ms <5s, 0 unmapped statuses), but resolved only 75.0% of rostered injured players (<95%). The misses are long-term IR players ESPN doesn't list. |
 | **Live poll default** | 30s until P0b | Note: Sleeper's CDN `s-maxage=60` on matchups suggests 60s is the useful floor (see below). |
 
-## Proposed plan adjustments (need Kobe's OK, not applied)
+## Plan adjustments (approved by Kobe 2026-10-07; 1, 2, 4 applied to the plan)
 
 1. **Live poll interval:** use 60s, not 30s. Sleeper caches matchups for 60s at its CDN, so 30s polls return the same data half the time. P0b confirms.
 2. **Roster cache:** 5 min, not 2. Sleeper's CDN already serves rosters up to 300s old, so our 2-min cache adds calls without adding freshness.

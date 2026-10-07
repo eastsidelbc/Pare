@@ -130,7 +130,7 @@ Endpoints covered (the live cadence is **not** here; that's P0b):
   - all 32 teams respond, each in <5s;
   - every status maps to Q/D/O/IR;
   - ≥95% of the injured players on the fixture league's rosters resolve to a Sleeper id (via `espn_id`, else normalized name + team).
-- **Live poll default:** 30s until P0b measures otherwise.
+- **Live poll default:** 60s (Sleeper CDN caches matchups `s-maxage=60`; approved 2026-10-07). P0b confirms.
 
 **Checklist (script summary + devnote):**
 - [ ] Shapes for user/leagues/league/rosters/users/matchups. How co-owners appear. Whether `pre_draft` leagues have empty rosters.
@@ -165,7 +165,7 @@ git log --oneline -3
   L=<league_id>; W=<week>
   for i in $(seq 1 40); do echo "$(date +%T) $(curl -s https://api.sleeper.app/v1/league/$L/matchups/$W | jq -c '[.[] | .points] | add')"; sleep 30; done | tee sleeper-live-cadence.log
   ```
-  Paste the log, or the observed update interval, into the spike devnote. It sets the P6 poll interval (minimum 30s).
+  Paste the log, or the observed update interval, into the spike devnote. It confirms the P6 poll interval (60s; never below Sleeper's 60s CDN cache).
 - [ ] Optional: confirm prod Pare defense is 2026 with 32 rows: `curl -s https://pare.gg/api/nfl-2025/defense | jq 'keys'`.
 - [ ] Review the devnote's source decisions.
 
@@ -251,15 +251,15 @@ Sheet "why" stats per position (`lib/myteam/defenseProfile.ts`):
 | username → user_id | 24h | keyed LRU (memory only) |
 | user leagues | 1h | keyed LRU |
 | league settings/scoring | 1h | keyed LRU |
-| rosters | 2 min | keyed LRU |
-| matchups (live) | P0b cadence, ≥30s | keyed LRU |
+| rosters | 5 min (= Sleeper CDN `s-maxage=300`) | keyed LRU |
+| matchups (live) | 60s (= Sleeper CDN `s-maxage=60`; P0b confirms) | keyed LRU |
 | weekly stat lines | current week 30 min · completed weeks 24h | `unstable_cache` over no-store |
 | FPA table | 30 min per scoring hash | keyed LRU |
 | season schedule | 6h | `unstable_cache` over no-store |
 | defense game log | existing per-game 24h + route window 10 min | existing |
 | injuries | ESPN 30 min, or Sleeper map 24h (per P0a) | `unstable_cache` over no-store / existing |
 
-Rough budget: a cold load for a new user is ≤6 Sleeper calls; a warm one is 0. Live load is ≤2 calls/min per league being watched, so the limiter supports roughly 250 live leagues before last-good kicks in.
+Rough budget: a cold load for a new user is ≤6 Sleeper calls; a warm one is 0. Live load is ≤1 call/min per league being watched (60s poll), so the limiter supports roughly 500 live leagues before last-good kicks in.
 
 ---
 
@@ -278,6 +278,10 @@ git log --oneline -5
 - **Files:**
   - `lib/myteam/{types,provider,fpa,defenseProfile,rating,store}.ts`
   - `lib/myteam/sleeper/scoring.ts`
+  - `lib/myteam/sleeper/roster.ts` (pure: `findMyRoster(rosters, userId)` via `owner_id` or `co_owners`; `normalizeRoster` → starters / bench / IR / taxi groups, empty for `pre_draft`)
+  - Synthetic fixtures (no real data; neither case appeared in the P0a spike):
+    - `lib/myteam/__fixtures__/synthetic/rosters-co-owner.json`: the user is only in `co_owners` of one roster, not `owner_id`.
+    - `lib/myteam/__fixtures__/synthetic/league-pre-draft.json` + `rosters-pre-draft.json`: `status: "pre_draft"`, rosters with `players: null`, `starters: []`.
   - `lib/myteam/__tests__/*`
   - ADR draft
   - **separate commit** `refactor: extract pure ranking core from useRanking` → `lib/ranking.ts` + `useRanking` delegating to it + `lib/__tests__/ranking.snapshot.test.ts`
@@ -289,7 +293,9 @@ git log --oneline -5
   - [ ] `T-12th` ties.
   - [ ] Tier mapping follows the rank convention via one `TIER_CUTOFFS`.
   - [ ] Store: version rejection, quota-safe.
-- **Machine gate /goal:** `P1 done when, in this transcript: npx vitest run passes and lists the new lib/myteam/__tests__ files (scoring, fpa, rating, defenseProfile, store) and lib/__tests__/ranking.snapshot.test.ts; git log shows the snapshot test committed before a separate "refactor: extract pure ranking core from useRanking" commit, and the snapshot still passes after it; git diff main --stat shows no files under app/ or components/ and useRanking's exported signature unchanged; npm run check passes; port 4000 checked (stop and tell Kobe if dev is running), then npm run build passes; everything committed locally, nothing pushed. If the same check fails 3 times with the same error, stop and explain.`
+  - [ ] Co-owner (synthetic fixture): `findMyRoster` finds the roster where the user is only in `co_owners`; returns `null` when the user is on no roster.
+  - [ ] Pre-draft (synthetic fixture): `normalizeRoster` on a `pre_draft` league with `players: null` returns empty groups and an explicit pre-draft flag, without throwing.
+- **Machine gate /goal:** `P1 done when, in this transcript: npx vitest run passes and lists the new lib/myteam/__tests__ files (scoring, fpa, rating, defenseProfile, store, roster) and the roster tests cover the synthetic co-owner fixture (user found via co_owners only; null when absent) and the synthetic pre_draft fixture (players: null → empty groups + pre-draft flag, no throw), plus lib/__tests__/ranking.snapshot.test.ts; git log shows the snapshot test committed before a separate "refactor: extract pure ranking core from useRanking" commit, and the snapshot still passes after it; git diff main --stat shows no files under app/ or components/ and useRanking's exported signature unchanged; npm run check passes; port 4000 checked (stop and tell Kobe if dev is running), then npm run build passes; everything committed locally, nothing pushed. If the same check fails 3 times with the same error, stop and explain.`
 - **Human gate:** [ ] Skim the ADR draft and the tier/rank convention test cases.
 
 ### P2 — Server data layer + `/api/myteam/{user,league}`
@@ -416,7 +422,7 @@ Kobe, in claude.ai, from P3 screenshots with a real league. Decide, then hand th
 - **Checklist:**
   - [ ] Shows my players' points + my roster total only.
   - [ ] Polls only when `shouldPollMyTeam` is true: live window from `useSchedule()` current-week matchups via `shouldPollLive`, tab visible, route mounted, not all final.
-  - [ ] Interval = the P0b cadence (≥30s).
+  - [ ] Interval = 60s (`LIVE_POLL_MS` constant), matching Sleeper's `s-maxage=60`; adjusted only if P0b shows slower updates.
   - [ ] Game state comes from ScheduleProvider (no second `useLiveScores`).
   - [ ] Last-good on error; plain-text numbers.
 - **Machine verify** ([PowerShell]):
@@ -463,8 +469,8 @@ Kobe, in claude.ai, from P3 screenshots with a real league. Decide, then hand th
 
 | Data | Max lag |
 |---|---|
-| Live points | one poll interval (≥30s, from P0b) |
-| Roster / lineup | ≤2 min |
+| Live points | ≤60s poll + up to 60s Sleeper CDN cache (P0b confirms) |
+| Roster / lineup | ≤5 min (our cache) + up to 5 min Sleeper CDN |
 | FPA / ratings | ≤30 min after Sleeper posts stats |
 | Opponents / byes | ≤6h |
 | Defense stats | ≤10 min (same as Compare) |
