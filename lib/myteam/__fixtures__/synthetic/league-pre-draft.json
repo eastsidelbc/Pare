@@ -1,0 +1,14 @@
+{
+ "league_id": "900000000000000200",
+ "name": "Synthetic Pre-Draft League",
+ "status": "pre_draft",
+ "season": "2026",
+ "season_type": "regular",
+ "sport": "nfl",
+ "total_rosters": 2,
+ "settings": { "playoff_week_start": 15 },
+ "scoring_settings": { "rec": 0.5, "pass_yd": 0.04, "pass_td": 4, "pass_int": -1, "rush_yd": 0.1, "rush_td": 6, "rec_yd": 0.1, "rec_td": 6, "fum_lost": -2, "bonus_rec_te": 0 },
+ "roster_positions": ["QB", "RB", "RB", "WR", "WR", "TE", "FLEX", "K", "DEF", "BN", "BN", "BN"],
+ "metadata": null,
+ "avatar": null
+}

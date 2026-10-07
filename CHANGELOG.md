@@ -37,6 +37,11 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Perf (sandbox, 4× CPU, median of 3): LCP 0.25–0.29s, expand 50–56ms, TOT/PPG ~40ms, 60 fps / 0 dropped, ~2ms main-thread per 5s idle, 0 animations → no fixes needed. Details in the dev note.
 
 ### Added
+- **My Team (Sleeper) — P0a data spike + P1 pure engines** (2026-10-07, branch `feat/my-team-sleeper`; no UI yet, nothing user-visible)
+  - See: `docs/plans/my-team-fantasy.md`, `docs/devnotes/2026-10-07-my-team-data-spike.md`, ADR `docs/adr/2026-10-07-my-team-provider-proxy.md` (Proposed).
+  - `scripts/my-team-spike.mjs` + anonymized fixtures in `lib/myteam/__fixtures__/` (P0a). Decisions by rule: weekly stats from `api.sleeper.com`; injuries from the Sleeper player map.
+  - `lib/myteam/`: normalized types + `FantasyProvider` interface, Sleeper scoring → rules, roster normalizer (co-owner + pre-draft handled), FPA engine (matches Sleeper's own `fan_pts_allow_*` 160/160), Season / Last-4 rating with tiers ("Good · #24"), per-position "why" stats, `pare:myteam` store (not wired to any UI yet).
+  - `lib/ranking.ts`: the one tie-aware ranking core; `useRanking` / `calculateBulkRanking` delegate to it (signatures unchanged; snapshot-guarded).
 - **Site footer + /about page** (2026-10-06, branch `chore/footer-about`)
   - See: `docs/devnotes/2026-10-06-footer-about.md`.
   - `components/SiteFooter.tsx` at the end of each tab's scroll content (Home, Standings, Leaders, About): ≥1024px full footer (wordmark + tagline, Pare / Company columns, © line + "not affiliated" disclaimer); below that a one-line "© {year} Pare LLC · About". Legal column hidden until Privacy/Terms exist. Not on Compare (no-scroll fit screen).
