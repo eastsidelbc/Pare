@@ -30,7 +30,7 @@ export interface TeamIdentityConfig {
 // 👇 THE SWITCH. 'logo' = team logos, 'name' = team-color abbreviations.
 // Change default to 'name' to turn logos off everywhere.
 export const TEAM_IDENTITY = {
-  default: 'logo',
+  default: 'name',
   overrides: {
     compareHero: 'name', // big wordmarks stay on Compare hero
   },
