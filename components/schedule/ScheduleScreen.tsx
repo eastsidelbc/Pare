@@ -36,6 +36,7 @@ import WeekControl from './WeekControl';
 import WeekSection from './WeekSection';
 import { Star } from 'lucide-react';
 import { useFavorites } from '@/components/FavoritesProvider';
+import SiteFooter from '@/components/SiteFooter';
 
 /** Distance (px) from an edge at which we start loading the neighbor week. */
 const EDGE_PX = 700;
@@ -326,6 +327,7 @@ export default function ScheduleScreen() {
             );
           })}
         </div>
+        <SiteFooter />
       </main>
     </div>
   );

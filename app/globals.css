@@ -442,3 +442,12 @@
    is invisible and extends the tap zone above/below without changing the layout. */
 .pare-hit44 { position: relative; }
 .pare-hit44::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 44px; transform: translateY(-50%); }
+
+/* Site footer (components/SiteFooter.tsx). Links --subtext → white on hover, gold
+   focus ring. Hidden inside the iOS app: <html data-app="ios"> is set before paint
+   by the inline script from lib/platform.ts. */
+.site-footer-link { color: var(--subtext); font-size: 13px; transition: color .15s; }
+.site-footer-link:hover { color: var(--text); }
+.site-footer-link:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 2px; border-radius: 4px; }
+.site-footer p .site-footer-link { font-size: inherit; }
+[data-app="ios"] .site-footer { display: none; }

@@ -17,6 +17,7 @@ import LeaderCard from '@/components/leaderboards/LeaderCard';
 import FantasyBoards from '@/components/leaderboards/FantasyBoards';
 import { LEADER_GRID } from '@/components/leaderboards/grid';
 import CardGrid from '@/components/ui/CardGrid';
+import SiteFooter from '@/components/SiteFooter';
 import RefreshOnReturn from '@/components/leaderboards/RefreshOnReturn';
 import JumpNav, { type JumpLink } from '@/components/leaderboards/JumpNav';
 import { SectionLabel } from '@/components/standings/StandingsRow';
@@ -111,6 +112,7 @@ export default async function LeaderboardsPage() {
             </div>
           )}
         </div>
+        <SiteFooter />
       </main>
     </div>
   );
