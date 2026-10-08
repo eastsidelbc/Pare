@@ -438,11 +438,13 @@ Kobe, in claude.ai, from P3 screenshots with a real league. Decided; picks recor
   ```
   The `git grep` mirrors the CI token guard. The final `git diff` must show no logic changes outside constants.
 - **Machine gate /goal:** `P5 done when, in this transcript: the STEP 1 docs commit exists (git log) and docs/design-system.md contains §9.4 My Team, the amended §9 rule 3 and the §1 --matchup-*/--pos-*/--inj-* tokens, with values only in app/globals.css :root; the route lives at app/myteam (sandbox app/sandbox/myteam) and curl.exe -s -o NUL -w "%{http_code} %{redirect_url}" against localhost:4000/MyTeam, /my-team and /My-Team each returns 307 or 308 pointing at /myteam, while /myteam returns 200; BottomNav shows 5 labelled stacked tabs (Home, Compare, Standings, Leaders, Fantasy) with --nav-pill-h 58 / --nav-h 78; lib/myteam/startSit.ts exists as a pure module and npx vitest run passes its tests (likely-swap pick for starter/bench/IR, easier-matchup verdict incl. bye and ties, next-5 good-week count) plus matchupContrast (each --matchup-1..5 ≥3:1 vs the deep card and vs --matchup-track, label text ≥4.5:1, luminance strictly rising 1→5) and all existing tests; both Playwright projects (iphone-393, ipad-834) pass My Team specs: no horizontal scroll, every interactive element ≥44×44 incl. the 5-tab nav on /, /compare and /myteam, every meter/chip has a text label, inline onboarding → league → roster, league sheet switch persists after reload, Season ⇄ Last 4 changes meter text, ⓘ opens its note, IR/TAXI section visible without a tap, two rows open at once, Start / Sit slides and shows chips + "not a projection", Open in Compare lands on /compare with the right pair and reuses the tab on a second open, iPad Pin to side adds a card to the PINNED panel; the token-guard grep finds no raw palette classes in app/ or components/; git diff main shows no logic changes in lib/myteam/fpa.ts, lib/myteam/sleeper, lib/myteam/seasonSchedule.ts or app/api beyond TIER_CUTOFFS and the strip-length constant; npm run check passes; port 4000 checked (stop and tell Kobe if his dev server is running), npm run build passes; everything committed locally, nothing pushed. If the same check fails 3 times with the same error, stop and explain.`
-- **Human gate:**
-  - [ ] Visual sign-off on iPhone + iPad (local dev) against the R9 final prototype on the canvas.
-  - [ ] The 5-tab nav feels right on every page.
-  - [ ] Real league looks right.
-  - [ ] K and DEF circles (not mocked — neutral `--pos-other`) look OK in League B.
+- **Human gate — ✅ signed off by Kobe 2026-10-07** (after the mockup fix pass `b84a91d` + follow-up `834beda`):
+  - [x] Visual sign-off on iPhone + iPad (local dev) against the R9 final prototype on the canvas.
+  - [x] The 5-tab nav feels right on every page.
+  - [x] Real league looks right.
+  - [x] K and DEF circles (not mocked — neutral `--pos-other`) look OK in League B.
+  - [x] Compare on an iPhone 14 Pro still fits with the taller N3 nav.
+  - [x] Pill-row fade reads as "more to the right".
 
 ### P6 — Live fantasy points (game day)
 - **Files:** `lib/myteam/livePoll.ts`, `lib/hooks/useMyTeamLive.ts`, `components/myteam/LivePoints.tsx`, `app/api/myteam/live/route.ts`, tests.
