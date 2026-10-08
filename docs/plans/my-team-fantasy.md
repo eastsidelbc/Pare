@@ -466,6 +466,7 @@ Kobe, in claude.ai, from P3 screenshots with a real league. Decided; picks recor
   - [ ] No Sleeper 429/403 over a full Sunday window (dev console / `pm2 logs pare`).
 
 ### P7 — Privacy, docs, ship
+> **Merge only after P7** (Kobe, 2026-10-07). `feat/my-team-sleeper` stays a branch: no merge to `main`, no push, no deploy until P7's privacy (`/privacy`), `DATA_SOURCES.md` and final ADR are done and its gate clears. Why: Kobe deploys by pulling `main` on the Mac mini, so anything on `main` can reach pare.gg; the Fantasy tab (in the nav on every page) collects a Sleeper username, and F6 requires the privacy update first.
 - **Files:**
   - `app/privacy/page.tsx`: the `pare:myteam` key; the username → our server → Sleeper flow; no server-side storage beyond short in-memory caches; Sleeper (+ ESPN injuries if chosen) listed as services.
   - `DATA_SOURCES.md`: a Sleeper section plus any new ESPN endpoints.
