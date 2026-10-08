@@ -15,7 +15,7 @@ import SiteFooter from '@/components/SiteFooter';
 export const metadata = { title: 'Privacy Policy · Pare' };
 
 /** Bump when the policy text changes (and on first deploy). */
-const EFFECTIVE_DATE = 'October 6, 2026';
+const EFFECTIVE_DATE = 'October 8, 2026';
 const SUPPORT_EMAIL = 'support@pare.gg';
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -80,17 +80,41 @@ export default function PrivacyPage() {
 
             <Section title="What we collect">
               <p>Nothing that identifies you. No accounts, no sign-up, no ads, no analytics, no tracking.</p>
+              <p>
+                The one exception is optional: if you use the Fantasy tab, you type in your Sleeper username so we can
+                look up your leagues (see &quot;Fantasy tab&quot; below).
+              </p>
             </Section>
 
             <Section title="On your device">
               <p>
-                Your favorite teams, open comparisons and settings are saved only in your browser or app on your
-                device. We never see them. Clearing your browser data or deleting the app removes them.
+                Your favorite teams, open comparisons, Fantasy tab choices and settings are saved only in your browser
+                or app on your device. Clearing your browser data or deleting the app removes them.
               </p>
               <p style={{ color: 'var(--subtext)' }}>
-                Exactly two entries in your browser&apos;s local storage: <code>pare:favorites</code> (your teams and
-                their display settings) and <code>pare:comparisons</code> (your open comparison tabs). Pare sets no
-                cookies of its own.
+                Exactly three entries in your browser&apos;s local storage: <code>pare:favorites</code> (your teams and
+                their display settings), <code>pare:comparisons</code> (your open comparison tabs) and{' '}
+                <code>pare:myteam</code> (if you use the Fantasy tab: your Sleeper username, your Sleeper user and
+                league IDs, and your Season / Last 4 choice). Pare sets no cookies of its own.
+              </p>
+            </Section>
+
+            <Section title="Fantasy tab (Sleeper)">
+              <p>
+                When you enter a Sleeper username, your device sends it to pare.gg. Our server then asks Sleeper&apos;s
+                public API for that username&apos;s public profile, leagues, rosters and, on game days, your
+                players&apos; points. Your device never talks to Sleeper directly, so Sleeper sees our server&apos;s
+                request, not your IP address.
+              </p>
+              <p>
+                We don&apos;t store your username on our server. Lookups are kept only in short-lived memory (from 60
+                seconds for live points up to 24 hours for the username-to-account lookup), never written to disk,
+                never logged, and gone when the server restarts. We don&apos;t sell or share them.
+              </p>
+              <p style={{ color: 'var(--subtext)' }}>
+                The username travels in the address of those requests, so Cloudflare handles it like any page
+                address. To remove it from your device, tap &quot;Change username&quot; in the Fantasy tab&apos;s league
+                list, or clear your browser data.
               </p>
             </Section>
 
@@ -106,6 +130,11 @@ export default function PrivacyPage() {
                   from ESPN&apos;s public servers. As with any web request, ESPN receives your IP address and basic
                   browser information, under ESPN&apos;s own privacy policy. We send ESPN nothing about you.
                 </li>
+                <li>
+                  <strong>Sleeper</strong> (fantasy stats, injury tags and the Fantasy tab). Only our server contacts
+                  Sleeper. If you use the Fantasy tab, the username you typed is sent to Sleeper to find your public
+                  account, under Sleeper&apos;s own privacy policy. Otherwise we send Sleeper nothing about you.
+                </li>
               </ul>
               <p style={{ color: 'var(--subtext)' }}>
                 Everything else — the app itself, fonts and team images — comes from pare.gg. Our server does not
@@ -115,8 +144,8 @@ export default function PrivacyPage() {
 
             <Section title="Sports data">
               <p>
-                Stats come from public sources. Standings, team stats and leaderboards are fetched by our server, not
-                your device; live scores and box scores are the exception described above.
+                Stats come from public sources. Standings, team stats, leaderboards and fantasy data are fetched by our
+                server, not your device; live scores and box scores are the exception described above.
               </p>
             </Section>
 

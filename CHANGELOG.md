@@ -38,6 +38,11 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Perf (sandbox, 4× CPU, median of 3): LCP 0.25–0.29s, expand 50–56ms, TOT/PPG ~40ms, 60 fps / 0 dropped, ~2ms main-thread per 5s idle, 0 animations → no fixes needed. Details in the dev note.
 
 ### Added
+- **Fantasy tab (My Team) — P7 privacy, data sources, final ADR** (2026-10-08, branch `feat/my-team-sleeper`; merge only after the P7 human gate)
+  - See: `docs/devnotes/2026-10-08-my-team.md` (feature wrap-up + drafted vault brain-doc corrections).
+  - `/privacy` (effective October 8, 2026): new "Fantasy tab (Sleeper)" section — username → pare.gg → Sleeper, server memory caches only (60s–24h, never disk, never logged), username visible to Cloudflare in the request address, "Change username" / clear data to remove; `pare:myteam` added to the local-storage list (now three keys); Sleeper added to "Services we rely on".
+  - `DATA_SOURCES.md` §5: every Sleeper endpoint the code calls (Leaders + My Team) with timeouts and caches, plus the ESPN scoreboard/summary uses added for My Team.
+  - ADR `docs/adr/2026-10-07-my-team-provider-proxy.md` → **Accepted**: as-built server proxy, hybrid browser-direct fallback, revisit triggers, paid-tier/ads licensing blocker.
 - **Fantasy tab — P6 live fantasy points** (2026-10-07, branch `feat/my-team-sleeper`; local only — merge only after P7)
   - See: `docs/devnotes/2026-10-07-my-team-p6-live.md`.
   - `GET /api/myteam/live?id&uid&w` → my roster's points only (`{ week, total, byPlayer }`); 400 on bad input; Sleeper matchups held 60s server-side (= Sleeper's CDN).
