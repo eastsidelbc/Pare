@@ -47,6 +47,22 @@ describe('createKeyedCache', () => {
     await expect(cache.get('b', async () => { throw new Error('boom'); })).rejects.toThrow('boom');
   });
 
+  it('keeps last good until 2 × TTL, then sweep() deletes it (privacy retention cap)', async () => {
+    const cache = createKeyedCache<string>({ ttlMs: 100, max: 10, now });
+    const fail = async (): Promise<string> => { throw new Error('Sleeper down'); };
+    await cache.get('a', async () => 'good');
+
+    clock += 150; // 1.5 × TTL: stale, still the last good copy
+    cache.sweep();
+    expect(cache.size()).toBe(1);
+    expect(await cache.get('a', fail)).toBe('good');
+
+    clock += 51; // 2 × TTL + 1ms since it was stored
+    cache.sweep();
+    expect(cache.size()).toBe(0);
+    await expect(cache.get('a', fail)).rejects.toThrow('Sleeper down');
+  });
+
   it('caches null values (e.g. "user not found") like any other value', async () => {
     const cache = createKeyedCache<string | null>({ ttlMs: 100, max: 10, now });
     const fetcher = vi.fn(async () => null);

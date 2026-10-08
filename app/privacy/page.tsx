@@ -101,19 +101,28 @@ export default function PrivacyPage() {
 
             <Section title="Fantasy tab (Sleeper)">
               <p>
-                When you enter a Sleeper username, your device sends it to pare.gg. Our server then asks Sleeper&apos;s
+                When you enter a Sleeper username, your device sends requests to pare.gg that carry your username,
+                and then your Sleeper user ID and league ID. Our server then asks Sleeper&apos;s
                 public API for that username&apos;s public profile, leagues, rosters and, on game days, your
                 players&apos; points. Your device never talks to Sleeper directly, so Sleeper sees our server&apos;s
                 request, not your IP address.
               </p>
               <p>
-                We don&apos;t store your username on our server. Lookups are kept only in short-lived memory (from 60
-                seconds for live points up to 24 hours for the username-to-account lookup), never written to disk,
-                never logged, and gone when the server restarts. We don&apos;t sell or share them.
+                We don&apos;t store your username on our server. Lookups are kept only in its memory — never written
+                to disk, never logged — and are deleted automatically within 2 days of your last use (live points
+                within minutes). We don&apos;t sell or share them. To have them removed sooner, email{' '}
+                <a
+                  href={`mailto:${SUPPORT_EMAIL}`}
+                  className="site-footer-link underline underline-offset-2"
+                  style={{ fontSize: 'inherit', color: 'var(--gold-bright)' }}
+                >
+                  {SUPPORT_EMAIL}
+                </a>
+                .
               </p>
               <p style={{ color: 'var(--subtext)' }}>
-                The username travels in the address of those requests, so Cloudflare handles it like any page
-                address. To remove it from your device, tap &quot;Change username&quot; in the Fantasy tab&apos;s league
+                These details travel in the address of those requests, so Cloudflare handles them like any page
+                address. To remove them from your device, tap &quot;Change username&quot; in the Fantasy tab&apos;s league
                 list, or clear your browser data.
               </p>
             </Section>
