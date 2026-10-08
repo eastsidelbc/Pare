@@ -99,11 +99,11 @@ export interface KeyedCache<T> {
   get(key: string, fetcher: () => Promise<T>, label?: string): Promise<T>;
   /** Number of keys held (fresh or stale). */
   size(): number;
-  /** Delete entries older than 2 × ttlMs (runs on its own every KEYED_CACHE_SWEEP_MS; exposed for tests). */
+  /** Delete entries past their max age (runs on its own; exposed for tests). No entry outlives 2 × ttlMs. */
   sweep(): void;
 }
 
-/** How often each keyed cache drops entries older than 2 × its TTL. */
+/** Longest gap between sweeps; caches with a TTL under 20 min sweep every ttlMs / 2. */
 export const KEYED_CACHE_SWEEP_MS = 10 * 60 * 1000;
 
 /**
@@ -111,10 +111,11 @@ export const KEYED_CACHE_SWEEP_MS = 10 * 60 * 1000;
  * (never `unstable_cache`), so per-user data like usernames is never written
  * to disk. Lives for the server process, like createTtlCache.
  *
- * Retention: an entry older than 2 × ttlMs is deleted by a sweep every
- * KEYED_CACHE_SWEEP_MS, so last-good survives one missed refresh window but a
- * user who stops coming back is gone (≤48h for the 24h username lookup —
- * /privacy promises this). The timer is unref'd: it never keeps the process alive.
+ * Retention: a sweep every `sweepEvery` (min(KEYED_CACHE_SWEEP_MS, ttlMs / 2))
+ * deletes entries older than 2 × ttlMs − sweepEvery, so no entry ever outlives
+ * 2 × ttlMs (exactly 48h for the 24h username lookup — /privacy promises this),
+ * while last-good still survives to at least 1.5 × ttlMs. The timer is
+ * unref'd: it never keeps the process alive.
  */
 export function createKeyedCache<T>({ ttlMs, max, now = Date.now }: KeyedCacheOptions): KeyedCache<T> {
   const entries = new Map<string, { value: T; at: number }>();
@@ -130,11 +131,13 @@ export function createKeyedCache<T>({ ttlMs, max, now = Date.now }: KeyedCacheOp
     }
   };
 
+  const sweepEvery = Math.min(KEYED_CACHE_SWEEP_MS, ttlMs / 2);
+  const maxAge = 2 * ttlMs - sweepEvery;
   const sweep = () => {
-    const cutoff = now() - 2 * ttlMs;
+    const cutoff = now() - maxAge;
     for (const [key, entry] of entries) if (entry.at < cutoff) entries.delete(key);
   };
-  setInterval(sweep, KEYED_CACHE_SWEEP_MS).unref?.();
+  setInterval(sweep, sweepEvery).unref?.();
 
   return {
     get(key, fetcher, label = 'keyed-cache') {

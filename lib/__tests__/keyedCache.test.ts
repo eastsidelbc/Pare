@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createKeyedCache } from '../apiCache';
 
 let clock = 0;
@@ -7,6 +7,11 @@ const now = () => clock;
 beforeEach(() => {
   clock = 1_000;
   vi.spyOn(console, 'error').mockImplementation(() => {});
+  vi.useFakeTimers(); // each cache's sweep timer only fires when a test advances it
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe('createKeyedCache', () => {
@@ -61,6 +66,21 @@ describe('createKeyedCache', () => {
     cache.sweep();
     expect(cache.size()).toBe(0);
     await expect(cache.get('a', fail)).rejects.toThrow('Sleeper down');
+  });
+
+  it('its own sweep timer never lets an entry outlive 2 × TTL', async () => {
+    const cache = createKeyedCache<string>({ ttlMs: 100, max: 10, now }); // sweeps every 50
+    await cache.get('a', async () => 'v');
+    const tick = () => {
+      clock += 50;
+      vi.advanceTimersByTime(50);
+    };
+    tick();
+    tick();
+    tick();
+    expect(cache.size()).toBe(1); // 1.5 × TTL: last good kept
+    tick();
+    expect(cache.size()).toBe(0); // 2 × TTL: gone
   });
 
   it('caches null values (e.g. "user not found") like any other value', async () => {
