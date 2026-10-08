@@ -402,7 +402,7 @@ test.describe('P4 final mockup (FIX-TO-MOCKUP 1–10)', () => {
     const scroller = page.locator('[data-pill-scroller]');
     const pills = scroller.getByRole('button');
     const count = await pills.count();
-    expect(count).toBeGreaterThanOrEqual(8); // All QB RB WR TE K DEF IR/Taxi
+    await expect(pills).toHaveText(['All15', 'QB2', 'RB4', 'WR5', 'TE2', 'K1', 'DEF1']);
     const expand = page.getByRole('button', { name: 'Expand all' });
     for (let i = 0; i < count; i++) {
       // Fully visible, or reachable by scrolling the pill row itself.
@@ -417,6 +417,74 @@ test.describe('P4 final mockup (FIX-TO-MOCKUP 1–10)', () => {
       expect(e.x + e.width).toBeLessThanOrEqual(393);
     }
     await noHorizontalScroll(page);
+  });
+
+  test('follow-up: no IR/Taxi pill; every pill reachable with a ≥44px hit area', async ({ page }, info) => {
+    test.skip(info.project.name !== 'iphone-393', 'the 393px check');
+    await openRoster(page);
+    const scroller = page.locator('[data-pill-scroller]');
+    const pills = scroller.getByRole('button');
+    await expect(scroller.getByRole('button', { name: /IR/ })).toHaveCount(0);
+    await expect(scroller).not.toContainText('IR');
+    await expect(page.locator('section[data-section="reserve"] li[data-player]')).toHaveCount(2); // still always open
+    // The row really scrolls sideways (wider than its box).
+    const dims = await scroller.evaluate((el) => ({ sw: el.scrollWidth, cw: el.clientWidth }));
+    expect(dims.sw).toBeGreaterThan(dims.cw);
+    const count = await pills.count();
+    expect(count).toBe(7);
+    for (let i = 0; i < count; i++) {
+      const pill = pills.nth(i);
+      await pill.evaluate((el) => el.scrollIntoView({ block: 'nearest', inline: 'nearest' }));
+      const hit = await pill.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        const tap = Math.max(r.height, parseFloat(getComputedStyle(el, '::after').height) || 0);
+        // The pill (not the fade, the Expand button or anything else) is what a tap at its centre lands on.
+        const atCentre = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+        return { tap, width: r.width, own: !!atCentre && el.contains(atCentre) };
+      });
+      expect(hit.tap).toBeGreaterThanOrEqual(44);
+      expect(hit.width).toBeGreaterThanOrEqual(44);
+      expect(hit.own).toBe(true);
+      await pill.click();
+      await expect(pill).toHaveAttribute('aria-pressed', 'true');
+    }
+  });
+
+  test('follow-up: pill row fades only when it can scroll', async ({ page }, info) => {
+    test.skip(info.project.name !== 'iphone-393', 'the 393px check');
+    const maskOf = () => page.locator('[data-pill-scroller]').evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return cs.maskImage || cs.getPropertyValue('-webkit-mask-image');
+    });
+    // Full roster (All QB RB WR TE K DEF) is wider than 393 → right fade at the start.
+    await openRoster(page);
+    const scroller = page.locator('[data-pill-scroller]');
+    await expect(scroller).toHaveAttribute('data-fade', 'right');
+    expect(await maskOf()).toContain('gradient');
+    // Scrolled to the end → only the left edge fades.
+    await scroller.evaluate((el) => el.scrollTo({ left: el.scrollWidth }));
+    await expect(scroller).toHaveAttribute('data-fade', 'left');
+    // Halfway → both edges.
+    await scroller.evaluate((el) => el.scrollTo({ left: (el.scrollWidth - el.clientWidth) / 2 }));
+    await expect(scroller).toHaveAttribute('data-fade', 'both');
+
+    // A league with only QB / RB / WR → the pills fit → no fade at all.
+    const page2 = await page.context().newPage();
+    await mockApi(page2);
+    await page2.route(/\/api\/myteam\/league\?/, (route) => {
+      const bundle = buildSandboxBundle();
+      bundle.roster = { ...bundle.roster, players: bundle.roster.players.filter((p) => ['QB', 'RB', 'WR'].includes(p.position ?? '')) };
+      return route.fulfill({ json: bundle });
+    });
+    await seedLinked(page2);
+    await page2.goto('/myteam');
+    await expect(page2.locator('[data-state="roster"]')).toBeVisible();
+    const fits = page2.locator('[data-pill-scroller]');
+    await expect(fits.getByRole('button')).toHaveCount(4);
+    expect(await fits.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+    await expect(fits).toHaveAttribute('data-fade', 'none');
+    expect(await fits.evaluate((el) => getComputedStyle(el).maskImage)).toBe('none');
+    await page2.close();
   });
 
   test('10: league capsule truncates a 40-character name, ≤44px tall', async ({ page }) => {

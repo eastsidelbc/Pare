@@ -68,7 +68,13 @@ export default function WeekBar({ week, dateRange, window, onWindowChange }: Pro
             color: 'var(--text)',
           }}
         >
-          Season = every game this defense has played. Last 4 = its last 4 games played (byes skipped). Ranks and colors switch with it.
+          <p>
+            <b style={{ fontWeight: 800 }}>Season</b> = every game this defense has played.
+          </p>
+          <p>
+            <b style={{ fontWeight: 800 }}>Last 4</b> = its last 4 games played (byes skipped).
+          </p>
+          <p style={{ marginTop: 4 }}>Ranks and colors switch with it.</p>
           <div style={{ marginTop: 6, fontSize: 11, color: 'var(--subtext)' }}>
             Showing: <b style={{ color: 'var(--gold-bright)' }}>{window === 'season' ? 'Season' : 'Last 4'}</b>
           </div>

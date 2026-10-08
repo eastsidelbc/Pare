@@ -79,23 +79,20 @@ export default function MyTeamScreen({
   };
 
   const keep = (r: RosterRow) => filter === 'ALL' || r.player.position === filter;
-  const sections: RosterSection[] =
-    filter === 'RES'
-      ? [{ id: 'reserve', title: 'IR / TAXI', rows: vm.reserve }]
-      : [
-          { id: 'starters', title: 'STARTERS', rows: vm.starters.filter(keep) },
-          { id: 'bench', title: 'BENCH', rows: vm.bench.filter(keep) },
-          { id: 'reserve', title: 'IR / TAXI', rows: vm.reserve.filter(keep) },
-        ];
+  const sections: RosterSection[] = [
+    { id: 'starters', title: 'STARTERS', rows: vm.starters.filter(keep) },
+    { id: 'bench', title: 'BENCH', rows: vm.bench.filter(keep) },
+    { id: 'reserve', title: 'IR / TAXI', rows: vm.reserve.filter(keep) },
+  ];
   const visibleIds = sections.flatMap((s) => s.rows.map((r) => r.player.playerId));
   // Mockup: "Collapse all" whenever anything is open.
   const anyExpanded = visibleIds.some((id) => expanded.has(id));
 
   const pill = (id: PositionFilter, label: string, aria: string, count: number) => ({ id, label, aria: `${aria}, ${count} players`, count });
+  // No IR/Taxi pill: that section is always open (P4 pick G5). K / DEF only when the league has them.
   const counts = [
     pill('ALL', 'All', 'All positions', allRows.length),
     ...FANTASY_POSITIONS.map((p) => pill(p, p, p, allRows.filter((r) => r.player.position === p).length)).filter((c) => c.count > 0),
-    ...(vm.reserve.length > 0 ? [pill('RES', 'IR/Taxi', 'IR and Taxi', vm.reserve.length)] : []),
   ];
 
   const ctx: DetailContext = { window, format: bundle.league.format, defenseLog: bundle.defenseLog, offenseLog: bundle.offenseLog };
