@@ -476,11 +476,21 @@
   animation: pare-shimmer 1.3s ease-in-out infinite;
   will-change: transform;
 }
+/* My Team game day (P6): gold "+N.N" after a points change — one finite fade, then gone
+   (never loops). Reduced motion → no flash at all (the number itself still updates). */
+@keyframes pare-flash {
+  0%   { opacity: 0; transform: translateY(3px); }
+  15%  { opacity: 1; transform: none; }
+  80%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+.pare-flash { animation: pare-flash 2.6s ease both; will-change: opacity, transform; }
 /* My Team Start / Sit: the card's button area slides sideways (transform only). */
 .pare-slide { transition: transform .34s cubic-bezier(.2, .8, .2, 1); will-change: transform; }
 @media (prefers-reduced-motion: reduce) {
   .pare-shimmer::after { animation: none; opacity: 0; }
   .pare-slide { transition: none; }
+  .pare-flash { display: none; }
 }
 
 /* 44px hit area on a smaller-looking control (Apple HIG 44pt). The pseudo-element

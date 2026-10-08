@@ -38,6 +38,11 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Perf (sandbox, 4× CPU, median of 3): LCP 0.25–0.29s, expand 50–56ms, TOT/PPG ~40ms, 60 fps / 0 dropped, ~2ms main-thread per 5s idle, 0 animations → no fixes needed. Details in the dev note.
 
 ### Added
+- **Fantasy tab — P6 live fantasy points** (2026-10-07, branch `feat/my-team-sleeper`; local only — merge only after P7)
+  - See: `docs/devnotes/2026-10-07-my-team-p6-live.md`.
+  - `GET /api/myteam/live?id&uid&w` → my roster's points only (`{ week, total, byPlayer }`); 400 on bad input; Sleeper matchups held 60s server-side (= Sleeper's CDN).
+  - `lib/myteam/livePoll.ts` (pure): `shouldPollMyTeam` gate (live window of MY games from ScheduleProvider's existing ESPN poll · tab visible · route mounted · not all final), `LIVE_POLL_MS = 60s`, `liveReducer` (last-good on error, positive "+N.N" deltas), `startersTotal` (equals Sleeper's roster `points` on the P0a data). `lib/hooks/useMyTeamLive.ts` polls only through that gate; no timer at rest (re-checks at the next kickoff boundary).
+  - UI per §9.4 game day: 46px points column beside the meter (meter never hidden), live dot + clock / "Final" on line 2, small "123.45 PTS" starters total in the STARTERS header (`aria-live="polite"`), gold "+N.N" flash once (none under reduced motion), freshness line. No total card, no opponent score. Still one `useLiveScores` call site.
 - **Fantasy tab — My Team P5 design pass** (2026-10-07, branch `feat/my-team-sleeper`; local dev only until P7 /privacy)
   - See: `docs/devnotes/2026-10-07-my-team-p5-design-pass.md`; recipe in `docs/design-system.md` §9.4 (+ §1 tokens, §9 rule 3 amendment).
   - Route `/my-team` → `/myteam` (sandbox `/sandbox/myteam`); `middleware.ts` 308-redirects every casing/dash variant (`/MyTeam`, `/my-team`, `/My-Team`, … + subpath).

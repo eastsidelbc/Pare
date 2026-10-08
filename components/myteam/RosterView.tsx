@@ -8,6 +8,7 @@
 
 import type { ReactNode } from 'react';
 import type { RosterRow } from '@/lib/myteam/viewModel';
+import type { RowLive } from './LivePoints';
 import type { DetailContext } from './MatchupDetails';
 import RosterRowItem, { type RowActions } from './RosterRowItem';
 import { LIST_CARD } from './style';
@@ -43,15 +44,21 @@ interface Props {
   actions: RowActions;
   /** Sandbox: rows that open on the Start / Sit panel. */
   startSitIds?: ReadonlySet<string>;
+  /** Game day: per-row live points (null = not game week). */
+  liveFor?: (row: RosterRow) => RowLive | null;
+  /** Game day: the small starters total, right of the STARTERS count. */
+  startersRight?: ReactNode;
 }
 
-export default function RosterView({ sections, allRows, expanded, onToggle, ctx, actions, startSitIds }: Props) {
+export default function RosterView({ sections, allRows, expanded, onToggle, ctx, actions, startSitIds, liveFor, startersRight }: Props) {
   return (
     <div data-state="roster">
       {sections.map((section) =>
         section.rows.length === 0 ? null : (
           <section key={section.id} data-section={section.id} aria-label={section.title} style={{ paddingTop: 12 }}>
-            <SectionHeading count={section.rows.length}>{section.title}</SectionHeading>
+            <SectionHeading count={section.rows.length} right={section.id === 'starters' ? startersRight : undefined}>
+              {section.title}
+            </SectionHeading>
             <ul className="divide-y divide-[var(--hairline)] overflow-hidden" style={LIST_CARD}>
               {section.rows.map((row) => (
                 <RosterRowItem
@@ -63,6 +70,7 @@ export default function RosterView({ sections, allRows, expanded, onToggle, ctx,
                   ctx={ctx}
                   actions={actions}
                   initialStartSit={startSitIds?.has(row.player.playerId)}
+                  live={liveFor?.(row) ?? null}
                 />
               ))}
             </ul>

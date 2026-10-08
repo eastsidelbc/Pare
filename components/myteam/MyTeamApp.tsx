@@ -7,10 +7,12 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useSchedule } from '@/components/schedule/ScheduleProvider';
+import { useMyTeamLive } from '@/lib/hooks/useMyTeamLive';
 import type { FantasyLeague } from '@/lib/myteam/types';
 import { LeagueCapsule, LeagueSheet } from './LeagueSwitcher';
+import type { LiveView } from './LivePoints';
 import MyTeamScreen from './MyTeamScreen';
 import MyTeamShell from './MyTeamShell';
 import Onboarding, { GhostRows, type OnboardingState } from './Onboarding';
@@ -25,6 +27,26 @@ export default function MyTeamApp() {
   const ready = t.phase === 'ready' && t.bundle;
   const activeLeague = t.leagues.find((l) => l.leagueId === (t.switching ?? t.prefs.leagueId)) ?? null;
   const switchingName = t.switching ? (t.leagues.find((l) => l.leagueId === t.switching)?.name ?? 'league') : null;
+
+  // Game day (P6): polls only while one of my games is live, the tab is visible and this route is mounted.
+  const teams = useMemo(
+    () => new Set((t.bundle?.roster.players ?? []).map((p) => p.nflTeam).filter((x): x is string => !!x)),
+    [t.bundle],
+  );
+  const { games, started, polling, allFinal, state: liveState } = useMyTeamLive({
+    leagueId: ready && t.bundle ? t.bundle.league.leagueId : null,
+    userId: t.prefs.userId,
+    week: t.bundle?.week ?? currentNflWeek,
+    teams,
+  });
+  const live = useMemo<LiveView>(() => {
+    const gameByTeam = new Map<string, { state: (typeof games)[number]['state']; clock: string }>();
+    for (const g of games) {
+      gameByTeam.set(g.away.abbr, { state: g.state, clock: g.statusDetail });
+      gameByTeam.set(g.home.abbr, { state: g.state, clock: g.statusDetail });
+    }
+    return { on: started || liveState.points !== null, polling, allFinal, state: liveState, gameByTeam };
+  }, [games, started, polling, allFinal, liveState]);
 
   const formatLine = (l: FantasyLeague) =>
     t.bundle && l.leagueId === t.bundle.league.leagueId ? leagueFormatLine(t.bundle.league) : leagueListLine(l);
@@ -53,6 +75,7 @@ export default function MyTeamApp() {
           onWindowChange={t.setWindow}
           switchingName={switchingName}
           onRetry={t.retry}
+          live={live}
         />
       ) : (
         <>

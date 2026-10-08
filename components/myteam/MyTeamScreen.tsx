@@ -12,7 +12,9 @@ import { useOpenInCompare } from '@/lib/hooks/useOpenInCompare';
 import type { LeagueBundle } from '@/lib/myteam/apiTypes';
 import { FANTASY_POSITIONS, type RatingWindow } from '@/lib/myteam/types';
 import { buildRosterView, weekKickoffRange, type RosterRow } from '@/lib/myteam/viewModel';
+import { startersTotal } from '@/lib/myteam/livePoll';
 import FilterRow, { type PositionFilter } from './FilterRow';
+import { LiveFreshness, StartersTotal, type LiveView, type RowLive } from './LivePoints';
 import type { DetailContext } from './MatchupDetails';
 import { MAX_COMPARISONS_NOTICE } from './notice';
 import Onboarding from './Onboarding';
@@ -29,6 +31,8 @@ interface Props {
   switchingName?: string | null;
   /** Pre-draft "Check again". */
   onRetry?: () => void;
+  /** Game day (P6): live points, null/absent = not game week. */
+  live?: LiveView | null;
   /** Sandbox: initial open rows / pins / Start / Sit panels. */
   initialExpanded?: string[];
   initialPins?: string[];
@@ -44,7 +48,7 @@ function toggleIn(set: ReadonlySet<string>, id: string): Set<string> {
 }
 
 export default function MyTeamScreen({
-  bundle, window, onWindowChange, switchingName = null, onRetry,
+  bundle, window, onWindowChange, switchingName = null, onRetry, live = null,
   initialExpanded = [], initialPins = [], initialPinnedOpen = [], startSitIds,
 }: Props) {
   const vm = useMemo(() => buildRosterView(bundle, window), [bundle, window]);
@@ -98,6 +102,30 @@ export default function MyTeamScreen({
   const ctx: DetailContext = { window, format: bundle.league.format, defenseLog: bundle.defenseLog, offenseLog: bundle.offenseLog };
   const pinnedRows = pins.map((id) => allRows.find((r) => r.player.playerId === id)).filter((r): r is RosterRow => !!r);
 
+  // Game day: per-row points + the small starters total (whole lineup, whatever the filter).
+  const showLive = !!live && live.on;
+  const byPlayer = live?.state.points?.byPlayer ?? null;
+  const liveFor = (row: RosterRow): RowLive | null => {
+    if (!showLive || !live) return null;
+    const game = row.player.nflTeam && row.thisWeek.kind === 'game' ? live.gameByTeam.get(row.player.nflTeam) : undefined;
+    return {
+      state: game?.state ?? null,
+      clock: game?.clock ?? '',
+      points: byPlayer ? (byPlayer[row.player.playerId] ?? 0) : null,
+      delta: live.state.deltas[row.player.playerId] ?? null,
+      seq: live.state.seq,
+    };
+  };
+  const starterIds = vm.starters.map((r) => r.player.playerId);
+  const startersRight =
+    showLive && live && byPlayer ? (
+      <StartersTotal
+        total={startersTotal(byPlayer, starterIds)}
+        delta={Math.round(starterIds.reduce((s, id) => s + (live.state.deltas[id] ?? 0), 0) * 10) / 10}
+        seq={live.state.seq}
+      />
+    ) : undefined;
+
   const weekBar = (
     <WeekBar week={bundle.week} dateRange={dateRangeText(weekKickoffRange(bundle.schedule, bundle.week))} window={window} onWindowChange={onWindowChange} />
   );
@@ -114,6 +142,7 @@ export default function MyTeamScreen({
   return (
     <>
       {weekBar}
+      {showLive && live && <LiveFreshness live={live} />}
       <FilterRow
         counts={counts}
         value={filter}
@@ -135,6 +164,8 @@ export default function MyTeamScreen({
             onToggle={(id) => setExpanded((cur) => toggleIn(cur, id))}
             ctx={ctx}
             startSitIds={startSit}
+            liveFor={liveFor}
+            startersRight={startersRight}
             actions={{
               onOpenCompare,
               isPinned: (id) => pins.includes(id),

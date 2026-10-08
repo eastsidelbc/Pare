@@ -13,6 +13,7 @@ import { useMemo, useState } from 'react';
 import { buildSandboxBundle, SANDBOX_LEAGUES } from '@/lib/myteam/sandboxBundle';
 import type { RatingWindow } from '@/lib/myteam/types';
 import { LeagueCapsule } from './LeagueSwitcher';
+import type { LiveView } from './LivePoints';
 import MyTeamScreen from './MyTeamScreen';
 import MyTeamShell from './MyTeamShell';
 import Onboarding, { GhostRows } from './Onboarding';
@@ -27,6 +28,21 @@ function Frame({ title, children }: { title: string; children: React.ReactNode }
       </div>
     </section>
   );
+}
+
+/** Static game-day state: KC live (Q3), DET final, everyone else not started; a fresh +2.6 on Jordan Hale. */
+function sandboxLive(): LiveView {
+  const games = new Map<string, { state: 'pre' | 'in' | 'post'; clock: string }>([
+    ['KC', { state: 'in', clock: 'Q3 8:12' }],
+    ['DET', { state: 'post', clock: 'Final' }],
+  ]);
+  return {
+    on: true,
+    polling: true,
+    allFinal: false,
+    gameByTeam: games,
+    state: { points: { week: 6, total: 31.72, byPlayer: { sb1: 17.32, sb2: 14.4 } }, deltas: { sb1: 2.6 }, seq: 1, stale: false, updatedAt: Date.UTC(2026, 9, 11, 21, 40) },
+  };
 }
 
 export default function MyTeamSandbox() {
@@ -50,6 +66,12 @@ export default function MyTeamSandbox() {
           initialPins={['sb1', 'sb6']}
           initialPinnedOpen={['sb1']}
         />
+      </Frame>
+
+      <Frame title="Game day (static — P6 layout)">
+        <div data-state="game-day">
+          <MyTeamScreen bundle={bundle} window={window} onWindowChange={setWindow} live={sandboxLive()} />
+        </div>
       </Frame>
 
       <Frame title="Onboarding · entry">

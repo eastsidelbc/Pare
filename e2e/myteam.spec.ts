@@ -26,6 +26,8 @@ async function mockApi(page: Page) {
     if (id === LEAGUE_B.leagueId) bundle.league = { ...bundle.league, ...LEAGUE_B };
     return route.fulfill({ json: bundle });
   });
+  // P6: never let a spec reach the real live route (fake ids → 404 noise).
+  await page.route(/\/api\/myteam\/live\?/, (route) => route.fulfill({ json: { week: 6, total: 0, byPlayer: {} } }));
 }
 
 /** A device that already linked user_1 + League A (only if nothing is saved, so reloads keep changes). */
@@ -514,5 +516,45 @@ test.describe('P4 final mockup (FIX-TO-MOCKUP 1–10)', () => {
     await expect(page.locator('[data-state="expanded"]')).toHaveCount(1);
     const file = info.project.name === 'iphone-393' ? 'phone.png' : 'ipad.png';
     await page.screenshot({ path: `docs/design/my-team-p4/after/${file}`, animations: 'disabled' });
+  });
+});
+
+/** P6 game-day layout (static sandbox frame — no live game needed). */
+test.describe('P6 game day (sandbox)', () => {
+  const frame = (page: Page) => page.locator('[data-state="game-day"]');
+
+  test('points beside the meter (meter never hidden), small starters total with aria-live, no total card', async ({ page }) => {
+    await page.goto('/sandbox/myteam');
+    const gd = frame(page);
+    await expect(gd).toBeVisible();
+    const hale = gd.locator('li[data-player="sb1"] > button');
+    const pts = hale.locator('[data-live-points]');
+    await expect(pts).toContainText('17.32');
+    const meter = hale.locator('[data-meter]');
+    await expect(meter).toBeVisible();
+    const p = await pts.boundingBox();
+    const m = await meter.boundingBox();
+    expect(p && m && p.x + p.width <= m.x + 0.5).toBeTruthy(); // points LEFT of the meter, both visible
+    expect(p?.width).toBeLessThanOrEqual(46.5);
+    await expect(hale).toContainText('Q3 8:12'); // live clock replaces the kickoff
+    await expect(gd.locator('li[data-player="sb3"] [data-live-points]')).toHaveText('—'); // not kicked off
+    const total = gd.locator('section[data-section="starters"] [data-section-label] [data-starters-total]');
+    await expect(total).toHaveText('31.72 PTS');
+    await expect(total).toHaveAttribute('aria-live', 'polite');
+    expect(await total.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeLessThanOrEqual(12);
+    await expect(gd.locator('[data-live-freshness]')).toContainText('every 60s');
+  });
+
+  test('gold "+N.N" flash plays once; none under reduced motion', async ({ page }) => {
+    await page.goto('/sandbox/myteam');
+    const flash = frame(page).locator('li[data-player="sb1"] [data-flash]');
+    await expect(flash).toHaveText('+2.6');
+    const anim = await flash.evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return { name: cs.animationName, count: cs.animationIterationCount };
+    });
+    expect(anim).toEqual({ name: 'pare-flash', count: '1' });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(flash).toBeHidden();
   });
 });

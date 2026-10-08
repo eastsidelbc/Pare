@@ -18,6 +18,7 @@ import TeamIdentity from '@/components/ui/TeamIdentity';
 import { TeamAbbr } from '@/components/standings/StandingsRow';
 import { likelySwap, startSitCandidates } from '@/lib/myteam/startSit';
 import { matchupText, slotLabel, type RosterRow } from '@/lib/myteam/viewModel';
+import { LivePointsCell, LiveStatus, type RowLive } from './LivePoints';
 import MatchupDetails, { type DetailContext } from './MatchupDetails';
 import { MatchupMeter, NextFiveBar, WeekCells } from './MatchupMeter';
 import PositionCircle from './PositionCircle';
@@ -42,6 +43,8 @@ interface Props {
   actions: RowActions;
   /** Sandbox: open with the Start / Sit panel showing. */
   initialStartSit?: boolean;
+  /** Game day (P6): points beside the meter + live clock on line 2. */
+  live?: RowLive | null;
 }
 
 /** Reserve tag next to the name in the IR / TAXI section (mockup: 18px, radius 5→6, `--seed-edge` outline). */
@@ -61,7 +64,9 @@ function ReserveTag({ group }: { group: RosterRow['player']['group'] }) {
 }
 
 /** Circle · name column · meter — shared by the row button (and its look in pinned cards). */
-export function RowSummary({ row, pinned = false, meterWidth = 60 }: { row: RosterRow; pinned?: boolean; meterWidth?: number }) {
+export function RowSummary({
+  row, pinned = false, meterWidth = 60, live = null,
+}: { row: RosterRow; pinned?: boolean; meterWidth?: number; live?: RowLive | null }) {
   const { player, thisWeek } = row;
   const flex = slotLabel(player.slot) !== null;
   return (
@@ -87,16 +92,22 @@ export function RowSummary({ row, pinned = false, meterWidth = 60 }: { row: Rost
             )}
             <span>· {matchupText(thisWeek)}{thisWeek.kickoff ? ' ·' : ''}</span>
           </span>
-          {thisWeek.kickoff && <span className="flex-none">{kickoffText(thisWeek.kickoff)}</span>}
+          {live ? (
+            <LiveStatus live={live} kickoff={thisWeek.kickoff ? kickoffText(thisWeek.kickoff) : null} />
+          ) : (
+            thisWeek.kickoff && <span className="flex-none">{kickoffText(thisWeek.kickoff)}</span>
+          )}
         </span>
         <NextFiveBar cells={row.strip.slice(0, 5)} />
       </span>
+      {/* Game day: points sit BESIDE the meter — the meter is never hidden. */}
+      {live && <LivePointsCell live={live} />}
       <MatchupMeter cell={thisWeek} width={meterWidth} />
     </>
   );
 }
 
-export default function RosterRowItem({ row, allRows, expanded, onToggle, ctx, actions, initialStartSit = false }: Props) {
+export default function RosterRowItem({ row, allRows, expanded, onToggle, ctx, actions, initialStartSit = false, live = null }: Props) {
   const { player, thisWeek } = row;
   const candidates = startSitCandidates(row, allRows);
   const [view, setView] = useState<'actions' | 'startsit'>(initialStartSit ? 'startsit' : 'actions');
@@ -141,7 +152,7 @@ export default function RosterRowItem({ row, allRows, expanded, onToggle, ctx, a
           background: expanded ? 'color-mix(in srgb, var(--gold-bright) 5%, transparent)' : 'transparent',
         }}
       >
-        <RowSummary row={row} pinned={pinned} />
+        <RowSummary row={row} pinned={pinned} live={live} />
       </button>
 
       {expanded && (
