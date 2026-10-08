@@ -3,7 +3,7 @@
  * Both projects: iphone-393, ipad-834. /api/myteam/* is mocked with the
  * synthetic sandbox bundle (no real user data, no Sleeper calls).
  */
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { buildSandboxBundle, SANDBOX_LEAGUES } from '../lib/myteam/sandboxBundle';
 
 const [LEAGUE_A, LEAGUE_B] = SANDBOX_LEAGUES;
@@ -177,6 +177,9 @@ test.describe('My Team', () => {
     await expect(rowButton(page, 'Jordan Hale')).toHaveAttribute('aria-expanded', 'true');
     await expect(rowButton(page, 'Marcus Reed')).toHaveAttribute('aria-expanded', 'true');
 
+    // Something is open → the mockup's label is "Collapse all"; collapse, then expand everything.
+    await page.getByRole('button', { name: 'Collapse all' }).click();
+    await expect(page.locator('[data-state="expanded"]')).toHaveCount(0);
     await page.getByRole('button', { name: 'Expand all' }).click();
     await noHorizontalScroll(page);
     expect(await smallTargets(page)).toEqual([]);
@@ -191,7 +194,7 @@ test.describe('My Team', () => {
     await expect.poll(async () => (await meters.allTextContents()).join('|')).not.toBe(season);
 
     await expect(page.locator('[data-state="window-note"]')).toHaveCount(0);
-    await page.getByRole('button', { name: 'About Season and Last 4' }).click();
+    await page.getByRole('button', { name: 'What do Season and Last 4 mean?' }).click();
     await expect(page.locator('[data-state="window-note"]')).toContainText('byes skipped');
   });
 
@@ -207,7 +210,8 @@ test.describe('My Team', () => {
     // Chips of my other RBs, likely swap (first bench RB) pre-picked.
     const chips = panel.getByRole('group', { name: /Compare with another RB/ }).getByRole('button');
     await expect(chips).toHaveCount(3);
-    await expect(chips.filter({ hasText: 'Chris Nolan' })).toHaveAttribute('aria-pressed', 'true');
+    // Chips use the short name (mockup), e.g. "C. Nolan".
+    await expect(chips.filter({ hasText: 'C. Nolan' })).toHaveAttribute('aria-pressed', 'true');
     // The card's button area slid one panel to the left.
     const tx = await card.locator('.pare-slide').evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).m41);
     expect(tx).toBeLessThan(0);
@@ -271,5 +275,176 @@ test.describe('My Team', () => {
 
     await pinned.first().getByRole('button', { name: 'Unpin Sam Ortiz' }).click();
     await expect(pinned).toHaveCount(0);
+  });
+});
+
+/**
+ * Fix pass — docs/design/my-team-p4/FIX-TO-MOCKUP.md items 1–10 (P4 final mockup).
+ * Same state as the mockup screenshot: first QB row open, Season.
+ */
+test.describe('P4 final mockup (FIX-TO-MOCKUP 1–10)', () => {
+  type Box = { x: number; y: number; width: number; height: number };
+  const box = async (l: Locator): Promise<Box> => {
+    const b = await l.boundingBox();
+    if (!b) throw new Error('no bounding box');
+    return b;
+  };
+
+  test('1–3: meter column, micro-bar under line 2, injury badge bottom-right', async ({ page }) => {
+    await openRoster(page);
+    const rows = page.locator('section[data-section] li[data-player] > button[aria-expanded]');
+    const n = await rows.count();
+    expect(n).toBeGreaterThan(10);
+    for (let i = 0; i < n; i++) {
+      const rowBtn = rows.nth(i);
+      // (1) bars above the label, inside a right-aligned column ≤64px wide.
+      const meter = rowBtn.locator('[data-meter]');
+      const m = await box(meter);
+      const bars = await box(meter.locator('[data-meter-bars]'));
+      const label = await box(meter.locator('[data-meter-label]'));
+      const r = await box(rowBtn);
+      expect(m.width).toBeLessThanOrEqual(64);
+      expect(bars.y + bars.height).toBeLessThanOrEqual(label.y + 0.5);
+      expect(Math.abs(r.x + r.width - 12 - (m.x + m.width))).toBeLessThanOrEqual(1); // flush with the row's right padding
+      expect(Math.abs(bars.x + bars.width - (m.x + m.width))).toBeLessThanOrEqual(1); // right-aligned inside it
+      // (2) the micro-bar lives in the name column, under line 2 — never in the meter.
+      await expect(rowBtn.locator('[data-namecol] [data-microbar]')).toHaveCount(1);
+      await expect(meter.locator('[data-microbar]')).toHaveCount(0);
+      const line2 = await box(rowBtn.locator('[data-line2]'));
+      const micro = await box(rowBtn.locator('[data-microbar]'));
+      expect(micro.y).toBeGreaterThanOrEqual(line2.y + line2.height - 0.5);
+    }
+    // (3) injury badge past the circle's right and bottom edges.
+    const injured = page.locator('[data-poscircle]:has([data-injury])');
+    const count = await injured.count();
+    expect(count).toBeGreaterThanOrEqual(3);
+    for (let i = 0; i < count; i++) {
+      const c = await box(injured.nth(i));
+      const b = await box(injured.nth(i).locator('[data-injury]'));
+      expect(b.x + b.width).toBeGreaterThan(c.x + c.width);
+      expect(b.y + b.height).toBeGreaterThan(c.y + c.height);
+    }
+  });
+
+  test('4–6: one-line hero, "/ game" why-stats with #n ranks, week labels above cells', async ({ page }) => {
+    await openRoster(page);
+    const names = ['Jordan Hale', 'Marcus Reed', 'Tyler Brooks', 'Sam Ortiz'];
+    for (const name of names) await rowButton(page, name).click();
+    await expect(page.locator('[data-state="expanded"]')).toHaveCount(4);
+    for (const name of names) {
+      const card = row(page, name);
+      const panel = card.locator('[data-state="expanded"]');
+      // (4) one line: tier-colored number + "PPR pts/g X allows to QBs · #n of 32"; no window text.
+      const hero = panel.locator('[data-hero]');
+      await expect(hero).toHaveText(/^\d+\.\d\s*PPR pts\/g [A-Z]{2,3} allows to [A-Z]+s · (#|T-)\d+ of 32$/);
+      expect((await box(hero)).height).toBeLessThan(36); // a second line would push it past ~44px
+      const numberColor = await hero.locator('span').first().evaluate((el) => getComputedStyle(el).color);
+      const tierColor = await card.locator('[data-meter-label]').first().evaluate((el) => getComputedStyle(el).color);
+      expect(numberColor).toBe(tierColor);
+      await expect(panel).not.toContainText('Season');
+      await expect(panel).not.toContainText('Last 4');
+      // (5) labels end with "/ game", ranks "#28" / "T-14", nothing under the box.
+      const labels = await panel.locator('[data-why-label]').allTextContents();
+      expect(labels.length).toBeGreaterThanOrEqual(2);
+      for (const l of labels) expect(l.trim()).toMatch(/ \/ game$/);
+      for (const rk of await panel.locator('[data-why-rank]').allTextContents()) expect(rk.trim()).toMatch(/^(#|T-)\d+$/);
+      expect(await panel.locator('[data-why]').evaluate((dl) => dl.nextElementSibling?.tagName ?? null)).not.toBe('P');
+      await expect(panel).not.toContainText('best in the league');
+      // (6) "W6" above each cell; cell = opp + "#n" (or "BYE"), no tier word.
+      const items = panel.locator('ol[aria-label="Next weeks"] > li');
+      await expect(items).toHaveCount(5);
+      for (let j = 0; j < 5; j++) {
+        const cell = items.nth(j).locator('[data-weekcell]');
+        expect(await cell.locator('[data-weeklabel]').count()).toBe(0);
+        const wk = await box(items.nth(j).locator('[data-weeklabel]'));
+        expect(wk.y + wk.height).toBeLessThanOrEqual((await box(cell)).y + 0.5);
+        const text = ((await cell.textContent()) ?? '').trim();
+        expect(text).toMatch(/^(@?[A-Z]{2,3}(#|T-)\d+|BYE)$/);
+        expect(text).not.toMatch(/Great|Good|Avg|Tough|Avoid/);
+      }
+    }
+  });
+
+  test('7: Start / Sit button — swap icon, "vs 1 other QB" / "vs N other RBs"', async ({ page }, info) => {
+    test.skip(info.project.name !== 'iphone-393', 'Start / Sit lives on the phone action row; iPad uses Pin to side + Compare');
+    await openRoster(page);
+    await rowButton(page, 'Jordan Hale').click();
+    await rowButton(page, 'Marcus Reed').click();
+    const qb = row(page, 'Jordan Hale').getByRole('button', { name: /^Start \/ Sit/ });
+    await expect(qb.locator('svg[data-swap-icon]')).toHaveCount(1);
+    await expect(qb.locator('[data-ss-hint]')).toHaveText('vs 1 other QB');
+    const rb = row(page, 'Marcus Reed').getByRole('button', { name: /^Start \/ Sit/ });
+    await expect(rb.locator('svg[data-swap-icon]')).toHaveCount(1);
+    await expect(rb.locator('[data-ss-hint]')).toHaveText('vs 3 other RBs');
+  });
+
+  test('8: WEEK bar above the sticky pills; section labels with counts', async ({ page }) => {
+    await openRoster(page);
+    const bar = page.locator('[data-weekbar]');
+    await expect(bar).toContainText('WEEK 6');
+    await expect(bar.getByRole('button', { name: 'Season', exact: true })).toBeVisible();
+    await expect(bar.getByRole('button', { name: 'Last 4', exact: true })).toBeVisible();
+    await expect(bar.getByRole('button', { name: 'What do Season and Last 4 mean?' })).toBeVisible();
+    const b = await box(bar);
+    const f = await box(page.locator('[data-filter-row]'));
+    expect(b.y + b.height).toBeLessThanOrEqual(f.y + 0.5);
+    expect(await page.locator('[data-filter-row]').evaluate((el) => getComputedStyle(el).position)).toBe('sticky');
+    for (const [id, title, count] of [['starters', 'STARTERS', 10], ['bench', 'BENCH', 3], ['reserve', 'IR / TAXI', 2]] as const) {
+      const label = page.locator(`section[data-section="${id}"] [data-section-label]`);
+      await expect(label).toContainText(title);
+      await expect(label.locator('[data-section-count]')).toHaveText(String(count));
+    }
+  });
+
+  test('9: no pill clipped at 393; "Expand all" stays visible', async ({ page }, info) => {
+    test.skip(info.project.name !== 'iphone-393', 'the 393px check');
+    await openRoster(page);
+    const scroller = page.locator('[data-pill-scroller]');
+    const pills = scroller.getByRole('button');
+    const count = await pills.count();
+    expect(count).toBeGreaterThanOrEqual(8); // All QB RB WR TE K DEF IR/Taxi
+    const expand = page.getByRole('button', { name: 'Expand all' });
+    for (let i = 0; i < count; i++) {
+      // Fully visible, or reachable by scrolling the pill row itself.
+      await pills.nth(i).evaluate((el) => el.scrollIntoView({ block: 'nearest', inline: 'nearest' }));
+      const s = await box(scroller);
+      const p = await box(pills.nth(i));
+      expect(p.x).toBeGreaterThanOrEqual(s.x - 0.5);
+      expect(p.x + p.width).toBeLessThanOrEqual(s.x + s.width + 0.5);
+      // "Expand all" never moves out of view or under the pills.
+      const e = await box(expand);
+      expect(e.x).toBeGreaterThanOrEqual(s.x + s.width - 0.5);
+      expect(e.x + e.width).toBeLessThanOrEqual(393);
+    }
+    await noHorizontalScroll(page);
+  });
+
+  test('10: league capsule truncates a 40-character name, ≤44px tall', async ({ page }) => {
+    const LONG = 'The Extremely Long Dynasty League Name X';
+    expect(LONG.length).toBe(40);
+    await mockApi(page);
+    await page.route(/\/api\/myteam\/user\?/, (route) =>
+      route.fulfill({ json: { ...USER, leagues: [{ ...LEAGUE_A, name: LONG }, LEAGUE_B] } }),
+    );
+    await seedLinked(page);
+    await page.goto('/myteam');
+    await expect(page.locator('[data-state="roster"]')).toBeVisible();
+    const capsule = page.locator('[data-league-capsule]');
+    await expect(capsule).toHaveAccessibleName(`League: ${LONG}. Change league`);
+    expect((await box(capsule)).height).toBeLessThanOrEqual(44);
+    const t = await capsule
+      .locator('[data-league-name]')
+      .evaluate((el) => ({ over: el.scrollWidth > el.clientWidth, ellipsis: getComputedStyle(el).textOverflow }));
+    expect(t).toEqual({ over: true, ellipsis: 'ellipsis' });
+    await noHorizontalScroll(page);
+  });
+
+  test('screenshot: first QB row open, Season (mockup state)', async ({ page }, info) => {
+    await openRoster(page);
+    await expect(page.getByRole('button', { name: 'Season', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await rowButton(page, 'Jordan Hale').click();
+    await expect(page.locator('[data-state="expanded"]')).toHaveCount(1);
+    const file = info.project.name === 'iphone-393' ? 'phone.png' : 'ipad.png';
+    await page.screenshot({ path: `docs/design/my-team-p4/after/${file}`, animations: 'disabled' });
   });
 });

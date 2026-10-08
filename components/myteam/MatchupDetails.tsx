@@ -1,14 +1,16 @@
 /**
- * The "why" inside an expanded row or pinned card (design-system §9.4):
- * pts/g-allowed hero for this week's opponent, then the position's opponent
- * stats with league ranks (same Season / Last 4 window as the meter).
+ * The "why" inside an expanded row or pinned card (design-system §9.4, P4 final
+ * mockup): a one-line hero — tier-colored pts/g-allowed number + "PPR pts/g LV
+ * allows to QBs · #27 of 32" — then the position's opponent stats ("Pass yds /
+ * game", rank "#28") in one bordered box. The Season / Last 4 window lives on
+ * the toggle, so it isn't repeated here.
  */
 
 import { whyStats, type DefenseGame, type OffenseGame } from '@/lib/myteam/defenseProfile';
 import type { LeagueBundle } from '@/lib/myteam/apiTypes';
 import type { RatingWindow } from '@/lib/myteam/types';
 import type { RosterRow } from '@/lib/myteam/viewModel';
-import { POSITION_PLURAL, scoringLabel, tierColor } from './style';
+import { positionPlural, rankText, scoringLabel, tierColor } from './style';
 
 export interface DetailContext {
   window: RatingWindow;
@@ -17,15 +19,13 @@ export interface DetailContext {
   offenseLog: readonly OffenseGame[];
 }
 
-const WINDOW_TEXT: Record<RatingWindow, string> = { season: 'Season', last4: 'Last 4 games' };
-
 function formatValue(key: string, value: number): string {
   if (!Number.isFinite(value)) return '—';
-  if (key === 'rz_per_drive') return value.toFixed(2);
+  if (key === 'rz_per_drive' || key === 'pass_td' || key === 'rush_td' || key === 'int') return value.toFixed(2);
   return value.toFixed(1);
 }
 
-export default function MatchupDetails({ row, ctx }: { row: RosterRow; ctx: DetailContext }) {
+export default function MatchupDetails({ row, ctx, compact = false }: { row: RosterRow; ctx: DetailContext; compact?: boolean }) {
   const { player, thisWeek } = row;
   const opp = thisWeek.kind === 'game' ? thisWeek.opp : null;
   const rating = thisWeek.rating;
@@ -38,46 +38,41 @@ export default function MatchupDetails({ row, ctx }: { row: RosterRow; ctx: Deta
   }
 
   const stats = whyStats(player.position, opp, ctx.defenseLog, ctx.offenseLog, ctx.window);
-  const rank = `${rating.isTied ? 'T-' : '#'}${rating.rank}`;
+  const rank = rankText(rating.rank, rating.isTied);
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-baseline gap-2.5">
-        <span className="tabular-nums" style={{ fontSize: 28, fontWeight: 900, lineHeight: 1, color: tierColor(rating.tier) }}>
+    <>
+      <div data-hero className="flex items-baseline" style={{ gap: 8 }}>
+        <span className="flex-none tabular-nums" style={{ fontSize: compact ? 22 : 26, fontWeight: 800, lineHeight: 1.1, color: tierColor(rating.tier) }}>
           {rating.perGame.toFixed(1)}
         </span>
-        <span style={{ fontSize: 12, lineHeight: 1.35, color: 'var(--subtext)' }}>
-          {scoringLabel(ctx.format)} pts/g {opp} allows to {POSITION_PLURAL[player.position]}
-          <br />
-          <span style={{ color: 'var(--text)', fontWeight: 700 }}>
-            {rating.label} {rank}
-          </span>{' '}
-          of 32 · {WINDOW_TEXT[ctx.window]}
+        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--subtext)' }}>
+          {scoringLabel(ctx.format)} pts/g {opp} allows to {positionPlural(player.position)} · {rank}
+          {compact ? '' : ' of 32'}
         </span>
       </div>
 
       {stats.length > 0 && (
-        <div>
-          <dl className="overflow-hidden" style={{ borderRadius: 'var(--radius-md)', border: '1px solid var(--hairline)' }}>
-            {stats.map((s, i) => (
-              <div
-                key={s.key}
-                className="flex items-center justify-between px-3"
-                style={{ minHeight: 36, borderTop: i > 0 ? '1px solid var(--hairline)' : 'none', background: 'var(--nav-bg)' }}
-              >
-                <dt style={{ fontSize: 12, color: 'var(--subtext)' }}>{s.label}</dt>
-                <dd className="flex items-center gap-2 tabular-nums" style={{ fontSize: 13, fontWeight: 800, color: 'var(--text)' }}>
-                  {formatValue(s.key, s.value)}
-                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--subtext)', minWidth: 40, textAlign: 'right' }}>{s.formattedRank}</span>
-                </dd>
-              </div>
-            ))}
-          </dl>
-          <p className="mt-1" style={{ fontSize: 11, color: 'var(--subtext)' }}>
-            {player.position === 'DEF' ? `${opp} offense` : `${opp} defense`}, per game · rank 1st = best in the league at that stat.
-          </p>
-        </div>
+        <dl data-why className="overflow-hidden" style={{ borderRadius: 'var(--radius-md)', border: '1px solid var(--hairline)', background: 'var(--nav-bg)' }}>
+          {stats.map((s, i) => (
+            <div
+              key={s.key}
+              className="flex items-center justify-between"
+              style={{ minHeight: compact ? 34 : 36, padding: '0 10px', borderTop: i > 0 ? '1px solid var(--hairline)' : 'none' }}
+            >
+              <dt data-why-label style={{ fontSize: 12, fontWeight: 600, color: 'var(--subtext)' }}>
+                {s.label} / {s.unit}
+              </dt>
+              <dd className="flex tabular-nums" style={{ gap: 10 }}>
+                <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--text)' }}>{formatValue(s.key, s.value)}</span>
+                <span data-why-rank style={{ minWidth: 28, textAlign: 'right', fontSize: 11, fontWeight: 700, color: 'var(--subtext)' }}>
+                  {Number.isFinite(s.rank) ? rankText(s.rank, s.isTied) : '—'}
+                </span>
+              </dd>
+            </div>
+          ))}
+        </dl>
       )}
-    </div>
+    </>
   );
 }

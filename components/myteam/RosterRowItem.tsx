@@ -1,17 +1,19 @@
 /**
- * One roster row (design-system §9.4). The row itself is a ≥62px button that
- * expands the card in place (several can be open — no sheet, no long-press,
- * no swipe). Expanded: matchup details, the next 5 week cells, then actions.
+ * One roster row (design-system §9.4, P4 final mockup). The row is a ≥62px
+ * button: position circle · name column (name + reserve tag, line 2 "KC · @ LV ·
+ * Sun 3:25 PM", next-5 micro-bar under it) · 60px meter column (bars over
+ * "Good #27"). Tap expands it in place (several can be open) into a bordered
+ * box: hero, why-stats, next-5 week cells, then actions.
  *
- * Actions by width (CSS only): phone = "Start / Sit ›" above "Open in Compare";
- * the button area SLIDES to the Start / Sit panel (`.pare-slide`, none under
- * reduced motion). iPad (md+) = "Pin to side" + "Compare".
+ * Actions by width (CSS only): phone = "Start / Sit" above "Open in Compare ·
+ * KC vs LV"; the button area SLIDES to the Start / Sit panel (`.pare-slide`,
+ * none under reduced motion). iPad (md+) = "Pin to side" + "Compare".
  */
 
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ChevronRight, GitCompareArrows, Pin, PinOff } from 'lucide-react';
+import { ArrowUpDown, ChevronRight, GitCompareArrows, Pin } from 'lucide-react';
 import TeamIdentity from '@/components/ui/TeamIdentity';
 import { TeamAbbr } from '@/components/standings/StandingsRow';
 import { likelySwap, startSitCandidates } from '@/lib/myteam/startSit';
@@ -20,7 +22,7 @@ import MatchupDetails, { type DetailContext } from './MatchupDetails';
 import { MatchupMeter, NextFiveBar, WeekCells } from './MatchupMeter';
 import PositionCircle from './PositionCircle';
 import StartSitPanel from './StartSitPanel';
-import { ACTION_BUTTON, kickoffText, POSITION_PLURAL } from './style';
+import { ACTION_BUTTON, kickoffText, startSitHint } from './style';
 
 const SLIDE_MS = 340;
 
@@ -42,15 +44,15 @@ interface Props {
   initialStartSit?: boolean;
 }
 
-/** Reserve tag shown next to the name in the IR / TAXI section. */
+/** Reserve tag next to the name in the IR / TAXI section (mockup: 18px, radius 5→6, `--seed-edge` outline). */
 function ReserveTag({ group }: { group: RosterRow['player']['group'] }) {
   if (group !== 'ir' && group !== 'taxi') return null;
   return (
     <span
-      className="flex-none"
+      className="inline-flex flex-none items-center"
       style={{
-        fontSize: 9, fontWeight: 800, letterSpacing: '0.08em', color: 'var(--subtext)',
-        border: '1px solid var(--frame-mid)', borderRadius: 'var(--radius-sm)', padding: '1px 4px',
+        height: 18, padding: '0 6px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--seed-edge)',
+        color: 'var(--subtext)', fontSize: 11, fontWeight: 800, letterSpacing: '0.04em',
       }}
     >
       {group === 'ir' ? 'IR' : 'TAXI'}
@@ -58,36 +60,38 @@ function ReserveTag({ group }: { group: RosterRow['player']['group'] }) {
   );
 }
 
-export function RowSummary({ row }: { row: RosterRow }) {
+/** Circle · name column · meter — shared by the row button (and its look in pinned cards). */
+export function RowSummary({ row, pinned = false, meterWidth = 60 }: { row: RosterRow; pinned?: boolean; meterWidth?: number }) {
   const { player, thisWeek } = row;
   const flex = slotLabel(player.slot) !== null;
   return (
     <>
       <PositionCircle player={player} />
-      <span className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="flex min-w-0 items-center gap-1.5">
+      <span data-namecol className="flex min-w-0 flex-1 flex-col" style={{ gap: 3 }}>
+        <span className="flex min-w-0 items-center" style={{ gap: 6 }}>
           <span className="truncate" style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
             {player.name}
           </span>
           <ReserveTag group={player.group} />
+          {pinned && <Pin size={16} aria-label="Pinned" style={{ flex: 'none', color: 'var(--gold-bright)' }} />}
         </span>
-        <span className="flex min-w-0 items-center gap-1 whitespace-nowrap" style={{ fontSize: 11, color: 'var(--subtext)' }}>
-          {flex && player.position && <span>{player.position} ·</span>}
-          {player.nflTeam ? (
-            <TeamIdentity abbr={player.nflTeam} surface="myTeam" size={14} decorative>
-              <TeamAbbr abbr={player.nflTeam} size={11} />
-            </TeamIdentity>
-          ) : (
-            <span>FA</span>
-          )}
-          <span>· {matchupText(thisWeek)}</span>
-          {thisWeek.kickoff && <span className="truncate">· {kickoffText(thisWeek.kickoff)}</span>}
+        <span data-line2 className="flex min-w-0 items-center overflow-hidden whitespace-nowrap" style={{ gap: 5, fontSize: 11, fontWeight: 600, color: 'var(--subtext)' }}>
+          <span className="flex min-w-0 items-center overflow-hidden text-ellipsis" style={{ gap: 4 }}>
+            {flex && player.position && <span>{player.position} ·</span>}
+            {player.nflTeam ? (
+              <TeamIdentity abbr={player.nflTeam} surface="myTeam" size={14} decorative>
+                <TeamAbbr abbr={player.nflTeam} size={11} />
+              </TeamIdentity>
+            ) : (
+              <span>FA</span>
+            )}
+            <span>· {matchupText(thisWeek)}{thisWeek.kickoff ? ' ·' : ''}</span>
+          </span>
+          {thisWeek.kickoff && <span className="flex-none">{kickoffText(thisWeek.kickoff)}</span>}
         </span>
+        <NextFiveBar cells={row.strip.slice(0, 5)} />
       </span>
-      <span className="flex flex-none flex-col items-end gap-1.5">
-        <MatchupMeter cell={thisWeek} />
-        <NextFiveBar cells={row.strip} />
-      </span>
+      <MatchupMeter cell={thisWeek} width={meterWidth} />
     </>
   );
 }
@@ -129,43 +133,53 @@ export default function RosterRowItem({ row, allRows, expanded, onToggle, ctx, a
         type="button"
         aria-expanded={expanded}
         onClick={() => onToggle(player.playerId)}
-        className="touch-optimized flex w-full items-center gap-2.5 px-3 text-left active:opacity-80"
-        style={{ minHeight: 62, paddingTop: 10, paddingBottom: 10 }}
+        className="touch-optimized flex w-full items-center text-left active:opacity-80"
+        style={{
+          gap: 10,
+          minHeight: 62,
+          padding: '8px 12px',
+          background: expanded ? 'color-mix(in srgb, var(--gold-bright) 5%, transparent)' : 'transparent',
+        }}
       >
-        <RowSummary row={row} />
+        <RowSummary row={row} pinned={pinned} />
       </button>
 
       {expanded && (
-        <div data-state="expanded" className="flex flex-col gap-3 px-3 pb-3">
+        <div
+          data-state="expanded"
+          className="flex flex-col"
+          style={{ gap: 12, margin: '0 12px 14px', padding: 12, borderRadius: 'var(--radius-md)', border: '1px solid var(--hairline)' }}
+        >
           <MatchupDetails row={row} ctx={ctx} />
-          <WeekCells cells={row.strip} />
+          <WeekCells cells={row.strip.slice(0, 5)} />
 
           {/* Phone: Start / Sit + Open in Compare, sliding to the Start / Sit panel. */}
           <div className="overflow-hidden md:hidden">
             <div className="pare-slide flex items-start" style={{ width: '200%', transform: view === 'startsit' ? 'translateX(-50%)' : 'none' }}>
-              <div className="flex flex-col gap-2" style={{ width: '50%', ...(showActions ? null : collapsed) }} inert={view !== 'actions'}>
-                {candidates.length > 0 && (
+              <div className="flex flex-col" style={{ gap: 8, width: '50%', ...(showActions ? null : collapsed) }} inert={view !== 'actions'}>
+                {candidates.length > 0 && player.position && (
                   <button
                     type="button"
                     onClick={() => setView('startsit')}
-                    className="touch-optimized flex items-center justify-between px-3.5 active:opacity-70"
-                    style={ACTION_BUTTON}
+                    className="touch-optimized flex items-center active:opacity-70"
+                    style={{ ...ACTION_BUTTON, gap: 8, padding: '0 12px' }}
                   >
+                    <ArrowUpDown data-swap-icon size={18} strokeWidth={2.2} aria-hidden />
                     <span>Start / Sit</span>
-                    <span className="flex items-center gap-1" style={{ fontSize: 12, fontWeight: 600, color: 'var(--subtext)' }}>
-                      vs {candidates.length} other {player.position ? POSITION_PLURAL[player.position] : 'players'}
-                      <ChevronRight size={17} aria-hidden style={{ color: 'var(--gold-bright)' }} />
+                    <span data-ss-hint className="ml-auto" style={{ fontSize: 11, fontWeight: 700, color: 'var(--subtext)' }}>
+                      {startSitHint(player.position, candidates.length)}
                     </span>
+                    <ChevronRight size={16} strokeWidth={2.4} aria-hidden style={{ color: 'var(--gold-bright)' }} />
                   </button>
                 )}
                 <button
                   type="button"
                   disabled={!canCompare}
                   onClick={() => player.nflTeam && opp && actions.onOpenCompare(player.nflTeam, opp)}
-                  className="touch-optimized flex items-center justify-center gap-2 active:opacity-70"
-                  style={{ ...ACTION_BUTTON, color: canCompare ? 'var(--text)' : 'var(--subtext)' }}
+                  className="touch-optimized flex items-center justify-center active:opacity-70"
+                  style={{ ...ACTION_BUTTON, gap: 8, color: canCompare ? 'var(--text)' : 'var(--subtext)' }}
                 >
-                  <GitCompareArrows size={16} aria-hidden />
+                  <GitCompareArrows size={17} aria-hidden />
                   Open in Compare{compareText ? ` · ${compareText}` : ''}
                 </button>
               </div>
@@ -185,26 +199,32 @@ export default function RosterRowItem({ row, allRows, expanded, onToggle, ctx, a
           </div>
 
           {/* iPad: Pin to side + Compare. */}
-          <div className="hidden gap-2 md:grid md:grid-cols-2">
+          <div className="hidden md:flex" style={{ gap: 8 }}>
             <button
               type="button"
               aria-pressed={pinned}
               onClick={() => actions.onTogglePin(player.playerId)}
-              className="touch-optimized flex items-center justify-center gap-2 active:opacity-70"
-              style={{ ...ACTION_BUTTON, color: pinned ? 'var(--gold-bright)' : 'var(--text)' }}
+              className="touch-optimized flex flex-1 items-center justify-center active:opacity-70"
+              style={{
+                ...ACTION_BUTTON,
+                gap: 8,
+                ...(pinned
+                  ? { border: '1.5px solid var(--gold-bright)', background: 'color-mix(in srgb, var(--gold-bright) 8%, var(--nav-bg))', color: 'var(--gold-bright)' }
+                  : null),
+              }}
             >
-              {pinned ? <PinOff size={16} aria-hidden /> : <Pin size={16} aria-hidden />}
+              <Pin size={16} aria-hidden />
               {pinned ? 'Unpin' : 'Pin to side'}
             </button>
             <button
               type="button"
               disabled={!canCompare}
               onClick={() => player.nflTeam && opp && actions.onOpenCompare(player.nflTeam, opp)}
-              className="touch-optimized flex items-center justify-center gap-2 active:opacity-70"
-              style={{ ...ACTION_BUTTON, color: canCompare ? 'var(--text)' : 'var(--subtext)' }}
+              className="touch-optimized flex flex-1 items-center justify-center active:opacity-70"
+              style={{ ...ACTION_BUTTON, gap: 8, color: canCompare ? 'var(--text)' : 'var(--subtext)' }}
               aria-label={compareText ? `Compare ${compareText}` : 'Compare'}
             >
-              <GitCompareArrows size={16} aria-hidden />
+              <GitCompareArrows size={17} aria-hidden />
               Compare
             </button>
           </div>

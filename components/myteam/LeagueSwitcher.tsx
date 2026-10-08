@@ -18,10 +18,11 @@ export function LeagueCapsule({ name, onOpen }: { name: string; onOpen: () => vo
       aria-haspopup="dialog"
       aria-label={`League: ${name}. Change league`}
       onClick={onOpen}
+      data-league-capsule
       className="pare-hit44 touch-optimized flex min-w-0 items-center gap-1.5 rounded-full active:opacity-70"
       style={{
         height: 36,
-        maxWidth: 200,
+        maxWidth: 170,
         padding: '0 12px 0 14px',
         background: 'var(--nav-bg)',
         border: '1px solid var(--glass-edge)',
@@ -30,8 +31,8 @@ export function LeagueCapsule({ name, onOpen }: { name: string; onOpen: () => vo
         fontWeight: 700,
       }}
     >
-      <span className="truncate">{name}</span>
-      <ChevronDown size={14} aria-hidden style={{ flex: 'none' }} />
+      <span data-league-name className="min-w-0 truncate">{name}</span>
+      <ChevronDown size={14} strokeWidth={2.6} aria-hidden style={{ flex: 'none' }} />
     </button>
   );
 }

@@ -26,11 +26,8 @@ export default function MyTeamShell({
         <div className="mx-auto flex h-[52px] w-full max-w-[1440px] items-center justify-between gap-2 px-4">
           <h1 className="whitespace-nowrap font-black tracking-tight" style={{ fontSize: '20px', color: 'var(--text)' }}>
             Pare
-            <span
-              className="ml-1.5 font-bold"
-              style={{ fontSize: '9.5px', letterSpacing: '0.26em', textTransform: 'uppercase', color: 'var(--gold-bright)' }}
-            >
-              Fantasy
+            <span style={{ marginLeft: 6, fontSize: 11, fontWeight: 800, letterSpacing: '0.22em', color: 'var(--gold-bright)' }}>
+              FANTASY
             </span>
           </h1>
           {headerRight}

@@ -79,17 +79,23 @@ export default function MyTeamScreen({
   };
 
   const keep = (r: RosterRow) => filter === 'ALL' || r.player.position === filter;
-  const sections: RosterSection[] = [
-    { id: 'starters', title: 'Starters', rows: vm.starters.filter(keep) },
-    { id: 'bench', title: 'Bench', rows: vm.bench.filter(keep) },
-    { id: 'reserve', title: 'IR / Taxi', rows: vm.reserve.filter(keep) },
-  ];
+  const sections: RosterSection[] =
+    filter === 'RES'
+      ? [{ id: 'reserve', title: 'IR / TAXI', rows: vm.reserve }]
+      : [
+          { id: 'starters', title: 'STARTERS', rows: vm.starters.filter(keep) },
+          { id: 'bench', title: 'BENCH', rows: vm.bench.filter(keep) },
+          { id: 'reserve', title: 'IR / TAXI', rows: vm.reserve.filter(keep) },
+        ];
   const visibleIds = sections.flatMap((s) => s.rows.map((r) => r.player.playerId));
-  const allExpanded = visibleIds.length > 0 && visibleIds.every((id) => expanded.has(id));
+  // Mockup: "Collapse all" whenever anything is open.
+  const anyExpanded = visibleIds.some((id) => expanded.has(id));
 
+  const pill = (id: PositionFilter, label: string, aria: string, count: number) => ({ id, label, aria: `${aria}, ${count} players`, count });
   const counts = [
-    { id: 'ALL' as const, label: 'All', count: allRows.length },
-    ...FANTASY_POSITIONS.map((p) => ({ id: p, label: p, count: allRows.filter((r) => r.player.position === p).length })).filter((c) => c.count > 0),
+    pill('ALL', 'All', 'All positions', allRows.length),
+    ...FANTASY_POSITIONS.map((p) => pill(p, p, p, allRows.filter((r) => r.player.position === p).length)).filter((c) => c.count > 0),
+    ...(vm.reserve.length > 0 ? [pill('RES', 'IR/Taxi', 'IR and Taxi', vm.reserve.length)] : []),
   ];
 
   const ctx: DetailContext = { window, format: bundle.league.format, defenseLog: bundle.defenseLog, offenseLog: bundle.offenseLog };
@@ -115,7 +121,7 @@ export default function MyTeamScreen({
         counts={counts}
         value={filter}
         onChange={setFilter}
-        allExpanded={allExpanded}
+        anyExpanded={anyExpanded}
         onExpandAll={() => setExpanded(new Set([...expanded, ...visibleIds]))}
         onCollapseAll={() => setExpanded(new Set())}
       />
@@ -135,7 +141,19 @@ export default function MyTeamScreen({
             actions={{
               onOpenCompare,
               isPinned: (id) => pins.includes(id),
-              onTogglePin: (id) => setPins((cur) => (cur.includes(id) ? cur.filter((p) => p !== id) : [...cur, id])),
+              // Pinning closes the row (the card now lives in the panel); unpinning leaves it as is.
+              onTogglePin: (id) => {
+                if (pins.includes(id)) {
+                  setPins((cur) => cur.filter((p) => p !== id));
+                  return;
+                }
+                setPins((cur) => [...cur, id]);
+                setExpanded((cur) => {
+                  const next = new Set(cur);
+                  next.delete(id);
+                  return next;
+                });
+              },
             }}
           />
         </div>

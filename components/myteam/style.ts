@@ -29,15 +29,20 @@ export const INJURY_COLOR: Readonly<Record<InjuryTag, string>> = {
 
 export const INJURY_LABEL: Readonly<Record<InjuryTag, string>> = { Q: 'Questionable', D: 'Doubtful', O: 'Out', IR: 'Injured reserve' };
 
-/** "RBs" — used in "vs 2 other RBs", "pts/g allowed to RBs". */
-export const POSITION_PLURAL: Readonly<Record<FantasyPosition, string>> = {
-  QB: 'QBs',
-  RB: 'RBs',
-  WR: 'WRs',
-  TE: 'TEs',
-  K: 'kickers',
-  DEF: 'D/STs',
-};
+/** "QBs" — mockup copy ("allows to QBs", "START / SIT · QBS"). */
+export function positionPlural(position: FantasyPosition): string {
+  return `${position}s`;
+}
+
+/** Start / Sit hint: "vs 1 other QB" / "vs 2 other QBs". */
+export function startSitHint(position: FantasyPosition, others: number): string {
+  return `vs ${others} other ${others === 1 ? position : positionPlural(position)}`;
+}
+
+/** "#28", tied "T-14" (mockup rank style — never "28th"). */
+export function rankText(rank: number, isTied: boolean): string {
+  return `${isTied ? 'T-' : '#'}${rank}`;
+}
 
 export function scoringLabel(format: LeagueBundle['league']['format']): string {
   if (format === 'ppr') return 'PPR';
@@ -66,7 +71,7 @@ export function kickoffText(iso: string): string {
   return `${day} ${time}`;
 }
 
-/** "Oct 9 – 13" / "Oct 30 – Nov 3". */
+/** "Oct 1 – Oct 5" (mockup: month on both ends). */
 export function dateRangeText(range: { first: string; last: string } | null): string | null {
   if (!range) return null;
   const a = new Date(range.first);
@@ -75,12 +80,12 @@ export function dateRangeText(range: { first: string; last: string } | null): st
   const month = (d: Date) => d.toLocaleDateString('en-US', { month: 'short' });
   const start = `${month(a)} ${a.getDate()}`;
   if (a.toDateString() === b.toDateString()) return start;
-  return `${start} – ${month(a) === month(b) ? '' : `${month(b)} `}${b.getDate()}`;
+  return `${start} – ${month(b)} ${b.getDate()}`;
 }
 
 /** Deep list card (§9.2 recipe): one card per roster section. */
 export const LIST_CARD: CSSProperties = {
-  background: 'linear-gradient(90deg, var(--card-deep-a), var(--card-deep-mid) 50%, var(--card-deep-b))',
+  background: 'linear-gradient(135deg, var(--card-deep-a) 0%, var(--card-deep-mid) 55%, var(--card-deep-b) 100%)',
   border: '1px solid var(--hairline)',
   borderRadius: 'var(--radius-lg)',
 };
@@ -94,13 +99,13 @@ export const GOLD_RING_BUTTON: CSSProperties = {
   fontWeight: 800,
 };
 
-/** Quiet 48px action button inside an expanded card. */
+/** 48px action button inside an expanded card (mockup: 14/800, radius 10). Kept on the darker build surface. */
 export const ACTION_BUTTON: CSSProperties = {
-  minHeight: 48,
+  height: 48,
   borderRadius: 'var(--radius-md)',
   border: '1px solid var(--frame-mid)',
   background: 'var(--nav-bg)',
   color: 'var(--text)',
   fontSize: 14,
-  fontWeight: 700,
+  fontWeight: 800,
 };

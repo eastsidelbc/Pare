@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>FINAL · iPad 1194 landscape</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.hit44{position:relative}.hit44::after{content:"";position:absolute;left:0;right:0;top:-7px;bottom:-7px}
+@keyframes popin{from{opacity:0;transform:translateY(4px) scale(.97)}to{opacity:1;transform:none}}
+button:focus-visible,a:focus-visible{outline:2px solid #f5c842;outline-offset:2px}
+@keyframes pare-live{0%,100%{opacity:.35}50%{opacity:1}}@keyframes flash{0%{opacity:0;transform:translateY(3px)}15%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0}}@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes shim{0%{opacity:.45}50%{opacity:.8}100%{opacity:.45}}
+</style>
+</helmet>
+<div data-root="1" style="{{rootStyle}} background: #0a0d14; color: #f1f5f9; font-family: Inter, system-ui, sans-serif;">
+
+<header style="flex: none; position: relative; z-index: 30; height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 16px; border-bottom: 1px solid #1b2030; background: #0a0d14;">
+  <h1 style="margin: 0; white-space: nowrap; font-family: Inter, system-ui, sans-serif; font-size: 20px; font-weight: 900; letter-spacing: -0.02em; color: #f1f5f9;">Pare<span style="margin-left: 6px; font-size: 11px; font-weight: 800; letter-spacing: 0.22em; color: #f5c842;">FANTASY</span></h1>
+  <button type="button" aria-haspopup="true" aria-expanded="{{sheetStr}}" onClick="{{openSheet}}" class="hit44" style="display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px 0 14px; border-radius: 999px; background: rgba(3,4,8,0.94); border: 1px solid rgba(255,255,255,0.12); color: #f5c842; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;">{{league.name}}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button>
+</header>
+
+<div style="position: relative; z-index: 1; flex: 1; min-height: 0; display: flex; gap: 16px; padding: 0 {{padGutter}};">
+  <main style="flex: 1; min-width: 0; overflow-y: auto; padding: 0 16px 110px;">
+<div style="margin-top: 10px; padding: 8px 10px; border-radius: 10px; border: 1px dashed #3a4258; display: flex; flex-direction: column; gap: 8px;">
+  <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 11px; font-weight: 800; letter-spacing: 0.12em; color: #8b93a3;"><span>MOCKUP ONLY</span><span style="letter-spacing: 0; font-weight: 700;">{{lvClock}}</span></div>
+  <div style="display: flex; flex-wrap: wrap; gap: 6px;"><sc-for list="{{lvPhases}}" as="p" hint-placeholder-count="4"><button type="button" aria-pressed="{{p.pressed}}" onClick="{{p.pick}}" style="{{p.style}}">{{p.label}}</button></sc-for><button type="button" onClick="{{restartOb}}" style="height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid #2a3450; background: transparent; color: #cbd5e1; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer;">↺ First launch</button></div>
+  <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.12em; color: #8b93a3;">R9 DIAL · ROW DENSITY</span><sc-for list="{{dens}}" as="p" hint-placeholder-count="3"><button type="button" aria-pressed="{{p.pressed}}" onClick="{{p.pick}}" style="{{p.style}}">{{p.label}}</button></sc-for></div>
+</div><div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 0 2px;">
+      <div style="display: flex; align-items: baseline; gap: 8px;"><span style="font-family: Inter, system-ui, sans-serif; font-size: 13px; font-weight: 900; letter-spacing: 0.08em;">WEEK 4</span><span style="font-size: 11px; font-weight: 600; color: #94a3b8;">Oct 1 – Oct 5</span></div>
+      <div style="display: flex; align-items: center; gap: 4px;"><div role="group" aria-label="Rating window" style="position: relative; flex: none; display: flex; padding: 3px; border-radius: 999px; background: rgba(3,4,8,0.94); border: 1px solid rgba(255,255,255,0.12);">
+    <span aria-hidden="true" style="{{pillStyle}}"></span>
+    <sc-for list="{{winOpts}}" as="o" hint-placeholder-count="2">
+      <button type="button" class="hit44" aria-pressed="{{o.pressed}}" onClick="{{o.pick}}" style="{{o.btnStyle}}">{{o.label}}</button>
+    </sc-for>
+  </div><button type="button" aria-label="What do Season and Last 4 mean?" aria-expanded="{{infoStr}}" onClick="{{toggleInfo}}" style="flex: none; width: 44px; height: 44px; margin: -7px -10px -7px -6px; display: flex; align-items: center; justify-content: center; border: 0; background: transparent; color: #94a3b8; cursor: pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"></circle><path d="M12 11v6M12 7.5v.01"></path></svg></button></div><sc-if value="{{infoOn}}" hint-placeholder-val="{{false}}"><div role="note" style="position: absolute; right: 0; top: 46px; z-index: 35; width: 260px; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); background: linear-gradient(160deg, #161622, #0f121a); box-shadow: 0 12px 40px -8px rgba(0,0,0,0.8); font-size: 12px; font-weight: 600; line-height: 1.45; color: #cbd5e1; animation: popin .18s ease;">Season = every game this defense has played. Last 4 = its last 4 games played (byes skipped). Ranks and colors switch with it.<div style="margin-top: 6px; font-size: 11px; color: #94a3b8;">Showing: <b style="color: #f5c842;">{{winLabel}}</b></div></div></sc-if>
+    </div><sc-if value="{{lvAny}}" hint-placeholder-val="{{true}}"><div style="display: flex; align-items: center; gap: 6px; padding-top: 8px; font-size: 11px; font-weight: 700; color: #94a3b8;"><sc-if value="{{lvIsLive}}" hint-placeholder-val="{{true}}"><span aria-hidden="true" style="flex: none; width: 6px; height: 6px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 6px #ef4444; animation: pare-live 1.6s ease-in-out infinite;"></span><span style="color: #f1f5f9; font-weight: 800;">LIVE</span><span>·</span></sc-if><span>{{lvFresh}}</span></div></sc-if>    <div style="display: flex; align-items: center; gap: 6px; position: sticky; top: 0; z-index: 6; background: #0a0d14; padding: 8px 0; margin-top: 2px; border-bottom: 1px solid #1b2030;">
+      <div role="group" aria-label="Filter by position" style="display: flex; gap: {{pillGap}}px; min-width: 0;">
+        <sc-for list="{{filters}}" as="o" hint-placeholder-count="5">
+          <button type="button" class="hit44" aria-pressed="{{o.pressed}}" aria-label="{{o.aria}}" onClick="{{o.pick}}" style="{{o.style}}"><span>{{o.label}}</span><span style="{{o.countStyle}}">{{o.count}}</span></button>
+        </sc-for>
+      </div>
+      <button type="button" onClick="{{expandAll}}" style="margin-left: auto; flex: none; white-space: nowrap; height: 44px; padding: 0 0 0 6px; border: 0; background: transparent; font-family: inherit; font-size: 12px; font-weight: 700; color: #f5c842; cursor: pointer;">{{expandAllLabel}}</button>
+    </div><sc-if value="{{loading}}" hint-placeholder-val="{{false}}"><div role="status" style="position: sticky; top: 0; z-index: 6; display: flex; justify-content: center; padding-top: 8px; pointer-events: none;"><span style="padding: 6px 12px; border-radius: 999px; background: #1d2333; border: 1px solid rgba(255,255,255,0.15); font-size: 12px; font-weight: 700; color: #f1f5f9;">Loading {{league.name}}…</span></div></sc-if><div style="{{listFx}}"><sc-for list="{{groups}}" as="grp" hint-placeholder-count="2">
+    <section style="padding-top: 12px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.18em; color: {{grp.color}};">{{grp.title}}</span><span style="flex: 1; height: 1px; background: #1b2030;"></span><span style="font-size: 11px; font-weight: 700; color: #94a3b8;">{{grp.count}}<sc-if value="{{grp.totOn}}" hint-placeholder-val="{{false}}"><span aria-live="polite" style="margin-left: 8px; font-size: 12px; font-weight: 800; color: #f5c842; font-variant-numeric: tabular-nums;">{{grp.tot}}</span></sc-if></span></div>
+      <ul style="list-style: none; margin: 0; padding: 0; border-radius: 14px; overflow: hidden; border: 1px solid #1b2030; background: linear-gradient(135deg, #151520 0%, #0f121a 55%, #121724 100%);">
+        <sc-for list="{{grp.rows}}" as="r" hint-placeholder-count="6">
+        <li style="border-top: {{r.bt}};">
+<button type="button" onClick="{{r.select}}" aria-label="{{r.aria}}" aria-expanded="{{r.expStr}}" style="{{r.rowStyle}}"><span style="position: relative; flex: none; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: {{r.posBg}}; color: {{r.posInk}}; font-size: 11px; font-weight: 900; letter-spacing: -0.01em;">{{r.badgeText}}
+              <sc-if value="{{r.injShow}}" hint-placeholder-val="{{false}}"><span title="{{r.injWord}}" style="position: absolute; right: -6px; bottom: -4px; min-width: 20px; height: 17px; padding: 0 3px; box-sizing: border-box; border-radius: 9px; display: flex; align-items: center; justify-content: center; background: {{r.injStd}}; color: #0a0d14; font-size: 11px; font-weight: 900; border: 2px solid #12151e;">{{r.inj}}</span></sc-if>
+            </span><span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;"><span style="display: flex; align-items: center; gap: 6px; min-width: 0;"><span style="font-size: 14px; font-weight: 700; color: #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.name}}</span><sc-if value="{{r.flexTag}}" hint-placeholder-val="{{false}}"><span style="flex: none; display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 5px; border: 1px solid #5b6680; color: #cbd5e1; font-size: 11px; font-weight: 800; letter-spacing: 0.04em;">{{r.slot}}</span></sc-if><sc-if value="{{r.pinned}}" hint-placeholder-val="{{false}}"><span title="Pinned" style="flex: none; display: inline-flex; color: #f5c842;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"></path></svg></span></sc-if></span><span style="display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 11px; font-weight: 600; color: #94a3b8; white-space: nowrap; overflow: hidden;"><span style="overflow: hidden; text-overflow: ellipsis;">{{r.posPrefix}}<span style="color: {{r.tc}}; font-weight: 900;">{{r.team}}</span> · {{r.opp}} ·</span><sc-if value="{{r.lvLive}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="flex: none; width: 6px; height: 6px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 6px #ef4444; animation: pare-live 1.6s ease-in-out infinite;"></span></sc-if><span style="flex: none; color: {{r.lvStatusInk}}; font-weight: {{r.lvStatusW}};">{{r.lvStatus}}</span></span><sc-if value="{{noWide}}" hint-placeholder-val="{{true}}"><span aria-hidden="true" style="display: flex; gap: 3px; margin-top: 3px;">
+                <sc-for list="{{r.strip}}" as="c" hint-placeholder-count="5">
+                  <span style="width: 18px; height: 4px; box-sizing: border-box; border-radius: 2px; background: {{c.solidBg}}; border: {{c.barEdge}}; transition: background .25s;"></span>
+                </sc-for>
+              </span></sc-if></span><sc-if value="{{r.lvColOn}}" hint-placeholder-val="{{false}}"><span title="{{r.lvAria}}" style="flex: none; width: 46px; display: flex; flex-direction: column; align-items: flex-end; gap: 1px;"><span style="font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; color: {{r.lvInk}};">{{r.lvPts}}</span><span style="min-height: 14px; display: flex;"><sc-if value="{{r.lvFlash}}" hint-placeholder-val="{{false}}"><span style="font-size: 11px; font-weight: 800; color: #f5c842; animation: flash 2.6s ease both;">{{r.lvDelta}}</span></sc-if></span></span></sc-if><span title="{{r.ch.aria}}" style="flex: none; width: 60px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px;"><span aria-hidden="true" style="display: flex; align-items: flex-end; gap: 2px; height: {{r.barH}}px;">
+                <sc-for list="{{r.bars}}" as="b" hint-placeholder-count="5"><span style="{{b.style}}"></span></sc-for>
+              </span><span style="font-size: 11px; font-weight: 800; color: {{r.ch.ink}}; white-space: nowrap; transition: color .25s;">{{r.ch.word}} {{r.ch.rank}}</span></span></button>
+          <div style="display: grid; grid-template-rows: {{r.expRows}}; transition: grid-template-rows .32s cubic-bezier(.22,1,.36,1);">
+            <div style="overflow: hidden; min-height: 0;">
+              <div style="display: flex; flex-direction: column; gap: 12px; margin: 0 12px 14px 12px; padding: 12px; border-radius: 12px; border: 1px solid #1b2030; background: rgba(255,255,255,0.02);">
+                <div style="display: flex; align-items: baseline; gap: 8px;"><span style="font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; color: #f1f5f9;">{{r.fpa}}</span><span style="font-size: 12px; font-weight: 600; color: #94a3b8;">PPR pts/g {{r.ch.abbr}} allows to {{r.pos}}s · {{r.ch.rank}} of 32</span></div>
+                <dl style="margin: 0; border-radius: 10px; overflow: hidden; border: 1px solid #1b2030;">
+                  <sc-for list="{{r.why}}" as="s" hint-placeholder-count="2">
+                    <div style="display: flex; align-items: center; justify-content: space-between; min-height: 36px; padding: 0 10px; border-top: 1px solid #1b2030; margin-top: -1px;"><dt style="font-size: 12px; font-weight: 600; color: #94a3b8;">{{s.label}} / game</dt><dd style="margin: 0; display: flex; gap: 10px; font-variant-numeric: tabular-nums;"><span style="font-size: 13px; font-weight: 800; color: #f1f5f9;">{{s.val}}</span><span style="min-width: 28px; text-align: right; font-size: 11px; font-weight: 700; color: #94a3b8;">{{s.rank}}</span></dd></div>
+                  </sc-for>
+                </dl>
+                <div style="display: grid; grid-template-columns: repeat({{r.nextN}}, minmax(0, 1fr)); gap: 4px;">
+                  <sc-for list="{{r.next}}" as="c" hint-placeholder-count="5">
+                    <span title="{{c.aria}}" style="display: flex; flex-direction: column; align-items: center; gap: 3px;"><span style="font-size: 11px; font-weight: 700; color: #94a3b8;">{{c.wk}}</span><span style="width: 100%; height: 36px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 6px; background: {{c.solidBg}}; border: {{c.edge}}; color: {{c.solidInk}};"><span style="font-size: 11px; font-weight: 800;">{{c.short}}</span><span style="font-size: 11px; font-weight: 700;">{{c.rank}}</span></span></span>
+                  </sc-for>
+                </div>
+                <div style="display: grid; overflow: hidden;">
+                  <div style="{{r.pA}}">
+                    <button type="button" onClick="{{r.ssGo}}" aria-label="{{r.ssAria}}" style="height: 48px; display: flex; align-items: center; gap: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: #151520; color: #f1f5f9; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer; padding: 0 12px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"></path></svg><span>Start / Sit</span><span style="margin-left: auto; font-size: 11px; font-weight: 700; color: #94a3b8;">{{r.ssHint}}</span><span style="color: #f5c842; display: flex;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></span></button>
+                    <div style="display: flex; gap: 8px;">
+                  <button type="button" onClick="{{r.pin}}" aria-pressed="{{r.pinStr}}" style="{{r.pinBtn}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"></path></svg>{{r.pinLabel}}</button>
+                  <button type="button" style="flex: 1; height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: #151520; color: #f1f5f9; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6a3 3 0 1 1-6 0a3 3 0 1 1 6 0M22 18a3 3 0 1 1-6 0a3 3 0 1 1 6 0M12 6h5a2 2 0 0 1 2 2v7M15 9l-3-3 3-3M12 18H7a2 2 0 0 1-2-2V9M9 15l3 3-3 3"></path></svg>Compare</button>
+                </div>
+                  </div>
+                  <div style="{{r.pB}}"><div style="display: flex; align-items: center; justify-content: space-between;"><button type="button" onClick="{{r.ssBack}}" style="display: flex; align-items: center; gap: 4px; height: 44px; padding: 0 8px 0 0; border: 0; background: transparent; color: #f5c842; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>Back</button><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.14em; color: #94a3b8;">{{r.ssTitle}}</span></div><div role="group" aria-label="Pick a player to compare" style="display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 -2px; padding: 0 2px;"><sc-for list="{{r.cands}}" as="o" hint-placeholder-count="4"><button type="button" aria-pressed="{{o.pressed}}" onClick="{{o.pick}}" style="{{o.chip}}"><span aria-hidden="true" style="flex: none; width: 8px; height: 8px; border-radius: 50%; background: {{o.ch.c}};"></span><span>{{o.short}}</span></button></sc-for></div><sc-if value="{{r.hasVs}}" hint-placeholder-val="{{true}}"><div style="display: grid; grid-template-columns: 74px repeat(5, minmax(0, 1fr)); gap: 4px;"><span></span><sc-for list="{{r.vs.wks}}" as="w" hint-placeholder-count="5"><span style="text-align: center; font-size: 11px; font-weight: 700; color: #94a3b8;">{{w.wk}}</span></sc-for></div><div style="display: grid; grid-template-columns: 74px repeat(5, minmax(0, 1fr)); gap: 4px; align-items: center;"><span style="min-width: 0; font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.vs.a.r.short}}<span style="display: block; font-size: 11px; font-weight: 600; color: #94a3b8;">{{r.vs.a.good}}</span></span><sc-for list="{{r.vs.a.r.next5}}" as="c" hint-placeholder-count="5"><span title="{{c.aria}}" style="height: 36px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 6px; background: {{c.solidBg}}; border: {{c.edge}}; color: {{c.solidInk}};"><span style="font-size: 11px; font-weight: 800;">{{c.short}}</span><span style="font-size: 11px; font-weight: 700;">{{c.rank}}</span></span></sc-for></div><div style="display: grid; grid-template-columns: 74px repeat(5, minmax(0, 1fr)); gap: 4px; align-items: center;"><span style="min-width: 0; font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.vs.b.r.short}}<span style="display: block; font-size: 11px; font-weight: 600; color: #94a3b8;">{{r.vs.b.good}}</span></span><sc-for list="{{r.vs.b.r.next5}}" as="c" hint-placeholder-count="5"><span title="{{c.aria}}" style="height: 36px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 6px; background: {{c.solidBg}}; border: {{c.edge}}; color: {{c.solidInk}};"><span style="font-size: 11px; font-weight: 800;">{{c.short}}</span><span style="font-size: 11px; font-weight: 700;">{{c.rank}}</span></span></sc-for></div><div style="font-size: 13px; font-weight: 800; color: #f1f5f9;">{{r.vs.verdict}}</div><div style="font-size: 12px; font-weight: 700; color: #cbd5e1;">{{r.vs.verdict5}}</div><div style="font-size: 11px; font-weight: 600; color: #94a3b8;">Matchup only ({{r.vs.unit}}) — not a projection.</div></sc-if></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+        </sc-for>
+      </ul>
+    </section>
+  </sc-for><sc-if value="{{hasRes}}" hint-placeholder-val="{{true}}"><section style="padding-top: 12px;"><div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.18em; color: #f5c842;">IR / TAXI</span><span style="flex: 1; height: 1px; background: #1b2030;"></span><span style="font-size: 11px; font-weight: 700; color: #94a3b8;">{{reserveCount}}</span></div><ul style="list-style: none; margin: 0; padding: 0; border-radius: 14px; overflow: hidden; border: 1px solid #1b2030; background: linear-gradient(135deg, #151520 0%, #0f121a 55%, #121724 100%);"><sc-for list="{{resRows}}" as="r" hint-placeholder-count="2"><li style="border-top: {{r.bt}};"><button type="button" onClick="{{r.select}}" aria-label="{{r.aria}}" aria-expanded="{{r.expStr}}" style="{{r.rowStyle}}"><span style="position: relative; flex: none; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: {{r.posBg}}; color: {{r.posInk}}; font-size: 11px; font-weight: 900; letter-spacing: -0.01em;">{{r.badgeText}}
+              <sc-if value="{{r.injShow}}" hint-placeholder-val="{{false}}"><span title="{{r.injWord}}" style="position: absolute; right: -6px; bottom: -4px; min-width: 20px; height: 17px; padding: 0 3px; box-sizing: border-box; border-radius: 9px; display: flex; align-items: center; justify-content: center; background: {{r.injStd}}; color: #0a0d14; font-size: 11px; font-weight: 900; border: 2px solid #12151e;">{{r.inj}}</span></sc-if>
+            </span><span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;"><span style="display: flex; align-items: center; gap: 6px; min-width: 0;"><span style="font-size: 14px; font-weight: 700; color: #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.name}}</span><sc-if value="{{r.flexTag}}" hint-placeholder-val="{{false}}"><span style="flex: none; display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 5px; border: 1px solid #5b6680; color: #cbd5e1; font-size: 11px; font-weight: 800; letter-spacing: 0.04em;">{{r.slot}}</span></sc-if><sc-if value="{{r.pinned}}" hint-placeholder-val="{{false}}"><span title="Pinned" style="flex: none; display: inline-flex; color: #f5c842;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"></path></svg></span></sc-if></span><span style="display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 11px; font-weight: 600; color: #94a3b8; white-space: nowrap; overflow: hidden;"><span style="overflow: hidden; text-overflow: ellipsis;">{{r.posPrefix}}<span style="color: {{r.tc}}; font-weight: 900;">{{r.team}}</span> · {{r.opp}} ·</span><sc-if value="{{r.lvLive}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="flex: none; width: 6px; height: 6px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 6px #ef4444; animation: pare-live 1.6s ease-in-out infinite;"></span></sc-if><span style="flex: none; color: {{r.lvStatusInk}}; font-weight: {{r.lvStatusW}};">{{r.lvStatus}}</span></span><sc-if value="{{noWide}}" hint-placeholder-val="{{true}}"><span aria-hidden="true" style="display: flex; gap: 3px; margin-top: 3px;">
+                <sc-for list="{{r.strip}}" as="c" hint-placeholder-count="5">
+                  <span style="width: 18px; height: 4px; box-sizing: border-box; border-radius: 2px; background: {{c.solidBg}}; border: {{c.barEdge}}; transition: background .25s;"></span>
+                </sc-for>
+              </span></sc-if></span><sc-if value="{{r.lvColOn}}" hint-placeholder-val="{{false}}"><span title="{{r.lvAria}}" style="flex: none; width: 46px; display: flex; flex-direction: column; align-items: flex-end; gap: 1px;"><span style="font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; color: {{r.lvInk}};">{{r.lvPts}}</span><span style="min-height: 14px; display: flex;"><sc-if value="{{r.lvFlash}}" hint-placeholder-val="{{false}}"><span style="font-size: 11px; font-weight: 800; color: #f5c842; animation: flash 2.6s ease both;">{{r.lvDelta}}</span></sc-if></span></span></sc-if><span title="{{r.ch.aria}}" style="flex: none; width: 60px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px;"><span aria-hidden="true" style="display: flex; align-items: flex-end; gap: 2px; height: {{r.barH}}px;">
+                <sc-for list="{{r.bars}}" as="b" hint-placeholder-count="5"><span style="{{b.style}}"></span></sc-for>
+              </span><span style="font-size: 11px; font-weight: 800; color: {{r.ch.ink}}; white-space: nowrap; transition: color .25s;">{{r.ch.word}} {{r.ch.rank}}</span></span></button>
+          <div style="display: grid; grid-template-rows: {{r.expRows}}; transition: grid-template-rows .32s cubic-bezier(.22,1,.36,1);">
+            <div style="overflow: hidden; min-height: 0;">
+              <div style="display: flex; flex-direction: column; gap: 12px; margin: 0 12px 14px 12px; padding: 12px; border-radius: 12px; border: 1px solid #1b2030; background: rgba(255,255,255,0.02);">
+                <div style="display: flex; align-items: baseline; gap: 8px;"><span style="font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; color: #f1f5f9;">{{r.fpa}}</span><span style="font-size: 12px; font-weight: 600; color: #94a3b8;">PPR pts/g {{r.ch.abbr}} allows to {{r.pos}}s · {{r.ch.rank}} of 32</span></div>
+                <dl style="margin: 0; border-radius: 10px; overflow: hidden; border: 1px solid #1b2030;">
+                  <sc-for list="{{r.why}}" as="s" hint-placeholder-count="2">
+                    <div style="display: flex; align-items: center; justify-content: space-between; min-height: 36px; padding: 0 10px; border-top: 1px solid #1b2030; margin-top: -1px;"><dt style="font-size: 12px; font-weight: 600; color: #94a3b8;">{{s.label}} / game</dt><dd style="margin: 0; display: flex; gap: 10px; font-variant-numeric: tabular-nums;"><span style="font-size: 13px; font-weight: 800; color: #f1f5f9;">{{s.val}}</span><span style="min-width: 28px; text-align: right; font-size: 11px; font-weight: 700; color: #94a3b8;">{{s.rank}}</span></dd></div>
+                  </sc-for>
+                </dl>
+                <div style="display: grid; grid-template-columns: repeat({{r.nextN}}, minmax(0, 1fr)); gap: 4px;">
+                  <sc-for list="{{r.next}}" as="c" hint-placeholder-count="5">
+                    <span title="{{c.aria}}" style="display: flex; flex-direction: column; align-items: center; gap: 3px;"><span style="font-size: 11px; font-weight: 700; color: #94a3b8;">{{c.wk}}</span><span style="width: 100%; height: 36px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 6px; background: {{c.solidBg}}; border: {{c.edge}}; color: {{c.solidInk}};"><span style="font-size: 11px; font-weight: 800;">{{c.short}}</span><span style="font-size: 11px; font-weight: 700;">{{c.rank}}</span></span></span>
+                  </sc-for>
+                </div>
+                <div style="display: grid; overflow: hidden;">
+                  <div style="{{r.pA}}">
+                    <button type="button" onClick="{{r.ssGo}}" aria-label="{{r.ssAria}}" style="height: 48px; display: flex; align-items: center; gap: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: #151520; color: #f1f5f9; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer; padding: 0 12px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"></path></svg><span>Start / Sit</span><span style="margin-left: auto; font-size: 11px; font-weight: 700; color: #94a3b8;">{{r.ssHint}}</span><span style="color: #f5c842; display: flex;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></span></button>
+                    <div style="display: flex; gap: 8px;">
+                  <button type="button" onClick="{{r.pin}}" aria-pressed="{{r.pinStr}}" style="{{r.pinBtn}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"></path></svg>{{r.pinLabel}}</button>
+                  <button type="button" style="flex: 1; height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: #151520; color: #f1f5f9; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6a3 3 0 1 1-6 0a3 3 0 1 1 6 0M22 18a3 3 0 1 1-6 0a3 3 0 1 1 6 0M12 6h5a2 2 0 0 1 2 2v7M15 9l-3-3 3-3M12 18H7a2 2 0 0 1-2-2V9M9 15l3 3-3 3"></path></svg>Compare</button>
+                </div>
+                  </div>
+                  <div style="{{r.pB}}"><div style="display: flex; align-items: center; justify-content: space-between;"><button type="button" onClick="{{r.ssBack}}" style="display: flex; align-items: center; gap: 4px; height: 44px; padding: 0 8px 0 0; border: 0; background: transparent; color: #f5c842; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>Back</button><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.14em; color: #94a3b8;">{{r.ssTitle}}</span></div><div role="group" aria-label="Pick a player to compare" style="display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 -2px; padding: 0 2px;"><sc-for list="{{r.cands}}" as="o" hint-placeholder-count="4"><button type="button" aria-pressed="{{o.pressed}}" onClick="{{o.pick}}" style="{{o.chip}}"><span aria-hidden="true" style="flex: none; width: 8px; height: 8px; border-radius: 50%; background: {{o.ch.c}};"></span><span>{{o.short}}</span></button></sc-for></div><sc-if value="{{r.hasVs}}" hint-placeholder-val="{{true}}"><div style="display: grid; grid-template-columns: 74px repeat(5, minmax(0, 1fr)); gap: 4px;"><span></span><sc-for list="{{r.vs.wks}}" as="w" hint-placeholder-count="5"><span style="text-align: center; font-size: 11px; font-weight: 700; color: #94a3b8;">{{w.wk}}</span></sc-for></div><div style="display: grid; grid-template-columns: 74px repeat(5, minmax(0, 1fr)); gap: 4px; align-items: center;"><span style="min-width: 0; font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.vs.a.r.short}}<span style="display: block; font-size: 11px; font-weight: 600; color: #94a3b8;">{{r.vs.a.good}}</span></span><sc-for list="{{r.vs.a.r.next5}}" as="c" hint-placeholder-count="5"><span title="{{c.aria}}" style="height: 36px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 6px; background: {{c.solidBg}}; border: {{c.edge}}; color: {{c.solidInk}};"><span style="font-size: 11px; font-weight: 800;">{{c.short}}</span><span style="font-size: 11px; font-weight: 700;">{{c.rank}}</span></span></sc-for></div><div style="display: grid; grid-template-columns: 74px repeat(5, minmax(0, 1fr)); gap: 4px; align-items: center;"><span style="min-width: 0; font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.vs.b.r.short}}<span style="display: block; font-size: 11px; font-weight: 600; color: #94a3b8;">{{r.vs.b.good}}</span></span><sc-for list="{{r.vs.b.r.next5}}" as="c" hint-placeholder-count="5"><span title="{{c.aria}}" style="height: 36px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 6px; background: {{c.solidBg}}; border: {{c.edge}}; color: {{c.solidInk}};"><span style="font-size: 11px; font-weight: 800;">{{c.short}}</span><span style="font-size: 11px; font-weight: 700;">{{c.rank}}</span></span></sc-for></div><div style="font-size: 13px; font-weight: 800; color: #f1f5f9;">{{r.vs.verdict}}</div><div style="font-size: 12px; font-weight: 700; color: #cbd5e1;">{{r.vs.verdict5}}</div><div style="font-size: 11px; font-weight: 600; color: #94a3b8;">Matchup only ({{r.vs.unit}}) — not a projection.</div></sc-if></div>
+                </div>
+              </div>
+            </div>
+          </div></li></sc-for></ul></section></sc-if></div>
+  </main>
+<aside aria-label="Pinned players" style="width: {{pinW}}px; flex: none; overflow-y: auto; padding: 12px 0 110px;">
+  <div style="position: sticky; top: 0; z-index: 3; display: flex; align-items: center; gap: 10px; padding-bottom: 8px; background: #0a0d14;"><span style="display: inline-flex; color: #f5c842;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"></path></svg></span><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.18em; color: #f5c842;">PINNED</span><span style="font-size: 11px; font-weight: 700; color: #94a3b8;">{{pinCount}}</span><span style="flex: 1;"></span><sc-if value="{{hasPins}}" hint-placeholder-val="{{false}}"><button type="button" onClick="{{clearPins}}" style="height: 44px; padding: 0 2px; border: 0; background: transparent; font-family: inherit; font-size: 12px; font-weight: 700; color: #94a3b8; cursor: pointer;">Clear all</button></sc-if></div>
+  <sc-if value="{{noPins}}" hint-placeholder-val="{{true}}">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; min-height: 180px; padding: 20px; box-sizing: border-box; border-radius: 14px; border: 1.5px dashed rgba(245,200,66,0.45); text-align: center;"><span style="display: inline-flex; color: #f5c842;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"></path></svg></span><span style="font-size: 13px; font-weight: 700; color: #f1f5f9;">Pin players to keep them here</span><span style="font-size: 12px; font-weight: 600; color: #94a3b8;">{{emptyHint}}</span></div>
+  </sc-if>
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <sc-for list="{{pinned}}" as="r" hint-placeholder-count="2">
+      <div style="{{r.pinCard}}">
+        <button type="button" aria-expanded="{{r.pinExpStr}}" aria-label="{{r.pinExpAria}}" onClick="{{r.togglePin}}" style="position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; border: 0; padding: 0; border-radius: 14px; background: transparent; cursor: pointer;"></button>
+        <div style="position: relative; z-index: 2; pointer-events: none; display: flex; flex-direction: column; gap: 10px; padding: 12px 12px 2px;">
+          <div style="display: flex; align-items: center; gap: 10px;"><span style="position: relative; flex: none; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: {{r.posBg}}; color: {{r.posInk}}; font-size: 11px; font-weight: 900; letter-spacing: -0.01em;">{{r.badgeText}}
+              <sc-if value="{{r.injShow}}" hint-placeholder-val="{{false}}"><span title="{{r.injWord}}" style="position: absolute; right: -6px; bottom: -4px; min-width: 20px; height: 17px; padding: 0 3px; box-sizing: border-box; border-radius: 9px; display: flex; align-items: center; justify-content: center; background: {{r.injStd}}; color: #0a0d14; font-size: 11px; font-weight: 900; border: 2px solid #12151e;">{{r.inj}}</span></sc-if>
+            </span><span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;"><span style="display: flex; align-items: center; gap: 6px; min-width: 0;"><span style="font-size: 14px; font-weight: 700; color: #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.name}}</span><sc-if value="{{r.flexTag}}" hint-placeholder-val="{{false}}"><span style="flex: none; display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 5px; border: 1px solid #5b6680; color: #cbd5e1; font-size: 11px; font-weight: 800; letter-spacing: 0.04em;">{{r.slot}}</span></sc-if></span><span style="font-size: 11px; font-weight: 600; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.posPrefix}}<span style="color: {{r.tc}}; font-weight: 900;">{{r.team}}</span> · {{r.opp}} · {{r.kick}}</span></span><span title="{{r.ch.aria}}" style="flex: none; width: 64px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px;"><span aria-hidden="true" style="display: flex; align-items: flex-end; gap: 2px; height: {{r.barH}}px;">
+                <sc-for list="{{r.bars}}" as="b" hint-placeholder-count="5"><span style="{{b.style}}"></span></sc-for>
+              </span><span style="font-size: 11px; font-weight: 800; color: {{r.ch.ink}}; white-space: nowrap; transition: color .25s;">{{r.ch.word}} {{r.ch.rank}}</span></span><button type="button" aria-label="{{r.unpinAria}}" onClick="{{r.pin}}" style="pointer-events: auto; flex: none; width: 44px; height: 44px; margin: -8px -8px -8px 0; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 22px; background: transparent; color: #94a3b8; cursor: pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></div>
+          <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px;">
+            <sc-for list="{{r.next}}" as="c" hint-placeholder-count="5"><span title="{{c.aria}}" style="height: 34px; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: {{c.solidBg}}; border: {{c.edge}}; color: {{c.solidInk}};"><span style="font-size: 11px; font-weight: 800; line-height: 1.1;">{{c.short}}</span><span style="font-size: 11px; font-weight: 700; line-height: 1.1;">{{c.wk}}</span></span></sc-for>
+          </div>
+          <div style="display: grid; grid-template-rows: {{r.pinRows}}; transition: grid-template-rows .3s cubic-bezier(.22,1,.36,1);">
+            <div style="overflow: hidden; min-height: 0;">
+              <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 2px;">
+                <div style="display: flex; align-items: baseline; gap: 8px;"><span style="font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums;">{{r.fpa}}</span><span style="font-size: 12px; font-weight: 600; color: #94a3b8;">PPR pts/g {{r.ch.abbr}} allows to {{r.pos}}s · {{r.ch.rank}}</span></div>
+                <dl style="margin: 0; border-radius: 10px; overflow: hidden; border: 1px solid #1b2030;">
+                  <sc-for list="{{r.pwhy}}" as="s" hint-placeholder-count="2">
+                    <div style="display: flex; align-items: center; justify-content: space-between; min-height: 34px; padding: 0 10px; border-top: 1px solid #1b2030; margin-top: -1px;"><dt style="font-size: 12px; font-weight: 600; color: #94a3b8;">{{s.label}} / game</dt><dd style="margin: 0; display: flex; gap: 10px; font-variant-numeric: tabular-nums;"><span style="font-size: 13px; font-weight: 800;">{{s.val}}</span><span style="min-width: 28px; text-align: right; font-size: 11px; font-weight: 700; color: #94a3b8;">{{s.rank}}</span></dd></div>
+                  </sc-for>
+                </dl>
+                <button type="button" style="pointer-events: auto; height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: #151520; color: #f1f5f9; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6a3 3 0 1 1-6 0a3 3 0 1 1 6 0M22 18a3 3 0 1 1-6 0a3 3 0 1 1 6 0M12 6h5a2 2 0 0 1 2 2v7M15 9l-3-3 3-3M12 18H7a2 2 0 0 1-2-2V9M9 15l3 3-3 3"></path></svg>Open in Compare</button>
+              </div>
+            </div>
+          </div>
+          <span style="display: flex; justify-content: center; align-items: center; height: 22px; color: #94a3b8;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="{{r.chevStyle}}"><path d="M6 9l6 6 6-6"></path></svg></span>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</aside>
+</div>
+<sc-if value="{{menuOpen}}" hint-placeholder-val="{{false}}"><button type="button" tabindex="-1" aria-label="Close menu" onClick="{{closeMenu}}" style="position: absolute; inset: 0; z-index: 25; border: 0; background: transparent; cursor: default;"></button></sc-if>
+<button type="button" tabindex="-1" aria-label="Close leagues" onClick="{{closeSheet}}" style="{{lsScrim}}"></button>
+<div role="dialog" aria-modal="true" aria-label="Your leagues" style="{{lsStyle}} border-radius: 20px 20px 0 0; border-top: 1px solid rgba(255,255,255,0.15); background: linear-gradient(170deg, #161622, #0f121a); box-shadow: 0 -12px 40px -8px rgba(0,0,0,0.8); padding: 6px 16px 28px;">
+  <div style="display: flex; justify-content: center; padding: 2px 0 4px;"><span style="width: 40px; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.3);"></span></div>
+  <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 17px; font-weight: 800;">Your leagues</span><button type="button" aria-label="Close" onClick="{{closeSheet}}" style="width: 44px; height: 44px; margin-right: -10px; display: flex; align-items: center; justify-content: center; border: 0; background: transparent; color: #94a3b8; cursor: pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+  <div role="listbox" aria-label="Choose a league" style="margin-top: 4px; border-radius: 14px; overflow: hidden; border: 1px solid #1b2030; background: rgba(255,255,255,0.02);">
+    <sc-for list="{{leagues}}" as="l" hint-placeholder-count="2"><button type="button" role="option" aria-selected="{{l.pressed}}" onClick="{{l.pick}}" style="display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 0 14px; border: 0; border-top: {{l.bt}}; background: {{l.bg}}; font-family: inherit; text-align: left; cursor: pointer;"><span style="flex: 1; min-width: 0;"><span style="display: block; font-size: 15px; font-weight: 800; color: {{l.ink}};">{{l.name}}</span><span style="display: block; margin-top: 2px; font-size: 12px; font-weight: 600; color: #94a3b8;">{{l.sub}}</span></span><sc-if value="{{l.on}}" hint-placeholder-val="{{false}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f5c842" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg></sc-if></button></sc-for>
+  </div>
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding: 0 2px;"><span style="font-size: 12px; font-weight: 600; color: #94a3b8;">Sleeper · <b style="color: #cbd5e1;">user_1</b></span><button type="button" onClick="{{restartOb}}" style="height: 44px; padding: 0 4px; border: 0; background: transparent; color: #f5c842; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer;">Change username</button></div>
+</div><sc-if value="{{obOn}}" hint-placeholder-val="{{true}}"><div data-state="onboarding" style="position: absolute; inset: 0; z-index: 38; display: flex; flex-direction: column; background: #0a0d14;"><header style="flex: none; height: 52px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid #1b2030; background: rgba(10,13,20,0.96);"><h1 style="margin: 0; font-family: Inter, system-ui, sans-serif; font-size: 20px; font-weight: 900; letter-spacing: -0.02em; color: #f1f5f9;">Pare<span style="margin-left: 6px; font-size: 11px; font-weight: 800; letter-spacing: 0.22em; color: #f5c842;">FANTASY</span></h1></header>
+<div style="flex: 1; min-height: 0; overflow-y: auto; box-sizing: border-box; padding: 18px 16px {{obPadB}}; display: flex; flex-direction: column; "><div style="width: 100%; max-width: 560px; margin: 0 auto;"><div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 0 2px;">
+      <div style="display: flex; align-items: baseline; gap: 8px;"><span style="font-family: Inter, system-ui, sans-serif; font-size: 13px; font-weight: 900; letter-spacing: 0.08em;">WEEK 4</span><span style="font-size: 11px; font-weight: 600; color: #94a3b8;">Oct 1 – Oct 5</span></div>
+      
+    </div><div style="display: flex; flex-direction: column; gap: 14px; padding: 18px 16px; border-radius: 14px; border: 1px solid #1b2030; background: linear-gradient(160deg, #151520, #0f121a 60%, #121724); margin-top: 10px;"><sc-if value="{{ob_entry}}" hint-placeholder-val="{{true}}"><h2 style="margin: 0; font-size: 20px; font-weight: 900; letter-spacing: -0.01em; color: #f1f5f9;">Link your fantasy league</h2><p style="margin: 0; font-size: 13px; font-weight: 600; line-height: 1.5; color: #94a3b8;">Pare reads your Sleeper roster and rates every player's matchup — this week and the next 5.</p>
+<div style="display: flex; flex-direction: column; gap: 8px;">
+  <label for="ob-user" style="font-size: 12px; font-weight: 800; color: #cbd5e1;">Sleeper username</label>
+  <input id="ob-user" data-ob="1" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go" placeholder="Your username" aria-invalid="{{obErrStr}}" aria-describedby="ob-err ob-note" onInput="{{obInput}}" onFocus="{{obFocus}}" onBlur="{{obBlur}}" onKeyDown="{{obKey}}" style="box-sizing: border-box; width: 100%; height: 48px; padding: 0 14px; border-radius: 10px; border: {{obInputEdge}}; background: #0f121a; color: #f1f5f9; font-family: inherit; font-size: 16px; font-weight: 600; outline: none;">
+  <div id="ob-err" role="alert" style="min-height: 0;"><sc-if value="{{obErrOn}}" hint-placeholder-val="{{false}}"><div style="display: flex; gap: 6px; font-size: 12px; font-weight: 700; line-height: 1.4; color: #F87171;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px;"><circle cx="12" cy="12" r="9.5"></circle><path d="M12 7.5v5.5M12 16.5v.01"></path></svg><span>{{obErr}}</span></div></sc-if></div>
+  <button type="button" onClick="{{obSubmit}}" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; border-radius: 10px; border: 1.5px solid #f5c842; background: rgba(245,200,66,0.10); color: #f5c842; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 4px;">Continue</button>
+  <div id="ob-note" style="display: flex; gap: 6px; font-size: 11px; font-weight: 600; line-height: 1.45; color: #94a3b8;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px;"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg><span>Read-only — Pare can't change your lineup. Your username is saved on this device and only used to load your leagues.</span></div>
+</div>
+<div style="padding: 8px 10px; border-radius: 10px; border: 1px dashed #3a4258;"><div style="font-size: 11px; font-weight: 800; letter-spacing: 0.12em; color: #8b93a3;">MOCKUP ONLY · TRY A STATE</div><div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;"><sc-for list="{{obDemo}}" as="d" hint-placeholder-count="5"><button type="button" onClick="{{d.pick}}" style="height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid #2a3450; background: transparent; color: #cbd5e1; font-family: ui-monospace, monospace; font-size: 12px; font-weight: 700; cursor: pointer;">{{d.label}}</button></sc-for></div></div></sc-if>
+<sc-if value="{{ob_loading}}" hint-placeholder-val="{{false}}"><div role="status" style="display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 18px 0;"><span style="font-size: 13px; font-weight: 700; color: #cbd5e1;">Finding {{obName}}'s leagues…</span></div>
+<div aria-hidden="true" style="display: flex; flex-direction: column; gap: 8px;"><span style="height: 64px; border-radius: 10px; background: #151520; animation: shim 1.2s ease-in-out infinite;"></span><span style="height: 64px; border-radius: 10px; background: #151520; animation: shim 1.2s ease-in-out infinite .2s;"></span></div></sc-if>
+<sc-if value="{{ob_leagues}}" hint-placeholder-val="{{false}}"><h2 style="margin: 0; font-size: 20px; font-weight: 900; letter-spacing: -0.01em; color: #f1f5f9;">Pick a league</h2><p style="margin: 0; font-size: 13px; font-weight: 600; line-height: 1.5; color: #94a3b8;"><b style="color: #cbd5e1;">{{obName}}</b> · {{obCount}}. You can switch any time from the league button.</p>
+<div role="listbox" aria-label="Your leagues" style="border-radius: 14px; overflow: hidden; border: 1px solid #1b2030; background: rgba(255,255,255,0.02);"><sc-for list="{{obLeagues}}" as="l" hint-placeholder-count="2"><button type="button" role="option" aria-selected="false" onClick="{{l.pick}}" style="display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 0 12px 0 14px; border: 0; border-top: {{l.bt}}; background: transparent; font-family: inherit; text-align: left; cursor: pointer;"><span style="flex: 1; min-width: 0;"><span style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 15px; font-weight: 800; color: #f1f5f9;">{{l.name}}</span><span style="{{l.chip}}">{{l.status}}</span></span><span style="display: block; margin-top: 2px; font-size: 12px; font-weight: 600; color: #94a3b8;">{{l.sub}}</span></span><span style="color: #8b93a3; display: flex;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></span></button></sc-for></div>
+<button type="button" onClick="{{obAgain}}" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 44px; border: 0; background: transparent; color: #cbd5e1; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;">Not you? Use another username</button></sc-if>
+<sc-if value="{{ob_none}}" hint-placeholder-val="{{false}}"><div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 8px 4px 0;"><span aria-hidden="true" style="width: 52px; height: 52px; border-radius: 26px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.04); border: 1px solid #1b2030; color: #94a3b8;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h10"></path></svg></span><h2 style="margin: 0; font-size: 20px; font-weight: 900; letter-spacing: -0.01em; color: #f1f5f9;">No NFL leagues for {{obName}}</h2><p style="margin: 0; font-size: 13px; font-weight: 600; line-height: 1.5; color: #94a3b8;">Sleeper shows no 2026 NFL leagues for this username. Join or create one in Sleeper, then check again.</p></div>
+<button type="button" onClick="{{obRetry}}" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; border-radius: 10px; border: 1.5px solid #f5c842; background: rgba(245,200,66,0.10); color: #f5c842; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer;">Check again</button>
+<button type="button" onClick="{{obAgain}}" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 44px; border: 0; background: transparent; color: #cbd5e1; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;">Use another username</button></sc-if>
+<sc-if value="{{ob_pre}}" hint-placeholder-val="{{false}}"><div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 8px 4px 0;"><span aria-hidden="true" style="width: 52px; height: 52px; border-radius: 26px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.04); border: 1px solid #1b2030; color: #f5c842;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"></path></svg></span><h2 style="margin: 0; font-size: 20px; font-weight: 900; letter-spacing: -0.01em; color: #f1f5f9;">{{obLeague}} hasn't drafted yet</h2><p style="margin: 0; font-size: 13px; font-weight: 600; line-height: 1.5; color: #94a3b8;">Your roster and matchups show up here right after the draft. Nothing else to set up.</p></div>
+<button type="button" onClick="{{obRetry}}" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; border-radius: 10px; border: 1.5px solid #f5c842; background: rgba(245,200,66,0.10); color: #f5c842; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer;">Check again</button>
+<button type="button" onClick="{{obAgain}}" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 44px; border: 0; background: transparent; color: #cbd5e1; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;">Use another username</button></sc-if>
+<sc-if value="{{ob_off}}" hint-placeholder-val="{{false}}"><div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 8px 4px 0;"><span aria-hidden="true" style="width: 52px; height: 52px; border-radius: 26px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.04); border: 1px solid #1b2030; color: #F87171;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8.8a15 15 0 0 1 4.2-2.6M22 8.8A15 15 0 0 0 10.3 5M5 12.6a10 10 0 0 1 3.4-2M19 12.6a10 10 0 0 0-3-1.8M8.5 16.4a5 5 0 0 1 7 0M12 20h.01M3 3l18 18"></path></svg></span><h2 style="margin: 0; font-size: 20px; font-weight: 900; letter-spacing: -0.01em; color: #f1f5f9;">Can't reach Sleeper right now</h2><p style="margin: 0; font-size: 13px; font-weight: 600; line-height: 1.5; color: #94a3b8;">Check your connection and try again. Nothing was saved.</p></div>
+<button type="button" onClick="{{obRetry}}" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; border-radius: 10px; border: 1.5px solid #f5c842; background: rgba(245,200,66,0.10); color: #f5c842; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer;">Try again</button>
+<button type="button" onClick="{{obAgain}}" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 44px; border: 0; background: transparent; color: #cbd5e1; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;">Use another username</button></sc-if></div><div aria-hidden="true" style="margin-top: 16px; display: flex; flex-direction: column; gap: 0; border-radius: 14px; overflow: hidden; border: 1px solid #1b2030; background: #12151d;"><div style="display: flex; align-items: center; gap: 10px; height: 62px; padding: 0 10px; border-top: 0;"><span style="width: 36px; height: 36px; border-radius: 50%; background: #1b2030;"></span><span style="flex: 1; display: flex; flex-direction: column; gap: 6px;"><span style="width: 62%; height: 10px; border-radius: 5px; background: #1b2030;"></span><span style="width: 40%; height: 8px; border-radius: 4px; background: #171c29;"></span></span><span style="display: flex; gap: 2px;"><span style="width: 6px; height: 14px; border-radius: 2px; background: #1b2030;"></span><span style="width: 6px; height: 14px; border-radius: 2px; background: #1b2030;"></span><span style="width: 6px; height: 14px; border-radius: 2px; background: #1b2030;"></span><span style="width: 6px; height: 14px; border-radius: 2px; background: #1b2030;"></span><span style="width: 6px; height: 14px; border-radius: 2px; background: #1b2030;"></span></span></div><div style="display: flex; align-items: center; gap: 10px; height: 62px; padding: 0 10px; border-top: 1px solid #1b2030;"><span style="width: 36px; height: 36px; border-radius: 50%; background: #1b2030;"></span><span style="flex: 1; display: flex; flex-direction: column; gap: 6px;"><span style="width: 48%; height: 10px; border-radius: 5px; background: #1b2030;"></span><span style="width: 40%; height: 8px; border-radius: 4px; background: #171c29;"></span></span><span style="display: flex; gap: 2px;"><span style="width: 6px; height: 14px; border-radius: 2px; background: #1b2030;"></span><span style="width: 6px; height: 14px; border-radius: 2px; background: #1b2030;"></span><span style="width: 6px; height: 14px; border-radius: 2px; background: #1b2030;"></span><span style="width: 6px; height: 14px; border-radius: 2px; background: #1b2030;"></span><span style="width: 6px; height: 14px; border-radius: 2px; background: #1b2030;"></span></span></div><div style="display: flex; align-items: center; gap: 10px; height: 62px; padding: 0 10px; border-top: 1px solid #1b2030;"><span style="width: 36px; height: 36px; border-radius: 50%; background: #1b2030;"></span><span style="flex: 1; display: flex; flex-direction: column; gap: 6px;"><span style="width: 70%; height: 10px; border-radius: 5px; background: #1b2030;"></span><span style="width: 40%; height: 8px; border-radius: 4px; background: #171c29;"></span></span><span style="display: flex; gap: 2px;"><span style="width: 6px; height: 14px; border-radius: 2px; background: #1b2030;"></span><span style="width: 6px; height: 14px; border-radius: 2px; background: #1b2030;"></span><span style="width: 6px; height: 14px; border-radius: 2px; background: #1b2030;"></span><span style="width: 6px; height: 14px; border-radius: 2px; background: #1b2030;"></span><span style="width: 6px; height: 14px; border-radius: 2px; background: #1b2030;"></span></span></div><div style="display: flex; align-items: center; gap: 10px; height: 62px; padding: 0 10px; border-top: 1px solid #1b2030;"><span style="width: 36px; height: 36px; border-radius: 50%; background: #1b2030;"></span><span style="flex: 1; display: flex; flex-direction: column; gap: 6px;"><span style="width: 54%; height: 10px; border-radius: 5px; background: #1b2030;"></span><span style="width: 40%; height: 8px; border-radius: 4px; background: #171c29;"></span></span><span style="display: flex; gap: 2px;"><span style="width: 6px; height: 14px; border-radius: 2px; background: #1b2030;"></span><span style="width: 6px; height: 14px; border-radius: 2px; background: #1b2030;"></span><span style="width: 6px; height: 14px; border-radius: 2px; background: #1b2030;"></span><span style="width: 6px; height: 14px; border-radius: 2px; background: #1b2030;"></span><span style="width: 6px; height: 14px; border-radius: 2px; background: #1b2030;"></span></span></div></div><p style="margin: 8px 2px 0; font-size: 11px; font-weight: 600; color: #8b93a3; text-align: center;">Your starters, bench and IR / Taxi show up here.</p></div></div></div></sc-if><sc-if value="{{kbOn}}" hint-placeholder-val="{{false}}"><div aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: 0; height: 291px; z-index: 47; box-sizing: border-box; padding: 8px 3px 30px; background: #2b2d33; display: flex; flex-direction: column; gap: 11px;"><div style="display: flex; gap: 6px;"><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">q</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">w</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">e</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">r</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">t</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">y</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">u</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">i</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">o</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">p</span></div><div style="display: flex; gap: 6px; padding: 0 18px;"><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">a</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">s</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">d</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">f</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">g</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">h</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">j</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">k</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">l</span></div><div style="display: flex; gap: 6px;"><span style="flex: 1.4; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #5a5d66; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">⇧</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">z</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">x</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">c</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">v</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">b</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">n</span><span style="flex: 1; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">m</span><span style="flex: 1.4; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #5a5d66; color: #f1f5f9; font-family: inherit; font-size: 18px; font-weight: 500; cursor: default;">⌫</span></div><div style="display: flex; gap: 6px;"><span style="flex: 1.3; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #5a5d66; color: #f1f5f9; font-family: inherit; font-size: 14px; font-weight: 500; cursor: default;">123</span><span style="flex: 5; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #6b6e76; color: #f1f5f9; font-family: inherit; font-size: 14px; font-weight: 500; cursor: default;">space</span><button type="button" onPointerDown="{{obSubmitKb}}" style="flex: 1.6; height: 42px; border: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #f5c842; color: #0a0d14; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer;">go</button></div><div style="position: absolute; left: 0; right: 0; top: -22px; text-align: center; font-size: 11px; font-weight: 700; color: #8b93a3;">simulated iOS keyboard (291pt)</div></div></sc-if>
+<nav aria-label="Primary" style="position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 40; display: flex; align-items: center; gap: 2px; padding: 5px; box-sizing: border-box; border-radius: 30px; background: rgba(3,4,8,0.94); border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 12px 40px -8px rgba(0,0,0,0.7);"><a href="#" aria-label="Home" onClick="{{navNoop}}" style="flex: none; width: 66px; height: 48px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; color: #737a88; text-decoration: none; "><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"></path></svg><span>Home</span></a><a href="#" aria-label="Compare" onClick="{{navNoop}}" style="flex: none; width: 66px; height: 48px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; color: #737a88; text-decoration: none; "><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6a3 3 0 1 1-6 0a3 3 0 1 1 6 0M22 18a3 3 0 1 1-6 0a3 3 0 1 1 6 0M12 6h5a2 2 0 0 1 2 2v7M15 9l-3-3 3-3M12 18H7a2 2 0 0 1-2-2V9M9 15l3 3-3 3"></path></svg><span>Compare</span></a><a href="#" aria-label="Standings" onClick="{{navNoop}}" style="flex: none; width: 66px; height: 48px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; color: #737a88; text-decoration: none; "><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 12h11M10 18h11M10 6h11M4 10h2M4 6h1v4M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg><span>Standings</span></a><a href="#" aria-label="Leaders" onClick="{{navNoop}}" style="flex: none; width: 66px; height: 48px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; color: #737a88; text-decoration: none; "><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg><span>Leaders</span></a><a href="#" aria-label="Fantasy" aria-current="page" onClick="{{navNoop}}" style="flex: none; width: 66px; height: 48px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border-radius: 999px; font-size: 11px; font-weight: 800; white-space: nowrap; color: #f5c842; text-decoration: none; box-shadow: inset 0 0 0 1.5px #f5c842, 0 0 12px rgba(245,200,66,0.35); background: rgba(245,200,66,0.08);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"></path></svg><span>Fantasy</span></a></nav>
+<sc-if value="{{sheetOn}}" hint-placeholder-val="{{true}}">
+<button type="button" aria-label="Close player details" tabindex="-1" onClick="{{sheet.close}}" style="{{sheet.backdrop}}"></button>
+<div role="dialog" aria-modal="true" aria-label="Player matchup details" style="{{sheet.style}} background: linear-gradient(180deg, #161622 0%, #0f121a 40%); border-radius: 20px 20px 0 0; border-top: 1px solid rgba(255,255,255,0.15); box-shadow: 0 -12px 40px -8px rgba(0,0,0,0.7);">
+  <div style="position: relative; flex: none;">
+    <div onPointerDown="{{sheet.down}}" onPointerMove="{{sheet.move}}" onPointerUp="{{sheet.up}}" onPointerCancel="{{sheet.up}}" style="touch-action: none; cursor: grab; user-select: none; padding: 8px 60px 8px;">
+      <div style="width: 40px; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.3); margin: 0 auto 6px;"></div>
+      <div style="text-align: center; font-size: 11px; font-weight: 600; color: #8b93a3;">{{sheet.hint}}</div>
+    </div>
+    <button type="button" aria-label="Close" onClick="{{sheet.close}}" style="position: absolute; top: 2px; right: 6px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 22px; background: transparent; color: #94a3b8; cursor: pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+  </div>
+  <div style="{{sheet.bodyStyle}}">
+<div style="display: flex; flex-direction: column; gap: 14px;">
+  <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+    <div style="min-width: 0;">
+      <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+        <h2 style="margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.01em; color: #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{detail.name}}</h2>
+        <sc-if value="{{detail.injShow}}" hint-placeholder-val="{{false}}"><span title="{{detail.injWord}}" style="flex: none; display: inline-flex; align-items: center; height: 18px; padding: 0 5px; border-radius: 4px; border: 1px solid {{detail.injNat}}; color: {{detail.injNat}}; font-size: 11px; font-weight: 800;">{{detail.inj}}</span></sc-if>
+      </div>
+      <div style="margin-top: 4px; font-size: 12px; font-weight: 600; color: #94a3b8;"><span style="color: {{detail.tc}}; font-weight: 900;">{{detail.team}}</span> · {{detail.pos}} · Week 4 {{detail.opp}} · {{detail.kick}}</div>
+    </div>
+    <span style="flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 60px; height: 44px; border-radius: 8px; background: {{detail.ch.tintBg}}; border: {{detail.ch.edge}}; color: {{detail.ch.ink}};"><span style="font-size: 11px; font-weight: 800;">{{detail.ch.word}}</span><span style="font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums;">{{detail.ch.rank}}</span></span>
+  </div>
+  <div style="border-radius: 14px; border: 1px solid #1b2030; background: linear-gradient(135deg, #151520 0%, #0f121a 55%, #121724 100%); padding: 12px 14px 14px;">
+    <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.2em; color: #f5c842;">FANTASY PTS ALLOWED · {{detail.windowWord}}</div>
+    <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 6px;"><span style="font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; color: #f1f5f9;">{{detail.fpaNum}}</span><span style="font-size: 12px; font-weight: 600; color: #94a3b8;">PPR pts / game to {{detail.fpaPos}} · {{detail.fpaRank}} of 32</span></div>
+    <div style="position: relative; margin-top: 12px; height: 6px; display: flex; gap: 2px;">
+      <span style="flex: 6; border-radius: 3px; background: rgba(231,103,103,0.55);"></span><span style="flex: 6; border-radius: 3px; background: rgba(222,144,70,0.55);"></span><span style="flex: 8; border-radius: 3px; background: rgba(166,179,193,0.45);"></span><span style="flex: 6; border-radius: 3px; background: rgba(180,205,115,0.55);"></span><span style="flex: 6; border-radius: 3px; background: rgba(125,237,159,0.55);"></span>
+      <span style="position: absolute; top: -4px; left: {{detail.fpaPct}}; width: 3px; height: 14px; margin-left: -1px; border-radius: 2px; background: #f1f5f9; box-shadow: 0 0 0 2px #0a0d14; transition: left .3s;"></span>
+    </div>
+    <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; font-weight: 600; color: #94a3b8;"><span>#1 toughest</span><span>#32 easiest</span></div>
+  </div>
+  <sc-if value="{{detail.canCompare}}" hint-placeholder-val="{{true}}">
+  <div>
+    <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; color: #f5c842;">{{detail.vsLabel}} · {{detail.windowWord}}</div>
+    <dl style="margin: 6px 0 0; border-radius: 14px; overflow: hidden; border: 1px solid #1b2030;">
+      <sc-for list="{{detail.stats}}" as="s" hint-placeholder-count="2">
+        <div style="display: flex; align-items: center; justify-content: space-between; min-height: 40px; padding: 0 12px; border-top: 1px solid #1b2030; margin-top: -1px;">
+          <dt style="font-size: 13px; font-weight: 600; color: #94a3b8;">{{s.label}} / game</dt>
+          <dd style="margin: 0; display: flex; align-items: center; gap: 10px; font-variant-numeric: tabular-nums;"><span style="font-size: 14px; font-weight: 800; color: #f1f5f9;">{{s.val}}</span><span style="min-width: 30px; text-align: right; font-size: 12px; font-weight: 700; color: #94a3b8;">{{s.rank}}</span></dd>
+        </div>
+      </sc-for>
+    </dl>
+  </div>
+  </sc-if>
+  <div>
+    <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.2em; color: #f5c842;">SCHEDULE</div>
+    <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; margin-top: 6px;">
+      <sc-for list="{{detail.sched}}" as="c" hint-placeholder-count="6">
+        <div title="{{c.aria}}" style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+          <span style="font-size: 11px; font-weight: 700; color: #94a3b8;">{{c.wk}}</span>
+          <span style="width: 100%; height: 42px; box-sizing: border-box; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: {{c.tintBg}}; border: {{c.edge}}; color: {{c.ink}}; transition: background .25s;"><span style="font-size: 11px; font-weight: 800;">{{c.short}}</span><span style="font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;">{{c.rank}}</span></span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+  <button type="button" style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 52px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.15); background: #151520; color: #f1f5f9; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6a3 3 0 1 1-6 0a3 3 0 1 1 6 0M22 18a3 3 0 1 1-6 0a3 3 0 1 1 6 0M12 6h5a2 2 0 0 1 2 2v7M15 9l-3-3 3-3M12 18H7a2 2 0 0 1-2-2V9M9 15l3 3-3 3"></path></svg>{{detail.compare}}</button>
+</div>
+  </div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"vw":{"editor":"int","default":1194},"vh":{"editor":"int","default":834},"$preview":{"width":1194,"height":834}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { win: "season", sel: null, detent: "closed", drag: 0, dragging: false, menu: false, league: 0, pop: null, exp: null, padSel: "9221", push: false, view: "list", tab: "lineup", filt: "ALL", wk: 4, benchIn: false, open: {}, pins: [], tierF: null, pinOpen: {}, irOpen: false, view2: "lineup", ctx: null, swiped: null, swipeX: 0, swiping: null };
+    this.ds = null;
+  }
+
+  data() {
+    if (!this._d) this._d = {"TC":{"ARI":"#CA6F85","ATL":"#D26D7D","BAL":"#8E80E6","BUF":"#548AEA","CAR":"#4DAADA","CHI":"#D9744F","CIN":"#FC845B","CLE":"#FF774D","DAL":"#5188EE","DEN":"#FC845B","DET":"#4D9FCC","GB":"#629789","HOU":"#D26D7D","IND":"#518ED7","JAX":"#4D9BA8","KC":"#EB5D73","LV":"#C0C5C7","LAC":"#4DA6D7","LAR":"#5188EE","MIA":"#4DB0B6","MIN":"#A278D8","NE":"#4D8FD2","NO":"#E0D0AF","NYG":"#6185EE","NYJ":"#5D9B87","PHI":"#4D9CA4","PIT":"#FFCC59","SF":"#DE6666","SEA":"#96D269","TB":"#E46262","TEN":"#81B3E6","WAS":"#CE6F6F"},"R":[["4046","Patrick Mahomes","P. Mahomes","QB","KC","starter","QB","",21],["9221","Jahmyr Gibbs","J. Gibbs","RB","DET","starter","RB","",17.7],["12489","RJ Harvey","RJ Harvey","RB","DEN","starter","RB","",19.3],["13294","Makai Lemon","M. Lemon","WR","PHI","starter","WR","",5.7],["2133","Davante Adams","D. Adams","WR","LAR","starter","WR","",7.2],["8167","Christian Watson","C. Watson","WR","GB","starter","WR","",7.7],["8130","Trey McBride","T. McBride","TE","ARI","starter","TE","",10.1],["12534","Kyle Monangai","K. Monangai","RB","CHI","starter","FLEX","Q",28],["7594","Chuba Hubbard","C. Hubbard","RB","CAR","starter","FLEX","",25.9],["4037","Chris Godwin","C. Godwin","WR","TB","starter","FLEX","",9.1],["8183","Brock Purdy","B. Purdy","QB","SF","starter","SFLX","",23.62],["10219","Chris Rodriguez","C. Rodriguez","RB","JAX","bench","","",9.5],["11610","Malik Washington","M. Washington","WR","MIA","bench","","",12],["11626","Xavier Legette","X. Legette","WR","CAR","ir","","IR",0],["12474","Woody Marks","W. Marks","RB","HOU","bench","","",8.2],["12502","Gunnar Helm","G. Helm","TE","TEN","bench","","",3.5],["12521","Elijah Arroyo","E. Arroyo","TE","SEA","bench","","",0],["13424","Seth McGowan","S. McGowan","RB","IND","taxi","","",4.8],["1373","Geno Smith","G. Smith","QB","NYJ","bench","","",10.76],["7525","DeVonta Smith","D. Smith","WR","PHI","bench","","Q",0],["8110","Jake Ferguson","J. Ferguson","TE","DAL","bench","","",4.1],["8111","Cade Otton","C. Otton","TE","TB","bench","","",7.7],["8126","Wan'Dale Robinson","W. Robinson","WR","TEN","bench","","",11],["8188","Tyquan Thornton","T. Thornton","WR","KC","bench","","O",28.1],["8210","Chig Okonkwo","C. Okonkwo","TE","WAS","bench","","",2.5],["8676","Rashid Shaheed","R. Shaheed","WR","SEA","bench","","",12.3]],"SCH":{"ARI":{"4":"@NYG","5":"@SEA","6":"IND","7":"BYE","8":"SF","9":"@BAL","10":"DEN","11":"@LV","12":"NYG","13":"@TEN","14":"CHI","15":"@HOU","16":"MIA","17":"@PIT"},"CAR":{"4":"DET","5":"BYE","6":"LAC","7":"@NYJ","8":"WAS","9":"@CIN","10":"IND","11":"@MIN","12":"SF","13":"@BAL","14":"DEN","15":"@LV","16":"NYG","17":"@TEN"},"CHI":{"4":"NYJ","5":"@GB","6":"@LAR","7":"PHI","8":"@ARI","9":"BYE","10":"@JAX","11":"NE","12":"@SEA","13":"BUF","14":"@DET","15":"LAC","16":"@NYJ","17":"WAS"},"DAL":{"4":"@HOU","5":"TB","6":"NE","7":"@SEA","8":"BUF","9":"@DET","10":"BYE","11":"@NYJ","12":"WAS","13":"@CIN","14":"IND","15":"@MIN","16":"SF","17":"@BAL"},"DEN":{"4":"@SF","5":"NYJ","6":"@NO","7":"TB","8":"@CAR","9":"GB","10":"BYE","11":"PHI","12":"@ARI","13":"CLE","14":"@JAX","15":"NE","16":"@SEA","17":"BUF"},"DET":{"4":"@CAR","5":"WAS","6":"NYG","7":"@TEN","8":"BYE","9":"@HOU","10":"MIA","11":"@PIT","12":"ATL","13":"@DAL","14":"KC","15":"@NO","16":"TB","17":"@CAR"},"GB":{"4":"@TB","5":"CHI","6":"@NYJ","7":"WAS","8":"BYE","9":"IND","10":"@MIN","11":"SF","12":"@BAL","13":"DEN","14":"@LV","15":"NYG","16":"@TEN","17":"CHI"},"HOU":{"4":"DAL","5":"@TEN","6":"PHI","7":"@ARI","8":"CLE","9":"BYE","10":"NE","11":"@SEA","12":"BUF","13":"@DET","14":"LAC","15":"@NYJ","16":"WAS","17":"@CIN"},"IND":{"4":"@WAS","5":"@LV","6":"BYE","7":"ATL","8":"@DAL","9":"KC","10":"@NO","11":"TB","12":"@CAR","13":"GB","14":"@LAR","15":"PHI","16":"@ARI","17":"CLE"},"JAX":{"4":"@CIN","5":"PHI","6":"SF","7":"@BAL","8":"DEN","9":"@LV","10":"BYE","11":"@TEN","12":"CHI","13":"@HOU","14":"MIA","15":"@PIT","16":"ATL","17":"@DAL"},"KC":{"4":"@LV","5":"BYE","6":"@SEA","7":"BUF","8":"@DET","9":"LAC","10":"@NYJ","11":"WAS","12":"@CIN","13":"IND","14":"@MIN","15":"SF","16":"@BAL","17":"DEN"},"LAR":{"4":"@PHI","5":"SF","6":"BYE","7":"@CIN","8":"IND","9":"@MIN","10":"SF","11":"@BAL","12":"DEN","13":"@LV","14":"NYG","15":"@TEN","16":"CHI","17":"@HOU"},"MIA":{"4":"@MIN","5":"CIN","6":"BYE","7":"CLE","8":"@JAX","9":"NE","10":"@SEA","11":"BUF","12":"@DET","13":"LAC","14":"@NYJ","15":"WAS","16":"@CIN","17":"IND"},"NYJ":{"4":"@CHI","5":"@DEN","6":"CHI","7":"@HOU","8":"MIA","9":"@PIT","10":"ATL","11":"BYE","12":"KC","13":"@NO","14":"TB","15":"@CAR","16":"GB","17":"@LAR"},"PHI":{"4":"LAR","5":"@JAX","6":"@CIN","7":"IND","8":"@MIN","9":"BYE","10":"@BAL","11":"DEN","12":"@LV","13":"NYG","14":"@TEN","15":"CHI","16":"@HOU","17":"MIA"},"SEA":{"4":"LAC","5":"ARI","6":"DEN","7":"@LV","8":"BYE","9":"@TEN","10":"CHI","11":"@HOU","12":"MIA","13":"@PIT","14":"ATL","15":"@DAL","16":"KC","17":"@NO"},"SF":{"4":"DEN","5":"@LAR","6":"@DAL","7":"BYE","8":"@NO","9":"TB","10":"@CAR","11":"GB","12":"@LAR","13":"PHI","14":"@ARI","15":"CLE","16":"@JAX","17":"NE"},"TB":{"4":"GB","5":"@DAL","6":"@DET","7":"LAC","8":"@NYJ","9":"WAS","10":"@CIN","11":"BYE","12":"@MIN","13":"SF","14":"@BAL","15":"DEN","16":"@LV","17":"NYG"},"TEN":{"4":"@BAL","5":"HOU","6":"GB","7":"BYE","8":"PHI","9":"@ARI","10":"CLE","11":"@JAX","12":"NE","13":"@SEA","14":"BUF","15":"@DET","16":"LAC","17":"@NYJ"},"WAS":{"4":"IND","5":"@DET","6":"@HOU","7":"MIA","8":"@PIT","9":"ATL","10":"@DAL","11":"KC","12":"BYE","13":"TB","14":"@CAR","15":"GB","16":"@LAR","17":"PHI"}},"KICK":{"PIT":"Thu 7:15 PM","CLE":"Thu 7:15 PM","IND":"Sun 8:30 AM","WAS":"Sun 8:30 AM","NE":"Sun 12:00 PM","BUF":"Sun 12:00 PM","NYJ":"Sun 12:00 PM","CHI":"Sun 12:00 PM","JAX":"Sun 12:00 PM","CIN":"Sun 12:00 PM","ARI":"Sun 12:00 PM","NYG":"Sun 12:00 PM","LAR":"Sun 12:00 PM","PHI":"Sun 12:00 PM","GB":"Sun 12:00 PM","TB":"Sun 12:00 PM","TEN":"Sun 12:00 PM","BAL":"Sun 12:00 PM","DAL":"Sun 12:00 PM","HOU":"Sun 12:00 PM","MIA":"Sun 3:05 PM","MIN":"Sun 3:05 PM","KC":"Sun 3:25 PM","LV":"Sun 3:25 PM","DEN":"Sun 3:25 PM","SF":"Sun 3:25 PM","LAC":"Sun 3:25 PM","SEA":"Sun 3:25 PM","DET":"Sun 7:20 PM","CAR":"Sun 7:20 PM","ATL":"Mon 7:15 PM","NO":"Mon 7:15 PM"},"TIERS":{"great":{"w":"Great","c":"#81FDA0"},"good":{"w":"Good","c":"#B4D35C"},"avg":{"w":"Avg","c":"#B0AAA3"},"tough":{"w":"Tough","c":"#E07E2F"},"avoid":{"w":"Avoid","c":"#E15957"}},"OVR":{"QB-LV":[27,30,0],"RB-CAR":[29,25,0],"RB-SF":[4,9,0],"WR-LAR":[15,19,0],"WR-PHI":[8,5,0],"WR-TB":[22,27,0],"TE-NYG":[31,28,0],"RB-NYJ":[24,21,0],"RB-DET":[11,14,1],"WR-GB":[18,12,0],"QB-DEN":[2,3,0]}};
+    return this._d;
+  }
+
+  ordinal(n) { var s = ["th","st","nd","rd"], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
+
+  rankOf(pos, opp, win) {
+    var key = pos + "-" + opp, o = this.data().OVR[key];
+    if (o) return { r: win === "season" ? o[0] : o[1], tie: !!o[2] && win === "season" };
+    var h = 7;
+    for (var i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) % 9973;
+    var s = (h % 32) + 1;
+    if (win === "season") return { r: s, tie: false };
+    var d = ((h * 7) % 13) - 6;
+    return { r: Math.max(1, Math.min(32, s + d)), tie: false };
+  }
+
+  tierOf(r) { return r <= 5 ? "avoid" : r <= 12 ? "tough" : r <= 20 ? "avg" : r <= 27 ? "good" : "great"; }
+
+  rgb(h) { var n = parseInt(h.slice(1), 16); return ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255); }
+
+  cell(pos, team, wk, win) {
+    var D = this.data(), s = (D.SCH[team] || {})[String(wk)];
+    if (!s) return { wk: "W" + wk, n: wk, bye: false, none: true, opp: "—", short: "—", abbr: "", word: "", rank: "", tier: "none", c: "#5b6680", ink: "#94a3b8", solidBg: "transparent", solidInk: "#94a3b8", tintBg: "transparent", edge: "1px solid #1b2030", aria: "Week " + wk + ": no game data" };
+    if (s === "BYE") return { wk: "W" + wk, n: wk, bye: true, opp: "BYE", short: "BYE", abbr: "BYE", word: "Bye", rank: "", ord: "", tier: "bye", c: "#5b6680", ink: "#94a3b8", solidBg: "transparent", solidInk: "#94a3b8", tintBg: "transparent", edge: "1px dashed #5b6680", aria: "Week " + wk + ": bye week" };
+    var away = s.charAt(0) === "@", a = away ? s.slice(1) : s;
+    var rk = this.rankOf(pos, a, win), t = this.tierOf(rk.r), T = D.TIERS[t], rg = this.rgb(T.c);
+    var opp = (away ? "@ " : "vs ") + a;
+    return { wk: "W" + wk, n: wk, bye: false, opp: opp, short: (away ? "@" : "") + a, abbr: a, word: T.w, rank: (rk.tie ? "T-" : "#") + rk.r, rankNum: rk.r, ord: (rk.tie ? "T-" : "") + this.ordinal(rk.r), tier: t, c: T.c, ink: T.c, solidBg: T.c, solidInk: "#0a0d14", tintBg: "rgba(" + rg + ",0.14)", edge: "1px solid rgba(" + rg + ",0.55)", aria: "Week " + wk + " " + opp + ": " + T.w + " matchup, " + this.ordinal(rk.r) + " of 32" };
+  }
+
+  why(pos, opp, win) {
+    var self = this, r = this.rankOf(pos, opp, win).r;
+    function j(k) { var h = 0, s = pos + opp + k + win; for (var i = 0; i < s.length; i++) h = (h * 17 + s.charCodeAt(i)) % 997; return Math.max(1, Math.min(32, r + (h % 9) - 4)); }
+    function row(label, v, dec, k) { var rr = j(k); return { label: label, val: v.toFixed(dec), rank: "#" + rr, pct: Math.round((rr / 32) * 100) + "%", tierC: self.data().TIERS[self.tierOf(rr)].c }; }
+    var f = r - 1;
+    if (pos === "QB") return [row("Pass yds", 176 + f * 3.4, 1, "a"), row("Pass TD", 0.9 + f * 0.045, 2, "b"), row("INT made", 1.3 - f * 0.03, 2, "c"), row("Sacks made", 3.5 - f * 0.06, 1, "d")];
+    if (pos === "RB") return [row("Rush yds", 82 + f * 2.3, 1, "a"), row("Rush TD", 0.35 + f * 0.026, 2, "b")];
+    return [row("Pass yds", 176 + f * 3.4, 1, "a"), row("Pass TD", 0.9 + f * 0.045, 2, "b")];
+  }
+
+  fpa(pos, opp, win) {
+    var r = this.rankOf(pos, opp, win).r, R = { QB: [12.5, 24.5], RB: [17, 33], WR: [27, 45], TE: [6.5, 15.5] }[pos] || [10, 20];
+    return (R[0] + ((r - 1) * (R[1] - R[0])) / 31).toFixed(1);
+  }
+
+  pick(id) {
+    var pad = (this.props.vw ?? 393) >= 700;
+    if (this.mode === "push") { this.setState({ push: true, sel: id, padSel: id }); return; }
+    if (this.mode === "multi") { var o = Object.assign({}, this.state.open || {}); o[id] = !o[id]; this.setState({ open: o }); return; }
+    if (this.mode === "expand") { this.setState({ exp: this.state.exp === id ? null : id }); return; }
+    if (pad && !this.forceSheet) this.setState({ padSel: id, pop: null });
+    else this.setState({ sel: id, detent: "half", pop: null });
+  }
+
+  sDown(e) {
+    var root = e.currentTarget.closest("[data-root]"), vh = this.props.vh ?? 759;
+    var sc = root ? root.getBoundingClientRect().height / vh : 1;
+    this.ds = { y: e.clientY, t: Date.now(), sc: sc || 1 };
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (x) {}
+    this.setState({ dragging: true, drag: 0 });
+  }
+  sMove(e) { if (this.ds) this.setState({ drag: (e.clientY - this.ds.y) / this.ds.sc }); }
+  sUp(e) {
+    if (!this.ds) return;
+    var dy = (e.clientY - this.ds.y) / this.ds.sc, v = dy / Math.max(1, Date.now() - this.ds.t), d = this.state.detent, n = d, vh = this.props.vh ?? 759;
+    this.ds = null;
+    if (Math.abs(dy) < 6) n = d === "half" ? "full" : "half";
+    else if (dy < -40 || v < -0.5) n = "full";
+    else if (dy > 40 || v > 0.5) n = d === "full" && dy < vh * 0.45 ? "half" : "closed";
+    this.setState({ dragging: false, drag: 0, detent: n });
+  }
+
+  openPop(id, w, e) {
+    var t = e.currentTarget, root = t.closest("[data-root]");
+    if (!root) return;
+    var vw = this.props.vw ?? 393, rr = root.getBoundingClientRect(), r = t.getBoundingClientRect(), sc = rr.width / vw || 1;
+    this.setState({ pop: { id: id, w: w, x: (r.left - rr.left + r.width / 2) / sc, top: (r.top - rr.top) / sc, bottom: (r.bottom - rr.top) / sc } });
+  }
+
+  regroup(groups, line) {
+    groups.forEach(function (g) {
+      g.rows.forEach(function (r, i) { r.bt = i ? "1px solid " + line : "0"; });
+      if (!g.color) g.color = null;
+    });
+    return groups.filter(function (g) { return g.rows.length > 0; });
+  }
+
+  core() {
+    var self = this, st = this.state, D = this.data();
+    var vw = this.props.vw ?? 393, vh = this.props.vh ?? 759, pad = vw >= 700;
+    var stripWeeks = this.stripWeeks ? this.stripWeeks(pad, vw) : [5, 6, 7, 8, 9];
+    function row(p) {
+      var id = p[0], c4 = self.cell(p[3], p[4], 4, st.win);
+      var injStd = { Q: "#FCD34D", D: "#FB923C", O: "#F87171", IR: "#F87171" }[p[7]] || "#94a3b8";
+      var injNat = p[7] === "O" || p[7] === "IR" ? "#F87171" : "#CBD5E1";
+      var injWord = { Q: "Questionable", D: "Doubtful", O: "Out", IR: "Injured reserve" }[p[7]] || "";
+      var sel = pad && !self.forceSheet ? st.padSel === id : st.sel === id && st.detent !== "closed";
+      return {
+        id: id, name: p[1], short: p[2], pos: p[3], team: p[4], group: p[5], slot: p[6] || "BN", inj: p[7], injShow: !!p[7], injWord: injWord,
+        injStd: injStd, injNat: injNat, pts: p[8], tc: D.TC[p[4]], opp: c4.opp, kick: D.KICK[p[4]] || "", ch: c4,
+        fpa: c4.bye ? "" : self.fpa(p[3], c4.abbr, st.win),
+        strip: stripWeeks.map(function (w) { var c = self.cell(p[3], p[4], w, st.win); c.pick = function (e) { self.openPop(id, w, e); }; c.popOn = !!(st.pop && st.pop.id === id && st.pop.w === w); return c; }),
+        select: function () { self.pick(id); }, selected: sel,
+        expanded: st.exp === id || !!(st.open && st.open[id]), toggleExp: function () { self.setState({ exp: st.exp === id ? null : id }); },
+        aria: p[1] + ", " + p[3] + ", " + c4.opp + ", " + (c4.bye ? "bye" : c4.word + " matchup " + c4.ord + " of 32") + (p[7] ? ", " + injWord : "")
+      };
+    }
+    var starters = D.R.filter(function (p) { return p[5] === "starter"; }).map(row);
+    var bench = D.R.filter(function (p) { return p[5] === "bench"; }).map(row);
+    starters.forEach(function (r, i) { r.bt = i ? "1px solid #1b2030" : "0"; r.last = i === starters.length - 1; });
+    bench.forEach(function (r, i) { r.bt = i ? "1px solid #1b2030" : "0"; r.last = i === bench.length - 1; });
+    var reserve = D.R.filter(function (p) { return p[5] === "ir" || p[5] === "taxi"; }).map(row);
+    reserve.forEach(function (r, i) { r.bt = i ? "1px solid #1b2030" : "0"; r.slotTag = r.group === "ir" ? "IR" : "TAXI"; });
+    var all = starters.concat(bench).concat(reserve);
+    var selId = pad && !this.forceSheet ? st.padSel : st.sel || this.lastSel || all[0].id;
+    if (!pad && st.sel) this.lastSel = st.sel;
+    var dr = all.filter(function (r) { return r.id === selId; })[0] || all[0];
+    var detail = {
+      r: dr, name: dr.name, pos: dr.pos, team: dr.team, tc: dr.tc, slot: dr.slot, opp: dr.opp, kick: dr.kick, ch: dr.ch, injShow: dr.injShow, inj: dr.inj, injWord: dr.injWord, injStd: dr.injStd, injNat: dr.injNat,
+      fpaNum: dr.fpa, fpaPos: dr.pos + (dr.pos === "QB" ? "s" : "s"), fpaRank: dr.ch.rank, fpaWord: dr.ch.word, fpaPct: dr.ch.rankNum ? Math.round((dr.ch.rankNum - 0.5) / 32 * 100) + "%" : "0%",
+      windowWord: st.win === "season" ? "Season" : "Last 4 games",
+      vsLabel: dr.ch.bye ? "On bye in Week 4" : dr.ch.abbr + " defense vs " + dr.pos,
+      stats: dr.ch.bye ? [] : this.why(dr.pos, dr.ch.abbr, st.win),
+      sched: [4].concat(stripWeeks.slice(0, 5)).map(function (w) { return self.cell(dr.pos, dr.team, w, st.win); }),
+      compare: dr.ch.bye ? "No game this week" : "Open in Compare · " + dr.team + " vs " + dr.ch.abbr,
+      canCompare: !dr.ch.bye
+    };
+    var H = Math.round(vh * 0.9), halfVis = Math.round(vh * 0.58);
+    var base = st.detent === "full" ? 0 : st.detent === "half" ? H - halfVis : H + 40;
+    var y = st.dragging ? Math.max(-20, base + st.drag) : base;
+    var bop = st.detent === "closed" ? 0 : st.detent === "full" ? 0.62 : 0.5;
+    if (st.dragging) bop = Math.max(0, Math.min(0.62, 0.62 * (1 - y / (H + 40))));
+    var sheet = {
+      open: st.detent !== "closed", full: st.detent === "full",
+      style: "position: absolute; left: 0; right: 0; bottom: 0; height: " + H + "px; transform: translateY(" + y + "px); transition: " + (st.dragging ? "none" : "transform .42s cubic-bezier(.22,1,.36,1)") + "; will-change: transform; z-index: 60; display: flex; flex-direction: column;",
+      backdrop: "position: absolute; inset: 0; z-index: 55; border: 0; padding: 0; background: rgba(3,4,8,1); opacity: " + bop + "; pointer-events: " + (st.detent === "closed" ? "none" : "auto") + "; transition: " + (st.dragging ? "none" : "opacity .3s") + "; cursor: default;",
+      bodyStyle: "flex: 1; min-height: 0; overflow-y: " + (st.detent === "full" ? "auto" : "hidden") + "; padding: 4px 16px 28px;",
+      down: function (e) { self.sDown(e); }, move: function (e) { self.sMove(e); }, up: function (e) { self.sUp(e); },
+      close: function () { self.setState({ detent: "closed", sel: null }); },
+      hint: st.detent === "full" ? "Drag down to shrink" : "Drag up for more"
+    };
+    var winOpts = [["season", "Season"], ["last4", "Last 4"]].map(function (o) {
+      var on = st.win === o[0];
+      return { id: o[0], label: o[1], on: on, pressed: String(on), pick: function () { self.setState({ win: o[0] }); } };
+    });
+    var leagues = [["League A", "10 teams · PPR · Superflex"], ["League B", "10 teams · In season"]].map(function (l, i) {
+      return { name: l[0], sub: l[1], on: st.league === i, pressed: String(st.league === i), pick: function () { self.setState({ league: i, menu: false }); } };
+    });
+    var pop = null;
+    if (st.pop) {
+      var pr = all.filter(function (r) { return r.id === st.pop.id; })[0], pc = self.cell(pr.pos, pr.team, st.pop.w, st.win);
+      var above = st.pop.bottom > vh * 0.6, pw = 232, left = Math.max(10, Math.min(vw - pw - 10, st.pop.x - pw / 2));
+      pop = { r: pr, c: pc, fpa: pc.bye ? "" : self.fpa(pr.pos, pc.abbr, st.win), title: pr.short + " · Week " + st.pop.w, line: pc.bye ? "Bye week — no game" : pc.opp + " · " + pc.word + " matchup",
+        style: "position: absolute; z-index: 70; width: " + pw + "px; left: " + left + "px; " + (above ? "bottom: " + (vh - st.pop.top + 8) + "px;" : "top: " + (st.pop.bottom + 8) + "px;"),
+        compare: function () { self.setState({ pop: null }); } };
+    }
+    return {
+      vw: vw, vh: vh, pad: pad, phone: !pad, sheetOn: !pad || !!this.forceSheet, win: st.win, winOpts: winOpts, winLabel: st.win === "season" ? "Season" : "Last 4",
+      leagues: leagues, league: leagues[st.league], menuOpen: st.menu, menuOpenStr: String(st.menu), toggleMenu: function () { self.setState({ menu: !st.menu }); }, closeMenu: function () { self.setState({ menu: false }); },
+      menuStyle: "opacity: " + (st.menu ? 1 : 0) + "; transform: translateY(" + (st.menu ? 0 : -6) + "px) scale(" + (st.menu ? 1 : 0.98) + "); pointer-events: " + (st.menu ? "auto" : "none") + "; transition: opacity .16s, transform .2s cubic-bezier(.22,1,.36,1);",
+      starters: starters, bench: bench, reserve: reserve, all: all, detail: detail, sheet: sheet, pop: pop, popOpen: !!pop, closePop: function () { self.setState({ pop: null }); },
+      pushStyle: "position: absolute; inset: 0; z-index: 50; display: flex; flex-direction: column; transform: translateX(" + (st.push ? "0" : "100%") + "); transition: transform .36s cubic-bezier(.22,1,.36,1); will-change: transform;",
+      underStyle: "flex: 1; min-height: 0; display: flex; flex-direction: column; transform: translateX(" + (st.push ? "-22%" : "0") + "); opacity: " + (st.push ? 0.5 : 1) + "; transition: transform .36s cubic-bezier(.22,1,.36,1), opacity .36s;",
+      push: !!st.push, back: function () { self.setState({ push: false }); },
+      stripHead: stripWeeks.map(function (w) { return { wk: "W" + w, n: w, playoff: w >= 15 }; }),
+      rootStyle: "position: relative; width: " + vw + "px; height: " + vh + "px; overflow: hidden; display: flex; flex-direction: column; font-family: Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased;"
+    };
+  }
+
+
+  stripWeeks(pad, vw) { return [5, 6, 7, 8, 9]; }
+  groupsStd(v) { var T = this.TT; return [{ title: "STARTERS", count: String(v.starters.length), rows: v.starters, color: T.label }, { title: "BENCH", count: String(v.bench.length), rows: v.bench, color: T.label }]; }
+  glass2(v, T, opts, pillKey, w) {
+    opts = opts || v.winOpts; pillKey = pillKey || "pillStyle"; w = w || 60;
+    var on = 0; opts.forEach(function (o, i) { if (o.on) on = i; });
+    v[pillKey] = "position: absolute; top: 3px; left: " + (3 + on * w) + "px; width: " + w + "px; height: 30px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px " + T.acc + ", 0 0 12px rgba(" + T.accRgb + ",0.35); background: rgba(" + T.accRgb + ",0.08); transition: left .4s cubic-bezier(.34,1.36,.64,1); will-change: left;";
+    opts.forEach(function (o) { o.btnStyle = "position: relative; z-index: 1; width: " + w + "px; height: 30px; border: 0; background: transparent; font-family: inherit; font-size: 11.5px; font-weight: " + (o.on ? 700 : 500) + "; color: " + (o.on ? T.acc : T.off) + "; cursor: pointer; transition: color .2s;"; });
+  }
+  renderVals() {
+    var self = this, T = {"acc": "#f5c842", "accRgb": "245,200,66", "off": "#737a88", "line": "#1b2030", "label": "#f5c842", "sub": "#94a3b8", "text": "#f1f5f9"};
+    this.TT = T; this.mode = "multi"; this.forceSheet = true; this.noAside = true;
+    
+    var v = this.core();
+    v.padGutter = v.pad ? "16px" : "0";
+    v.showAside = v.pad && !this.noAside; v.asideW = v.vw > 1100 ? 400 : 352;
+    this.glass2(v, T);
+    v.leagues.forEach(function (l) { l.bg = l.on ? "rgba(" + T.accRgb + ",0.08)" : "transparent"; l.edge = l.on ? "inset 2px 0 0 " + T.acc : "none"; l.ink = l.on ? T.acc : T.text; });
+    v.stripLabel = v.stripHead.length ? (v.stripHead[0].wk + "–" + v.stripHead[v.stripHead.length - 1].n) : "";
+    v.all.forEach(function (r) {
+      r.expStr = String(!!r.expanded);
+      r.rowStyle = "display: flex; align-items: center; gap: 10px; width: 100%; min-height: 62px; padding: 8px 12px; border: 0; text-align: left; font-family: inherit; color: inherit; cursor: pointer; background: " + (r.selected ? "rgba(" + T.accRgb + ",0.07)" : "transparent") + "; box-shadow: " + (r.selected ? "inset 2px 0 0 " + T.acc : "none") + "; transition: background .2s, transform .12s;";
+      r.strip.forEach(function (c) { c.barEdge = c.bye ? "1px solid #5b6680" : "0"; });
+      r.kickTwo = r.kick.replace(" ", "\n");
+      
+    });
+    v.groups = this.regroup(this.groupsStd(v), T.line);
+    
+    var PC = { QB: ["rgba(244,114,182,0.18)", "#F9A8D4"], RB: ["rgba(45,212,191,0.18)", "#5EEAD4"], WR: ["rgba(96,165,250,0.18)", "#93C5FD"], TE: ["rgba(251,146,60,0.18)", "#FDBA74"] };
+    var LV = { avoid: 1, tough: 2, avg: 3, good: 4, great: 5 }, st = this.state, open = st.open || {};
+    v.all.forEach(function (r) {
+      r.posBg = (PC[r.pos] || PC.WR)[0]; r.posInk = (PC[r.pos] || PC.WR)[1];
+      var n = LV[r.ch.tier] || 0;
+      r.barH = 20;
+      r.bars = [1, 2, 3, 4, 5].map(function (i) { return { style: "width: 7px; height: " + (4 + i * (20 - 4) / 5) + "px; box-sizing: border-box; border-radius: 2px; background: " + (r.ch.bye ? "transparent" : i <= n ? r.ch.c : "#2a3450") + "; border: " + (r.ch.bye ? "1px dashed #5b6680" : "0") + "; transition: background .25s;" }; });
+      r.expRows = r.expanded ? "1fr" : "0fr"; r.stripN = r.strip.length; r.next = r.strip.slice(0, v.pad ? 8 : 5); r.nextN = r.next.length;
+      if (r.expanded) r.rowStyle = r.rowStyle.replace("background: transparent", "background: rgba(" + T.accRgb + ",0.05)");
+      var id = r.id; r.more = function () { self.setState({ sel: id, detent: "half" }); };
+      r.why = r.expanded && !r.ch.bye ? self.why(r.pos, r.ch.abbr, st.win) : [];
+    });
+    var f = st.filt;
+    var cnt = function (p) { return p === "ALL" ? v.all.length : v.all.filter(function (r) { return r.pos === p; }).length; };
+    v.filters = ["ALL", "QB", "RB", "WR", "TE"].map(function (p) { var on = f === p; return { label: (p === "ALL" ? "All" : p), count: String(cnt(p)), aria: (p === "ALL" ? "All positions" : p) + ', ' + cnt(p) + ' players', countStyle: "font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; color: " + (on ? T.acc : "#8b93a3") + ";" + (''), pressed: String(on), pick: function () { self.setState({ filt: p }); },
+      style: "flex: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; height: 30px; padding: 0 9px; border-radius: 999px; font-family: inherit; font-size: 12px; font-weight: " + (on ? 800 : 600) + "; cursor: pointer; transition: all .2s; border: " + (on ? "1.5px solid " + T.acc : "1px solid rgba(255,255,255,0.12)") + "; background: " + (on ? "rgba(" + T.accRgb + ",0.08)" : "rgba(3,4,8,0.94)") + "; color: " + (on ? T.acc : T.sub) + ";" }; });
+    if (f !== "ALL") v.groups = this.regroup(this.groupsStd(v).map(function (g) { g.rows = g.rows.filter(function (r) { return r.pos === f; }); g.count = String(g.rows.length); return g; }), T.line);
+    var anyOpen = v.all.some(function (r) { return r.expanded; });
+    v.expandAllLabel = anyOpen ? "Collapse all" : "Expand all";
+    v.expandAll = function () { if (anyOpen) { self.setState({ open: {} }); return; } var o = {}; v.all.forEach(function (r) { o[r.id] = true; }); self.setState({ open: o }); };
+    v.pillGap = 5;
+
+    var FM = "circle";
+    v.all.forEach(function (r) {
+      if (r.pos === "TE") { r.posBg = "rgba(167,139,250,0.20)"; r.posInk = "#C4B5FD"; }
+      var flex = r.slot === "FLEX" || r.slot === "SFLX";
+      r.isFlex = flex; r.badgeText = FM === "circle" && flex ? r.slot : r.pos;
+      r.posPrefix = FM === "circle" && flex ? r.pos + " · " : "";
+      r.flexTag = FM === "tag" && flex;
+    });
+    v.wide = false; v.noWide = !v.wide;
+    v.listWrap = "";
+
+    var pins = st.pins || [];
+    v.all.forEach(function (r) {
+      var id = r.id; r.pinned = pins.indexOf(id) >= 0; r.pinStr = String(r.pinned);
+      r.pinLabel = r.pinned ? "Unpin" : "Pin to side"; r.unpinAria = "Unpin " + r.name;
+      r.pinBtn = "flex: 1; height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer; transition: all .2s; border: " + (r.pinned ? "1.5px solid " + T.acc : "1px solid rgba(255,255,255,0.15)") + "; background: " + (r.pinned ? "rgba(" + T.accRgb + ",0.08)" : "#151520") + "; color: " + (r.pinned ? T.acc : T.text) + ";";
+      r.pinIcon = "width: 44px; height: 44px; flex: none; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 22px; cursor: pointer; transition: color .2s, background .2s; background: " + (r.pinned ? "rgba(" + T.accRgb + ",0.10)" : "transparent") + "; color: " + (r.pinned ? T.acc : "#737a88") + ";";
+      r.pin = function () { var p = (self.state.pins || []).slice(), i = p.indexOf(id), o = Object.assign({}, self.state.open || {}); if (i >= 0) p.splice(i, 1); else { p.push(id); o[id] = false; } self.setState({ pins: p, open: o }); };
+      if (r.pinned && !r.ch.bye) r.pwhy = self.why(r.pos, r.ch.abbr, st.win); else r.pwhy = [];
+      r.next = r.strip.slice(0, 5);
+    });
+    v.pinned = pins.map(function (id) { return v.all.filter(function (r) { return r.id === id; })[0]; }).filter(Boolean);
+    v.hasPins = v.pinned.length > 0; v.noPins = !v.hasPins; v.pinCount = v.pinned.length ? String(v.pinned.length) : "";
+    v.clearPins = function () { self.setState({ pins: [] }); };
+    v.pinW = v.vw > 1100 ? 440 : 340;
+    v.emptyHint = "Open a player, then Pin to side. Tap a pinned card to open it.";
+
+    var po = st.pinOpen || {};
+    v.pinned.forEach(function (r) {
+      var id = r.id, open = !!po[id];
+      r.pinExp = open; r.pinExpStr = String(open); r.pinRows = open ? "1fr" : "0fr";
+      r.pinExpAria = (open ? "Show less for " : "Show more for ") + r.name;
+      r.chevStyle = "transition: transform .25s; transform: rotate(" + (open ? 180 : 0) + "deg);";
+      r.pinCard = "position: relative; border-radius: 14px; border: 1px solid " + (open ? "rgba(245,200,66,0.6)" : "rgba(245,200,66,0.35)") + "; background: linear-gradient(160deg, #161622, #0f121a); animation: popin .22s cubic-bezier(.22,1,.36,1); transition: border-color .2s;";
+      r.togglePin = function () { var o = Object.assign({}, self.state.pinOpen || {}); o[id] = !o[id]; self.setState({ pinOpen: o }); };
+    });
+
+    var irOpen = !!st.irOpen, f = st.filt;
+    v.reserve.forEach(function (r) { r.flexTag = true; r.slot = r.slotTag; });
+    v.resRows = v.reserve.filter(function (r) { return f === "ALL" || f === "RES" || r.pos === f; });
+    v.resRows.forEach(function (r, i) { r.bt = i ? "1px solid #1b2030" : "0"; });
+    v.hasRes = v.resRows.length > 0;
+    v.reserveCount = String(v.resRows.length);
+    v.irOpenStr = String(irOpen); v.irRows = irOpen ? "1fr" : "0fr";
+    v.irChev = "flex: none; color: #94a3b8; transition: transform .25s; transform: rotate(" + (irOpen ? 180 : 0) + "deg);";
+    v.toggleIr = function () { self.setState({ irOpen: !self.state.irOpen }); };
+    v.irLink = (irOpen ? "Hide" : "Show") + " IR / Taxi (" + v.resRows.length + ")";
+
+    var SS = st.ssv || {}, VV = "S3";
+    var good = function (cells) { return cells.filter(function (c) { return c.tier === "great" || c.tier === "good"; }).length; };
+    var avgRank = function (cells) { var x = cells.filter(function (c) { return !c.bye && c.rankNum; }); return x.length ? x.reduce(function (s, c) { return s + c.rankNum; }, 0) / x.length : 0; };
+    var grpName = function (o) { return o.group === "starter" ? "Starter" : o.group === "bench" ? "Bench" : o.group === "ir" ? "IR" : "Taxi"; };
+    var lite = function (o) { return { short: o.short, opp: o.opp, kick: o.kick, ch: o.ch, next5: o.strip.slice(0, 5) }; };
+    var fnum = function (o) { return o.ch.bye ? 0 : parseFloat(o.fpa) || 0; };
+    v.all.forEach(function (r) {
+      var id = r.id, s = SS[id] || {};
+      r.next5 = r.strip.slice(0, 5);
+      var pool = v.all.filter(function (o) { return o.pos === r.pos && o.id !== id; });
+      var def = (r.group === "starter" ? pool.filter(function (o) { return o.group === "bench"; })[0] : pool.filter(function (o) { return o.group === "starter"; })[0]) || pool[0];
+      var oid = s.other !== undefined ? s.other : (VV === "S1" || !def ? null : def.id);
+      var set = function (patch) { var m = Object.assign({}, self.state.ssv || {}); m[id] = Object.assign({}, m[id] || {}, patch); self.setState({ ssv: m }); };
+      var on = !!s.open && pool.length > 0;
+      r.ssGo = function () { set({ open: true }); }; r.ssBack = function () { set({ open: false }); };
+      r.clearOther = function () { set({ other: null }); };
+      r.ssTitle = "START / SIT · " + r.pos + "S";
+      r.ssHint = pool.length ? "vs " + pool.length + " other " + r.pos + (pool.length > 1 ? "s" : "") : "no other " + r.pos + "s";
+      r.ssAria = "Start or sit: compare " + r.short + "'s matchup with your other " + r.pos + "s";
+      var tr = "transform .34s cubic-bezier(.22,1,.36,1), opacity .25s";
+      r.pA = "grid-area: 1 / 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; transition: " + tr + ", max-height 0s " + (on ? ".34s" : "0s") + "; transform: translateX(" + (on ? "-106%" : "0") + "); opacity: " + (on ? 0 : 1) + "; max-height: " + (on ? "0" : "300px") + "; overflow: hidden; pointer-events: " + (on ? "none" : "auto") + ";";
+      r.pB = "grid-area: 1 / 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; transition: " + tr + ", max-height 0s " + (on ? "0s" : ".34s") + "; transform: translateX(" + (on ? "0" : "106%") + "); opacity: " + (on ? 1 : 0) + "; max-height: " + (on ? "900px" : "0") + "; overflow: hidden; pointer-events: " + (on ? "auto" : "none") + ";";
+      var idx = Math.max(0, pool.findIndex(function (o) { return o.id === oid; }));
+      var gold = "1.5px solid #f5c842", dim = "1px solid #1b2030";
+      r.cands = pool.map(function (o, i) {
+        var sel = o.id === oid, sa = r.ch.bye ? -1 : r.ch.rankNum, sb = o.ch.bye ? -1 : o.ch.rankNum;
+        return { short: o.short, opp: o.opp, kick: o.kick, ch: o.ch, fpa: o.ch.bye ? "BYE" : o.fpa, grp: grpName(o), pressed: String(sel), bt: i ? "1px solid #1b2030" : "0",
+          pick: function () { set({ other: o.id }); },
+          chip: "flex: none; display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 12px; border-radius: 999px; font-family: inherit; font-size: 13px; font-weight: " + (sel ? 800 : 600) + "; cursor: pointer; white-space: nowrap; border: " + (sel ? "1.5px solid #f5c842" : "1px solid rgba(255,255,255,0.15)") + "; background: " + (sel ? "rgba(245,200,66,0.08)" : "#151520") + "; color: " + (sel ? "#f5c842" : "#cbd5e1") + ";",
+          edge: sb > sa ? gold : dim,
+          rel: sa === sb ? "Same matchup tier as " + r.short : (sb > sa ? "Easier matchup than " + r.short : "Tougher matchup than " + r.short),
+          dot: "width: " + (i === idx ? 16 : 6) + "px; height: 6px; border-radius: 3px; transition: width .25s; background: " + (i === idx ? "#f5c842" : "#3a4258") + ";" };
+      });
+      if (VV === "S5") {
+        r.track = "transform: translateX(-" + idx * 100 + "%);";
+        r.cPos = (idx + 1) + " of " + pool.length;
+        r.cPrevOp = idx > 0 ? 1 : 0.35; r.cNextOp = idx < pool.length - 1 ? 1 : 0.35;
+        r.cPrev = function () { if (idx > 0) set({ other: pool[idx - 1].id }); };
+        r.cNext = function () { if (idx < pool.length - 1) set({ other: pool[idx + 1].id }); };
+        r.cDown = function (e) { self.cx0 = e.clientX; };
+        r.cUp = function (e) { var d = e.clientX - (self.cx0 || e.clientX); if (d < -30) r.cNext(); else if (d > 30) r.cPrev(); };
+      }
+      var ob = pool.filter(function (o) { return o.id === oid; })[0];
+      r.hasVs = !!ob; r.noVs = !ob;
+      if (ob) {
+        var sa = r.ch.bye ? -1 : r.ch.rankNum, sb = ob.ch.bye ? -1 : ob.ch.rankNum, win = sa === sb ? null : (sa > sb ? "a" : "b");
+        var ga = good(r.next5), gb = good(ob.strip.slice(0, 5));
+        var A = { r: lite(r), fpa: r.ch.bye ? "BYE" : r.fpa, grp: grpName(r), edge: win === "a" ? gold : dim, good: ga + " good wks" };
+        var B = { r: lite(ob), fpa: ob.ch.bye ? "BYE" : ob.fpa, grp: grpName(ob), edge: win === "b" ? gold : dim, good: gb + " good wks" };
+        var bar = function (label, a, b, at, bt, hi) {
+          var t = a + b || 1, aw = Math.round(a / t * 1000) / 10, aWin = hi ? a > b : a < b, bWin = hi ? b > a : b < a;
+          return { label: label, aTxt: at, bTxt: bt, aW: "calc(" + aw + "% - 1px)", bW: "calc(" + (100 - aw) + "% - 1px)", aBg: aWin ? "#e2e8f0" : "rgba(226,232,240,0.45)", bBg: bWin ? "#8fa0c4" : "rgba(143,160,196,0.45)", aInk: aWin ? "#f1f5f9" : "#94a3b8", bInk: bWin ? "#f1f5f9" : "#94a3b8" };
+        };
+        var ra = avgRank(r.next5), rb = avgRank(B.r.next5);
+        r.vs = { a: A, b: B, unit: "PPR pts/g allowed to " + r.pos + "s", wks: r.next5.map(function (c) { return { wk: c.wk }; }),
+          verdict: win ? "This week, easier matchup: " + (win === "a" ? r.short : ob.short) : "This week: same matchup tier",
+          verdict5: ga === gb ? "Next 5 weeks: even (" + ga + " good weeks each)" : "Next 5 weeks: " + (ga > gb ? r.short : ob.short) + " (" + Math.max(ga, gb) + " good weeks vs " + Math.min(ga, gb) + ")",
+          bars: [bar("Pts/g allowed · this week", fnum(r), fnum(ob), A.fpa, B.fpa, true),
+                 bar("Matchup rank · this week", Math.max(sa, 0), Math.max(sb, 0), r.ch.bye ? "BYE" : r.ch.rank, ob.ch.bye ? "BYE" : ob.ch.rank, true),
+                 bar("Avg rank · next 5", ra, rb, ra ? "#" + ra.toFixed(1) : "—", rb ? "#" + rb.toFixed(1) : "—", true)] };
+      }
+    });
+
+    var LS = [["League A", "Dynasty · PPR · Superflex · 10 teams"], ["League B", "Redraft · PPR · K + DEF · 10 teams"]];
+    var go = function (i) { clearTimeout(self.ldT); self.ldT = setTimeout(function () { self.setState({ loading: false }); }, 750); self.setState({ league: i, menu: false, lsheet: false, loading: i !== self.state.league }); };
+    v.leagues.forEach(function (l, i) { l.sub = LS[i][1]; l.pick = function () { go(i); }; l.bt = i ? "1px solid #1b2030" : "0"; l.tab = "position: relative; flex: none; height: 44px; padding: 0 4px; border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: " + (l.on ? 800 : 600) + "; color: " + (l.on ? "#f5c842" : "#94a3b8") + "; cursor: pointer;"; l.bar = "position: absolute; left: 0; right: 0; bottom: 0; height: 2px; border-radius: 1px; background: " + (l.on ? "#f5c842" : "transparent") + ";"; });
+    v.leagueSub = LS[st.league || 0][1];
+    v.loading = !!st.loading;
+    v.listFx = "transition: opacity .2s; opacity: " + (st.loading ? 0.35 : 1) + ";";
+    v.infoOn = !!st.info; v.infoStr = String(!!st.info); v.toggleInfo = function () { self.setState({ info: !self.state.info }); };
+    var so = !!st.lsheet;
+    v.openSheet = function () { self.setState({ lsheet: true }); }; v.closeSheet = function () { self.setState({ lsheet: false }); }; v.sheetStr = String(so);
+    v.lsScrim = "position: absolute; inset: 0; z-index: 65; border: 0; padding: 0; background: rgba(3,4,8,0.6); opacity: " + (so ? 1 : 0) + "; pointer-events: " + (so ? "auto" : "none") + "; transition: opacity .3s; cursor: default;";
+    v.lsStyle = "position: absolute; left: 0; right: 0; bottom: 0; z-index: 70; transform: translateY(" + (so ? "0" : "105%") + "); transition: transform .38s cubic-bezier(.22,1,.36,1);";
+    v.winCaption = st.win === "season" ? "Ranks use every game this season." : "Ranks use each defense's last 4 games (byes skipped).";
+
+    var OB = st.ob || { step: "entry" }, done = !!st.obDone, step = OB.step;
+    v.obOn = !done;
+    ["entry", "loading", "leagues", "none", "pre", "off"].forEach(function (s) { v["ob_" + s] = !done && step === s; });
+    v.obErrOn = !!OB.err; v.obErr = OB.err || ""; v.obErrStr = String(!!OB.err); v.obName = OB.name || "";
+    v.obInputEdge = OB.err ? "1.5px solid #F87171" : "1px solid #5b6680";
+    var val = function () { return (self.obVal || "").trim(); };
+    v.obInput = function (e) { self.obVal = e.target.value; if (self.state.ob && self.state.ob.err) self.setState({ ob: Object.assign({}, self.state.ob, { err: null }) }); };
+    v.obFocus = function () { clearTimeout(self.kbT); if (!self.state.kb) self.setState({ kb: true }); };
+    v.obBlur = function () { clearTimeout(self.kbT); self.kbT = setTimeout(function () { self.setState({ kb: false }); }, 180); };
+    var run = function (name) {
+      if (!name) { self.setState({ ob: { step: "entry", err: "Enter your Sleeper username." } }); return; }
+      if (!/^[A-Za-z0-9_]{1,20}$/.test(name)) { self.setState({ ob: { step: "entry", name: name, err: "Usernames use letters, numbers and _ only." } }); return; }
+      clearTimeout(self.kbT); self.setState({ kb: false, ob: { step: "loading", name: name } });
+      clearTimeout(self.obT); self.obT = setTimeout(function () {
+        var k = name.toLowerCase();
+        var o = k === "nobody" ? { step: "entry", name: name, err: "No Sleeper user named \u201c" + name + "\u201d. Use your username, not your display name." }
+          : k === "empty" ? { step: "none", name: name } : k === "offline" ? { step: "off", name: name }
+          : k === "draft" ? { step: "pre", name: name, league: "League C" } : { step: "leagues", name: name };
+        self.setState({ ob: o });
+      }, 900);
+    };
+    v.obSubmit = function () { run(val()); };
+    v.obSubmitKb = function (e) { e.preventDefault(); run(val()); };
+    v.obKey = function (e) { if (e.key === "Enter") { e.preventDefault(); run(val()); } };
+    v.obRetry = function () { run(OB.name || val()); };
+    v.obAgain = function () { self.obVal = ""; self.setState({ ob: { step: "entry" } }); };
+    v.obDemo = ["user_1", "nobody", "empty", "draft", "offline"].map(function (n) { return { label: n, pick: function (e) { var root = e.currentTarget.closest("[data-root]"); var inp = root && root.querySelector("input[data-ob]"); if (inp) inp.value = n; self.obVal = n; run(n); } }; });
+    var LL = [["League A", "Dynasty · PPR · Superflex · 10 teams"], ["League B", "Redraft · PPR · K + DEF · 10 teams"]];
+    v.obLeagues = LL.map(function (l, i) { return { name: l[0], sub: l[1], status: "In season", bt: i ? "1px solid #1b2030" : "0",
+      chip: "padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(129,253,160,0.45); color: #81FDA0; font-size: 11px; font-weight: 800;",
+      pick: function () { clearTimeout(self.ldT); self.ldT = setTimeout(function () { self.setState({ loading: false }); }, 750); self.setState({ obDone: true, ob: null, league: i, loading: true }); } }; });
+    v.obCount = LL.length + " NFL leagues";
+    v.obLeague = OB.league || "";
+    v.restartOb = function () { self.obVal = ""; self.setState({ obDone: false, lsheet: false, ob: { step: "entry" } }); };
+    v.kbOn = !!st.kb && v.ob_entry;
+    v.obPadB = v.kbOn ? "307px" : "96px";
+    v.obBackOn = step !== "entry" && step !== "loading";
+    var s2 = step === "leagues" || step === "pre" || step === "none";
+    var dot = function (on) { return "width: " + (on ? 18 : 6) + "px; height: 6px; border-radius: 3px; transition: width .25s; background: " + (on ? "#f5c842" : "#3a4258") + ";"; };
+    v.obDot1 = dot(!s2); v.obDot2 = dot(s2); v.obStepAria = "Step " + (s2 ? 2 : 1) + " of 2";
+    v.obTitle = { entry: "What's your Sleeper username?", loading: "What's your Sleeper username?", leagues: "Pick a league", none: "No leagues yet", pre: "Not drafted yet", off: "Can't reach Sleeper" }[step] || "";
+    v.obSheet = "position: absolute; left: 0; right: 0; z-index: 46; bottom: " + (v.kbOn ? 291 : 0) + "px; transition: bottom .25s cubic-bezier(.22,1,.36,1); max-height: " + (v.kbOn ? 440 : 600) + "px; overflow-y: auto; box-sizing: border-box; padding: 6px 16px " + (v.kbOn ? 14 : 28) + "px; border-radius: 20px 20px 0 0; border-top: 1px solid rgba(255,255,255,0.15); background: linear-gradient(170deg, #161622, #0f121a); box-shadow: 0 -12px 40px -8px rgba(0,0,0,0.8); display: flex; flex-direction: column; gap: 14px;";
+
+    var PH = st.phase || "mid", tick = st.tick || 0, VAR = "W2";
+    if (!self.lvStarted) { self.lvStarted = true; var loop = function () { if ((self.state.phase || "mid") === "live" && (self.state.tick || 0) < 14) self.setState({ tick: (self.state.tick || 0) + 1, tAt: Date.now() }); self.lvT = setTimeout(loop, 3200); }; self.lvT = setTimeout(loop, 3200); }
+    var P0 = { "Sun 3:05 PM": 0.62, "Sun 3:25 PM": 0.55 };
+    var gs = function (kick, t) {
+      if (PH === "final") return { s: "final", p: 1 };
+      var early = /^Thu|^Sun 8:30|^Sun 12:00/.test(kick);
+      if (PH === "mid") return { s: "pre", p: 0 };
+      if (PH === "pre") return early && /^Thu|^Sun 8:30/.test(kick) ? { s: "final", p: 1 } : { s: "pre", p: 0 };
+      if (early) return { s: "final", p: 1 };
+      if (P0[kick] !== undefined) { var p = Math.min(1, P0[kick] + t * 0.035); return p >= 1 ? { s: "final", p: 1 } : { s: "live", p: p }; }
+      return { s: "pre", p: 0 };
+    };
+    var ptsAt = function (fin, g) { return g.s === "final" ? fin : g.s === "pre" ? 0 : Math.round(fin * Math.floor(g.p * 8) / 8 * 10) / 10; };
+    var clock = function (p) { var e = p * 60, q = Math.min(4, Math.floor(e / 15) + 1), rem = 15 - (e - (q - 1) * 15), m = Math.floor(rem), sec = Math.floor((rem - m) * 60); return "Q" + q + " " + m + ":" + (sec < 10 ? "0" : "") + sec; };
+    var fmt = function (n) { return n.toFixed(n % 1 ? (Math.round(n * 100) % 10 ? 2 : 1) : 1); };
+    var tot = 0, totPrev = 0, done = 0, liveN = 0, toN = 0, segs = [];
+    v.all.forEach(function (r) {
+      var kick = r.kick, fin = r.pts || 0, g = r.ch.bye ? { s: "bye", p: 0 } : gs(kick, tick), gp = r.ch.bye ? g : gs(kick, Math.max(0, tick - 1));
+      var now = g.s === "bye" ? 0 : ptsAt(fin, g), prev = gp.s === "bye" ? 0 : ptsAt(fin, gp);
+      r.lvState = g.s; r.lvLive = g.s === "live"; r.lvPre = g.s === "pre"; r.lvFinal = g.s === "final";
+      r.lvPts = g.s === "pre" || g.s === "bye" ? "—" : fmt(now);
+      r.lvStatus = g.s === "live" ? clock(g.p) : g.s === "final" ? "Final" : g.s === "bye" ? "Bye" : kick;
+      r.lvStatusInk = g.s === "live" ? "#f1f5f9" : "#94a3b8"; r.lvStatusW = g.s === "live" ? 800 : 600;
+      r.lvInk = g.s === "live" ? "#f1f5f9" : g.s === "final" ? "#cbd5e1" : "#8b93a3";
+      var d = Math.round((now - prev) * 10) / 10;
+      r.lvFlash = PH === "live" && g.s !== "pre" && d > 0 && tick > 0; r.lvNoFlash = !r.lvFlash; r.lvDelta = "+" + d.toFixed(1);
+      r.lvShowPts = VAR === "W4" ? (st.mode || (PH === "pre" ? "match" : "live")) === "live" : g.s !== "pre" && g.s !== "bye";
+      r.lvShowMeter = !r.lvShowPts;
+      r.lvAria = (g.s === "pre" ? "Not started, kickoff " + kick : r.lvPts + " points, " + (g.s === "live" ? "live, " + r.lvStatus : r.lvStatus));
+      r.aria = r.aria + ", " + r.lvAria;
+      if (r.group === "starter") { tot += now; totPrev += prev; if (g.s === "final") done++; else if (g.s === "live") liveN++; else toN++;
+        segs.push({ st: g.s }); }
+    });
+    var order = { final: 0, live: 1, pre: 2, bye: 3 };
+    segs.sort(function (a, b) { return order[a.st] - order[b.st]; });
+    v.lvSegs = segs.map(function (s) { return { style: s.st === "final" ? "background: #f5c842;" : s.st === "live" ? "background: #ef4444;" : "background: #2a3450;" }; });
+    v.lvTotal = tot.toFixed(2); v.lvDone = String(done); v.lvLiveN = String(liveN); v.lvTo = String(toN);
+    var td = Math.round((tot - totPrev) * 10) / 10; v.lvTotFlash = PH === "live" && td > 0 && tick > 0; v.lvTotDelta = "+" + td.toFixed(1);
+    v.lvIsLive = PH === "live" && liveN > 0; v.lvAny = PH !== "mid";
+    v.lvFresh = PH === "pre" ? "First kickoff 12:00 PM · updates every 60s once games start" : PH === "final" ? "All games final" : (liveN ? "Updated just now · every 60s" : "Live games over · tonight 7:20 PM next");
+    v.lvClock = PH === "mid" ? "Wed · no games yet" : PH === "pre" ? "Sun 11:00 AM" : PH === "final" ? "Tue (week done)" : "Sun 4:40 PM CT · tick " + tick + "/14";
+    var phs = [["mid", "Midweek"], ["pre", "Sun 11 AM"], ["live", "Sun 4:40 PM"], ["final", "All final"]];
+    v.lvPhases = phs.map(function (p) { var on = PH === p[0]; return { label: p[1], pressed: String(on), pick: function () { self.setState({ phase: p[0], tick: 0, mode: null }); },
+      style: "height: 32px; padding: 0 10px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; border: " + (on ? "1.5px solid #f5c842" : "1px solid #2a3450") + "; background: transparent; color: " + (on ? "#f5c842" : "#cbd5e1") + ";" }; });
+    var stCount = v.starters.length;
+    v.groups.forEach(function (g) { g.totOn = g.title === "STARTERS" && PH !== "pre" && PH !== "mid"; g.tot = g.totOn ? tot.toFixed(2) + " PTS" : ""; });
+    var md = st.mode || (PH === "pre" ? "match" : "live");
+    v.modeOpts = [["match", "Matchups"], ["live", "Live"]].map(function (o) { var on = md === o[0]; return { label: o[1], on: on, pressed: String(on), pick: function () { self.setState({ mode: o[0] }); } }; });
+    this.glass2(v, T, v.modeOpts, "modePill", 84);
+    if (VAR === "W5" && PH === "live") {
+      var bucket = function (s) { return v.starters.filter(function (r) { return r.lvState === s; }); };
+      var mk = function (t, rows) { rows.forEach(function (r, i) { r.bt = i ? "1px solid #1b2030" : "0"; }); return { title: t, count: String(rows.length), rows: rows, color: T.label, totOn: false, tot: "" }; };
+      var gl = [mk("PLAYING NOW", bucket("live")), mk("STILL TO PLAY", bucket("pre")), mk("FINAL", bucket("final"))].filter(function (g) { return g.rows.length; });
+      var bench = v.groups.filter(function (g) { return g.title === "BENCH"; });
+      if (st.filt === "ALL") v.groups = gl.concat(bench);
+    }
+
+    v.navNoop = function (e) { e.preventDefault(); };
+    var DN = st.dens || "default", DH = { compact: 56, "default": 62, roomy: 68 }[DN];
+    v.all.forEach(function (r) { r.rowStyle = r.rowStyle.replace(/min-height: \d+px/, "min-height: " + DH + "px"); r.lvColOn = PH !== "mid"; });
+    v.dens = [["compact", "Compact 56"], ["default", "Default 62"], ["roomy", "Roomy 68"]].map(function (d) { var on = DN === d[0]; return { label: d[1], pressed: String(on), pick: function () { self.setState({ dens: d[0] }); },
+      style: "height: 32px; padding: 0 8px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; border: " + (on ? "1.5px solid #f5c842" : "1px solid #2a3450") + "; background: transparent; color: " + (on ? "#f5c842" : "#cbd5e1") + ";" }; });
+    if (v.pad) v.lsStyle = v.lsStyle.replace("left: 0; right: 0;", "left: 50%; width: 560px; margin-left: -280px;");
+
+
+    return v;
+  }
+
+}
+</script>
+</body>
+</html>

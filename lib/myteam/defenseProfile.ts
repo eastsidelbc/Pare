@@ -45,26 +45,29 @@ type OffenseStatKey = 'turnovers' | 'sacks_allowed' | 'points';
 
 interface StatSpec<K extends string> {
   key: K;
+  /** Short label; the UI appends " / {unit}" (P4 mockup copy: "Pass yds / game"). */
   label: string;
+  /** Per game, except the red-zone rate (per drive). */
+  unit: 'game' | 'drive';
   /** For the team being ranked: is a higher value better? */
   higherIsBetter: boolean;
 }
 
 const DEF: Record<DefenseStatKey, StatSpec<DefenseStatKey>> = {
-  pass_yds: { key: 'pass_yds', label: 'Pass yds allowed', higherIsBetter: false },
-  rush_yds: { key: 'rush_yds', label: 'Rush yds allowed', higherIsBetter: false },
-  pass_td: { key: 'pass_td', label: 'Pass TD allowed', higherIsBetter: false },
-  rush_td: { key: 'rush_td', label: 'Rush TD allowed', higherIsBetter: false },
-  int: { key: 'int', label: 'INT', higherIsBetter: true },
-  sacks: { key: 'sacks', label: 'Sacks', higherIsBetter: true },
-  points: { key: 'points', label: 'Points allowed', higherIsBetter: false },
-  rz_per_drive: { key: 'rz_per_drive', label: 'Red-zone trips allowed / drive', higherIsBetter: false },
+  pass_yds: { key: 'pass_yds', label: 'Pass yds', unit: 'game', higherIsBetter: false },
+  rush_yds: { key: 'rush_yds', label: 'Rush yds', unit: 'game', higherIsBetter: false },
+  pass_td: { key: 'pass_td', label: 'Pass TD', unit: 'game', higherIsBetter: false },
+  rush_td: { key: 'rush_td', label: 'Rush TD', unit: 'game', higherIsBetter: false },
+  int: { key: 'int', label: 'INT made', unit: 'game', higherIsBetter: true },
+  sacks: { key: 'sacks', label: 'Sacks made', unit: 'game', higherIsBetter: true },
+  points: { key: 'points', label: 'Points allowed', unit: 'game', higherIsBetter: false },
+  rz_per_drive: { key: 'rz_per_drive', label: 'Red-zone trips', unit: 'drive', higherIsBetter: false },
 };
 
 const OFF: Record<OffenseStatKey, StatSpec<OffenseStatKey>> = {
-  turnovers: { key: 'turnovers', label: 'Turnovers', higherIsBetter: false },
-  sacks_allowed: { key: 'sacks_allowed', label: 'Sacks allowed', higherIsBetter: false },
-  points: { key: 'points', label: 'Points scored', higherIsBetter: true },
+  turnovers: { key: 'turnovers', label: 'Turnovers', unit: 'game', higherIsBetter: false },
+  sacks_allowed: { key: 'sacks_allowed', label: 'Sacks allowed', unit: 'game', higherIsBetter: false },
+  points: { key: 'points', label: 'Points scored', unit: 'game', higherIsBetter: true },
 };
 
 /** Which opponent stats explain a matchup, per position. DEF reads the opposing OFFENSE. */
@@ -80,6 +83,7 @@ export const POSITION_PROFILE: Readonly<Record<FantasyPosition, { side: 'defense
 export interface WhyStat {
   key: string;
   label: string;
+  unit: 'game' | 'drive';
   /** Per game, except `rz_per_drive` (a rate over the window). */
   value: number;
   rank: number;
@@ -144,6 +148,7 @@ export function whyStats(
     return {
       key: spec.key,
       label: spec.label,
+      unit: spec.unit,
       value: mine[spec.key],
       rank: r?.rank ?? NaN,
       formattedRank: r?.formattedRank ?? '—',

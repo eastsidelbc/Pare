@@ -1,6 +1,7 @@
 /**
- * Roster list (design-system §9.4) — STARTERS · BENCH · IR / TAXI, each a deep
- * list card with hairline rows. IR / TAXI is always open. Rows expand in place.
+ * Roster list (design-system §9.4, P4 final mockup) — STARTERS · BENCH ·
+ * IR / TAXI, each a deep list card (radius 14, hairline rows) under a gold-rule
+ * label with its count on the right. IR / TAXI is always open.
  */
 
 'use client';
@@ -17,15 +18,17 @@ export interface RosterSection {
   rows: RosterRow[];
 }
 
-/** Gold-rule section label: 11px/800/.18em + hairline; `right` reserves the P6 starters total. */
-export function SectionHeading({ children, right }: { children: ReactNode; right?: ReactNode }) {
+/** Gold-rule section label: 11px/800/.18em gold · hairline · count (11/700 subtext) or a control on the right. */
+export function SectionHeading({ children, count, right }: { children: ReactNode; count?: number; right?: ReactNode }) {
   return (
-    <div
-      className="mb-2 mt-4 flex items-center gap-2"
-      style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--gold-bright)' }}
-    >
-      {children}
+    <div data-section-label className="flex items-center" style={{ gap: 10, marginBottom: 8 }}>
+      <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: 'var(--gold-bright)' }}>{children}</span>
       <span className="h-px flex-1" style={{ background: 'var(--hairline)' }} />
+      {count !== undefined && (
+        <span data-section-count className="tabular-nums" style={{ fontSize: 11, fontWeight: 700, color: 'var(--subtext)' }}>
+          {count}
+        </span>
+      )}
       {right}
     </div>
   );
@@ -47,8 +50,8 @@ export default function RosterView({ sections, allRows, expanded, onToggle, ctx,
     <div data-state="roster">
       {sections.map((section) =>
         section.rows.length === 0 ? null : (
-          <section key={section.id} data-section={section.id} aria-label={section.title}>
-            <SectionHeading>{section.title}</SectionHeading>
+          <section key={section.id} data-section={section.id} aria-label={section.title} style={{ paddingTop: 12 }}>
+            <SectionHeading count={section.rows.length}>{section.title}</SectionHeading>
             <ul className="divide-y divide-[var(--hairline)] overflow-hidden" style={LIST_CARD}>
               {section.rows.map((row) => (
                 <RosterRowItem
