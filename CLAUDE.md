@@ -7,7 +7,7 @@
 >
 > **Current state authority:** `CHANGELOG.md` (not this file). Deep references stay separate:
 > `docs/design-system.md` (UI rules), `DATA_SOURCES.md` (ESPN/Sleeper endpoints),
-> `VISION.md` (product), `docs/mobile/IOS_RUNBOOK.md` (iOS).
+> `VISION.md` (product), `ios/README.md` (iOS runbook).
 
 ---
 
@@ -16,7 +16,7 @@
 NFL team head-to-head stat comparison app — "Sleeper-tier" quality bar, live at **https://pare.gg**.
 
 - **Web:** Next.js 15.5 (App Router, Turbopack) + React 19 + TypeScript + **Tailwind v4** — production, port 4000
-- **iOS:** SwiftUI + WKWebView wrapper — Phase C scaffold (see `docs/mobile/IOS_RUNBOOK.md`)
+- **iOS:** minimal SwiftUI + WKWebView shell loading pare.gg — branch `feat/ios-shell` (see `ios/README.md`, ADR `docs/adr/2026-10-08-ios-shell-v1.md`)
 - **Signature visual:** theScore-style proportional inward bars
 - **Audience:** everyday NFL fans first (later: bettors → fantasy → stat nerds)
 
@@ -108,7 +108,7 @@ Bars grow inward and meet at the exact ratio; elite-vs-poor matchups get up to 3
 - Production-tested — **no architecture refactors without explicit approval** (record real decisions as ADRs in `docs/adr/`).
 - Hook-based logic only; client-side ranking only; one source of truth per concern (above).
 - Data layer is abstracted (`lib/espnStats`, `lib/fantasy`, …) — provider swaps stay inside it.
-- iOS: **WKWebView wrapper now, native later.** Never edit `Pare.xcodeproj` — regenerate from `ios/project.yml`. HTTPS only (ATS). Open: prod URL still placeholder `pare-nfl.app` → should be `pare.gg`.
+- iOS: **WKWebView wrapper now, native later.** `ios/Pare.xcodeproj` is the source of truth (no generator) — project settings change **in the Xcode UI only**, never by hand in `project.pbxproj`. Sources go in the synchronized folder `ios/Pare/` (any file there builds). HTTPS only (ATS, no exceptions). Runbook: `ios/README.md`.
 - Dead code goes to `_to-delete/<date>-<what>/` (excluded in `tsconfig.json`; Kobe deletes manually) — never silently removed.
 
 ## Verification (token-thrifty)
@@ -146,7 +146,7 @@ pm2 restart pare                # app = "pare" (localhost:4000); tunnel = "pare-
 pm2 logs pare                   # watch for ESPN 429/403
 ```
 
-**iOS (Mac mini only):** `cd ios && ./Scripts/setup.sh` (first time) · `open ios/Pare.xcodeproj` (build/run).
+**iOS (Mac mini only, in `~/Pare-ios` — never `~/Pare`):** `open ios/Pare.xcodeproj` (build/run) · terminal build: `xcodebuild -project ios/Pare.xcodeproj -scheme Pare -destination "id=<UDID>" build` (UDIDs: `xcrun simctl list devices available`).
 
 ## Environment gotchas
 
@@ -165,13 +165,13 @@ pm2 logs pare                   # watch for ESPN 429/403
 | Repo | github.com/eastsidelbc/Pare (`main`) |
 | Dev port | 4000 |
 | Data sources | ESPN (schedule/stats/standings/leaders) + Sleeper (fantasy) |
-| Bundle ID | `com.OptimusCashLLC.pare` |
+| Bundle ID | `gg.pare.app.dev` (Personal Team) → `gg.pare.app` under Pare LLC in Phase S. Never put `gg.pare.app` on a Personal Team — rule + reason in `ios/README.md` |
 | Max comparisons | 8 (`APP_CONSTANTS.MAX_COMPARISONS`) |
 | Special rows filtered | `Avg Team`, `League Total`, `Avg Tm/G`, `Avg/TmG` |
 | Tie notation / tolerance | `T-12th` / `0.001` |
 | Data freshness | live 15s · standings instant · schedule 5 min · stats 10 min · leaders ≤~40 min |
 | Logos vs names | `config/teamIdentity.ts` — flip `default` (`'logo'` ⇄ `'name'`); per-surface `overrides`. Must be `'name'` before ads/Pro (trademarks) |
-| In-app detector | `lib/platform.ts` — inline head script sets `<html data-app="ios">` when the UA contains `Pare-iOS` (set in `ios/Pare/Web/WebViewContainer.swift`). CSS: `[data-app="ios"] …`; client: `isInIosApp()`. Never `headers()` (keeps pages static/ISR). Hides `.site-footer`; reuse for the logo switch |
+| In-app detector | `lib/platform.ts` — inline head script sets `<html data-app="ios">` when the UA contains `Pare-iOS` (`AppConfig.uaToken` in `ios/Pare/AppConfig.swift` — keep equal to `IOS_APP_UA_TOKEN`). CSS: `[data-app="ios"] …`; client: `isInIosApp()`. Never `headers()` (keeps pages static/ISR). Hides `.site-footer`; reuse for the logo switch |
 | Privacy policy | Privacy policy at `/privacy` (`app/privacy/page.tsx`) — update it **BEFORE** adding accounts, analytics, ads, or any data collection (and when the browser starts loading a new third-party domain). Today: localStorage `pare:favorites` + `pare:comparisons`, no own cookies; browser hits ESPN directly for live scores + box scores |
 | TODO before App Store | Route live scores (`useLiveScores`) + box scores (`useGameSummary`) through our own API with a short shared cache before App Store submission; then update /privacy "Sports data" + "Services we rely on". In-app privacy link → native Settings screen (Phase 4) |
 | Service worker | `public/sw.js` = kill switch (clears `pare-*` caches + unregisters old installs, 2026-10-06); `NEXT_PUBLIC_ENABLE_SW` off on pare.gg |

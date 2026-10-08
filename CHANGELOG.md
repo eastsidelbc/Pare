@@ -37,6 +37,12 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Perf (sandbox, 4× CPU, median of 3): LCP 0.25–0.29s, expand 50–56ms, TOT/PPG ~40ms, 60 fps / 0 dropped, ~2ms main-thread per 5s idle, 0 animations → no fixes needed. Details in the dev note.
 
 ### Added
+- **iOS shell v1: SwiftUI + WKWebView app for pare.gg** (2026-10-08, branch `feat/ios-shell`)
+  - See: `docs/devnotes/2026-10-08-ios-shell.md` · runbook `ios/README.md` · ADR `docs/adr/2026-10-08-ios-shell-v1.md` · plan `docs/plans/2026-10-08-ios-shell.md`.
+  - Xcode 26 project at `ios/Pare.xcodeproj` (source of truth, Xcode UI only, synchronized folder `ios/Pare/`), bundle `gg.pare.app.dev` on a Personal Team until Phase S. The Oct 2025 scaffold is archived in `_to-delete/2026-10-08-ios-scaffold-v0/`.
+  - Shell: BgDeep everywhere (no white flash), no bounce/swipe-back, UA token `Pare-iOS` (web footer hides itself, no web change), pare.gg stays in-app, other links → Safari sheet, offline screen + Retry, native Settings sheet, reload after a WebKit crash.
+  - Bridge (allow-listed, main-frame pare.gg only): `share` (iPad popover-safe), `haptic` (7 styles), `openSettings`. Privacy manifest: User ID (linked, app functionality), no tracking.
+  - Builds clean for the iPhone 17 + iPad Pro 11-inch (M5) simulators (Xcode 26.3). Next: H2 (wire `Config/Info.plist` in the Xcode UI), then H3 on a real iPhone 14 Pro.
 - **Site footer + /about page** (2026-10-06, branch `chore/footer-about`)
   - See: `docs/devnotes/2026-10-06-footer-about.md`.
   - `components/SiteFooter.tsx` at the end of each tab's scroll content (Home, Standings, Leaders, About): ≥1024px full footer (wordmark + tagline, Pare / Company columns, © line + "not affiliated" disclaimer); below that a one-line "© {year} Pare LLC · About". Legal column hidden until Privacy/Terms exist. Not on Compare (no-scroll fit screen).
