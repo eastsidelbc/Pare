@@ -125,6 +125,9 @@ The `?.` chain makes every call a no-op in a normal browser. Phase W adds a type
 
 ## H2 checklist (Mac mini, Xcode UI)
 
+**Done 2026-10-08 (`43a0533`):** steps 2–3 were applied directly in `project.pbxproj` with Xcode closed (Kobe-approved one-off).
+Kept here as the reference for what those settings are. Current state: `ios/STATUS.md`.
+
 1. `cd ~/Pare-ios` → `git pull`. Open `ios/Pare.xcodeproj`.
 2. Click the blue **Pare** project → under TARGETS pick **Pare** → **Build Settings** → **All** + **Combined**.
    - Search `INFOPLIST_FILE` → **Info.plist File** → `Config/Info.plist`.
