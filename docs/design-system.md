@@ -47,6 +47,30 @@ Tailwind's `rounded-xl` is 12px — do not use it for cards; cards are `--radius
 **Shadows:** `--shadow-card` (resting cards) · `--shadow-pop` (floating/overlays). No ad-hoc
 `shadow-2xl shadow-black/50`.
 
+**My Team scoped families (Fantasy tab only — §9 rule 3, §9.4; added 2026-10-07).** Values live in
+`app/globals.css :root` only; listed here so the meaning is reviewable.
+
+| Token | Value | Meaning |
+|---|---|---|
+| `--matchup-1` | `#E15957` | Avoid (ranks 1–5) |
+| `--matchup-2` | `#E07E2F` | Tough (6–12) |
+| `--matchup-3` | `#B0AAA3` | Avg (13–20) |
+| `--matchup-4` | `#B4D35C` | Good (21–27) |
+| `--matchup-5` | `#81FDA0` | Great (28–32) |
+| `--matchup-bye` | `#5b6680` | Bye — dashed outline, empty bars |
+| `--matchup-track` | `#2a3450` | Unfilled meter bar |
+| `--pos-qb` / `--pos-qb-bg` | `#F9A8D4` / `rgba(244,114,182,0.18)` | QB circle |
+| `--pos-rb` / `--pos-rb-bg` | `#5EEAD4` / `rgba(45,212,191,0.18)` | RB circle |
+| `--pos-wr` / `--pos-wr-bg` | `#93C5FD` / `rgba(96,165,250,0.18)` | WR circle |
+| `--pos-te` / `--pos-te-bg` | `#C4B5FD` / `rgba(167,139,250,0.20)` | TE circle |
+| `--pos-other` / `--pos-other-bg` | `#CBD5E1` / `rgba(148,163,184,0.18)` | K, DEF (not mocked — neutral; the label carries it) |
+| `--inj-q` · `--inj-d` · `--inj-o` · `--inj-ir` | `#FCD34D` · `#FB923C` · `#F87171` · `#F87171` | Injury badge fill; badge text `--bg-deep` |
+
+Measured: luminance rises steadily 1→5 (0.24 / 0.31 / 0.41 / 0.57 / 0.78), so the ramp reads in
+grayscale. Contrast vs the `#12151d` deep card 4.97 / 6.21 / 7.86 / 10.71 / 14.22; vs `--matchup-track`
+3.39 / 4.24 / 5.36 / 7.31 / 9.71. Guarded by `lib/__tests__/matchupContrast.test.ts` (each step ≥3:1 vs
+the deep card and the track, label text ≥4.5:1, luminance strictly rising).
+
 **Spacing:** stay on a 2/4/6/8/10/12 rhythm. Don't mix Tailwind half-steps (`py-1.5`) with
 raw inline `marginLeft: 6` in the same component.
 
@@ -257,7 +281,8 @@ Comparison tab pills: every pill is washed in its two teams' colors — 22% acti
 
 **Nav (Round 4 K):** `--nav-bg` capsule (darkest surface; no backdrop blur — at 94% opacity it was
 invisible, pixel diff max 2/255, but cost a re-blur per frame); the active tab is a sliding gold neon outline
-(`--gold-bright` border + glow). Sizing unchanged (`--nav-pill-h`). The nav is one instance of the
+(`--gold-bright` border + glow). Sizing: `--nav-pill-h` / `--nav-h` — since My Team P4 (2026-10-07) the
+nav is **N3** (5 stacked tabs, 58 / 78; recipe in §9.4 "Nav"). The nav is one instance of the
 shared **glass toggle** recipe (§9 rule 7) — `ActivePill` layoutId `'nav-active-pill'` (reserved for the nav).
 
 **Density rule:** on an iPhone 14 Pro in app mode (393×759 usable) Offense **and** Defense
@@ -321,6 +346,12 @@ old `--bg / --surface / --card` values get pointed at the deep tokens and retire
 **3. Accent.** `--gold-bright` = interactive/UI accent only (active nav, active toggle, "+", ×,
 headers like "WEEK 5", current-row marker). Team colors = identity only (never for UI state).
 Red = live / bad rank. Don't introduce new accent colors.
+**Amendment (My Team P4, 2026-10-07):** team colors stay identity-only. Three NEW scoped color
+families are allowed, **only inside My Team** (§9.4): (a) `--matchup-*` for matchup quality (meter,
+week cells, start/sit); (b) `--pos-*` for the position circle; (c) `--inj-*` for the injury badge.
+Each is **always paired with text** (tier word + rank, position letters, injury letter) — never color
+alone. `--matchup-1` (Avoid) sits near RankBadge red and `--red` (live): they're kept apart by shape
+(5-bar meter vs badge vs 6px live dot + clock text).
 
 **4. Team identity — logos OR names, behind one switch** (`config/teamIdentity.ts`, 2026-10-06).
 Every team mark renders through `components/ui/TeamIdentity.tsx`: `default` = `'logo'` | `'name'`
@@ -363,7 +394,7 @@ framer `layoutId` spring 420/34, `will-change: transform`, reduced motion → in
 gold-bright 700. Inactive = `--glass-off` 500 (4.70:1 on `--nav-bg`; `--muted` was 4.2 — fails AA at
 11–12px), no glow. Label color fades `.2s`. Styles live in `components/ui/glassControl.tsx`
 (`glassColor`, `glassCapsule`, `GlassLabel` — reserves the bold width so 500↔700 never shifts
-neighbours). Font size stays per control (nav 12px; headers 11.5px, jump 11px + .06em). Every
+neighbours). Font size stays per control (nav 11px stacked under an 18px icon — §9.4 Nav; headers 11.5px, jump 11px + .06em). Every
 control gets its own `LayoutGroup` + unique `layoutId` (`standings-view`, `fantasy-mode`,
 `leaders-jump`) so a pill never flies between controls. Not on this recipe: Home week stepper
 (no on/off state), Compare tab chips (team-color wash, closable), FirstLaunch AFC/NFC.
@@ -460,3 +491,33 @@ Components: `app/leaderboards/page.tsx` (header), `components/leaderboards/JumpN
 Standards: touch targets — expand 44px, toggle + jump links 44px tap area ✓ · inactive toggle/jump labels `--glass-off` 4.70:1 ✓ · smallest text 10px only on the shared D1
 section labels (Standings exception); rows/titles/links ≥ 11px ✓ · contrast: white 16.5:1, `--subtext` 7.1:1 (6.1 on the
 leader tint), gold-bright 11.4:1, team abbr ≥ 4.5:1 ✓ · WCAG 2.5.8 24px ✓ · names truncate only past ~13 chars on iPhone.
+
+### 9.4 My Team — Fantasy tab (P4 picks, signed off 2026-10-07)
+
+Picked on the "Pare My Team" canvas (R9 final prototype). Plan: `docs/plans/my-team-fantasy.md`
+(P4 picks). Route `/myteam`; components `components/myteam/*`; pure logic `lib/myteam/*`
+(`viewModel.ts`, `rating.ts` `TIER_CUTOFFS`, `startSit.ts`).
+
+**Principle:** My Team **assists** the user's fantasy app with information; it does not compete with
+it. It adds what the league app doesn't show (matchup quality, the why, look-ahead, start/sit by
+matchup) and never duplicates what the league app owns (big live team totals, lineup/roster
+management, opponent scoreboards).
+
+| Part | Recipe |
+|---|---|
+| Header | H1 Inline: "Pare" + gold-bright **FANTASY** label + gold **league capsule** on the right (36px drawn / 44px hit, `--nav-bg` + `--glass-edge`, league name gold-bright, chevron) → bottom sheet **"Your leagues"** (`BottomSheet`): 64px rows — name 15/800 + format line (e.g. "Dynasty · PPR · Superflex · 10 teams"), gold check on the current one; footer "Sleeper · {username}" + "Change username" (restarts onboarding). iPad: sheet max 560px, centred. Switching: "Loading {league}…" pill + the list dims ~0.75s |
+| Week bar | "WEEK n" (white 13px/900) + date range (`--subtext`) · **Season \| Last 4** glass toggle (unique `layoutId` `myteam-window`) + **ⓘ** (44px) → note: "Season = every game this defense has played. Last 4 = its last 4 games played (byes skipped). Ranks and colors switch with it." |
+| Filter row | **Sticky.** Position pills with counts side by side ("QB 3"), 30px drawn / 44px hit, gold-bright active ring; "Expand all / Collapse all" text button (44px) on the right |
+| Sections | **STARTERS · BENCH · IR / TAXI** — IR / TAXI is **always open** (never collapsed). Gold-rule labels 11px/800/.18em; one deep list card per section (`--radius-lg`), `--hairline` rows |
+| Row | min-height **62**. **Position circle** 38px (`--pos-*` text on `--pos-*-bg`; a FLEX / SFLX starter shows "FLEX" / "SFLX" in the player's position color and the real position moves to line 2 as "RB · "; injury letter badge on the circle's corner, `--inj-*` fill + `--bg-deep` text) · name 14/700 (+ IR / TAXI tag in the reserve section) · line 2 11px: team abbr in team color · opponent ("vs LV" / "@ LV") · kickoff (game week: live dot + "Q3 8:12" / "Final" — P6) · **micro-bar** of the next 5 weeks (one segment per week in its `--matchup-*` color; byes dashed `--matchup-bye`) · [game week only, P6: 46px points column, 15px tabular, gold "+2.6" fades after a change] · **signal meter**: 5 bars (tier n fills n bars in `--matchup-n`, the rest `--matchup-track`) + "Great #28" 11px in the tier color. Bye = dashed empty bars + "Bye" |
+| Expand | Tap a row → it **expands in place** (several can be open; no sheet, no long-press, no swipe): pts/g-allowed hero, why-stats with ranks, 5 week cells, then **"Start / Sit ›"** (48px, "vs n other RBs" hint, gold chevron) **above** "Open in Compare · KC vs LV" (48px). iPad: the action pair is **"Pin to side" + "Compare"** |
+| Start / Sit | The button area of the **same card** slides (translateX, ~0.34s; none under reduced motion); the metrics above stay. Shows ‹ Back + "START / SIT · RBS", 44px chips of my other players at that position — the likely swap pre-picked (starter → first bench player at that position; bench / IR / taxi → first starter) — both players' next-5 week cells stacked under one week header, "This week, easier matchup: X", "Next 5 weeks: X (n good weeks vs m)", "Matchup only (PPR pts/g allowed to RBs) — not a projection." The easier side gets a gold border. Logic: `lib/myteam/startSit.ts` (pure, tested) |
+| iPad (QE) | List left; **PINNED** panel right (340px portrait / 440px landscape). Pins stack in order; a pinned card starts short (name, meter, next 5) and opens on a tap anywhere (down-arrow hint) to show pts/g, why-stats, Open in Compare; ✕ unpins; "Clear all" |
+| Onboarding | **Inline** on the My Team screen: header + week bar + a **setup card** where the roster goes + 4 ghost rows ("Your starters, bench and IR / Taxi show up here."). Card: "Link your fantasy league" + one line of value · "Sleeper username" input (48px, 16px text, edge `--seed-edge`, `--radius-md`) · **Continue** (gold-ring glass button) · lock line "Read-only — Pare can't change your lineup. Your username is saved on this device and only used to load your leagues." States in the same card: not found / bad characters (inline red line + red field edge, `role=alert`) · loading (shimmer skeleton, no spinner) · pick a league (64px rows, format + "In season" chip; skipped when there's only one) · no leagues ("Check again" + "Use another username") · pre-draft ("{league} hasn't drafted yet" + Check again) · can't reach Sleeper ("Try again"). Keyboard: Continue stays visible (`visualViewport` handler). iPad: card max 560px |
+| Game day (P6) | Layout reserved now: points column beside the meter (the meter is never hidden), small starters total in the STARTERS header (`aria-live="polite"`), bench points shown, Pare's `.pare-live-dot`. **No total card** |
+| Nav (all pages) | Floating capsule, **5 tabs**, icon (18) stacked over an 11px label, items **66×48**, gap 2, padding 5 → `--nav-pill-h` **58**, `--nav-h` **78**; sliding gold ring (`ActivePill` `'nav-active-pill'`). Tabs: Home · Compare · Standings · Leaders · **Fantasy** (lucide `Shirt`) |
+| Radii · motion | Radii 6 / 10 / 14 / 20 only. 0 animations at rest; reduced motion = no slides / flashes, live dot steady |
+
+Data attributes kept for machine checks: `data-tier="great|good|avg|tough|avoid"` on every meter,
+`data-bye="true"` on bye meters, `data-injury="Q|D|O|IR"` on injury badges, `data-state` on each
+state root.

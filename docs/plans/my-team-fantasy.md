@@ -6,13 +6,16 @@
 
 Pare compares NFL teams. Fantasy players want the same insight applied to their own roster: for each player, who his NFL team plays this week and in the coming weeks, and how friendly that defense is to his position. That turns start/sit into a glance.
 
+**Product principle (P4, 2026-10-07):** My Team **assists** the user's fantasy apps with information; it does not compete with them. Pare adds what the league app doesn't show (matchup quality, the why, look-ahead, start/sit by matchup). It never duplicates what the league app owns (big live team totals, lineup/roster management, opponent scoreboards).
+
 v1 scope:
 - Sleeper only, read-only; username + selected league kept on the device.
-- New 5th nav tab, added in the design pass.
-- Chip color from **fantasy points allowed per game (FPA) under the league's own scoring**. Pare's per-position defense stats appear in the player sheet as the "why".
-- Season / Last 4 toggle; look-ahead strip; injury tags.
-- Live points on game day: my players and my roster total.
-- Player sheet with "Open in Compare".
+- New 5th nav tab **"Fantasy"** (lucide `Shirt`), added in the design pass. Route **`/myteam`**; header reads "Pare FANTASY". Folder/component names stay `myteam`.
+- Meter color from **fantasy points allowed per game (FPA) under the league's own scoring**. Pare's per-position defense stats appear in the expanded row as the "why".
+- Season / Last 4 toggle; look-ahead strip (5 weeks); injury tags.
+- Live points on game day: my players and my roster total (total stays small, in the STARTERS header — no total card).
+- Expand-in-place rows with "Open in Compare" (iPad: pinned side panel).
+- **Start / Sit** inside the expanded row: compares this week's matchup rank + next-5 tiers of two of my players at the same position. Labelled "Matchup only — not a projection." Pure helper `lib/myteam/startSit.ts` + tests.
 
 What exists today (from exploration):
 - `lib/fantasy.ts`: Sleeper **season totals** only (`api.sleeper.app/v1/stats/nfl/regular/{season}`, trimmed to `pts_ppr/pts_std/gp`) plus the 24h trimmed player map. It has no weekly stats, no user/league/roster calls, no injury fields and no opponent data.
@@ -62,32 +65,46 @@ What exists today (from exploration):
 | Q5 | Last 4 = the **last 4 games played** by that defense (byes skipped). |
 | Q6 | Injury source **decided by rule in P0a**: ESPN if clean (definition in P0a), else Sleeper (≤24h stale). |
 | Q7 | Current week = ESPN `getCurrentWeekInfo` (single source). |
-| Q8 | Live view = my players' points + my roster total. No opponent manager score in v1. |
-| Q9 | Starters + bench, with chips. IR/taxi in a collapsed group at the bottom, also with chips. |
+| Q8 | Live view = my players' points + my roster total. No opponent manager score in v1. **P4:** the total stays SMALL, in the STARTERS section header — no total card (product principle). |
+| Q9 | Starters + bench, with meters. **P4:** IR/Taxi is an **always-open** section under Bench (not collapsed), also with meters. |
 | Q10 | Playwright runs locally only. Add it to CI before App Store submission. |
 | Q11 | One Sleeper username per device in v1. |
 | Q12 | The sandbox route stays (dev-only, 404 in prod). |
 | F7 | Kobe verifies Sleeper's API terms. The ADR records this as a **blocker for any paid tier or ads**. |
 
+### P4 picks (Kobe, 2026-10-07 — mockup gate signed off)
+
+| # | Pick |
+|---|---|
+| Route | `/my-team` → **`/myteam`** (lowercase, no dash). Sandbox `/sandbox/my-team` → **`/sandbox/myteam`**. Any casing/dash variant of `/myteam` (`/MyTeam`, `/my-team`, `/My-Team`, …) **308-redirects** to `/myteam` (+ same subpath). |
+| Tab | Label **"Fantasy"**, lucide **`Shirt`** icon. Header reads **"Pare FANTASY"**. Folder/component names may stay `myteam`. |
+| Rows | The bottom-sheet `PlayerSheet` is replaced on phone by **expand-in-place rows** (several can be open). iPad keeps the list + a **PINNED side panel**. |
+| Switcher | `LeagueSwitcher` = **bottom sheet** (not the `neonMenu` dropdown). |
+| Onboarding | **Inline card** on the My Team screen (not a separate screen). |
+| Constants | `TIER_CUTOFFS = [5, 12, 20, 27, 32]` (Avoid 1–5 · Tough 6–12 · Avg 13–20 · Good 21–27 · Great 28–32; #1 = fewest FPA allowed). `LOOKAHEAD_WEEKS` stays **5**. |
+| Nav | BottomNav (**all pages**): **N3** — stacked icon over label, 5 tabs. `--nav-pill-h` 40 → **58**, `--nav-h` 60 → **78**. |
+| Start / Sit | v1 scope add (see Context). |
+| Look | Recipe in `docs/design-system.md` §1 (tokens), §9 rule 3 (amended) and **§9.4 My Team**. |
+
 ### Standing flags
 - **F5:** the new color family amends design-system §9 rule 3 in the same PR (P5). The ramp's lightness must change steadily from end to end so it reads in grayscale. The chip must not look like `RankBadge`.
-- **F6:** `/privacy` must be updated before any deploy that makes `/my-team` reachable on pare.gg. P3–P5 run on local dev only. Never log usernames, and never put per-user data in `unstable_cache` (it writes to disk).
+- **F6:** `/privacy` must be updated before any deploy that makes `/myteam` reachable on pare.gg. P3–P5 run on local dev only. Never log usernames, and never put per-user data in `unstable_cache` (it writes to disk).
 - **F8:** Sleeper's player map is fetched at most once a day, so its injury data can be up to 24h stale.
 - **F9:** Playwright is a headless check. Kobe still does the visual QA.
 - **F10:** the vault brain doc is stale. It's fixed in P7.
 - **F11:** the K rating uses a proxy.
 - **F12:** no betting language anywhere on My Team.
-- **Rank convention:** #1 = fewest fantasy points allowed per game to that position (same direction as Compare's defense ranks). Starting tiers:
+- **Rank convention:** #1 = fewest fantasy points allowed per game to that position (same direction as Compare's defense ranks). Final tiers (P4, 2026-10-07) — `TIER_CUTOFFS = [5, 12, 20, 27, 32]`:
 
   | Ranks | Tier |
   |---|---|
-  | 1–6 | Avoid |
-  | 7–12 | Tough |
+  | 1–5 | Avoid |
+  | 6–12 | Tough |
   | 13–20 | Avg |
-  | 21–26 | Good |
-  | 27–32 | Great |
+  | 21–27 | Good |
+  | 28–32 | Great |
 
-  Skeleton chip text reads "Good · #24". Final cut-offs are set at P4.
+  Meter text reads "Great #28". `LOOKAHEAD_WEEKS` (strip length) stays **5**.
 - **Note:** P3's machine gate can only prove *rendered states* (server HTML via curl). The *interactions* (tap → sheet, switcher, Open in Compare) get automated in P5 with Playwright, per the ruling. Until then they sit in P3's human gate. Moving the Playwright install to P3 would automate them earlier; that's Kobe's call, and the default keeps the ruling.
 
 ---
@@ -175,7 +192,7 @@ git log --oneline -3
 
 ### Data flow
 ```
-Browser (/my-team)
+Browser (/myteam)
   ├─ localStorage pare:myteam {version, provider:'sleeper', username, userId, leagueId, window, irOpen}
   ├─ GET /api/myteam/user?u=           → user + leagues        (server, in-memory keyed cache)
   ├─ GET /api/myteam/league?id=&uid=   → league bundle (below) (server, in-memory keyed cache)
@@ -223,15 +240,17 @@ offenseLog  [team][week]     (D/ST: opponent turnovers, sacks allowed, points)
 | `lib/espnStats.ts` | **touch (F3a)** | Keep the week per event; pure aggregator extracted; export `getDefenseGameLog()`; extra fields. Season output must be identical. |
 | `lib/fantasy.ts` | **touch (F3b)** | Trim adds `injury_status` and `fantasy_positions`; key `v4`; export `getPlayerMap()`. |
 | `lib/myteam/store.ts` | new, pure | `pare:myteam`, mirrors `lib/favorites/store.ts`. |
-| `components/myteam/MyTeamProvider.tsx` | new | Mounted in `app/my-team/layout.tsx` (route-scoped); hydration guard. |
+| `components/myteam/MyTeamProvider.tsx` | new | Mounted in `app/myteam/layout.tsx` (route-scoped); hydration guard. |
 | `app/api/myteam/{user,league,live}/route.ts` | new | `force-dynamic`, `Cache-Control: private`, validated input (username `^[A-Za-z0-9_]{1,20}$`, numeric ids), no username in logs. |
-| `app/my-team/{layout,page}.tsx` + `components/myteam/*` | new (P3) | `MyTeamScreen`, `Onboarding`, `LeagueSwitcher`, `WindowToggle`, `RosterSection`, `RosterRow`, `MatchupChip`, `LookAheadStrip`, `PlayerSheet`. |
+| `app/myteam/{layout,page}.tsx` + `components/myteam/*` | new (P3) | `MyTeamScreen`, `Onboarding`, `LeagueSwitcher`, `WindowToggle`, `RosterSection`, `RosterRow`, `MatchupChip`, `LookAheadStrip`, `PlayerSheet`. |
 | `config/teamIdentity.ts` | touch (P3) | `myTeam` surface (names). |
-| `app/sandbox/my-team/page.tsx` | new (P3) | Server-renders `MyTeamScreen` from fixtures (every state visible without interaction); `notFound()` when `NODE_ENV === 'production'`. |
-| `components/BottomNav.tsx` (+ `neonMenu.ts` padding if needed) | touch (P5) | 5th tab per P4. |
-| `app/globals.css`, `tailwind.config.js`, `docs/design-system.md` | touch (P5) | `--matchup-1..5`, `--matchup-bye`; §1, §9 rule 3 amendment, §9.4. |
+| `app/sandbox/myteam/page.tsx` | new (P3) | Server-renders `MyTeamScreen` from fixtures (every state visible without interaction); `notFound()` when `NODE_ENV === 'production'`. |
+| `components/BottomNav.tsx` (+ `neonMenu.ts` padding if needed) | touch (P5) | 5th tab "Fantasy" (`Shirt`), N3 stacked icon-over-label nav on every page. |
+| `app/globals.css`, `tailwind.config.js`, `docs/design-system.md` | touch (P5) | `--matchup-1..5`, `--matchup-bye`, `--matchup-track`, `--pos-*`, `--inj-*`, nav heights 58/78; §1, §9 rule 3 amendment, §9.4. |
+| `lib/myteam/startSit.ts` + `lib/myteam/__tests__/startSit.test.ts` | new (P5), pure | Likely-swap pick, easier-matchup verdict (this week), next-5 good-week count. |
+| `middleware.ts` | new (P5) | 308 `/MyTeam`, `/my-team`, `/My-Team`, … → `/myteam` (+ subpath). |
 | `lib/__tests__/matchupContrast.test.ts` | new (P5) | Parses `--matchup-*` from `globals.css` and asserts WCAG ratios. |
-| `playwright.config.ts`, `e2e/my-team.spec.ts` | new (P5) | Projects `iphone-393` (393×759) + `ipad-834` (834×1194); `webServer: npm run dev` with `reuseExistingServer: true`. Local only. |
+| `playwright.config.ts`, `e2e/myteam.spec.ts` | new (P5) | Projects `iphone-393` (393×759) + `ipad-834` (834×1194); `webServer: npm run dev` with `reuseExistingServer: true`. Local only. |
 | `lib/hooks/useMyTeamLive.ts`, `components/myteam/LivePoints.tsx` | new (P6) | Game-day polling + display. |
 | `app/privacy/page.tsx`, `DATA_SOURCES.md`, `CHANGELOG.md`, `docs/adr/2026-10-XX-my-team-provider-proxy.md`, devnotes | docs | ADR covers: the proxy, the hybrid fallback, the provider interface, and the F7 paid-tier/ads blocker. |
 
@@ -328,11 +347,11 @@ git log --oneline -5
 
 ### P3 — Skeleton UI (functional, unstyled-by-intent)
 - **Skeleton rules:**
-  - `/my-team` is reachable **by URL only**: BottomNav untouched, no new color tokens.
+  - `/myteam` is reachable **by URL only**: BottomNav untouched, no new color tokens.
   - Chips are text label + rank ("Good · #24") in existing neutral styles; BYE is plain "BYE".
   - Reuse `BottomSheet`, `neonMenu`, the glass toggle, `TeamIdentity` + `getListTeamColor`.
   - Local dev only (F6).
-- **Files:** `app/my-team/{layout,page}.tsx`, `components/myteam/*`, `MyTeamProvider.tsx`, `config/teamIdentity.ts`, `app/sandbox/my-team/page.tsx`.
+- **Files:** `app/myteam/{layout,page}.tsx`, `components/myteam/*`, `MyTeamProvider.tsx`, `config/teamIdentity.ts`, `app/sandbox/myteam/page.tsx`.
 - **Checklist:**
   - [ ] App shell: 52px H1 header, one `<main>` scroller, nav padding.
   - [ ] Onboarding: username entry, not-found, no leagues, `pre_draft` league.
@@ -352,18 +371,18 @@ git log --oneline -5
     - `data-state="onboarding-entry|onboarding-notfound|onboarding-noleagues|onboarding-predraft|roster|sheet|ir-open"` on each state's root
 - **Machine verify** ([PowerShell]):
   ```
-  curl.exe -s -o NUL -w "%{http_code}`n" http://localhost:4000/my-team
-  curl.exe -s http://localhost:4000/sandbox/my-team -o "$env:TEMP\sandbox.html"
+  curl.exe -s -o NUL -w "%{http_code}`n" http://localhost:4000/myteam
+  curl.exe -s http://localhost:4000/sandbox/myteam -o "$env:TEMP\sandbox.html"
   $h = Get-Content "$env:TEMP\sandbox.html" -Raw -Encoding UTF8
   $attrs = 'data-tier="great"','data-tier="good"','data-tier="avg"','data-tier="tough"','data-tier="avoid"','data-injury="Q"','data-injury="D"','data-injury="O"','data-injury="IR"','data-bye="true"','data-state="onboarding-entry"','data-state="onboarding-notfound"','data-state="onboarding-noleagues"','data-state="onboarding-predraft"','data-state="roster"','data-state="sheet"','data-state="ir-open"','Open in Compare','Last 4'
   $attrs | ForEach-Object { "{0} = {1}" -f $_, $h.Contains($_) }
-  git grep -n -E "bg-(slate|gray|red|green)-[0-9]|#[0-9a-fA-F]{6}" -- components/myteam app/my-team app/sandbox
+  git grep -n -E "bg-(slate|gray|red|green)-[0-9]|#[0-9a-fA-F]{6}" -- components/myteam app/myteam app/sandbox
   git diff main --stat -- components/BottomNav.tsx app/globals.css
   npx next start -p 4100
-  curl.exe -s -o NUL -w "%{http_code}`n" http://localhost:4100/sandbox/my-team
+  curl.exe -s -o NUL -w "%{http_code}`n" http://localhost:4100/sandbox/myteam
   ```
   `next start` runs after the build, in the background, and is stopped afterward. Its sandbox check must return **404**.
-- **Machine gate /goal:** `P3 done when, in this transcript: dev localhost:4000/my-team returns 200 and /sandbox/my-team server-renders every fixture state (the HTML saved to a file and read with Get-Content -Encoding UTF8; one Contains per value prints True for data-tier="great", "good", "avg", "tough", "avoid"; data-injury="Q", "D", "O", "IR"; data-bye="true"; data-state="onboarding-entry", "onboarding-notfound", "onboarding-noleagues", "onboarding-predraft", "roster", "sheet", "ir-open"; plus the ASCII strings "Open in Compare" and "Last 4"); git grep finds no raw palette classes or hex colors in components/myteam, app/my-team or app/sandbox; git diff main shows components/BottomNav.tsx and app/globals.css unchanged; npx vitest run and npm run check pass; the session's own dev server is stopped, port 4000 checked (stop and tell Kobe if his dev is running), npm run build passes; next start -p 4100 returns 404 for /sandbox/my-team, then is stopped; committed locally, nothing pushed. If the same check fails 3 times with the same error, stop and explain.`
+- **Machine gate /goal:** `P3 done when, in this transcript: dev localhost:4000/myteam returns 200 and /sandbox/myteam server-renders every fixture state (the HTML saved to a file and read with Get-Content -Encoding UTF8; one Contains per value prints True for data-tier="great", "good", "avg", "tough", "avoid"; data-injury="Q", "D", "O", "IR"; data-bye="true"; data-state="onboarding-entry", "onboarding-notfound", "onboarding-noleagues", "onboarding-predraft", "roster", "sheet", "ir-open"; plus the ASCII strings "Open in Compare" and "Last 4"); git grep finds no raw palette classes or hex colors in components/myteam, app/myteam or app/sandbox; git diff main shows components/BottomNav.tsx and app/globals.css unchanged; npx vitest run and npm run check pass; the session's own dev server is stopped, port 4000 checked (stop and tell Kobe if his dev is running), npm run build passes; next start -p 4100 returns 404 for /sandbox/myteam, then is stopped; committed locally, nothing pushed. If the same check fails 3 times with the same error, stop and explain.`
 - **Human gate (Kobe, local dev, phone-width browser):**
   - [ ] Onboarding with the real username.
   - [ ] Switcher between real leagues.
@@ -372,50 +391,58 @@ git log --oneline -5
   - [ ] IR group toggles.
   - [ ] Screenshots taken for P4.
 
-### P4 — 🚧 Mockup gate (human gate only, no /goal)
-Kobe, in claude.ai, from P3 screenshots with a real league. Decide, then hand the picks back:
-- [ ] Look-ahead strip length (3 / 5 / rest-of-season / playoff weeks via `playoff_week_start`)
-- [ ] Roster row layout + section/IR group styling + injury tag placement
-- [ ] Chip style + exact 5 colors + BYE gray (WCAG 4.5:1 text, 3:1 chip edge, readable in grayscale, distinct from `RankBadge`)
-- [ ] Final tier cut-offs + labels
-- [ ] Player sheet layout
-- [ ] League switcher style
-- [ ] Empty / onboarding states
-- [ ] Live-points display (my players + roster total)
-- [ ] Tab name + lucide icon + how 5 tabs fit at 393px with ≥44px hit areas (last iPhone slot)
+### P4 — 🚧 Mockup gate (human gate only, no /goal) — ✅ signed off 2026-10-07
+Kobe, in claude.ai, from P3 screenshots with a real league. Decided; picks recorded in **P4 picks** (Rulings) and `docs/design-system.md` §9.4. Decision log: `claude/decision-log-myteam-p4.md` in the claude.ai Pare project.
+- [x] Look-ahead strip length → **5** (unchanged constant)
+- [x] Roster row layout + section/IR group styling + injury tag placement → §9.4 Row (IR / TAXI always open; injury letter on the position circle)
+- [x] Chip style + exact 5 colors + BYE gray → 5-bar signal meter, `--matchup-1..5` + `--matchup-bye` / `--matchup-track` (§1)
+- [x] Final tier cut-offs + labels → `[5, 12, 20, 27, 32]`, Avoid / Tough / Avg / Good / Great
+- [x] Player sheet layout → expand-in-place rows (phone) + PINNED side panel (iPad)
+- [x] League switcher style → bottom sheet "Your leagues"
+- [x] Empty / onboarding states → inline setup card on the My Team screen
+- [x] Live-points display → points column beside the meter + small starters total in the STARTERS header (P6)
+- [x] Tab name + lucide icon + 5 tabs at 393px → "Fantasy" + `Shirt`; N3 stacked nav, items 66×48
 
 ### P5 — Design pass (restyle, not rebuild)
 - **Files:**
-  - Tokens and docs: `app/globals.css` (`--matchup-*`), `tailwind.config.js`, `docs/design-system.md` (§1, §9 rule 3, new §9.4 with the P4 picks).
-  - Restyle: `components/myteam/*`, plus the strip-length and `TIER_CUTOFFS` constants.
+  - Tokens and docs: `app/globals.css` (`--matchup-*`, `--pos-*`, `--inj-*`, nav heights), `tailwind.config.js`, `docs/design-system.md` (§1, §9 rule 3, new §9.4 with the P4 picks).
+  - Restyle: `components/myteam/*`, plus the strip-length and `TIER_CUTOFFS` constants. `PlayerSheet` / `LookAheadStrip` / `MatchupChip` retire to `_to-delete/`.
+  - Start / Sit: `lib/myteam/startSit.ts`, `lib/myteam/__tests__/startSit.test.ts`.
+  - Route: `app/my-team` → `app/myteam`, `app/sandbox/my-team` → `app/sandbox/myteam`; `middleware.ts` (or `next.config` redirects) 308-redirects every `/myteam` casing/dash variant.
   - Nav: `components/BottomNav.tsx`, `components/ui/neonMenu.ts` (if the nav height changes).
   - Tests: `lib/__tests__/matchupContrast.test.ts`.
-  - Playwright: `playwright.config.ts`, `e2e/my-team.spec.ts`, `package.json` (`@playwright/test` dev dependency).
-- **Playwright specs** (sandbox + mocked `/api/myteam/*` via `page.route` with fixtures), both projects:
+  - Playwright: `playwright.config.ts`, `e2e/myteam.spec.ts`, `package.json` (`@playwright/test` dev dependency).
+- **Playwright specs** (mocked `/api/myteam/*` via `page.route` with fixtures), both projects:
   - [ ] No horizontal scroll.
-  - [ ] Every interactive element ≥44×44 hit area (nav included).
-  - [ ] Every chip has a non-empty text label.
-  - [ ] Onboarding → league → roster; switcher persists after reload.
-  - [ ] Season ⇄ Last 4 changes chip text.
-  - [ ] IR group expands.
-  - [ ] Tap row → sheet → "Open in Compare" lands on `/compare` with the right pair.
-  - [ ] Opening the same pair twice reuses the tab.
+  - [ ] Every interactive element ≥44×44 hit area, incl. the 5-tab nav on `/`, `/compare` and `/myteam`.
+  - [ ] Every meter/chip has a text label.
+  - [ ] Inline onboarding → league → roster; league sheet switch persists after reload.
+  - [ ] Season ⇄ Last 4 changes meter text; ⓘ opens its note.
+  - [ ] IR / TAXI section visible without a tap; two rows open at once.
+  - [ ] Start / Sit slides and shows chips + "not a projection" (phone).
+  - [ ] "Open in Compare" lands on `/compare` with the right pair; a second open reuses the tab.
+  - [ ] iPad: Pin to side adds a card to the PINNED panel.
 - **Machine verify** ([PowerShell]):
   ```
   npm install -D @playwright/test
   npx playwright install chromium
+  curl.exe -s -o NUL -w "%{http_code} %{redirect_url}`n" http://localhost:4000/MyTeam
+  curl.exe -s -o NUL -w "%{http_code} %{redirect_url}`n" http://localhost:4000/my-team
+  curl.exe -s -o NUL -w "%{http_code} %{redirect_url}`n" http://localhost:4000/My-Team
+  curl.exe -s -o NUL -w "%{http_code}`n" http://localhost:4000/myteam
   npx playwright test --project=iphone-393
   npx playwright test --project=ipad-834
-  npx vitest run lib/__tests__/matchupContrast.test.ts
+  npx vitest run
   git grep -n -E "bg-(slate|gray|red|green|yellow|emerald|amber)-[0-9]" -- app components
   git diff main --stat -- lib/myteam/fpa.ts lib/myteam/sleeper lib/myteam/seasonSchedule.ts app/api
   ```
   The `git grep` mirrors the CI token guard. The final `git diff` must show no logic changes outside constants.
-- **Machine gate /goal:** `P5 done when, in this transcript: both Playwright projects (iphone-393, ipad-834) pass all My Team specs (no horizontal scroll, ≥44px hit areas incl. the 5-tab nav, every chip labelled, onboarding/switcher/toggle/IR/sheet/Open in Compare flows, tab reuse); matchupContrast test passes (text ≥4.5:1, chip edge ≥3:1, lightness steadily rising or falling across the 5 steps); the token-guard grep finds no raw palette classes in app/ or components/; docs/design-system.md contains §9.4 My Team, the amended §9 rule 3 and §1 matchup tokens; git diff shows no logic changes in lib/myteam engines, adapters or app/api beyond the strip-length/TIER_CUTOFFS constants; npx vitest run and npm run check pass; port 4000 checked (stop and tell Kobe if dev is running), npm run build passes; committed locally, nothing pushed. If the same check fails 3 times with the same error, stop and explain.`
+- **Machine gate /goal:** `P5 done when, in this transcript: the STEP 1 docs commit exists (git log) and docs/design-system.md contains §9.4 My Team, the amended §9 rule 3 and the §1 --matchup-*/--pos-*/--inj-* tokens, with values only in app/globals.css :root; the route lives at app/myteam (sandbox app/sandbox/myteam) and curl.exe -s -o NUL -w "%{http_code} %{redirect_url}" against localhost:4000/MyTeam, /my-team and /My-Team each returns 307 or 308 pointing at /myteam, while /myteam returns 200; BottomNav shows 5 labelled stacked tabs (Home, Compare, Standings, Leaders, Fantasy) with --nav-pill-h 58 / --nav-h 78; lib/myteam/startSit.ts exists as a pure module and npx vitest run passes its tests (likely-swap pick for starter/bench/IR, easier-matchup verdict incl. bye and ties, next-5 good-week count) plus matchupContrast (each --matchup-1..5 ≥3:1 vs the deep card and vs --matchup-track, label text ≥4.5:1, luminance strictly rising 1→5) and all existing tests; both Playwright projects (iphone-393, ipad-834) pass My Team specs: no horizontal scroll, every interactive element ≥44×44 incl. the 5-tab nav on /, /compare and /myteam, every meter/chip has a text label, inline onboarding → league → roster, league sheet switch persists after reload, Season ⇄ Last 4 changes meter text, ⓘ opens its note, IR/TAXI section visible without a tap, two rows open at once, Start / Sit slides and shows chips + "not a projection", Open in Compare lands on /compare with the right pair and reuses the tab on a second open, iPad Pin to side adds a card to the PINNED panel; the token-guard grep finds no raw palette classes in app/ or components/; git diff main shows no logic changes in lib/myteam/fpa.ts, lib/myteam/sleeper, lib/myteam/seasonSchedule.ts or app/api beyond TIER_CUTOFFS and the strip-length constant; npm run check passes; port 4000 checked (stop and tell Kobe if his dev server is running), npm run build passes; everything committed locally, nothing pushed. If the same check fails 3 times with the same error, stop and explain.`
 - **Human gate:**
-  - [ ] Visual sign-off on iPhone and iPad (local dev): matches the P4 picks.
-  - [ ] The nav feels right with 5 tabs.
+  - [ ] Visual sign-off on iPhone + iPad (local dev) against the R9 final prototype on the canvas.
+  - [ ] The 5-tab nav feels right on every page.
   - [ ] Real league looks right.
+  - [ ] K and DEF circles (not mocked — neutral `--pos-other`) look OK in League B.
 
 ### P6 — Live fantasy points (game day)
 - **Files:** `lib/myteam/livePoll.ts`, `lib/hooks/useMyTeamLive.ts`, `components/myteam/LivePoints.tsx`, `app/api/myteam/live/route.ts`, tests.
@@ -457,8 +484,8 @@ Kobe, in claude.ai, from P3 screenshots with a real league. Decide, then hand th
   - [ ] Apply the vault brain-doc corrections (outside the repo).
   - [ ] Push the branch, merge to `main`.
   - [ ] Mac mini deploy ([zsh]): `git restore package-lock.json` → `git pull` → `npm install` → `npm run clean` → `npm run build` → `pm2 restart pare`.
-  - [ ] Check that `curl -sI https://pare.gg/my-team` returns 200 and `curl -s https://pare.gg/api/health | jq` shows the merged commit.
-  - [ ] Check that `https://pare.gg/sandbox/my-team` returns 404.
+  - [ ] Check that `curl -sI https://pare.gg/myteam` returns 200 and `curl -s https://pare.gg/api/health | jq` shows the merged commit.
+  - [ ] Check that `https://pare.gg/sandbox/myteam` returns 404.
   - [ ] Watch `pm2 logs pare` for Sleeper 429s.
 
 ---
