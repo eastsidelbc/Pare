@@ -1,26 +1,30 @@
 # iOS status (updated after every phase)
-2026-10-08 · branch `feat/ios-shell` · Mac mini `~/Pare-ios` · **Phase: H2 ✅ done → next: H3 (Kobe, real iPhone 14 Pro)**
+2026-10-08 · branch `feat/ios-shell` · Mac mini `~/Pare-ios` · **Phase: H3 partial — rest DEFERRED until My Team is deployed to pare.gg** (Fantasy tab, /about, /privacy)
 
 ## Gates
-- H1 ✅ (after `1221898` removed the stray `Pare/` copy) · P1 ✅ 38/38 · P2 ✅ (`npm run check` exit 0, 121/121 tests)
-- H2 ✅ `INFOPLIST_FILE = Config/Info.plist`, launch-screen generation NO, iPhone portrait only (Debug + Release)
+- H1 ✅ (after `1221898`) · P1 ✅ 38/38 · P2 ✅ (`npm run check` exit 0, 121/121 tests) · H2 ✅ Info.plist wired, iPhone portrait only (Debug + Release)
+- H3 🟡 device setup done: runs on Kobe's **iPhone 14 Pro (iOS 18.6.2)**, Personal Team, `gg.pare.app.dev`, loads pare.gg
 
 ## Last build (Xcode 26.3, Debug, at `9913cc2`)
-- iPhone 17 (iOS 26.3.1): **BUILD SUCCEEDED**, 0 errors, 0 Swift warnings
-- iPad Pro 11-inch (M5) (iOS 26.3.1): **BUILD SUCCEEDED**, 0 errors, 0 Swift warnings
-- Built Info.plist: launch color BgDeep, Dark, encryption NO, iPhone portrait only. UA ends `Mobile/15E148 Pare-iOS/1.0`
-- iPhone 17 sim launch: pare.gg loads dark, clears the Dynamic Island (`ios/sim-check.png`, not committed)
+- iPhone 17 + iPad Pro 11-inch (M5) sims (iOS 26.3.1): **BUILD SUCCEEDED**, 0 errors, 0 Swift warnings · iPhone 14 Pro (device): runs
+- UA ends `Mobile/15E148 Pare-iOS/1.0` · sim screenshot `ios/sim-check.png` (not committed)
 
-## Commits (local, Kobe pushes)
-`1221898` stray Pare/ · `f7a7f03` shell · `4daeb6e` resources · `f4b5fb4` docs · `43a0533` H2 wiring · `9913cc2` UA · + `docs(ios): STATUS`
+## Commits
+`1221898` stray Pare/ · `f7a7f03` shell · `4daeb6e` resources · `f4b5fb4` docs · `43a0533` H2 · `9913cc2` UA · `0f7f151` STATUS · + `docs(ios): H3 partial`
 
-## Kobe: H3 on the real iPhone 14 Pro
-1. `cd ~/Pare-ios` → `git push` (baton).
-2. iPhone: Settings → Privacy & Security → **Developer Mode** on (it restarts). Plug it into the Mac mini.
-3. `open ios/Pare.xcodeproj` → target Pare → Signing & Capabilities → Team = **jeremy@pare.gg Personal Team** (bundle stays `gg.pare.app.dev`).
-4. Pick the iPhone as run destination → ⌘R. If iOS blocks it: Settings → General → **VPN & Device Management** → trust.
-5. Walk the H3 list in `docs/plans/2026-10-08-ios-shell.md`: no white flash, footer hidden, no bounce/swipe-back,
-   ESPN link → Safari sheet, airplane mode → offline screen + Retry, Settings sheet links.
-6. Bridge: Mac Safari → Develop → iPhone → pare.gg → Console → paste the 3 `postMessage` lines from `ios/README.md`
-   (feel all 7 haptic styles). iPad share popover: same test on the iPad Pro 11-inch sim.
-7. Send results/bugs to Claude → STATUS gets updated. Personal-team builds expire in 7 days: re-run ⌘R.
+## Remaining H3 (14 Pro, after My Team deploys; re-run ⌘R first, since Personal-team builds expire in 7 days)
+1. Launch: BgDeep → pare.gg, no white flash; light status bar; header clears the notch, nav pill clears the home indicator.
+2. Footer hidden: Web Inspector → `document.documentElement.dataset.app === 'ios'`.
+3. No bounce / pull-to-refresh, edge swipe does nothing, all 5 tabs work (incl. **Fantasy**), Compare tabs survive force-quit.
+4. ESPN/Sleeper link → Safari sheet; `mailto` → Mail.
+5. Airplane mode + cold launch → OfflineView; Retry works; foregrounding while offline auto-retries.
+6. Bridge (console lines in `ios/README.md`): `openSettings` → sheet; `share` `/compare?away=KC&home=BUF` → share sheet;
+   `haptic` all 7 styles felt; `{type:'eval'}` + off-host share URL → ignored.
+7. Settings: **About / Privacy** load in the main view, email opens Mail, version + disclaimer visible.
+8. iPad Pro 11" sim: share popover (no crash), rotation + Split View keep the layout.
+
+## Pre-submission items
+- **Perf:** Xcode log on device shows `Too many messages … DrawingArea_AcceleratedAnimationDidStart`. That's WebKit
+  flagging a flood of GPU animation starts from the page. Check for animations that never settle (design-system §9.8: no infinite
+  loops at rest) via Web Inspector → `document.getAnimations().length` on a resting screen. Fix on the web side if non-zero.
+- App Store blockers (4.2, data licensing, live/box scores via our API, Phase S first): `docs/devnotes/2026-10-08-ios-shell.md`.
