@@ -40,10 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# iOS
-ios/*.xcodeproj
+# iOS — ios/Pare.xcodeproj is source of truth (made in the Xcode UI, no generator), so it IS tracked.
+# Only per-user Xcode state and build output are ignored.
 ios/*.xcworkspace
-ios/**/Preview Content/
 ios/**/*.xcuserstate
 ios/**/xcuserdata/
 ios/.DS_Store
