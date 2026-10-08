@@ -25,6 +25,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Performance audit (sandbox, 4× CPU, median of 3): LCP 0.56s, view switch 83–131ms tap→paint, scroll 60 fps / 0 dropped, ~1% idle CPU, 0 running animations on iPhone 14 Pro + iPad portrait/landscape → no perf fixes needed. Table in the dev note.
 
 ### Changed
+- **Leaders: an open card keeps its width and grows down; tap anywhere on it to open/close** (2026-10-07, `feat/my-team-sleeper`) — dropped the phone `col-span-full`; the footer button stays the accessible control; collapsing scrolls the card back into view if its top went off-screen. `docs/design-system.md` §9.3.
 - **Header toggles match the bottom nav — one "glass toggle" recipe** (2026-10-06, `main`)
   - Standings Division/Conf/Playoffs, Fantasy TOT/PPG and the Leaders jump capsule now use the nav's sliding gold pill (new `components/ui/ActivePill.tsx`, framer `layoutId` spring 420/34, static glow, `will-change: transform`, reduced motion → instant) and its label styles (new `components/ui/glassControl.tsx`: 500 inactive → 700 active, `GlassLabel` reserves the bold width so neighbours don't shift). BottomNav uses the same two pieces; its look, sizing and `'nav-active-pill'` are unchanged.
   - New token `--glass-off` (#737a88) for inactive labels on every glass toggle, nav included: 4.70:1 on `--nav-bg` (nav's `--muted` was 4.2:1 — failed AA at 12px; headers' `--subtext` was 7.9:1 but brighter than the nav).
@@ -37,6 +38,14 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Perf (sandbox, 4× CPU, median of 3): LCP 0.25–0.29s, expand 50–56ms, TOT/PPG ~40ms, 60 fps / 0 dropped, ~2ms main-thread per 5s idle, 0 animations → no fixes needed. Details in the dev note.
 
 ### Added
+- **Fantasy tab — My Team P5 design pass** (2026-10-07, branch `feat/my-team-sleeper`; local dev only until P7 /privacy)
+  - See: `docs/devnotes/2026-10-07-my-team-p5-design-pass.md`; recipe in `docs/design-system.md` §9.4 (+ §1 tokens, §9 rule 3 amendment).
+  - Route `/my-team` → `/myteam` (sandbox `/sandbox/myteam`); `middleware.ts` 308-redirects every casing/dash variant (`/MyTeam`, `/my-team`, `/My-Team`, … + subpath).
+  - **Bottom nav on every page = N3**: 5 tabs (Home · Compare · Standings · Leaders · **Fantasy** `Shirt`), 18px icon over an 11px label, items 66×48; `--nav-pill-h` 40 → 58, `--nav-h` 60 → 78 (`neonMenu` bottom padding 76 → 94; Home "Open full" pinned at its old 40px).
+  - Roster restyle: position circles, 5-bar matchup meter + "Great #28", next-5 micro-bar, rows expand in place (pts/g hero, why-stats, week cells), IR / TAXI always open, sticky position filter + Expand all. Phone: **Start / Sit** slides in the card (`lib/myteam/startSit.ts`, matchup only — not a projection). iPad: PINNED side panel. League switcher = "Your leagues" bottom sheet; onboarding = inline setup card.
+  - New scoped tokens `--matchup-1..5` / `--matchup-bye` / `--matchup-track`, `--pos-*`, `--inj-*` (values in `globals.css` only, WCAG-tested by `lib/__tests__/matchupContrast.test.ts`). `TIER_CUTOFFS` → `[5, 12, 20, 27, 32]`.
+  - Playwright (local only): `playwright.config.ts` + `e2e/myteam.spec.ts`, projects `iphone-393` / `ipad-834`, mocked `/api/myteam/*`.
+  - `PlayerSheet` / `LookAheadStrip` / `MatchupChip` → `_to-delete/2026-10-07-myteam-p3-skeleton/`.
 - **My Team (Sleeper) — P0a data spike + P1 pure engines** (2026-10-07, branch `feat/my-team-sleeper`; no UI yet, nothing user-visible)
   - See: `docs/plans/my-team-fantasy.md`, `docs/devnotes/2026-10-07-my-team-data-spike.md`, ADR `docs/adr/2026-10-07-my-team-provider-proxy.md` (Proposed).
   - `scripts/my-team-spike.mjs` + anonymized fixtures in `lib/myteam/__fixtures__/` (P0a). Decisions by rule: weekly stats from `api.sleeper.com`; injuries from the Sleeper player map.

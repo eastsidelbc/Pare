@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildRosterView, lookaheadWeeks, matchupText, slotLabel, LOOKAHEAD_WEEKS } from '../viewModel';
+import { buildRosterView, lookaheadWeeks, matchupText, slotLabel, weekKickoffRange, LOOKAHEAD_WEEKS } from '../viewModel';
 import { buildSandboxBundle } from '../sandboxBundle';
 
 describe('lookaheadWeeks', () => {
@@ -43,9 +43,18 @@ describe('buildRosterView (sandbox bundle)', () => {
 
 describe('labels', () => {
   it('slot + matchup text', () => {
-    expect([slotLabel('SUPER_FLEX'), slotLabel('FLEX'), slotLabel(null)]).toEqual(['SF', 'FLEX', null]);
-    expect(matchupText({ week: 5, kind: 'game', opp: 'KC', home: false, rating: null })).toBe('@ KC');
-    expect(matchupText({ week: 5, kind: 'game', opp: 'KC', home: true, rating: null })).toBe('vs KC');
-    expect(matchupText({ week: 5, kind: 'bye', opp: null, home: false, rating: null })).toBe('BYE');
+    expect([slotLabel('SUPER_FLEX'), slotLabel('FLEX'), slotLabel('WRRB_FLEX'), slotLabel('RB'), slotLabel(null)]).toEqual([
+      'SFLX', 'FLEX', 'FLEX', null, null,
+    ]);
+    const game = { week: 5, kind: 'game', opp: 'KC', kickoff: null, rating: null } as const;
+    expect(matchupText({ ...game, home: false })).toBe('@ KC');
+    expect(matchupText({ ...game, home: true })).toBe('vs KC');
+    expect(matchupText({ week: 5, kind: 'bye', opp: null, home: false, kickoff: null, rating: null })).toBe('BYE');
+  });
+  it('week kickoff range skips byes and unknown weeks', () => {
+    const k = (kickoff: string) => ({ opp: 'X', home: true, kickoff, eventId: null });
+    const schedule = { A: { 6: k('2026-10-09T00:15:00Z') }, B: { 6: k('2026-10-13T00:15:00Z') }, C: { 6: 'BYE' as const }, D: {} };
+    expect(weekKickoffRange(schedule, 6)).toEqual({ first: '2026-10-09T00:15:00Z', last: '2026-10-13T00:15:00Z' });
+    expect(weekKickoffRange(schedule, 7)).toBeNull();
   });
 });

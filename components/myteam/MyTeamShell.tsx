@@ -1,6 +1,8 @@
 /**
- * My Team app shell — fixed "H1 · Inline" header (design-system §9) + the one
- * scroll region + site footer, same structure as Standings / Leaders.
+ * My Team app shell — fixed "H1 · Inline" header ("Pare FANTASY" + the league
+ * capsule, design-system §9.4) + the one scroll region + site footer, same
+ * structure as Standings / Leaders. Content is phone-width, widening on iPad
+ * for the PINNED side panel.
  */
 
 import type { ReactNode, RefObject } from 'react';
@@ -28,7 +30,7 @@ export default function MyTeamShell({
               className="ml-1.5 font-bold"
               style={{ fontSize: '9.5px', letterSpacing: '0.26em', textTransform: 'uppercase', color: 'var(--gold-bright)' }}
             >
-              My Team
+              Fantasy
             </span>
           </h1>
           {headerRight}
@@ -44,7 +46,7 @@ export default function MyTeamShell({
           paddingBottom: 'calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px)',
         }}
       >
-        <div className="mx-auto w-full max-w-[720px] px-4 pt-2">{children}</div>
+        <div className="mx-auto w-full max-w-[1180px] px-4 pb-2">{children}</div>
         <SiteFooter />
       </main>
     </div>

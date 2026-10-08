@@ -1,6 +1,6 @@
 /**
- * /sandbox/my-team — dev-only fixture page: every My Team state at once from
- * synthetic data, for checks and P4 screenshots. 404 in production builds.
+ * /sandbox/myteam — dev-only fixture page: every My Team state at once from
+ * synthetic data, for checks and screenshots. 404 in production builds.
  */
 import { notFound } from 'next/navigation';
 import MyTeamSandbox from '@/components/myteam/MyTeamSandbox';

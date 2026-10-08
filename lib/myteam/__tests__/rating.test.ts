@@ -47,10 +47,10 @@ describe('rankFpa + tiers (rank convention: #1 = fewest allowed)', () => {
     expect(ranks.get('T32')?.rank).toBe(32);
     expect(ranks.get('T24')?.perGame).toBe(24);
   });
-  it('tier cut-offs 1–6 / 7–12 / 13–20 / 21–26 / 27–32', () => {
-    expect(TIER_CUTOFFS.map((c) => c.maxRank)).toEqual([6, 12, 20, 26, 32]);
+  it('tier cut-offs 1–5 / 6–12 / 13–20 / 21–27 / 28–32 (P4 picks)', () => {
+    expect(TIER_CUTOFFS.map((c) => c.maxRank)).toEqual([5, 12, 20, 27, 32]);
     const at = (r: number) => tierForRank(r);
-    expect([at(1), at(6), at(7), at(12), at(13), at(20), at(21), at(26), at(27), at(32)]).toEqual([
+    expect([at(1), at(5), at(6), at(12), at(13), at(20), at(21), at(27), at(28), at(32)]).toEqual([
       'avoid', 'avoid', 'tough', 'tough', 'avg', 'avg', 'good', 'good', 'great', 'great',
     ]);
     expect(at(40)).toBe('great');

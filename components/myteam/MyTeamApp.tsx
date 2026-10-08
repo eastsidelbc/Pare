@@ -1,64 +1,91 @@
 /**
- * /my-team — picks what to show from the provider's phase:
- * onboarding → loading → roster (MyTeamScreen), with error/retry.
- * Reachable by URL only until the P5 design pass adds the nav tab.
+ * /myteam — picks what to show from the provider's phase. Onboarding is inline
+ * (design-system §9.4): the week bar stays, the setup card sits where the
+ * roster goes, ghost rows below. Ready → MyTeamScreen. The header's league
+ * capsule opens the "Your leagues" sheet.
  */
 
 'use client';
 
-import MyTeamShell from './MyTeamShell';
+import { useState } from 'react';
+import { useSchedule } from '@/components/schedule/ScheduleProvider';
+import type { FantasyLeague } from '@/lib/myteam/types';
+import { LeagueCapsule, LeagueSheet } from './LeagueSwitcher';
 import MyTeamScreen from './MyTeamScreen';
-import Onboarding from './Onboarding';
-import WindowToggle from './WindowToggle';
+import MyTeamShell from './MyTeamShell';
+import Onboarding, { GhostRows, type OnboardingState } from './Onboarding';
 import { useMyTeam } from './MyTeamProvider';
-
-function Status({ children }: { children: React.ReactNode }) {
-  return (
-    <p role="status" className="py-8 text-center" style={{ fontSize: 13, color: 'var(--subtext)' }}>
-      {children}
-    </p>
-  );
-}
+import { leagueFormatLine, leagueListLine } from './style';
+import WeekBar from './WeekBar';
 
 export default function MyTeamApp() {
   const t = useMyTeam();
+  const { currentNflWeek } = useSchedule();
+  const [sheetOpen, setSheetOpen] = useState(false);
   const ready = t.phase === 'ready' && t.bundle;
+  const activeLeague = t.leagues.find((l) => l.leagueId === (t.switching ?? t.prefs.leagueId)) ?? null;
+  const switchingName = t.switching ? (t.leagues.find((l) => l.leagueId === t.switching)?.name ?? 'league') : null;
+
+  const formatLine = (l: FantasyLeague) =>
+    t.bundle && l.leagueId === t.bundle.league.leagueId ? leagueFormatLine(t.bundle.league) : leagueListLine(l);
+
+  const onboarding: OnboardingState | null =
+    t.phase === 'entry' || t.phase === 'lookup' ? 'entry'
+      : t.phase === 'notfound' ? 'notfound'
+        : t.phase === 'noleagues' ? 'noleagues'
+          : t.phase === 'pickleague' ? 'pickleague'
+            : t.phase === 'loading' ? 'loading'
+              : t.phase === 'error' ? 'error'
+                : null;
 
   return (
-    <MyTeamShell headerRight={ready ? <WindowToggle value={t.prefs.window} onChange={t.setWindow} /> : null}>
-      {t.phase === 'boot' && <Status>Loading…</Status>}
-      {t.phase === 'entry' && <Onboarding state="entry" onSubmit={t.submitUsername} />}
-      {t.phase === 'lookup' && <Onboarding state="entry" busy onSubmit={t.submitUsername} />}
-      {t.phase === 'notfound' && <Onboarding key={t.lookedUp} state="notfound" username={t.lookedUp} onSubmit={t.submitUsername} />}
-      {t.phase === 'noleagues' && <Onboarding state="noleagues" username={t.lookedUp} season={t.season ?? undefined} onReset={t.unlink} />}
-      {t.phase === 'loading' && <Status>Loading your league…</Status>}
-      {t.phase === 'error' && (
-        <div className="flex flex-col items-center gap-3 py-8">
-          <Status>{t.error ?? 'Something went wrong.'}</Status>
-          <button
-            type="button"
-            onClick={t.retry}
-            className="touch-optimized rounded-lg px-5 active:opacity-70"
-            style={{ height: 44, border: '1px solid var(--frame-mid)', background: 'var(--card-deep-a)', fontSize: 14, fontWeight: 800, color: 'var(--text)' }}
-          >
-            Try again
-          </button>
-          <button type="button" onClick={t.unlink} className="touch-optimized active:opacity-70" style={{ minHeight: 44, fontSize: 12, color: 'var(--subtext)' }}>
-            Use a different username
-          </button>
-        </div>
-      )}
-      {ready && t.bundle && (
+    <MyTeamShell
+      headerRight={
+        t.leagues.length > 0 && activeLeague && t.phase !== 'pickleague' ? (
+          <LeagueCapsule name={activeLeague.name} onOpen={() => setSheetOpen(true)} />
+        ) : null
+      }
+    >
+      {ready && t.bundle ? (
         <MyTeamScreen
           bundle={t.bundle}
-          leagues={t.leagues}
           window={t.prefs.window}
-          irOpen={t.prefs.irOpen}
-          onToggleIr={() => t.setIrOpen(!t.prefs.irOpen)}
-          onSelectLeague={t.selectLeague}
-          onUnlink={t.unlink}
+          onWindowChange={t.setWindow}
+          switchingName={switchingName}
+          onRetry={t.retry}
         />
+      ) : (
+        <>
+          <WeekBar week={currentNflWeek || null} dateRange={null} window={t.prefs.window} onWindowChange={t.setWindow} />
+          {onboarding && (
+            <Onboarding
+              key={onboarding === 'notfound' ? `notfound-${t.lookedUp ?? ''}` : onboarding}
+              state={onboarding}
+              username={t.lookedUp}
+              season={t.season}
+              leagues={t.leagues}
+              onPickLeague={t.selectLeague}
+              message={t.error}
+              busy={t.phase === 'lookup'}
+              onSubmit={t.submitUsername}
+              onRetry={t.retry}
+              onReset={t.unlink}
+            />
+          )}
+          <GhostRows />
+        </>
       )}
+
+      <LeagueSheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        leagues={t.leagues}
+        activeId={t.prefs.leagueId}
+        formatLine={formatLine}
+        username={t.prefs.username}
+        onSelect={t.selectLeague}
+        onChangeUsername={t.unlink}
+      />
     </MyTeamShell>
   );
 }

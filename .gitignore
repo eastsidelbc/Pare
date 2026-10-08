@@ -62,3 +62,9 @@ ios/**/*.swo
 # Claude/Cowork delivered-file drops (not part of the app)
 Claude outputs/
 .cursorrules.bak
+
+# playwright (local only — plan Q10)
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

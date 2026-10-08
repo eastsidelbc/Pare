@@ -1,7 +1,8 @@
 /**
- * My Team screen body — league switcher + week, then the roster (or a
- * pre-draft state) and the player sheet. Presentational over a bundle so the
- * live app (MyTeamApp) and the dev sandbox render the exact same markup.
+ * My Team roster screen (design-system §9.4): week bar → sticky filter row →
+ * STARTERS · BENCH · IR / TAXI, rows expanding in place. iPad (md+) adds the
+ * PINNED side panel. Presentational over a bundle so the live app (MyTeamApp)
+ * and the dev sandbox render the exact same markup.
  */
 
 'use client';
@@ -9,38 +10,63 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useOpenInCompare } from '@/lib/hooks/useOpenInCompare';
 import type { LeagueBundle } from '@/lib/myteam/apiTypes';
-import type { FantasyLeague, RatingWindow } from '@/lib/myteam/types';
-import { buildRosterView, type RosterRow } from '@/lib/myteam/viewModel';
+import { FANTASY_POSITIONS, type RatingWindow } from '@/lib/myteam/types';
+import { buildRosterView, weekKickoffRange, type RosterRow } from '@/lib/myteam/viewModel';
+import FilterRow, { type PositionFilter } from './FilterRow';
+import type { DetailContext } from './MatchupDetails';
 import { MAX_COMPARISONS_NOTICE } from './notice';
-import LeagueSwitcher from './LeagueSwitcher';
 import Onboarding from './Onboarding';
-import PlayerSheet from './PlayerSheet';
-import RosterView from './RosterView';
+import PinnedPanel from './PinnedPanel';
+import RosterView, { type RosterSection } from './RosterView';
+import { dateRangeText } from './style';
+import WeekBar from './WeekBar';
 
 interface Props {
   bundle: LeagueBundle;
-  leagues: FantasyLeague[];
   window: RatingWindow;
-  irOpen: boolean;
-  onToggleIr: () => void;
-  onSelectLeague: (leagueId: string) => void;
-  onUnlink: () => void;
+  onWindowChange: (w: RatingWindow) => void;
+  /** Name of the league being switched to (the roster dims meanwhile). */
+  switchingName?: string | null;
+  /** Pre-draft "Check again". */
+  onRetry?: () => void;
+  /** Sandbox: initial open rows / pins / Start / Sit panels. */
+  initialExpanded?: string[];
+  initialPins?: string[];
+  initialPinnedOpen?: string[];
+  startSitIds?: string[];
 }
 
-export default function MyTeamScreen({ bundle, leagues, window, irOpen, onToggleIr, onSelectLeague, onUnlink }: Props) {
+function toggleIn(set: ReadonlySet<string>, id: string): Set<string> {
+  const next = new Set(set);
+  if (next.has(id)) next.delete(id);
+  else next.add(id);
+  return next;
+}
+
+export default function MyTeamScreen({
+  bundle, window, onWindowChange, switchingName = null, onRetry,
+  initialExpanded = [], initialPins = [], initialPinnedOpen = [], startSitIds,
+}: Props) {
   const vm = useMemo(() => buildRosterView(bundle, window), [bundle, window]);
-  const [selected, setSelected] = useState<RosterRow | null>(null);
+  const allRows = useMemo(() => [...vm.starters, ...vm.bench, ...vm.reserve], [vm]);
+  const [filter, setFilter] = useState<PositionFilter>('ALL');
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set(initialExpanded));
+  const [pins, setPins] = useState<string[]>(initialPins);
+  const [pinnedOpen, setPinnedOpen] = useState<Set<string>>(() => new Set(initialPinnedOpen));
   const [notice, setNotice] = useState<string | null>(null);
+  const startSit = useMemo(() => new Set(startSitIds ?? []), [startSitIds]);
   const openInCompare = useOpenInCompare();
 
-  // Re-point the open sheet at the re-rated row when the window changes.
-  useEffect(() => {
-    setSelected((cur) => {
-      if (!cur) return cur;
-      const all = [...vm.starters, ...vm.bench, ...vm.reserve];
-      return all.find((r) => r.player.playerId === cur.player.playerId) ?? null;
-    });
-  }, [vm]);
+  // A different league's roster → start closed, unfiltered, nothing pinned.
+  const leagueId = bundle.league.leagueId;
+  const [shownLeague, setShownLeague] = useState(leagueId);
+  if (shownLeague !== leagueId) {
+    setShownLeague(leagueId);
+    setFilter('ALL');
+    setExpanded(new Set());
+    setPins([]);
+    setPinnedOpen(new Set());
+  }
 
   useEffect(() => {
     if (!notice) return;
@@ -49,36 +75,82 @@ export default function MyTeamScreen({ bundle, leagues, window, irOpen, onToggle
   }, [notice]);
 
   const onOpenCompare = (team: string, opp: string) => {
-    const result = openInCompare(team, opp);
-    if (result === 'full') setNotice(MAX_COMPARISONS_NOTICE);
-    else setSelected(null);
+    if (openInCompare(team, opp) === 'full') setNotice(MAX_COMPARISONS_NOTICE);
   };
+
+  const keep = (r: RosterRow) => filter === 'ALL' || r.player.position === filter;
+  const sections: RosterSection[] = [
+    { id: 'starters', title: 'Starters', rows: vm.starters.filter(keep) },
+    { id: 'bench', title: 'Bench', rows: vm.bench.filter(keep) },
+    { id: 'reserve', title: 'IR / Taxi', rows: vm.reserve.filter(keep) },
+  ];
+  const visibleIds = sections.flatMap((s) => s.rows.map((r) => r.player.playerId));
+  const allExpanded = visibleIds.length > 0 && visibleIds.every((id) => expanded.has(id));
+
+  const counts = [
+    { id: 'ALL' as const, label: 'All', count: allRows.length },
+    ...FANTASY_POSITIONS.map((p) => ({ id: p, label: p, count: allRows.filter((r) => r.player.position === p).length })).filter((c) => c.count > 0),
+  ];
+
+  const ctx: DetailContext = { window, format: bundle.league.format, defenseLog: bundle.defenseLog, offenseLog: bundle.offenseLog };
+  const pinnedRows = pins.map((id) => allRows.find((r) => r.player.playerId === id)).filter((r): r is RosterRow => !!r);
+
+  const weekBar = (
+    <WeekBar week={bundle.week} dateRange={dateRangeText(weekKickoffRange(bundle.schedule, bundle.week))} window={window} onWindowChange={onWindowChange} />
+  );
+
+  if (vm.preDraft) {
+    return (
+      <>
+        {weekBar}
+        <Onboarding state="predraft" leagueName={bundle.league.name} onRetry={onRetry} />
+      </>
+    );
+  }
 
   return (
     <>
-      <div className="flex items-center justify-between gap-3 pb-1">
-        <LeagueSwitcher leagues={leagues} activeId={bundle.league.leagueId} onSelect={onSelectLeague} onUnlink={onUnlink} />
-        <span className="flex-none tabular-nums" style={{ fontSize: 12, fontWeight: 700, color: 'var(--subtext)' }}>
-          Week {bundle.week}
-        </span>
-      </div>
-
-      {vm.preDraft ? (
-        <Onboarding state="predraft" />
-      ) : (
-        <RosterView vm={vm} irOpen={irOpen} onToggleIr={onToggleIr} onSelect={setSelected} />
-      )}
-
-      <PlayerSheet
-        row={selected}
-        onClose={() => setSelected(null)}
-        window={window}
-        defenseLog={bundle.defenseLog}
-        offenseLog={bundle.offenseLog}
-        onOpenCompare={onOpenCompare}
+      {weekBar}
+      <FilterRow
+        counts={counts}
+        value={filter}
+        onChange={setFilter}
+        allExpanded={allExpanded}
+        onExpandAll={() => setExpanded(new Set([...expanded, ...visibleIds]))}
+        onCollapseAll={() => setExpanded(new Set())}
       />
 
-      {notice && (
+      <div className="md:grid md:grid-cols-[minmax(0,1fr)_340px] md:gap-5 lg:grid-cols-[minmax(0,1fr)_440px]">
+        <div
+          aria-busy={switchingName ? true : undefined}
+          style={{ opacity: switchingName ? 0.45 : 1, transition: 'opacity .2s', pointerEvents: switchingName ? 'none' : undefined }}
+        >
+          <RosterView
+            sections={sections}
+            allRows={allRows}
+            expanded={expanded}
+            onToggle={(id) => setExpanded((cur) => toggleIn(cur, id))}
+            ctx={ctx}
+            startSitIds={startSit}
+            actions={{
+              onOpenCompare,
+              isPinned: (id) => pins.includes(id),
+              onTogglePin: (id) => setPins((cur) => (cur.includes(id) ? cur.filter((p) => p !== id) : [...cur, id])),
+            }}
+          />
+        </div>
+        <PinnedPanel
+          rows={pinnedRows}
+          open={pinnedOpen}
+          onToggle={(id) => setPinnedOpen((cur) => toggleIn(cur, id))}
+          onUnpin={(id) => setPins((cur) => cur.filter((p) => p !== id))}
+          onClear={() => setPins([])}
+          ctx={ctx}
+          onOpenCompare={onOpenCompare}
+        />
+      </div>
+
+      {(switchingName || notice) && (
         <div
           role="status"
           aria-live="polite"
@@ -92,7 +164,7 @@ export default function MyTeamScreen({ bundle, leagues, window, irOpen, onToggle
               background: 'var(--card-deep-a)', border: '1px solid var(--frame-mid)', boxShadow: 'var(--shadow-pop)',
             }}
           >
-            {notice}
+            {switchingName ? `Loading ${switchingName}…` : notice}
           </div>
         </div>
       )}

@@ -8,7 +8,7 @@ import type { LeagueBundle } from './apiTypes';
 import { rankFpa, rateMatchup, type FpaRank, type MatchupRating } from './rating';
 import { FANTASY_POSITIONS, type FantasyPosition, type RatingWindow, type RosterPlayer } from './types';
 
-/** Weeks shown after "this week" (temporary skeleton length; final pick at the P4 mockup gate). */
+/** Weeks shown after "this week" (P4 pick 2026-10-07: stays 5). */
 export const LOOKAHEAD_WEEKS = 5;
 const LAST_WEEK = 18;
 
@@ -19,6 +19,8 @@ export interface MatchupCell {
   kind: 'game' | 'bye' | 'unknown';
   opp: string | null;
   home: boolean;
+  /** ISO kickoff for games, else null. */
+  kickoff: string | null;
   /** null for byes, unknown weeks, unrated positions, or opponents without games yet. */
   rating: MatchupRating | null;
 }
@@ -34,7 +36,7 @@ export interface RosterView {
   window: RatingWindow;
   starters: RosterRow[];
   bench: RosterRow[];
-  /** IR + taxi (collapsed group). */
+  /** IR + taxi (always-open section). */
   reserve: RosterRow[];
   preDraft: boolean;
 }
@@ -45,10 +47,10 @@ export function buildRanks(fpa: LeagueBundle['fpa'], window: RatingWindow): Posi
 
 export function cellFor(player: RosterPlayer, week: number, schedule: LeagueBundle['schedule'], ranks: PositionRanks): MatchupCell {
   const entry = player.nflTeam ? schedule[player.nflTeam]?.[week] : undefined;
-  if (entry === 'BYE') return { week, kind: 'bye', opp: null, home: false, rating: null };
-  if (!entry) return { week, kind: 'unknown', opp: null, home: false, rating: null };
+  if (entry === 'BYE') return { week, kind: 'bye', opp: null, home: false, kickoff: null, rating: null };
+  if (!entry) return { week, kind: 'unknown', opp: null, home: false, kickoff: null, rating: null };
   const rating = player.position ? rateMatchup(ranks[player.position], entry.opp) : null;
-  return { week, kind: 'game', opp: entry.opp, home: entry.home, rating };
+  return { week, kind: 'game', opp: entry.opp, home: entry.home, kickoff: entry.kickoff, rating };
 }
 
 export function lookaheadWeeks(week: number, count = LOOKAHEAD_WEEKS): number[] {
@@ -79,13 +81,25 @@ export function buildRosterView(
   };
 }
 
-/** Short slot label for starters ("SUPER_FLEX" → "SF"). */
+/** Flex slot label for the position circle: "SFLX" for super flex, "FLEX" for any other flex, else null. */
 export function slotLabel(slot: string | null): string | null {
   if (!slot) return null;
-  if (slot === 'SUPER_FLEX') return 'SF';
-  if (slot === 'REC_FLEX') return 'RF';
-  if (slot === 'WRRB_FLEX') return 'W/R';
-  return slot;
+  if (slot === 'SUPER_FLEX') return 'SFLX';
+  if (slot.includes('FLEX')) return 'FLEX';
+  return null;
+}
+
+/** First and last kickoff of `week` across the schedule (the week bar's date range); null if none. */
+export function weekKickoffRange(schedule: LeagueBundle['schedule'], week: number): { first: string; last: string } | null {
+  let first: string | null = null;
+  let last: string | null = null;
+  for (const weeks of Object.values(schedule)) {
+    const entry = weeks[week];
+    if (!entry || entry === 'BYE') continue;
+    if (first === null || entry.kickoff < first) first = entry.kickoff;
+    if (last === null || entry.kickoff > last) last = entry.kickoff;
+  }
+  return first && last ? { first, last } : null;
 }
 
 /** "vs KC" / "@ KC" / "BYE" / "—". */

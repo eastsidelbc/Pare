@@ -6,8 +6,8 @@
  * Rank convention (same direction as Compare's defense ranks):
  * #1 = FEWEST fantasy points allowed per game to that position (toughest).
  * So a high rank (#27–32) = generous opponent = Great matchup for MY player.
- * Tier cut-offs are the starting proposal; final values are set at the P4
- * mockup gate — change TIER_CUTOFFS only.
+ * Tier cut-offs are the P4 picks (2026-10-07, design-system §9.4) — change
+ * TIER_CUTOFFS only.
  */
 
 import { rankAll, type RankPosition } from '@/lib/ranking';
@@ -19,10 +19,10 @@ export const LAST_N_GAMES = 4;
 
 /** Ascending rank ceilings → tier. Ranks past the last ceiling fall in the last tier. */
 export const TIER_CUTOFFS: ReadonlyArray<{ maxRank: number; tier: MatchupTier }> = [
-  { maxRank: 6, tier: 'avoid' },
+  { maxRank: 5, tier: 'avoid' },
   { maxRank: 12, tier: 'tough' },
   { maxRank: 20, tier: 'avg' },
-  { maxRank: 26, tier: 'good' },
+  { maxRank: 27, tier: 'good' },
   { maxRank: 32, tier: 'great' },
 ];
 

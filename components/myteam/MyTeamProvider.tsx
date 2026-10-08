@@ -1,12 +1,14 @@
 /**
- * MyTeamProvider — route-scoped state for /my-team (mounted in
- * app/my-team/layout.tsx, so other tabs pay nothing).
+ * MyTeamProvider — route-scoped state for /myteam (mounted in
+ * app/myteam/layout.tsx, so other tabs pay nothing).
  *
- * Prefs (username, user id, league, window, IR group) persist to
+ * Prefs (username, user id, league, window) persist to
  * localStorage `pare:myteam` (lib/myteam/store.ts) after a hydration guard,
  * like FavoritesProvider. Data comes from our own API (/api/myteam/*), never
  * from Sleeper directly. Coming back to the tab after 10+ min quietly
  * re-fetches the league bundle (isDataStale, same rule as useRefreshOnReturn).
+ * Switching leagues keeps the current roster on screen (dimmed, "Loading
+ * {league}…") until the new one arrives (design-system §9.4).
  */
 
 'use client';
@@ -20,7 +22,7 @@ import type { FantasyLeague, RatingWindow } from '@/lib/myteam/types';
 /** Re-fetch on return once the bundle on screen is this old. */
 const REFRESH_ON_RETURN_AFTER_MS = 10 * 60_000;
 
-export type MyTeamPhase = 'boot' | 'entry' | 'lookup' | 'notfound' | 'noleagues' | 'loading' | 'ready' | 'error';
+export type MyTeamPhase = 'boot' | 'entry' | 'lookup' | 'notfound' | 'noleagues' | 'pickleague' | 'loading' | 'ready' | 'error';
 
 interface MyTeamContextValue {
   phase: MyTeamPhase;
@@ -28,6 +30,8 @@ interface MyTeamContextValue {
   leagues: FantasyLeague[];
   season: number | null;
   bundle: LeagueBundle | null;
+  /** League id being switched to while the old roster stays on screen. */
+  switching: string | null;
   /** Username the last lookup was for (notfound / noleagues copy). */
   lookedUp: string | null;
   error: string | null;
@@ -35,7 +39,6 @@ interface MyTeamContextValue {
   selectLeague: (leagueId: string) => void;
   unlink: () => void;
   setWindow: (w: RatingWindow) => void;
-  setIrOpen: (open: boolean) => void;
   retry: () => void;
 }
 
@@ -47,14 +50,9 @@ async function getJson<T>(url: string): Promise<{ status: number; body: T | null
   return { status: res.status, body };
 }
 
-/** Saved league if it's still in the list, else the first in-season league, else the first. */
+/** Saved league if it's still in the list, else the only league; null = ask (pick-a-league state). */
 function pickLeague(leagues: FantasyLeague[], saved: string | null): string | null {
-  return (
-    leagues.find((l) => l.leagueId === saved)?.leagueId ??
-    leagues.find((l) => l.status === 'in_season')?.leagueId ??
-    leagues[0]?.leagueId ??
-    null
-  );
+  return leagues.find((l) => l.leagueId === saved)?.leagueId ?? (leagues.length === 1 ? leagues[0].leagueId : null);
 }
 
 export function MyTeamProvider({ children }: { children: React.ReactNode }) {
@@ -64,15 +62,18 @@ export function MyTeamProvider({ children }: { children: React.ReactNode }) {
   const [leagues, setLeagues] = useState<FantasyLeague[]>([]);
   const [season, setSeason] = useState<number | null>(null);
   const [bundle, setBundle] = useState<LeagueBundle | null>(null);
+  const [switching, setSwitching] = useState<string | null>(null);
   const [lookedUp, setLookedUp] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const loadedAt = useRef(0);
   // Drops responses from superseded requests (fast league switches, unlink mid-load).
   const requestId = useRef(0);
 
-  const loadBundle = useCallback(async (leagueId: string, userId: string, silent = false) => {
+  /** mode: 'load' = loading state · 'switch' = keep the roster on screen · 'refresh' = silent, keeps it on failure too. */
+  const loadBundle = useCallback(async (leagueId: string, userId: string, mode: 'load' | 'switch' | 'refresh' = 'load') => {
     const id = ++requestId.current;
-    if (!silent) setPhase('loading');
+    if (mode === 'load') setPhase('loading');
+    if (mode === 'switch') setSwitching(leagueId);
     try {
       const { status, body } = await getJson<LeagueBundle>(
         `/api/myteam/league?id=${encodeURIComponent(leagueId)}&uid=${encodeURIComponent(userId)}`,
@@ -82,9 +83,11 @@ export function MyTeamProvider({ children }: { children: React.ReactNode }) {
       if (!body) throw new Error("Couldn't load your league from Sleeper.");
       setBundle(body);
       loadedAt.current = Date.now();
+      setSwitching(null);
       setPhase('ready');
     } catch (err) {
-      if (id !== requestId.current || silent) return; // a failed silent refresh keeps what's on screen
+      if (id !== requestId.current || mode === 'refresh') return; // a failed silent refresh keeps what's on screen
+      setSwitching(null);
       setError(err instanceof Error ? err.message : "Couldn't load your league.");
       setPhase('error');
     }
@@ -108,7 +111,7 @@ export function MyTeamProvider({ children }: { children: React.ReactNode }) {
         const leagueId = pickLeague(body.leagues, savedLeagueId);
         setPrefs((p) => ({ ...p, username: body.user.username || username, userId: body.user.userId, leagueId }));
         if (!leagueId) {
-          setPhase('noleagues');
+          setPhase(body.leagues.length === 0 ? 'noleagues' : 'pickleague');
           return;
         }
         await loadBundle(leagueId, body.user.userId);
@@ -139,7 +142,7 @@ export function MyTeamProvider({ children }: { children: React.ReactNode }) {
     const onVisible = () => {
       if (document.visibilityState !== 'visible' || phase !== 'ready') return;
       if (prefs.leagueId && prefs.userId && isDataStale(loadedAt.current, Date.now(), REFRESH_ON_RETURN_AFTER_MS)) {
-        void loadBundle(prefs.leagueId, prefs.userId, true);
+        void loadBundle(prefs.leagueId, prefs.userId, 'refresh');
       }
     };
     document.addEventListener('visibilitychange', onVisible);
@@ -161,9 +164,10 @@ export function MyTeamProvider({ children }: { children: React.ReactNode }) {
   const selectLeague = useCallback(
     (leagueId: string) => {
       setPrefs((p) => ({ ...p, leagueId }));
-      if (prefs.userId) void loadBundle(leagueId, prefs.userId);
+      // From the roster → switch in place; from pick-a-league → normal load.
+      if (prefs.userId) void loadBundle(leagueId, prefs.userId, phase === 'ready' && bundle ? 'switch' : 'load');
     },
-    [prefs.userId, loadBundle],
+    [prefs.userId, loadBundle, phase, bundle],
   );
 
   const unlink = useCallback(() => {
@@ -171,6 +175,7 @@ export function MyTeamProvider({ children }: { children: React.ReactNode }) {
     setPrefs((p) => unlinkAccount(p));
     setLeagues([]);
     setBundle(null);
+    setSwitching(null);
     setLookedUp(null);
     setError(null);
     setPhase('entry');
@@ -183,11 +188,10 @@ export function MyTeamProvider({ children }: { children: React.ReactNode }) {
   }, [prefs.username, prefs.leagueId, lookup]);
 
   const setWindow = useCallback((window: RatingWindow) => setPrefs((p) => ({ ...p, window })), []);
-  const setIrOpen = useCallback((irOpen: boolean) => setPrefs((p) => ({ ...p, irOpen })), []);
 
   const value = useMemo<MyTeamContextValue>(
-    () => ({ phase, prefs, leagues, season, bundle, lookedUp, error, submitUsername, selectLeague, unlink, setWindow, setIrOpen, retry }),
-    [phase, prefs, leagues, season, bundle, lookedUp, error, submitUsername, selectLeague, unlink, setWindow, setIrOpen, retry],
+    () => ({ phase, prefs, leagues, season, bundle, switching, lookedUp, error, submitUsername, selectLeague, unlink, setWindow, retry }),
+    [phase, prefs, leagues, season, bundle, switching, lookedUp, error, submitUsername, selectLeague, unlink, setWindow, retry],
   );
 
   return <MyTeamContext.Provider value={value}>{children}</MyTeamContext.Provider>;

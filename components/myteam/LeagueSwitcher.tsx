@@ -1,111 +1,113 @@
 /**
- * League switcher — capsule button + Neon Frame dropdown (same look as the Home
- * WeekControl menu). One league at a time; the last row unlinks the account.
- * SKELETON styling (P3) — final style picked at the P4 mockup gate.
+ * League switcher (design-system §9.4): a gold league capsule in the header
+ * (36px drawn / 44px tap) opens the "Your leagues" bottom sheet — 64px rows
+ * (name + format line, gold check on the current league) and a footer with the
+ * linked Sleeper username + "Change username" (restarts onboarding).
  */
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
-import { MENU_ROW_H, menuHeader, menuRowStyle, menuSurface } from '@/components/ui/neonMenu';
+import { Check, ChevronDown } from 'lucide-react';
+import BottomSheet from '@/components/ui/BottomSheet';
 import type { FantasyLeague } from '@/lib/myteam/types';
 
-interface Props {
-  leagues: FantasyLeague[];
-  activeId: string | null;
-  onSelect: (leagueId: string) => void;
-  onUnlink: () => void;
+export function LeagueCapsule({ name, onOpen }: { name: string; onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-haspopup="dialog"
+      aria-label={`League: ${name}. Change league`}
+      onClick={onOpen}
+      className="pare-hit44 touch-optimized flex min-w-0 items-center gap-1.5 rounded-full active:opacity-70"
+      style={{
+        height: 36,
+        maxWidth: 200,
+        padding: '0 12px 0 14px',
+        background: 'var(--nav-bg)',
+        border: '1px solid var(--glass-edge)',
+        color: 'var(--gold-bright)',
+        fontSize: 13,
+        fontWeight: 700,
+      }}
+    >
+      <span className="truncate">{name}</span>
+      <ChevronDown size={14} aria-hidden style={{ flex: 'none' }} />
+    </button>
+  );
 }
 
-export default function LeagueSwitcher({ leagues, activeId, onSelect, onUnlink }: Props) {
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const active = leagues.find((l) => l.leagueId === activeId) ?? null;
+interface SheetProps {
+  open: boolean;
+  onClose: () => void;
+  leagues: FantasyLeague[];
+  activeId: string | null;
+  /** Format line per league id (the current league has the richest one). */
+  formatLine: (league: FantasyLeague) => string;
+  username: string | null;
+  onSelect: (leagueId: string) => void;
+  onChangeUsername: () => void;
+}
 
-  // Close on outside click / Escape.
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: MouseEvent) => {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDown);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open]);
-
+export function LeagueSheet({ open, onClose, leagues, activeId, formatLine, username, onSelect, onChangeUsername }: SheetProps) {
   return (
-    <div ref={rootRef} className="relative min-w-0">
-      <button
-        type="button"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-        className="touch-optimized flex max-w-full items-center gap-1.5 rounded-full px-3 active:opacity-70"
-        style={{ height: 44, background: 'var(--nav-bg)', border: '1px solid var(--glass-edge)', color: 'var(--gold-bright)', fontSize: 13, fontWeight: 700 }}
-      >
-        <span className="truncate">{active?.name ?? 'Choose a league'}</span>
-        <ChevronDown size={13} aria-hidden style={{ flex: 'none', transition: 'transform .18s ease', transform: open ? 'rotate(180deg)' : 'none' }} />
-      </button>
-
-      {open && (
-        <div
-          role="listbox"
-          aria-label="Choose a league"
-          className="absolute left-0 z-50 overflow-y-auto"
-          style={{
-            ...menuSurface,
-            top: 'calc(100% + 6px)',
-            width: 260,
-            maxHeight: MENU_ROW_H * 8 + 30,
-            borderRadius: 'var(--radius-md)',
-            overscrollBehavior: 'contain',
-          }}
-        >
-          <div className="px-3 pb-1.5 pt-2.5" style={menuHeader}>League</div>
-          {leagues.map((l, i) => {
-            const isActive = l.leagueId === activeId;
-            return (
-              <button
-                key={l.leagueId}
-                type="button"
-                role="option"
-                aria-selected={isActive}
-                onClick={() => {
-                  setOpen(false);
-                  if (!isActive) onSelect(l.leagueId);
-                }}
-                className="flex w-full flex-col items-start justify-center px-3 text-left touch-optimized active:opacity-70"
-                style={{ ...menuRowStyle(i, isActive), height: 44 }}
-              >
-                <span className="w-full truncate" style={{ fontSize: 13, fontWeight: 600, color: isActive ? 'var(--gold-bright)' : 'var(--text)' }}>
-                  {l.name}
-                </span>
-                <span style={{ fontSize: 9, color: 'var(--subtext)' }}>
-                  {l.totalRosters} teams · {l.status.replace('_', ' ')}
-                </span>
-              </button>
-            );
-          })}
-          <button
-            type="button"
-            onClick={() => {
-              setOpen(false);
-              onUnlink();
-            }}
-            className="flex w-full items-center px-3 text-left touch-optimized active:opacity-70"
-            style={{ ...menuRowStyle(leagues.length, false), height: 44, fontSize: 12, fontWeight: 700, color: 'var(--subtext)' }}
-          >
-            Use a different Sleeper username
-          </button>
+    <BottomSheet
+      open={open}
+      onClose={onClose}
+      label="Your leagues"
+      closeLabel="Close league list"
+      grab="header"
+      header={
+        <div className="px-4 pb-2 pt-3" style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--gold-bright)' }}>
+          Your leagues
         </div>
-      )}
-    </div>
+      }
+      style={{ maxWidth: 560, maxHeight: 'calc(var(--app-h, 100dvh) * 0.8)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
+    >
+      <ul className="min-h-0 flex-1 overflow-y-auto px-2" style={{ overscrollBehavior: 'contain' }}>
+        {leagues.map((l) => {
+          const current = l.leagueId === activeId;
+          return (
+            <li key={l.leagueId}>
+              <button
+                type="button"
+                aria-current={current ? 'true' : undefined}
+                onClick={() => {
+                  onClose();
+                  if (!current) onSelect(l.leagueId);
+                }}
+                className="touch-optimized flex w-full items-center gap-3 px-2 text-left active:opacity-70"
+                style={{ minHeight: 64, borderRadius: 'var(--radius-md)', background: current ? 'var(--leader-tint)' : 'transparent' }}
+              >
+                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span className="truncate" style={{ fontSize: 15, fontWeight: 800, color: current ? 'var(--gold-bright)' : 'var(--text)' }}>
+                    {l.name}
+                  </span>
+                  <span className="truncate" style={{ fontSize: 12, color: 'var(--subtext)' }}>
+                    {formatLine(l)}
+                  </span>
+                </span>
+                {current && <Check size={18} aria-label="Current league" style={{ flex: 'none', color: 'var(--gold-bright)' }} />}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+      <div className="mx-4 mt-2 flex items-center justify-between gap-3 border-t pt-1" style={{ borderColor: 'var(--hairline)' }}>
+        <span className="min-w-0 truncate" style={{ fontSize: 12, color: 'var(--subtext)' }}>
+          Sleeper · <span style={{ color: 'var(--text)', fontWeight: 700 }}>{username ?? '—'}</span>
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            onClose();
+            onChangeUsername();
+          }}
+          className="touch-optimized flex-none active:opacity-70"
+          style={{ minHeight: 44, fontSize: 13, fontWeight: 700, color: 'var(--gold-bright)' }}
+        >
+          Change username
+        </button>
+      </div>
+    </BottomSheet>
   );
 }

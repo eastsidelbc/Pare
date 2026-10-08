@@ -140,8 +140,8 @@
      inset, added on top). `--nav-pill-h` is the capsule height; `--nav-h` is the
      total footprint (capsule + floating gap) that scrolling content must reserve
      via `calc(var(--nav-h) + safe-area)` so nothing hides behind it. */
-    --nav-pill-h: 40px; /* leaner capsule (was 52) */
-    --nav-h: 60px;
+    --nav-pill-h: 58px; /* N3 — 5 tabs, 18px icon stacked over an 11px label (My Team P4, 2026-10-07; was 40) */
+    --nav-h: 78px; /* capsule + floating gap (was 60) */
 
     /* Rank-badge tier palette — intentionally distinct from accent tokens so
        badge coloring can be tuned independently of the design-system accents. */
@@ -169,6 +169,31 @@
     --seed-chip: #232a3c; /* Standings seed chip fill — division winners (1–4) */
     --seed-edge: #5b6680; /* Standings seed chip outline — wild cards (5–7); ~3:1 on the deep card */
     --logo-halo: drop-shadow(0 0 1px rgba(255, 255, 255, 0.55)); /* thin light edge on dark team logos (config/teamIdentity DARK_LOGOS) */
+
+    /* My Team (Fantasy tab) — scoped color families, design-system §1 + §9 rule 3 amendment + §9.4.
+       Only used inside components/myteam; always paired with text (tier word + rank, position
+       letters, injury letter). lib/__tests__/matchupContrast.test.ts parses these values. */
+    --matchup-1: #E15957; /* Avoid (ranks 1–5) */
+    --matchup-2: #E07E2F; /* Tough (6–12) */
+    --matchup-3: #B0AAA3; /* Avg (13–20) */
+    --matchup-4: #B4D35C; /* Good (21–27) */
+    --matchup-5: #81FDA0; /* Great (28–32) */
+    --matchup-bye: #5b6680; /* bye — dashed outline, empty bars */
+    --matchup-track: #2a3450; /* unfilled meter bar */
+    --pos-qb: #F9A8D4;
+    --pos-qb-bg: rgba(244, 114, 182, 0.18);
+    --pos-rb: #5EEAD4;
+    --pos-rb-bg: rgba(45, 212, 191, 0.18);
+    --pos-wr: #93C5FD;
+    --pos-wr-bg: rgba(96, 165, 250, 0.18);
+    --pos-te: #C4B5FD;
+    --pos-te-bg: rgba(167, 139, 250, 0.2);
+    --pos-other: #CBD5E1; /* K, DEF (not mocked — neutral, the label carries it) */
+    --pos-other-bg: rgba(148, 163, 184, 0.18);
+    --inj-q: #FCD34D; /* injury badge fill — text --bg-deep */
+    --inj-d: #FB923C;
+    --inj-o: #F87171;
+    --inj-ir: #F87171;
 
     /* Warning / offline — semantic amber (its own token, not an accent) */
     --warn:      #f59e0b; /* amber — offline/caution surface */
@@ -436,6 +461,26 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .pare-live-dot { animation: none; opacity: 1; }
+}
+
+/* My Team loading skeleton: a light sweep moves across (transform only), only while
+   loading — never at rest. Reduced motion → a still block. */
+@keyframes pare-shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+.pare-shimmer { position: relative; overflow: hidden; background: var(--hairline); }
+.pare-shimmer::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text) 7%, transparent), transparent);
+  animation: pare-shimmer 1.3s ease-in-out infinite;
+  will-change: transform;
+}
+/* My Team Start / Sit: the card's button area slides sideways (transform only). */
+.pare-slide { transition: transform .34s cubic-bezier(.2, .8, .2, 1); will-change: transform; }
+@media (prefers-reduced-motion: reduce) {
+  .pare-shimmer::after { animation: none; opacity: 0; }
+  .pare-slide { transition: none; }
 }
 
 /* 44px hit area on a smaller-looking control (Apple HIG 44pt). The pseudo-element
