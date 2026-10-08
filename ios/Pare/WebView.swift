@@ -20,8 +20,8 @@ struct PareWebView: UIViewRepresentable {
         let config = WKWebViewConfiguration()
         // Persistent storage, so pare:* localStorage (comparisons, favorites) survives relaunches.
         config.websiteDataStore = .default()
-        // Appends "Pare-iOS/1.0" to the normal Safari UA instead of replacing it.
-        config.applicationNameForUserAgent = "\(AppConfig.uaToken)/\(AppConfig.version)"
+        // This value replaces WebKit's default UA ending ("Mobile/15E148"), so keep that token and add ours after it.
+        config.applicationNameForUserAgent = "Mobile/15E148 \(AppConfig.uaToken)/\(AppConfig.version)"
         config.userContentController.add(context.coordinator.bridge, name: AppConfig.bridgeName)
 
         let webView = WKWebView(frame: .zero, configuration: config)

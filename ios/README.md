@@ -91,9 +91,9 @@ to `ios/`. The template `ContentView.swift` is in `_to-delete/2026-10-08-xcode-t
 
 ### User agent: keep in sync
 
-Swift sets `applicationNameForUserAgent = "Pare-iOS/<version>"`. WebKit puts that where its default
-`Mobile/15E148` would go, so the UA looks like
-`Mozilla/5.0 (iPhone; CPU iPhone OS 26_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Pare-iOS/1.0`
+Swift sets `applicationNameForUserAgent = "Mobile/15E148 Pare-iOS/<version>"`. That value *replaces*
+WebKit's default UA ending (`Mobile/15E148`), so we keep the standard token and add ours after it:
+`Mozilla/5.0 (iPhone; CPU iPhone OS 26_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Pare-iOS/1.0`
 (iPad: desktop-class `Macintosh` UA, same token at the end).
 The web detects the token in `lib/platform.ts` (`IOS_APP_UA_TOKEN`) and sets `<html data-app="ios">`,
 which hides the site footer. **`AppConfig.uaToken` must equal `IOS_APP_UA_TOKEN`.** Change both or neither.

@@ -1,9 +1,9 @@
 /**
  * In-app detection — is this page running inside the iOS WKWebView wrapper?
  *
- * The wrapper adds `Pare-iOS/<version>` to the end of WebKit's default user agent
- * (`… (KHTML, like Gecko) Pare-iOS/1.0`; set via `applicationNameForUserAgent` from
- * `AppConfig.uaToken` in ios/Pare/AppConfig.swift). A tiny inline script in the root layout
+ * The wrapper keeps WebKit's default user agent and adds `Pare-iOS/<version>` at the end
+ * (`… (KHTML, like Gecko) Mobile/15E148 Pare-iOS/1.0`; set via `applicationNameForUserAgent`
+ * from `AppConfig.uaToken` in ios/Pare/AppConfig.swift). A tiny inline script in the root layout
  * (`IN_APP_SCRIPT`) checks it before first paint and sets `<html data-app="ios">`,
  * so CSS can hide web-only chrome (`[data-app="ios"] .site-footer`) without the
  * server ever reading headers() — pages stay static / ISR.
