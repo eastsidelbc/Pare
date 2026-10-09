@@ -36,7 +36,7 @@ Snapshot: 2026 season, ESPN week 5 = Sleeper week 5, last completed week 4. The 
 
 ### 2. Live points
 - `players_points` (map of player id → points) and `starters_points` (array) are **present**. `points` is the roster total. Week 4 was non-zero (complete) and week 5 was 0 (not started).
-- **Update cadence:** not measured, since no game was live. That's **P0b**, on the Mac mini during TNF or Sunday.
+- **Update cadence:** not measured in P0a, since no game was live. Measured in **P0b** during TNF: see [P0b — Live cadence](#p0b--live-cadence-tnf-week-5-2026-10-07).
 - **Ceiling from headers:** the matchups endpoint sends `s-maxage=60, stale-while-revalidate=300`, so Sleeper's own CDN refreshes it at most about every 60s. Polling faster than 60s cannot get fresher data.
 
 ### 3. Rate limits and caching
@@ -94,7 +94,7 @@ Snapshot: 2026 season, ESPN week 5 = Sleeper week 5, last completed week 4. The 
 |---|---|---|
 | **Weekly stats source** | **`api.sleeper.com`** | Every QB/RB/WR/TE/K/DEF line in weeks 1–4 carries `team` + `opponent`. |
 | **Injury source** | **Sleeper player map (≤24h)** | ESPN met 3 of 4 conditions (32/32 teams, 81 ms <5s, 0 unmapped statuses), but resolved only 75.0% of rostered injured players (<95%). The misses are long-term IR players ESPN doesn't list. |
-| **Live poll default** | 30s until P0b | Note: Sleeper's CDN `s-maxage=60` on matchups suggests 60s is the useful floor (see below). |
+| **Live poll default** | 30s until P0b → **60s (P0b confirmed)** | Sleeper's CDN `s-maxage=60` on matchups makes 60s the useful floor. The TNF log showed a 120s median between changes, never closer than 60s (see P0b below). |
 
 ## Plan adjustments (approved by Kobe 2026-10-07; 1, 2, 4 applied to the plan)
 
@@ -102,6 +102,34 @@ Snapshot: 2026 season, ESPN week 5 = Sleeper week 5, last completed week 4. The 
 2. **Roster cache:** 5 min, not 2. Sleeper's CDN already serves rosters up to 300s old, so our 2-min cache adds calls without adding freshness.
 3. **Possible future hybrid for injuries:** use ESPN for Q/D/O (fresher on game day) and Sleeper for IR. This is out of v1 per the rule; revisit if 24h staleness hurts.
 4. **The P1 fixture set needs synthetic cases** for co-owners and `pre_draft` leagues (neither was observed).
+
+## P0b — Live cadence (TNF, Week 5, 2026-10-07)
+
+Kobe ran the P0b loop against the fixture league during Thursday Night Football and polled `league/{id}/matchups/5` every 30s. Each line is the sum of `points` across all 10 rosters. That league-wide sum is a sensitive detector: it moves whenever any rostered player scores. Window: 19:57:59 → 20:11:30 local, 28 polls (~13.5 min).
+
+```
+19:57:59 teams=10 pts=30.44   (×3)
+19:59:29 teams=10 pts=30.64   (×4)   ← change 1
+20:01:29 teams=10 pts=30.44   (×5)   ← change 2 (went DOWN: stat correction)
+20:03:59 teams=10 pts=32.9    (×2)   ← change 3
+20:04:59 teams=10 pts=33      (×14)  ← change 4, unchanged to 20:11:30
+```
+
+| Measure | Value |
+|---|---|
+| Changes seen | 4 in 27 intervals. 23 of 27 back-to-back 30s polls (85%) returned identical data. |
+| Gaps between changes | 120s, 150s, 60s |
+| **Median gap** | **120s** |
+| **Longest gap** | **150s** between changes; ≥391s quiet at the end of the window (20:04:59 → 20:11:30, still unchanged when the log stopped) |
+| Shortest gap | 60s, which is Sleeper's matchups `s-maxage=60`. At 30s sampling the true gap is anywhere from 30 to 90s. |
+| Shortest-lived value | 32.9, seen on 2 consecutive polls (~60s) |
+
+**Verdict: keep `LIVE_POLL_MS = 60_000`. Not changed.**
+- **Faster isn't fresher.** No two changes were closer than 60s, the same as Sleeper's CDN cache. 85% of the 30s polls were wasted, so 30s would double the calls for nothing.
+- **Slower would miss values.** Every value lasted at least 2 consecutive 30s polls, so a 60s poll lands on each one. A 120s poll (the median) could have skipped 32.9 entirely and doubled the worst-case lag.
+- **Caveat:** this is one ~13.5-min TNF sample with 28 polls. It's enough to rule out a change, not to tune one. Recheck on a full Sunday window if the P6 "within one interval of the Sleeper app" check ever slips.
+
+**Gotcha:** points can go **down** mid-game (30.64 → 30.44, a stat correction). Live points must not assume they only rise. Today they're plain text with no "gain" animation, so nothing needs changing.
 
 ## Gotchas found
 - An unknown username gives **200 + `null`**, not a 404.

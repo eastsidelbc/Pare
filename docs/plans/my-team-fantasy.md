@@ -147,7 +147,7 @@ Endpoints covered (the live cadence is **not** here; that's P0b):
   - all 32 teams respond, each in <5s;
   - every status maps to Q/D/O/IR;
   - ≥95% of the injured players on the fixture league's rosters resolve to a Sleeper id (via `espn_id`, else normalized name + team).
-- **Live poll default:** 60s (Sleeper CDN caches matchups `s-maxage=60`; approved 2026-10-07). P0b confirms.
+- **Live poll default:** 60s (Sleeper CDN caches matchups `s-maxage=60`; approved 2026-10-07). P0b confirmed 2026-10-08.
 
 **Checklist (script summary + devnote):**
 - [ ] Shapes for user/leagues/league/rosters/users/matchups. How co-owners appear. Whether `pre_draft` leagues have empty rosters.
@@ -174,17 +174,18 @@ git log --oneline -3
 
 **/goal (machine gate):** `P0a done when, in this transcript: node scripts/my-team-spike.mjs ran with SLEEPER_USER set and printed its summary covering every P0a checklist item; lib/myteam/__fixtures__/ contains anonymized state/user/leagues/league/rosters/users/matchups/weekly-stats (both hosts)/boxscore/injuries JSON; git grep for the real username, real user_id, every real owner_id/co_owners id and real league names in lib/myteam/__fixtures__, docs and scripts returns nothing, and no non-null avatar remains in the fixtures; docs/devnotes/2026-10-XX-my-team-data-spike.md records every answer plus the weekly-stats and injury source decisions made by the stated rules; npm run check passes; all of it is committed locally (no push). If the same check fails 3 times with the same error, stop and explain.`
 
-## Phase 0b — Human gate (Kobe)
-- [ ] Give the Sleeper username for P0a (at run time only).
-- [ ] **Live cadence on the Mac mini during a Thursday/Sunday game**, ~20 min:
+## Phase 0b — Human gate (Kobe) — ✅ done 2026-10-08
+- [x] Give the Sleeper username for P0a (at run time only).
+- [x] **Live cadence on the Mac mini during a Thursday/Sunday game**, ~20 min:
   ```
   [zsh, Mac mini]
   L=<league_id>; W=<week>
   for i in $(seq 1 40); do echo "$(date +%T) $(curl -s https://api.sleeper.app/v1/league/$L/matchups/$W | jq -c '[.[] | .points] | add')"; sleep 30; done | tee sleeper-live-cadence.log
   ```
   Paste the log, or the observed update interval, into the spike devnote. It confirms the P6 poll interval (60s; never below Sleeper's 60s CDN cache).
-- [ ] Optional: confirm prod Pare defense is 2026 with 32 rows: `curl -s https://pare.gg/api/nfl-2025/defense | jq 'keys'`.
-- [ ] Review the devnote's source decisions.
+  **Result (TNF Week 5, 2026-10-07):** 4 changes in ~13.5 min. Median gap 120s, longest 150s, never under 60s. `LIVE_POLL_MS` stays 60s. See the spike devnote, "P0b — Live cadence".
+- [x] Optional: confirm prod Pare defense is 2026 with 32 rows: `curl -s https://pare.gg/api/nfl-2025/defense | jq 'keys'`. (2026-10-08: `season` 2026, 32 rows.)
+- [x] Review the devnote's source decisions.
 
 ---
 
@@ -271,7 +272,7 @@ Sheet "why" stats per position (`lib/myteam/defenseProfile.ts`):
 | user leagues | 1h | keyed LRU |
 | league settings/scoring | 1h | keyed LRU |
 | rosters | 5 min (= Sleeper CDN `s-maxage=300`) | keyed LRU |
-| matchups (live) | 60s (= Sleeper CDN `s-maxage=60`; P0b confirms) | keyed LRU |
+| matchups (live) | 60s (= Sleeper CDN `s-maxage=60`; P0b confirmed) | keyed LRU |
 | weekly stat lines | current week 30 min · completed weeks 24h | `unstable_cache` over no-store |
 | FPA table | 30 min per scoring hash | keyed LRU |
 | season schedule | 6h | `unstable_cache` over no-store |
@@ -462,10 +463,10 @@ Kobe, in claude.ai, from P3 screenshots with a real league. Decided; picks recor
   ```
   The `git grep` must still show exactly one call site, in ScheduleProvider.
 - **Machine gate /goal:** `P6 done when, in this transcript: npx vitest run passes poll-gating tests proving shouldPollMyTeam is false outside the live window, when hidden, when unmounted/off-route and when all games are final, and true only inside the window while visible and mounted; a live-points reducer test proves last-good on error and correct roster total; git grep shows useLiveScores( still called only in ScheduleProvider; /api/myteam/live returns 200 on localhost:4000 with fixture-shaped JSON; npm run check passes; port 4000 checked (stop and tell Kobe if dev is running), npm run build passes; committed locally, nothing pushed. If the same check fails 3 times with the same error, stop and explain.`
-- **Human gate (live game, local dev or Mac mini):**
-  - [ ] Points update within one interval of the Sleeper app.
-  - [ ] Network panel: ~1 call per interval while visible, 0 when backgrounded or off-route.
-  - [ ] No Sleeper 429/403 over a full Sunday window (dev console / `pm2 logs pare`).
+- **Human gate (live game, local dev or Mac mini) — ✅ signed off by Kobe 2026-10-08** (local dev, TNF Week 5):
+  - [x] Points update within one interval of the Sleeper app.
+  - [x] Network panel: ~1 call per interval while visible, 0 when backgrounded or off-route.
+  - [x] No Sleeper 429/403 over a full Sunday window (dev console / `pm2 logs pare`).
 
 ### P7 — Privacy, docs, ship
 > **Merge only after P7** (Kobe, 2026-10-07). `feat/my-team-sleeper` stays a branch: no merge to `main`, no push, no deploy until P7's privacy (`/privacy`), `DATA_SOURCES.md` and final ADR are done and its gate clears. Why: Kobe deploys by pulling `main` on the Mac mini, so anything on `main` can reach pare.gg; the Fantasy tab (in the nav on every page) collects a Sleeper username, and F6 requires the privacy update first.
@@ -499,7 +500,7 @@ Kobe, in claude.ai, from P3 screenshots with a real league. Decided; picks recor
 
 | Data | Max lag |
 |---|---|
-| Live points | ≤60s poll + up to 60s Sleeper CDN cache (P0b confirms) |
+| Live points | ≤60s poll + up to 60s Sleeper CDN cache (P0b confirmed) |
 | Roster / lineup | ≤5 min (our cache) + up to 5 min Sleeper CDN |
 | FPA / ratings | ≤30 min after Sleeper posts stats |
 | Opponents / byes | ≤6h |
