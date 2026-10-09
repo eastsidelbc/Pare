@@ -10,7 +10,7 @@ The script was run once from the Windows PC with Kobe's username passed at run t
   - Sleeper user ids → `1000000000000000NN`
   - avatars → `null`
   - free-text roster nicknames and league chat metadata dropped
-  - league, roster and player ids kept
+  - league ids → `1000000000000010NN` and draft ids → `1000000000000020NN` (scrubbed 2026-10-08); roster and player ids kept
 - **Re-run:** `$env:SLEEPER_USER='<name>'; node scripts/my-team-spike.mjs` (optional `SLEEPER_LEAGUE`, `WEEK`, `SPIKE_RAW_DIR`).
 
 Snapshot: 2026 season, ESPN week 5 = Sleeper week 5, last completed week 4. The fixture league is 10-team PPR (`rec=1`) superflex with `playoff_week_start=15`.

@@ -18,7 +18,7 @@ function stubStorage(initial: Record<string, string> = {}, opts: { throwOnSet?: 
 
 afterEach(() => vi.unstubAllGlobals());
 
-const linked = { ...DEFAULT_MY_TEAM, username: 'user_1', userId: '100000000000000003', leagueId: '1407819819000041472' };
+const linked = { ...DEFAULT_MY_TEAM, username: 'user_1', userId: '100000000000000003', leagueId: '100000000000001001' };
 
 describe('validation', () => {
   it('usernames: letters, digits, underscore, 1–20 chars', () => {
@@ -26,7 +26,7 @@ describe('validation', () => {
     expect(['', 'bad name', 'x'.repeat(21), 'a;b', 42].map(isValidUsername)).toEqual([false, false, false, false, false]);
   });
   it('ids are numeric strings', () => {
-    expect(isValidId('1407819819000041472')).toBe(true);
+    expect(isValidId('100000000000001001')).toBe(true);
     expect(isValidId('12a')).toBe(false);
   });
   it('sanitize drops ids without a username and defaults bad fields', () => {
