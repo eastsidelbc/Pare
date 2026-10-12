@@ -46,6 +46,10 @@ interface SleeperPlayer {
   years_exp?: number | null;
   /** ESPN athlete id (string or number in Sleeper's feed). */
   espn_id?: string | number | null;
+  /** "Questionable" | "Doubtful" | "Out" | "IR" | "PUP" | … (null when healthy). */
+  injury_status?: string | null;
+  /** Every position the player is eligible at (e.g. ["RB", "WR"]). */
+  fantasy_positions?: string[] | null;
 }
 
 /** Player boards, in display order (D/ST is appended after). */
@@ -77,8 +81,8 @@ async function fetchJson<T>(url: string, init: RequestInit, timeoutMs: number): 
   return (await res.json()) as T;
 }
 
-/** Slimmed player record — only what the boards need (keeps the cached map tiny). */
-interface SlimPlayer {
+/** Slimmed player record — only what the boards + My Team need (keeps the cached map tiny). */
+export interface SlimPlayer {
   name: string;
   position: string;
   team: string;
@@ -86,6 +90,10 @@ interface SlimPlayer {
   rookie?: true;
   /** ESPN athlete id — rookies only, and only when Sleeper has it (rare). */
   rookieEspnId?: string;
+  /** Sleeper injury_status, only when set (My Team injury tags; ≤24h fresh — the map is cached 24h). */
+  injury?: string;
+  /** fantasy_positions, only when the player is eligible at more than one position. */
+  fantasyPositions?: string[];
 }
 
 /**
@@ -115,13 +123,16 @@ const getCachedPlayerMap = unstable_cache(
         team: p.team ?? '',
         ...(isRookie ? { rookie: true as const } : {}),
         ...(isRookie && hasEspnId ? { rookieEspnId: String(p.espn_id) } : {}),
+        ...(p.injury_status ? { injury: p.injury_status } : {}),
+        ...(p.fantasy_positions && p.fantasy_positions.length > 1 ? { fantasyPositions: p.fantasy_positions } : {}),
       };
     }
     if (Object.keys(slim).length === 0) throw new Error('empty player map');
     return slim;
   },
-  // v3: the slim map gained `rookie` + `rookieEspnId` — new key so an old cached copy isn't reused.
-  ['sleeper-player-map-v3'],
+  // v3: the slim map gained `rookie` + `rookieEspnId`; v4: `injury` + `fantasyPositions` (My Team)
+  // — new key so an old cached copy isn't reused.
+  ['sleeper-player-map-v4'],
   { revalidate: PLAYERS_TTL_SECONDS, tags: ['sleeper-player-map'] }
 );
 
@@ -133,7 +144,7 @@ const statsBackup = createTtlCache<Record<string, SleeperStat>>(0);
 // Fantasy boards and the rookie index both ask for the map in the same render; share one
 // in-flight call so a cold cache downloads the ~20MB file once, not twice.
 let playerMapInFlight: Promise<Record<string, SlimPlayer>> | null = null;
-function getPlayerMap(): Promise<Record<string, SlimPlayer>> {
+export function getPlayerMap(): Promise<Record<string, SlimPlayer>> {
   playerMapInFlight ??= liveWithLastGood(playerMapBackup, () => getCachedPlayerMap(), () => ({}), 'fantasy:players').finally(
     () => {
       playerMapInFlight = null;

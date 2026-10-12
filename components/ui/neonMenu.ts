@@ -11,9 +11,9 @@ export const MENU_ROW_H = 40;
 
 /**
  * Viewport padding for Floating UI (flip/shift/size). The bottom keeps clear of
- * the floating bottom nav (40px pill + 12px gap + breathing room).
+ * the floating bottom nav (58px pill + 12px gap + breathing room — N3 nav, 2026-10-07).
  */
-export const MENU_VIEWPORT_PADDING = { top: 12, right: 12, bottom: 76, left: 12 };
+export const MENU_VIEWPORT_PADDING = { top: 12, right: 12, bottom: 94, left: 12 };
 
 /** Max menu height from Floating UI's availableHeight — grows with the screen. */
 export function menuMaxHeight(availableHeight: number): number {

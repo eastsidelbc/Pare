@@ -9,7 +9,9 @@
  *
  * The gold active-highlight is a single shared element (framer-motion
  * `layoutId`), so on each route change it SLIDES from the old tab to the new one
- * instead of blinking on/off — a smooth spring across Home / Compare / Leaders.
+ * instead of blinking on/off — a smooth spring across the tabs.
+ * Layout = "N3" (My Team P4, 2026-10-07; design-system §9.4 Nav): 5 tabs, an 18px
+ * icon stacked over an 11px label, items 66×48 — fits 393px with ≥44px targets.
  * Pill + label colors are the shared glass-toggle recipe (`ActivePill`, `glassControl`),
  * also used by the header capsules; this nav owns layoutId 'nav-active-pill'.
  *
@@ -22,9 +24,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarDays, GitCompareArrows, ListOrdered, Trophy, type LucideIcon } from 'lucide-react';
+import { CalendarDays, GitCompareArrows, ListOrdered, Shirt, Trophy, type LucideIcon } from 'lucide-react';
 import ActivePill from '@/components/ui/ActivePill';
-import { glassColor, GLASS_COLOR_TRANSITION } from '@/components/ui/glassControl';
+import { GlassLabel, glassColor, GLASS_COLOR_TRANSITION } from '@/components/ui/glassControl';
 
 interface NavItem {
   href: string;
@@ -38,6 +40,7 @@ const ITEMS: NavItem[] = [
   { href: '/compare', label: 'Compare', icon: GitCompareArrows, isActive: (p) => p.startsWith('/compare') },
   { href: '/standings', label: 'Standings', icon: ListOrdered, isActive: (p) => p.startsWith('/standings') },
   { href: '/leaderboards', label: 'Leaders', icon: Trophy, isActive: (p) => p.startsWith('/leaderboards') },
+  { href: '/myteam', label: 'Fantasy', icon: Shirt, isActive: (p) => p.startsWith('/myteam') },
 ];
 
 export default function BottomNav() {
@@ -51,9 +54,11 @@ export default function BottomNav() {
     >
       <nav
         aria-label="Primary"
-        className="pointer-events-auto flex items-center gap-1 overflow-hidden rounded-full p-1"
+        className="pointer-events-auto flex items-center overflow-hidden rounded-full"
         style={{
           height: 'var(--nav-pill-h)',
+          padding: 5,
+          gap: 2,
           // Neon Frame (Round 4 "K"): darkest layer of the surface ladder (--nav-bg)
           // so the capsule separates from the page, with a faint edge.
           background: 'var(--nav-bg)',
@@ -74,27 +79,20 @@ export default function BottomNav() {
               href={item.href}
               aria-label={item.label}
               aria-current={active ? 'page' : undefined}
-              className="relative flex h-full items-center gap-1.5 rounded-full px-2.5 touch-optimized active:opacity-70"
+              className="relative flex flex-col items-center justify-center gap-[3px] rounded-full touch-optimized active:opacity-70"
+              style={{ width: 66, height: 48 }}
             >
               {/* Sliding gold neon outline — one shared element that glides between tabs. */}
               {active && <ActivePill layoutId="nav-active-pill" />}
               <Icon
-                size={16}
+                size={18}
+                aria-hidden
                 style={{ color, position: 'relative', zIndex: 1, transition: GLASS_COLOR_TRANSITION }}
                 strokeWidth={active ? 2.4 : 2}
               />
-              <span
-                style={{
-                  fontSize: '12px',
-                  fontWeight: active ? 700 : 500,
-                  color,
-                  position: 'relative',
-                  zIndex: 1,
-                  transition: GLASS_COLOR_TRANSITION,
-                }}
-              >
+              <GlassLabel active={active} style={{ fontSize: '11px', lineHeight: 1 }}>
                 {item.label}
-              </span>
+              </GlassLabel>
             </Link>
           );
         })}

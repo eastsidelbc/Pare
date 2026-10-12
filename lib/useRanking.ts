@@ -11,26 +11,10 @@
 
 import { useMemo } from 'react';
 import { TeamData } from './useNflStats';
-import { formatRank } from '@/utils/ordinal';
+import { rankAmong } from './ranking';
 
 /** Dev-only diagnostic logging (stripped from production hot paths). */
 const RANKING_DEBUG = process.env.NODE_ENV !== 'production';
-
-/**
- * Compare two numeric values with floating-point tolerance
- * 
- * @param a - First value
- * @param b - Second value
- * @param epsilon - Tolerance (default: 0.001 for 3 decimal places)
- * @returns true if values are equal within tolerance
- * 
- * @example
- * areValuesEqual(5.7, 5.700001)  // true
- * areValuesEqual(5.7, 5.8)       // false
- */
-function areValuesEqual(a: number, b: number, epsilon = 0.001): boolean {
-  return Math.abs(a - b) < epsilon;
-}
 
 export interface RankingResult {
   rank: number;
@@ -104,36 +88,16 @@ export function useRanking(
 
     if (RANKING_DEBUG) console.log(`🏆 [USE-RANKING] Target value: ${targetValue}`);
 
-    // Count teams with better values
-    let betterTeamsCount = 0;
-    let teamsWithSameValue = 0;
-
-    filteredData.forEach(team => {
-      const teamValue = parseFloat(String(team[metricKey] || '0'));
-      if (isNaN(teamValue)) return;
-
-      if (areValuesEqual(teamValue, targetValue)) {
-        teamsWithSameValue++;
-      } else if (higherIsBetter && teamValue > targetValue) {
-        betterTeamsCount++;
-      } else if (!higherIsBetter && teamValue < targetValue) {
-        betterTeamsCount++;
-      }
-    });
-
-    // Calculate rank: number of better teams + 1
-    const rank = betterTeamsCount + 1;
-    const isTied = teamsWithSameValue > 1;
+    // Rank = number of better teams + 1 (shared tie-aware core, lib/ranking.ts)
+    const values = filteredData.map(team => parseFloat(String(team[metricKey] || '0')));
+    const { rank, formattedRank, isTied, teamsWithSameValue } = rankAmong(targetValue, values, higherIsBetter);
 
     if (RANKING_DEBUG) console.log(`🏆 [USE-RANKING] Results:`, {
-      betterTeamsCount,
       rank,
       isTied,
       teamsWithSameValue,
       higherIsBetter
     });
-
-    const formattedRank = formatRank(rank, isTied);
 
     return {
       rank,
@@ -184,28 +148,12 @@ export function calculateBulkRanking(
       return;
     }
 
-    let betterTeamsCount = 0;
-    let teamsWithSameValue = 0;
-
-    filteredData.forEach(team => {
-      const teamValue = parseFloat(String(team[metricKey] || '0'));
-      if (isNaN(teamValue)) return;
-
-      if (areValuesEqual(teamValue, targetValue)) {
-        teamsWithSameValue++;
-      } else if (higherIsBetter && teamValue > targetValue) {
-        betterTeamsCount++;
-      } else if (!higherIsBetter && teamValue < targetValue) {
-        betterTeamsCount++;
-      }
-    });
-
-    const rank = betterTeamsCount + 1;
-    const isTied = teamsWithSameValue > 1;
+    const values = filteredData.map(team => parseFloat(String(team[metricKey] || '0')));
+    const { rank, formattedRank, isTied, teamsWithSameValue } = rankAmong(targetValue, values, higherIsBetter);
 
     results[teamName] = {
       rank,
-      formattedRank: formatRank(rank, isTied),
+      formattedRank,
       isTied,
       totalTeams: filteredData.length,
       teamsWithSameValue

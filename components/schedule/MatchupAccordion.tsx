@@ -150,7 +150,8 @@ export default function MatchupAccordion({
                   onClick={openFull}
                   className="flex w-full items-center justify-center gap-1.5 rounded-full font-bold touch-optimized active:opacity-70"
                   style={{
-                    height: 'var(--nav-pill-h)',
+                    // Was var(--nav-pill-h); pinned at the old 40px when the nav grew to 58 (N3).
+                    height: 40,
                     border: '1.5px solid var(--gold-bright)',
                     background: 'color-mix(in srgb, var(--gold-bright) 8%, transparent)',
                     boxShadow: '0 0 12px color-mix(in srgb, var(--gold-bright) 35%, transparent)',

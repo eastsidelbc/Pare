@@ -106,6 +106,53 @@ _Last verified: 2026-09-14._
 
 ---
 
+## 5. Sleeper (fantasy) — server-only
+
+Free, no key. **Non-commercial use only** — a licensed provider (or Sleeper's
+written OK) is required before any paid tier or ads (ADR
+`docs/adr/2026-10-07-my-team-provider-proxy.md`, "Blocker"). Documented guidance
+(docs.sleeper.com): *"stay under 1000 API calls per minute, otherwise, you risk
+being IP-blocked."* No rate-limit headers; responses come through Sleeper's
+Cloudflare CDN with `s-maxage` 60s (matchups) to 300s (league, rosters, stats).
+Evidence: `docs/devnotes/2026-10-07-my-team-data-spike.md`.
+
+The browser **never** calls Sleeper. Every call below is made by our server.
+
+### Leaders (`lib/fantasy.ts`) — shared, not per user
+| Endpoint | Used for | Cache |
+|---|---|---|
+| `https://api.sleeper.app/v1/players/nfl` | player map (~14MB raw → trimmed: name, team, position, `injury`, `fantasyPositions`, rookie ids) — also My Team's injury tags | `unstable_cache` 24h over no-store, 20s timeout, key `sleeper-player-map-v4` |
+| `https://api.sleeper.app/v1/stats/nfl/regular/{season}` | season fantasy totals (`pts_ppr` / `pts_std` / `gp`) | `unstable_cache` 30 min over no-store, 8s timeout |
+
+### My Team (`lib/myteam/sleeper/*`) — one door: `sleeperJson()` in `http.ts`
+Every call goes through a process-wide budget of **600 calls/min**
+(`SLEEPER_CALLS_PER_MIN`), `cache: 'no-store'` + `AbortSignal.timeout` (5s;
+stats 8s). Over budget → 503 / last-good. Errors never contain the URL (it can
+hold a username).
+
+| Endpoint | Used for | Cache (memory-only keyed LRU, `lib/apiCache.ts` `createKeyedCache`) |
+|---|---|---|
+| `https://api.sleeper.app/v1/user/{username}` | username → `user_id` (unknown user = **HTTP 200 + `null`**) | 24h · max 1,000 |
+| `https://api.sleeper.app/v1/user/{user_id}/leagues/nfl/{season}` | the user's leagues | 1h · max 1,000 |
+| `https://api.sleeper.app/v1/league/{league_id}` | league name, `scoring_settings`, `roster_positions`, `settings` | 1h · max 500 |
+| `https://api.sleeper.app/v1/league/{league_id}/rosters` | find my roster (`owner_id` / `co_owners`), starters / bench / IR / taxi | 5 min · max 500 |
+| `https://api.sleeper.app/v1/league/{league_id}/matchups/{week}` | live points (`players_points`, roster `points`) | 60s · max 500 |
+| `https://api.sleeper.com/stats/nfl/{season}/{week}?season_type=regular&position[]=QB&…RB…WR…TE…K…DEF` | weekly stat lines with `team` + `opponent` → fantasy points allowed (FPA). **Undocumented host** (fallback: the documented `api.sleeper.app/v1/stats/nfl/regular/{season}/{week}` + ESPN opponents) | `unstable_cache` over no-store (completed weeks 24h, current week 30 min) + last-good per week — shared, no user data |
+
+Per-user data (username, user/league ids, rosters, matchups) is **never** put in
+`unstable_cache` (it writes to disk) and never logged.
+
+### ESPN endpoints added for My Team (server-only, shared)
+| Endpoint | Used for | Cache |
+|---|---|---|
+| `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?seasontype=2&week={N}&dates={season}` | weeks 1–18 opponents + byes (`lib/myteam/seasonSchedule.ts`; no odds calls; a week with 0 games throws, never a bye) | `unstable_cache` 6h per week over no-store, 5s timeout |
+| `https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event={id}` | existing final-game box score, now week-aware (`getTeamGameLog()`) with sacks, INT, fumbles lost, TDs by type, `totalDrives`, `redZoneAttempts` for the "why" stats | existing per-game 24h (`final-boxscore-v2`) |
+
+ESPN injuries were evaluated and **not** used (resolved 75% of rostered injured
+players, rule needed ≥95%) — injury tags come from the Sleeper player map (≤24h stale).
+
+---
+
 # Appendix: FULL field chart — team statistics endpoint
 
 Every stat the endpoint returns, by category. Each stat object carries

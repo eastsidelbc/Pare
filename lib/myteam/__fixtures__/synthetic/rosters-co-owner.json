@@ -1,0 +1,32 @@
+[
+ {
+  "roster_id": 1,
+  "owner_id": "900000000000000001",
+  "co_owners": null,
+  "league_id": "900000000000000100",
+  "players": ["4046", "6794", "DEN"],
+  "starters": ["4046", "6794"],
+  "reserve": null,
+  "taxi": null
+ },
+ {
+  "roster_id": 2,
+  "owner_id": "900000000000000002",
+  "co_owners": ["900000000000000003", "900000000000000004"],
+  "league_id": "900000000000000100",
+  "players": ["8130", "9509", "KC", "7564"],
+  "starters": ["8130", "9509"],
+  "reserve": ["7564"],
+  "taxi": null
+ },
+ {
+  "roster_id": 3,
+  "owner_id": null,
+  "co_owners": null,
+  "league_id": "900000000000000100",
+  "players": [],
+  "starters": [],
+  "reserve": null,
+  "taxi": null
+ }
+]
