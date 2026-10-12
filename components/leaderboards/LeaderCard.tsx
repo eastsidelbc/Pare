@@ -3,7 +3,8 @@
  *
  * Same shell as a Standings division card (deep gradient, hairline border, white
  * small-caps title) with a tight 32px row: rank · team abbr · short name · value.
- * Shows the top 5; the 44px footer button shows all (up to 25) and back. The team
+ * Shows the top 5; a tap anywhere on the card (or the 44px footer button) shows all
+ * (up to 25) and back. The card keeps its width and only grows down. The team
  * cell is an 18px logo or the abbr per config/teamIdentity.ts ('leaders' surface).
  * No headshots, no motion — calm on a dense screen.
  *
@@ -13,7 +14,7 @@
 
 'use client';
 
-import { useState, type CSSProperties } from 'react';
+import { useRef, useState, type CSSProperties } from 'react';
 import { ChevronDown } from 'lucide-react';
 import type { LeaderBoard, LeaderRow } from '@/lib/leaders';
 import { TeamAbbr } from '@/components/standings/StandingsRow';
@@ -42,6 +43,7 @@ const ROW_STYLE: CSSProperties = {
 
 export default function LeaderCard({ board }: { board: LeaderBoard }) {
   const [expanded, setExpanded] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const all = board.leaders;
   const hasMore = all.length > PREVIEW_COUNT;
@@ -51,11 +53,25 @@ export default function LeaderCard({ board }: { board: LeaderBoard }) {
   // e.g. 1, 1, 3, 4, 5, 5, 7. Aligned to `all`.
   const ranks = all.map((r) => 1 + all.reduce((n, x) => (x.value > r.value ? n + 1 : n), 0));
 
+  // On collapse the card shrinks by up to 20 rows; if its top has scrolled out of
+  // view, bring it back so you land on the card you closed. Never scroll on expand.
+  const toggle = () => {
+    const collapsing = expanded;
+    setExpanded(!expanded);
+    if (!collapsing) return;
+    requestAnimationFrame(() => {
+      const el = cardRef.current;
+      if (el && el.getBoundingClientRect().top < scrollPaneTop(el)) el.scrollIntoView({ block: 'nearest' });
+    });
+  };
+
   return (
     <div
-      // Phone (2 across): an open card spans both columns so all 25 rows read at full width.
-      // iPad: it opens in place.
-      className={`min-w-0 overflow-hidden${expanded ? ' max-sm:col-span-full' : ''}`}
+      ref={cardRef}
+      // Whole card = tap target (mouse/touch convenience only). The footer <button> stays
+      // the accessible control, so no role/tabIndex here — a button inside a "button" breaks a11y.
+      onClick={hasMore ? toggle : undefined}
+      className={`min-w-0 select-none overflow-hidden${hasMore ? ' cursor-pointer' : ''}`}
       style={{
         borderRadius: 'var(--radius-lg)',
         border: '1px solid var(--hairline)',
@@ -83,7 +99,10 @@ export default function LeaderCard({ board }: { board: LeaderBoard }) {
       {hasMore && (
         <button
           type="button"
-          onClick={() => setExpanded((v) => !v)}
+          onClick={(e) => {
+            e.stopPropagation(); // the card's onClick would toggle it straight back
+            toggle();
+          }}
           aria-expanded={expanded}
           aria-label={`${board.label}: ${expanded ? 'show top 5' : `show all ${all.length}`}`}
           className="touch-optimized flex w-full items-center justify-center gap-1 active:opacity-60"
@@ -98,6 +117,15 @@ export default function LeaderCard({ board }: { board: LeaderBoard }) {
       )}
     </div>
   );
+}
+
+/** Top edge of the scroll pane the card lives in (below the fixed header), else the window's. */
+function scrollPaneTop(el: HTMLElement): number {
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    const { overflowY } = getComputedStyle(p);
+    if (overflowY === 'auto' || overflowY === 'scroll') return p.getBoundingClientRect().top;
+  }
+  return 0;
 }
 
 function Row({ row, rank }: { row: LeaderRow; rank: number }) {
