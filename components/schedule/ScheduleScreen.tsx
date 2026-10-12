@@ -34,6 +34,7 @@ const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : use
 import { useSchedule, type WeekStatus } from './ScheduleProvider';
 import WeekControl from './WeekControl';
 import WeekSection from './WeekSection';
+import SettingsGearButton from './SettingsGearButton';
 import { Star } from 'lucide-react';
 import { useFavorites } from '@/components/FavoritesProvider';
 import SiteFooter from '@/components/SiteFooter';
@@ -288,6 +289,7 @@ export default function ScheduleScreen() {
               onStep={(dir) => jumpToWeek(activeWeek + dir)}
               onJump={(w) => jumpToWeek(w)}
             />
+            <SettingsGearButton />
           </div>
         </div>
       </header>

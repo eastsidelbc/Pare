@@ -22,3 +22,30 @@ export function isInIosApp(): boolean {
   if (typeof document === 'undefined') return false;
   return document.documentElement.dataset.app === 'ios';
 }
+
+/** Messages the iOS app accepts from the page (ios/Pare/Bridge.swift). */
+export type AppMessage = { type: 'openSettings' };
+
+interface PareMessageHandler {
+  postMessage(message: AppMessage): void;
+}
+
+/** The slice of WKWebView's `window.webkit` the app registers (handler name = `AppConfig.bridgeName`). */
+interface WebKitBridge {
+  messageHandlers?: { pare?: PareMessageHandler };
+}
+
+/**
+ * Send a message to the iOS app. Returns true if it was sent; false in any browser
+ * (no `window.webkit.messageHandlers.pare`), so the caller falls back to its web behavior.
+ */
+export function postToApp(message: AppMessage): boolean {
+  const handler = (globalThis as { webkit?: WebKitBridge }).webkit?.messageHandlers?.pare;
+  if (!handler) return false;
+  try {
+    handler.postMessage(message);
+    return true;
+  } catch {
+    return false;
+  }
+}

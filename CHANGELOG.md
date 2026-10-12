@@ -6,6 +6,12 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ## [Unreleased]
 
+### Added
+- **Settings gear on the Home header** (2026-10-12, branch `feat/settings-gear`) — Settings round 1 pick G1 + S2 (canvas "Pare Settings Mockups").
+  - Web: `components/schedule/SettingsGearButton.tsx`, 44×44 gear at the far right of the Home header (`--subtext`, 7.6:1). In a browser it links to /about (which links /privacy).
+  - In the iOS app it calls the new `postToApp({ type: 'openSettings' })` (`lib/platform.ts`, typed `window.webkit` bridge, tests in `lib/__tests__/platform.test.ts`) and the native Settings sheet opens instead — the in-app route to About / Privacy (App Review 5.1.1).
+  - iOS: `SettingsView` restyled to S2 — same native grouped list, gold tint, BgDeep background, deep-navy rows, white titles with gold icons + chevrons, "Email support" row, Pare LLC footer, half-height sheet with grab handle (drag to full).
+
 ### Fixed
 - **Home peek: no dead space above "Open full"** (2026-10-06, `main`) — the inline variant no longer inherits the Compare page's bottom-nav reserve (`MobileCompareLayout` `padBottom` → 8px for `inline`); "Open full" is now a gold neon capsule matching the nav's `ActivePill`.
 - **Schedule odds no longer stay blank for a whole session** (2026-10-06, `main`)
