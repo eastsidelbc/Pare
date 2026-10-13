@@ -1,0 +1,63 @@
+{
+  "byAbbr": {
+    "TB": {
+      "abbr": "TB",
+      "lines": [
+        {
+          "role": "QB",
+          "name": "Jalon Daniels",
+          "stat": "19/25 · 189 yd · 1 TD  ·  7 car · 23 yd",
+          "ppr": 13.9
+        },
+        {
+          "role": "RB",
+          "name": "Bucky Irving",
+          "stat": "21 car · 165 yd · 1 TD  ·  2/3 · 10 yd · 1 TD",
+          "ppr": 31.5
+        },
+        {
+          "role": "WR",
+          "name": "Emeka Egbuka",
+          "stat": "1 car · 14 yd · 1 TD  ·  6/9 · 38 yd",
+          "ppr": 17.2
+        },
+        {
+          "role": "WR",
+          "name": "Tez Johnson",
+          "stat": "1/1 · 64 yd",
+          "ppr": 7.4
+        }
+      ]
+    },
+    "DAL": {
+      "abbr": "DAL",
+      "lines": [
+        {
+          "role": "QB",
+          "name": "Dak Prescott",
+          "stat": "24/42 · 316 yd · 1 TD · 2 INT",
+          "ppr": 12.6
+        },
+        {
+          "role": "WR",
+          "name": "George Pickens",
+          "stat": "9/13 · 130 yd · 1 TD",
+          "ppr": 28
+        },
+        {
+          "role": "RB",
+          "name": "Javonte Williams",
+          "stat": "12 car · 45 yd · 1 TD  ·  2/3 · 17 yd",
+          "ppr": 14.2
+        },
+        {
+          "role": "WR",
+          "name": "Ryan Flournoy",
+          "stat": "3/4 · 90 yd",
+          "ppr": 12
+        }
+      ]
+    }
+  },
+  "headline": "Bucky Irving and rookie QB Jalon Daniels help Bucs beat sloppy Cowboys 24-16 for 1st win of season"
+}

@@ -3,7 +3,7 @@
  *
  * Polls /api/myteam/live every LIVE_POLL_MS (60s) ONLY while shouldPollMyTeam
  * says so: one of my players' games is in its live window (read from
- * ScheduleProvider's existing ESPN poll — no second useLiveScores), the tab is
+ * ScheduleProvider's existing live poll — no second useLiveScores), the tab is
  * visible, this route is mounted (unmount = effects cleaned up), and not all my
  * games are final. Outside that: at most one fetch when the week has started and
  * nothing is on screen yet, plus one when the last game goes final. No timer

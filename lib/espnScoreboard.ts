@@ -2,20 +2,17 @@
  * ESPN scoreboard mapper — the ONE place that turns an ESPN scoreboard payload
  * into our `Matchup[]`.
  *
- * Deliberately pure + client-safe (no `fetch`, no Node-only imports) so BOTH:
- *   • the server (`lib/schedule.ts`) — for the SSR schedule + week switcher, and
- *   • the client (`lib/hooks/useLiveScores.ts`) — for the 15s live-score poll
- * share exactly one mapping. Do not duplicate this logic anywhere else.
- *
- * The live poll calls ESPN's scoreboard endpoint DIRECTLY from the browser
- * (it is CORS-open), so no server round-trip / Vercel invocation is spent while
- * games are live — see useLiveScores for the polling policy.
+ * Pure (no `fetch`, no Node-only imports). Used server-side by BOTH:
+ *   • `lib/schedule.ts` — the SSR schedule + week switcher, and
+ *   • `lib/espnLive.ts` — `/api/live/scoreboard`, which the browser's 15s
+ *     live-score poll (useLiveScores) calls instead of ESPN.
+ * Do not duplicate this logic anywhere else.
  */
 
 import { resolveTeamByAbbr, type NflTeam } from './teams';
 import type { Matchup, GameState, MatchupOdds } from './schedule';
 
-/** Public ESPN scoreboard endpoint (free, CORS-open, no key). */
+/** Public ESPN scoreboard endpoint (free, no key). Server-side only. */
 export const ESPN_SCOREBOARD_URL =
   'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard';
 

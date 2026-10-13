@@ -46,7 +46,7 @@ If anything Kobe asks for goes against standard practice or what an experienced 
 
 All live from free public APIs — **no** CSV/PFR layer (removed 2026-10-01). Endpoints + gotchas: `DATA_SOURCES.md`.
 
-- **Schedule + live scores:** ESPN scoreboard (`lib/espnScoreboard.ts` mapper, `lib/schedule.ts`). Betting line kept for any game state; closing-odds fallback cached 6h.
+- **Schedule + live scores:** ESPN scoreboard (`lib/espnScoreboard.ts` mapper, `lib/schedule.ts`). Betting line kept for any game state; closing-odds fallback cached 6h. Live scores + box scores go through our proxy `/api/live/scoreboard` + `/api/live/summary` (`lib/espnLive.ts`: shared memory cache, last-good on ESPN failure) — the browser never calls ESPN (ADR `docs/adr/2026-10-12-live-scores-proxy.md`).
 - **Offense stats:** ESPN team statistics (`lib/espnStats.ts`). Yards are NET (`netPassingYards`/`netTotalYards`) so offense matches defense-allowed.
 - **Defense:** points allowed via ESPN standings; yards + opponent 3rd-down % aggregated from final-game box scores (`lib/espnStats.ts`).
 - **Standings:** `lib/standings.ts` (ESPN official tiebreak order).
@@ -58,7 +58,7 @@ All live from free public APIs — **no** CSV/PFR layer (removed 2026-10-01). En
 
 | Data | Refresh | Lag after ESPN |
 |---|---|---|
-| Live score / clock / final | browser polls ESPN every 15s while a game is live **or** 10 min before → 3h after kickoff (`lib/liveWindow.ts`) | ~15s |
+| Live score / clock / final | browser polls `/api/live/scoreboard` every 15s while a game is live **or** 10 min before → 3h after kickoff (`lib/liveWindow.ts`); server memory cache 15s live / ≤5 min idle, never past the next live window (`scoreboardTtlMs`) | ~15–30s |
 | Standings | `no-store` + `force-dynamic` (ESPN ≈0.19s of a 0.22s TTFB — no cache needed); 5s timeout → last-good copy on ESPN failure; open tab re-fetches on return after 60s (`useRefreshOnReturn`) | instant |
 | Home schedule + `/api/schedule` | fetch cache 5 min (`LIVE_REVALIDATE_SECONDS`); a loaded week >5 min old is re-fetched (week ±1) on scroll-into-view / app foreground (`ScheduleProvider.refreshStaleWeeks`) | ≤5 min after you look |
 | Compare offense/defense + W-L on Compare | route ISR + fetch cache 10 min (`REVALIDATE_SECONDS`) | ≤10 min |
@@ -169,11 +169,11 @@ pm2 logs pare                   # watch for ESPN 429/403
 | Max comparisons | 8 (`APP_CONSTANTS.MAX_COMPARISONS`) |
 | Special rows filtered | `Avg Team`, `League Total`, `Avg Tm/G`, `Avg/TmG` |
 | Tie notation / tolerance | `T-12th` / `0.001` |
-| Data freshness | live 15s · standings instant · schedule 5 min · stats 10 min · leaders ≤~40 min |
+| Data freshness | live ~15–30s · standings instant · schedule 5 min · stats 10 min · leaders ≤~40 min |
 | Logos vs names | `config/teamIdentity.ts` — flip `default` (`'logo'` ⇄ `'name'`); per-surface `overrides`. Must be `'name'` before ads/Pro (trademarks) |
 | In-app detector | `lib/platform.ts` — inline head script sets `<html data-app="ios">` when the UA contains `Pare-iOS` (`AppConfig.uaToken` in `ios/Pare/AppConfig.swift` — keep equal to `IOS_APP_UA_TOKEN`). CSS: `[data-app="ios"] …`; client: `isInIosApp()`. Never `headers()` (keeps pages static/ISR). Hides `.site-footer`; reuse for the logo switch. Page → app messages: `postToApp({ type })` (typed, returns false in a browser); today only `openSettings`, sent by the Home header gear (`components/schedule/SettingsGearButton.tsx`, a /about link on the web) |
-| Privacy policy | Privacy policy at `/privacy` (`app/privacy/page.tsx`) — update it **BEFORE** adding accounts, analytics, ads, or any data collection (and when the browser starts loading a new third-party domain). Today: localStorage `pare:favorites` + `pare:comparisons` + `pare:myteam` (Sleeper username + ids), no own cookies; browser hits ESPN directly for live scores + box scores; Sleeper is server-only (username → our API → Sleeper, memory caches only) |
-| TODO before App Store | Route live scores (`useLiveScores`) + box scores (`useGameSummary`) through our own API with a short shared cache before App Store submission; then update /privacy "Sports data" + "Services we rely on". (In-app privacy link: done — Home gear → native Settings sheet, 2026-10-12.) |
+| Privacy policy | Privacy policy at `/privacy` (`app/privacy/page.tsx`) — update it **BEFORE** adding accounts, analytics, ads, or any data collection (and when the browser starts loading a new third-party domain). Today: localStorage `pare:favorites` + `pare:comparisons` + `pare:myteam` (Sleeper username + ids), no own cookies; browser contacts only pare.gg for sports data (`/api/live/*`); Sleeper is server-only (username → our API → Sleeper, memory caches only) |
+| TODO before App Store | Live scores + box scores through our own API: **done** 2026-10-12 (`/api/live/*`, ADR `docs/adr/2026-10-12-live-scores-proxy.md`; /privacy updated). In-app privacy link: done — Home gear → native Settings sheet, 2026-10-12. |
 | Service worker | `public/sw.js` = kill switch (clears `pare-*` caches + unregisters old installs, 2026-10-06); `NEXT_PUBLIC_ENABLE_SW` off on pare.gg |
 
 ## End Session → Vault Brain
