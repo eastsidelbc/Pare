@@ -1,0 +1,12 @@
+{
+    "plansDirectory": "./docs/plans",
+    "permissions": {
+      "deny": [
+        "Bash(git push:*)",
+        "Bash(git merge:*)",
+        "Bash(git reset --hard:*)",
+        "Bash(pm2:*)",
+        "Bash(ssh:*)"
+      ]
+    }
+  }
