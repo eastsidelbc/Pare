@@ -238,20 +238,20 @@ Raw = decoded JSON bytes; gzip = `zlib.gzipSync` of that body (≈ wire size).
   - ≤6 ESPN calls in total.
 - Fill the load table below from `p4-smoke.json`.
 
-**P4 results — our responses** (filled by the run)
+**P4 results — our responses** (filled by the run: 2026-10-13T01:15:36.867Z, week 5; source `p4-smoke.json`)
 
 | Route | Raw bytes | Wire bytes (gzip) | content-encoding |
 |---|---|---|---|
-| /api/live/scoreboard?week=W | TBD-P4 | TBD-P4 | TBD-P4 |
-| /api/live/summary?event=… | TBD-P4 | TBD-P4 | TBD-P4 |
+| /api/live/scoreboard?week=W | 8,280 | 8,280 | none |
+| /api/live/summary?event=… | 894 | 894 | none |
 
 **Load table** (scoreboard wire size; one request per viewer per 15s while live; Cloudflare not caching)
 
 | Viewers | Req/s to the Mac | Upload from the Mac (Mbps) | ESPN calls/min |
 |---|---|---|---|
-| 100 | 6.7 | TBD-P4 | ~4 (scoreboard, current week) |
-| 1,000 | 66.7 | TBD-P4 | ~4 |
-| 10,000 | 666.7 | TBD-P4 | ~4 |
+| 100 | 6.7 | 0.44 | ~4 (scoreboard, current week) |
+| 1,000 | 66.7 | 4.42 | ~4 |
+| 10,000 | 666.7 | 44.16 | ~4 |
 | nobody watching / no games | 0 | 0 | 0 |
 
 Mbps = viewers / 15 × wire bytes × 8 / 1e6. ESPN calls don't depend on viewer count (single-flight, 15s TTL). Summaries are ~1 call per final game per 6h.

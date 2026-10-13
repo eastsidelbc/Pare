@@ -1,0 +1,134 @@
+{
+  "pass": true,
+  "ranAt": "2026-10-13T01:15:36.867Z",
+  "week": 5,
+  "checks": [
+    {
+      "name": "current week known",
+      "ok": true,
+      "detail": "W = 5"
+    },
+    {
+      "name": "next start → /api/health 200 within 60s",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "scoreboard 200 ×2",
+      "ok": true,
+      "detail": "200, 200"
+    },
+    {
+      "name": "scoreboard MISS then HIT",
+      "ok": true,
+      "detail": "MISS → HIT"
+    },
+    {
+      "name": "scoreboard shape (week, matchups[id/kickoff/state], stale false, ISO updatedAt)",
+      "ok": true,
+      "detail": "15 matchups"
+    },
+    {
+      "name": "scoreboard Cache-Control kept by Next",
+      "ok": true,
+      "detail": "public, s-maxage=15, stale-while-revalidate=30"
+    },
+    {
+      "name": "bad input → 400 (4 weeks + 4 events)",
+      "ok": true,
+      "detail": "400,400,400,400,400,400,400,400"
+    },
+    {
+      "name": "found a finished game",
+      "ok": true,
+      "detail": "2026-w5-TB-DAL (event 401872980)"
+    },
+    {
+      "name": "summary 200 ×2",
+      "ok": true,
+      "detail": "200, 200"
+    },
+    {
+      "name": "summary MISS then HIT",
+      "ok": true,
+      "detail": "MISS → HIT"
+    },
+    {
+      "name": "summary shape (byAbbr lines[], headline string|null)",
+      "ok": true,
+      "detail": "2 teams"
+    },
+    {
+      "name": "summary Cache-Control kept by Next",
+      "ok": true,
+      "detail": "public, s-maxage=21600, stale-while-revalidate=43200"
+    },
+    {
+      "name": "cold week 1: 50 parallel → all 200",
+      "ok": true,
+      "detail": "50/50"
+    },
+    {
+      "name": "cold week 1: exactly 1 MISS",
+      "ok": true,
+      "detail": "1 MISS, 49 HIT"
+    },
+    {
+      "name": "scoreboard size measured",
+      "ok": true,
+      "detail": "raw 8,280 B, wire 8,280 B (none)"
+    },
+    {
+      "name": "summary size measured",
+      "ok": true,
+      "detail": "raw 894 B, wire 894 B (none)"
+    },
+    {
+      "name": "ESPN calls ≤ 6",
+      "ok": true,
+      "detail": "4 (1 here + 3 MISS)"
+    },
+    {
+      "name": "server stopped (port 4000 free)",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "sizes": {
+    "scoreboard": {
+      "path": "/api/live/scoreboard?week=5",
+      "status": 200,
+      "raw": 8280,
+      "wire": 8280,
+      "contentEncoding": "none"
+    },
+    "summary": {
+      "path": "/api/live/summary?event=401872980",
+      "status": 200,
+      "raw": 894,
+      "wire": 894,
+      "contentEncoding": "none"
+    }
+  },
+  "load": [
+    {
+      "viewers": 100,
+      "reqPerSec": "6.7",
+      "mbps": 0.4416,
+      "espn": "~4 (scoreboard, current week)"
+    },
+    {
+      "viewers": 1000,
+      "reqPerSec": "66.7",
+      "mbps": 4.416,
+      "espn": "~4"
+    },
+    {
+      "viewers": 10000,
+      "reqPerSec": "666.7",
+      "mbps": 44.16,
+      "espn": "~4"
+    }
+  ],
+  "espnCalls": 4
+}
