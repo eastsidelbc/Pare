@@ -7,12 +7,24 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { gunzipSync } from 'node:zlib';
 import { KICKOFF_LEAD_MS } from '@/lib/liveWindow';
 import { applySleeperPoints, parePoints, type PprIndex } from '@/lib/fantasyPoints';
 import { toWireSummary, type GameSummary, type ParsedSummary } from '@/lib/gameSummary';
 import type { PlayerGameLine } from '@/lib/myteam/types';
 
 vi.mock('server-only', () => ({}));
+
+/** Counts gzipSync calls (the real one still runs) — proves "once per fetch". */
+const zlibSpy = vi.hoisted(() => ({ gzipCalls: 0 }));
+vi.mock('node:zlib', async (importOriginal) => {
+  const real = await importOriginal<typeof import('node:zlib')>();
+  const gzipSync: typeof real.gzipSync = (...args) => {
+    zlibSpy.gzipCalls += 1;
+    return real.gzipSync(...args);
+  };
+  return { ...real, gzipSync };
+});
 
 /** Mocked Sleeper — empty by default (no points yet); tests fill or break it. */
 const sleeper = vi.hoisted(() => ({
@@ -62,6 +74,9 @@ async function load() {
   return { scoreboard, summary, live };
 }
 const req = (path: string) => new Request(`http://localhost${path}`);
+const gzReq = (path: string, encoding = 'gzip, deflate, br') =>
+  new Request(`http://localhost${path}`, { headers: { 'accept-encoding': encoding } });
+const bytes = async (res: Response) => Buffer.from(await res.arrayBuffer());
 const sMaxAge = (res: Response) => Number(/s-maxage=(\d+)/.exec(res.headers.get('cache-control') ?? '')?.[1]);
 
 /** Deep copy of the scoreboard fixture with every game's state rewritten. */
@@ -87,6 +102,7 @@ beforeEach(() => {
   sleeper.lines = [];
   sleeper.players = {};
   sleeper.down = false;
+  zlibSpy.gzipCalls = 0;
   serve();
 });
 afterEach(() => {
@@ -366,5 +382,129 @@ describe('GET /api/live/summary — Pare points', () => {
     expect(second.headers.get('x-pare-cache')).toBe('HIT');
     expect(dakOf((await second.json()) as GameSummary)?.ppr).toBe(17.64);
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ── gzip (we compress /api/live/* ourselves; `next start` doesn't) ──────
+describe('/api/live/* gzip', () => {
+  const SB = `/api/live/scoreboard?week=${WEEK}`;
+  const SM = `/api/live/summary?event=${EVENT}`;
+
+  it('gzip scoreboard: encoded, Vary, Content-Length, decodes to the plain body byte for byte', async () => {
+    const { scoreboard } = await load();
+    const plain = await (await scoreboard.GET(req(SB))).text();
+    const res = await scoreboard.GET(gzReq(SB));
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-encoding')).toBe('gzip');
+    expect(res.headers.get('vary')).toContain('Accept-Encoding');
+    const body = await bytes(res);
+    expect(Number(res.headers.get('content-length'))).toBe(body.byteLength);
+    expect(body.byteLength * 3).toBeLessThan(Buffer.byteLength(plain));
+    expect(gunzipSync(body).toString('utf8')).toBe(plain);
+    expect(res.headers.get('x-pare-cache')).toMatch(/^(HIT|MISS|STALE)$/);
+    expect(res.headers.get('cache-control')).toMatch(CACHE_CONTROL);
+    expect(res.headers.get('content-type')).toContain('application/json');
+  });
+
+  it('no accept-encoding → plain (and gzip;q=0 → plain)', async () => {
+    const { scoreboard } = await load();
+    for (const r of [req(SB), gzReq(SB, 'gzip;q=0'), gzReq(SB, 'br, identity')]) {
+      const res = await scoreboard.GET(r);
+      expect(res.headers.get('content-encoding')).toBeNull();
+      expect(res.headers.get('vary')).toContain('Accept-Encoding');
+      const body = await res.json();
+      expect(body.week).toBe(WEEK);
+      expect(body.stale).toBe(false);
+    }
+    expect(zlibSpy.gzipCalls).toBe(0);
+  });
+
+  it('gzip once per fetch: 1 MISS + 100 HITs → gzipSync called once', async () => {
+    const { scoreboard } = await load();
+    const first = await scoreboard.GET(gzReq(SB));
+    expect(first.headers.get('x-pare-cache')).toBe('MISS');
+    for (let i = 0; i < 100; i += 1) {
+      const res = await scoreboard.GET(gzReq(SB));
+      expect(res.headers.get('x-pare-cache')).toBe('HIT');
+      expect(res.headers.get('content-encoding')).toBe('gzip');
+    }
+    expect(zlibSpy.gzipCalls).toBe(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('stale variant gzipped separately (once), decodes to the plain STALE body', async () => {
+    const { scoreboard } = await load();
+    await scoreboard.GET(gzReq(SB));
+    expect(zlibSpy.gzipCalls).toBe(1);
+
+    vi.setSystemTime(NOW + 16_000);
+    fetchMock.mockResolvedValue(json({}, 500));
+    const staleGz = await scoreboard.GET(gzReq(SB));
+    expect(staleGz.headers.get('x-pare-cache')).toBe('STALE');
+    expect(staleGz.headers.get('content-encoding')).toBe('gzip');
+    const decoded = gunzipSync(await bytes(staleGz)).toString('utf8');
+    expect(JSON.parse(decoded).stale).toBe(true);
+    expect(zlibSpy.gzipCalls).toBe(2);
+
+    const stalePlain = await scoreboard.GET(req(SB));
+    expect(stalePlain.headers.get('x-pare-cache')).toBe('STALE');
+    expect(await stalePlain.text()).toBe(decoded);
+
+    const again = await scoreboard.GET(gzReq(SB));
+    expect(again.headers.get('x-pare-cache')).toBe('STALE');
+    expect(zlibSpy.gzipCalls).toBe(2);
+  });
+
+  it('summary under 1 KB stays plain (real fixture)', async () => {
+    const { summary, live } = await load();
+    const res = await summary.GET(gzReq(SM));
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-encoding')).toBeNull();
+    expect(res.headers.get('vary')).toContain('Accept-Encoding');
+    expect(Buffer.byteLength(await res.text())).toBeLessThan(live.GZIP_MIN_BYTES);
+    expect(zlibSpy.gzipCalls).toBe(0);
+  });
+
+  it('summary ≥ 1 KB gzipped per response', async () => {
+    serve(SCOREBOARD, { ...SUMMARY, article: { headline: 'x'.repeat(2_000) } });
+    const { summary } = await load();
+    const plain = await (await summary.GET(req(SM))).text();
+    expect(Buffer.byteLength(plain)).toBeGreaterThanOrEqual(1_024);
+    for (let i = 0; i < 2; i += 1) {
+      const res = await summary.GET(gzReq(SM));
+      expect(res.headers.get('content-encoding')).toBe('gzip');
+      expect(res.headers.get('vary')).toContain('Accept-Encoding');
+      const body = await bytes(res);
+      expect(Number(res.headers.get('content-length'))).toBe(body.byteLength);
+      expect(gunzipSync(body).toString('utf8')).toBe(plain);
+    }
+    expect(zlibSpy.gzipCalls).toBe(2);
+  });
+
+  it('acceptsGzip: explicit gzip with q > 0 only', async () => {
+    const { live } = await load();
+    for (const h of ['gzip', 'gzip, deflate, br', 'br;q=1.0, gzip;q=0.8', ' GZIP ', 'deflate, gzip;q=0.5']) {
+      expect(live.acceptsGzip(h), h).toBe(true);
+    }
+    for (const h of [null, '', 'br', 'identity', 'gzip;q=0', 'gzip;q=0.0', 'deflate, br']) {
+      expect(live.acceptsGzip(h), String(h)).toBe(false);
+    }
+  });
+
+  it('errors unchanged: 400 and 502 are plain, no Vary, no-store', async () => {
+    const { scoreboard, summary } = await load();
+    fetchMock.mockResolvedValueOnce(json({}, 503));
+    const responses = [
+      await scoreboard.GET(gzReq('/api/live/scoreboard?week=0')),
+      await summary.GET(gzReq('/api/live/summary?event=abc')),
+      await scoreboard.GET(gzReq(SB)),
+    ];
+    expect(responses.map((r) => r.status)).toEqual([400, 400, 502]);
+    for (const res of responses) {
+      expect(res.headers.get('content-encoding')).toBeNull();
+      expect(res.headers.get('vary')).toBeNull();
+      expect(res.headers.get('cache-control')).toBe('no-store');
+    }
+    expect(zlibSpy.gzipCalls).toBe(0);
   });
 });
