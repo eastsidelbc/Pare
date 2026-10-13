@@ -12,7 +12,7 @@
  *  • Never erase a known line — `fresh.odds ?? old.odds` (same rule as the
  *    live poll merge in ScheduleProvider.patchLiveMatchups).
  *  • Never step a game backwards. /api/schedule can be up to ~5 min behind
- *    ESPN (server fetch cache), while the 15s live poll may already have moved
+ *    ESPN (server fetch cache), while the 5s live poll may already have moved
  *    a game to `in`/`post`. A fresh copy that is behind keeps the on-screen game.
  *  • Games in progress belong to the live poll (fresher than this fetch) —
  *    only a missing line is filled in.

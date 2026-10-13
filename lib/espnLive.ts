@@ -1,6 +1,6 @@
 /**
  * The one door to ESPN for live data (server-only): the week scoreboard the
- * schedule polls every 15s and the post-game box scores. Browsers call
+ * schedule polls every 5s and the post-game box scores. Browsers call
  * /api/live/* and never ESPN; this module fetches when a request needs it,
  * trims + maps the payload, keeps it in memory and serves one shared copy.
  *
@@ -163,7 +163,7 @@ export function isValidEventId(v: string | null): v is string {
 
 /**
  * 200 with a shared-cache header sized to the REMAINING freshness (a HIT at
- * 14s of 15s must not let an edge cache keep it another 15s). Browsers ignore
+ * 9s of 10s must not let an edge cache keep it another 10s). Browsers ignore
  * s-maxage; the hooks fetch no-store anyway.
  */
 export function liveOk(body: string, result: LiveResult<unknown>): NextResponse {

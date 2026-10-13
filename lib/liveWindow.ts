@@ -3,8 +3,8 @@
  * long the server may cache a scoreboard.
  *
  * Pure functions (no React) so they're unit-testable. `shouldPollLive` gates the
- * client poll (useLiveScores); `scoreboardTtlMs` sets the server cache TTL
- * (lib/espnLive.ts) from the same constants.
+ * client poll (useLiveScores, every LIVE_POLL_MS); `scoreboardTtlMs` sets the
+ * server cache TTL (lib/espnLive.ts) from the same constants.
  *
  * A game is "watch-worthy" if it is:
  *   • live right now (`state === 'in'`), OR
@@ -36,8 +36,13 @@ export function shouldPollLive(matchups: readonly LiveCheckGame[], nowMs: number
   });
 }
 
-/** Server cache TTL for a scoreboard while any game is watch-worthy (= the client poll). */
-export const LIVE_TTL_MS = 15_000;
+/** Server cache TTL for a scoreboard while any game is watch-worthy. */
+export const LIVE_TTL_MS = 10_000;
+/**
+ * Phone poll interval inside the live window (the one source for useLiveScores).
+ * LIVE_POLL_MS + LIVE_TTL_MS ≤ 15 seconds = worst case behind ESPN (a test enforces it).
+ */
+export const LIVE_POLL_MS = 5_000;
 /** Server cache TTL for a scoreboard with nothing live (capped by the next live window). */
 export const IDLE_TTL_MS = 5 * 60_000;
 /** Never cache for less than this (a window opening "now" still gets one shared fetch). */

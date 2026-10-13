@@ -180,17 +180,17 @@ describe('GET /api/live/scoreboard', () => {
     expect(live.ESPN_LIVE_TIMEOUT_MS).toBe(6_000);
   });
 
-  it('TTL: live clock → s-maxage ≤ 15; all final → ≤ 300', async () => {
+  it('TTL: live clock → s-maxage ≤ 10; all final → > 10 and ≤ 300', async () => {
     const { scoreboard } = await load();
     const live = await scoreboard.GET(req(`/api/live/scoreboard?week=${WEEK}`));
-    expect(sMaxAge(live)).toBeLessThanOrEqual(15);
+    expect(sMaxAge(live)).toBeLessThanOrEqual(10);
     expect(live.headers.get('cache-control')).toMatch(CACHE_CONTROL);
 
     serve(withGames(() => ({ state: 'post' })));
     const { scoreboard: fresh } = await load();
     const idle = await fresh.GET(req(`/api/live/scoreboard?week=${WEEK}`));
     expect(sMaxAge(idle)).toBeLessThanOrEqual(300);
-    expect(sMaxAge(idle)).toBeGreaterThan(15);
+    expect(sMaxAge(idle)).toBeGreaterThan(10);
     expect(idle.headers.get('cache-control')).toMatch(CACHE_CONTROL);
   });
 

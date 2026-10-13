@@ -263,7 +263,7 @@ export const LIVE_CACHE_SWEEP_MS = 60_000;
 
 /**
  * Keyed single-flight cache for live upstream data. Unlike createKeyedCache it
- * picks a TTL per value (live game 15s, idle 5 min …), backs off a failing key
+ * picks a TTL per value (live game 10s, idle 5 min …), backs off a failing key
  * exponentially (5→10→…→120s) while serving last-good as STALE, respects call
  * budgets, and reports HIT/MISS/STALE for the `X-Pare-Cache` header. Pull-based
  * only: no timers — retention is a lazy sweep on read. Memory only, per process.
