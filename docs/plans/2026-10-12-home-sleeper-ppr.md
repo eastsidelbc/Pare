@@ -79,11 +79,11 @@ Our formula's gaps: INT −2 (Sleeper −1), no 2-pt conversions, no return/reco
 | Check | Result |
 |---|---|
 | Dak W5 on Home today (our formula) | 12.6 |
-| Dak W5 Sleeper `pts_ppr` | TBD-P0 |
-| Dak W5 raw (pass yd/TD/INT, rush yd/TD, fum lost, 2-pt) | TBD-P0 |
-| Explained by the formula gaps above? | TBD-P0 |
-| ESPN summary `header.week` present (fixture / live) | TBD-P0 |
-| Week source used in P2 (`header.week` or schedule fallback) | TBD-P0 |
+| Dak W5 Sleeper `pts_ppr` | **14.64** (Sleeper id 3294, ESPN event 401872980 TB @ DAL, final) |
+| Dak W5 raw (pass yd/TD/INT, rush yd/TD, fum lost, 2-pt) | 316 / 1 / 2 · 0 / 0 · 0 · 0 |
+| Explained by the formula gaps above? | **Yes** — ours 12.64 (−2/INT) vs Sleeper 14.64 (−1/INT): 2 INTs = exactly the 2.0 gap. Sleeper rules reproduce 14.64 exactly |
+| ESPN summary `header.week` present (fixture / live) | Yes / yes — fixture `4` (season 2026), live `5` (season 2026) |
+| Week source used in P2 (`header.week` or schedule fallback) | `header.week` + `header.season.year` (schedule fallback only if missing) |
 
 **Gate `p0`:** `p0-check.json` exists with a numeric Dak `pts_ppr` · plan has no `TBD-P0` · `git diff --name-only main` ⊆ `scripts/home-ppr-*.mjs`, `docs/plans/2026-10-12-home-sleeper-ppr*` · `npm run check` + `npm run test:run` pass.
 

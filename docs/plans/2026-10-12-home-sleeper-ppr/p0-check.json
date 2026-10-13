@@ -1,0 +1,38 @@
+{
+  "checkedAt": "2026-10-13T01:12:45.379Z",
+  "season": 2026,
+  "week": 5,
+  "espn": {
+    "eventId": "401872980",
+    "name": "Tampa Bay Buccaneers at Dallas Cowboys",
+    "date": "2026-10-09T00:15Z",
+    "completed": true,
+    "summaryHeaderWeek": 5,
+    "summaryHeaderSeasonYear": 2026
+  },
+  "sleeper": {
+    "playerId": "3294",
+    "team": "DAL",
+    "gameId": "202610509",
+    "pts_ppr": 14.64,
+    "raw": {
+      "pass_yd": 316,
+      "pass_td": 1,
+      "pass_int": 2,
+      "rush_yd": 0,
+      "rush_td": 0,
+      "fum_lost": 0,
+      "pass_2pt": 0,
+      "rush_2pt": 0,
+      "rec_2pt": 0,
+      "rec": 0,
+      "rec_yd": 0,
+      "rec_td": 0
+    }
+  },
+  "formula": {
+    "ours": 12.64,
+    "sleeperRules": 14.64,
+    "sleeperRulesMatch": true
+  }
+}
