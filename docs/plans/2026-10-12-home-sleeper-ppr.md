@@ -1,6 +1,6 @@
 # Plan — Home box-score fantasy points = Sleeper PPR + yardage bonuses ("Pare points")
 
-Branch `feat/home-sleeper-ppr` · plan date 2026-10-12 · status: proposed
+Branch `feat/home-sleeper-ppr` · plan date 2026-10-12 · status: P0–P3 done 2026-10-12 (local commits; human gate pending)
 
 **Runs AFTER `docs/plans/2026-10-12-live-scores-proxy.md` is finished (P5) and merged to `main`.** This plan builds on what that plan creates: `lib/gameSummary.ts` (the box-score parser on the server) and `GET /api/live/summary`. If `lib/gameSummary.ts` or `app/api/live/summary/route.ts` does not exist on `main`, **stop and tell Kobe**.
 

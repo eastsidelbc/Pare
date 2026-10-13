@@ -1,0 +1,198 @@
+{
+  "ranAt": "2026-10-13T01:33:39.887Z",
+  "event": "401872980",
+  "dak": {
+    "before": 12.6,
+    "expected": 17.64,
+    "firstResponse": 17.64,
+    "after": 17.64,
+    "tries": 1,
+    "line": {
+      "role": "QB",
+      "name": "Dak Prescott",
+      "stat": "24/42 · 316 yd · 1 TD · 2 INT",
+      "ppr": 17.64
+    }
+  },
+  "dakGame": {
+    "byAbbr": {
+      "TB": {
+        "abbr": "TB",
+        "lines": [
+          {
+            "role": "QB",
+            "name": "Jalon Daniels",
+            "stat": "19/25 · 189 yd · 1 TD  ·  7 car · 23 yd",
+            "ppr": 13.86
+          },
+          {
+            "role": "RB",
+            "name": "Bucky Irving",
+            "stat": "21 car · 165 yd · 1 TD  ·  2/3 · 10 yd · 1 TD",
+            "ppr": 31.5
+          },
+          {
+            "role": "WR",
+            "name": "Emeka Egbuka",
+            "stat": "1 car · 14 yd · 1 TD  ·  6/9 · 38 yd",
+            "ppr": 17.2
+          },
+          {
+            "role": "WR",
+            "name": "Tez Johnson",
+            "stat": "1/1 · 64 yd",
+            "ppr": 7.4
+          }
+        ]
+      },
+      "DAL": {
+        "abbr": "DAL",
+        "lines": [
+          {
+            "role": "QB",
+            "name": "Dak Prescott",
+            "stat": "24/42 · 316 yd · 1 TD · 2 INT",
+            "ppr": 17.64
+          },
+          {
+            "role": "WR",
+            "name": "George Pickens",
+            "stat": "9/13 · 130 yd · 1 TD",
+            "ppr": 28
+          },
+          {
+            "role": "RB",
+            "name": "Javonte Williams",
+            "stat": "12 car · 45 yd · 1 TD  ·  2/3 · 17 yd",
+            "ppr": 14.2
+          },
+          {
+            "role": "WR",
+            "name": "Ryan Flournoy",
+            "stat": "3/4 · 90 yd",
+            "ppr": 12
+          }
+        ]
+      }
+    },
+    "headline": "Bucky Irving and rookie QB Jalon Daniels help Bucs beat sloppy Cowboys 24-16 for 1st win of season"
+  },
+  "otherGame": {
+    "event": "401872981",
+    "name": "PHI @ JAX",
+    "lines": 8,
+    "withPoints": 8,
+    "rate": 1,
+    "summary": {
+      "byAbbr": {
+        "PHI": {
+          "abbr": "PHI",
+          "lines": [
+            {
+              "role": "QB",
+              "name": "Jalen Hurts",
+              "stat": "21/40 · 220 yd · 1 TD  ·  2 car · 2 yd",
+              "ppr": 13
+            },
+            {
+              "role": "WR",
+              "name": "Darius Cooper",
+              "stat": "2/3 · 71 yd · 1 TD",
+              "ppr": 15.1
+            },
+            {
+              "role": "WR",
+              "name": "Dontayvion Wicks",
+              "stat": "5/8 · 63 yd",
+              "ppr": 11.3
+            },
+            {
+              "role": "WR",
+              "name": "Dallas Goedert",
+              "stat": "6/9 · 38 yd",
+              "ppr": 9.8
+            }
+          ]
+        },
+        "JAX": {
+          "abbr": "JAX",
+          "lines": [
+            {
+              "role": "QB",
+              "name": "Trevor Lawrence",
+              "stat": "24/39 · 331 yd · 2 TD · 1 INT  ·  3 car · 25 yd",
+              "ppr": 25.74
+            },
+            {
+              "role": "WR",
+              "name": "Parker Washington",
+              "stat": "6/9 · 124 yd · 2 TD",
+              "ppr": 30.4
+            },
+            {
+              "role": "WR",
+              "name": "Brenton Strange",
+              "stat": "7/8 · 68 yd",
+              "ppr": 13.8
+            },
+            {
+              "role": "RB",
+              "name": "Bhayshul Tuten",
+              "stat": "22 car · 72 yd  ·  2/3 · 24 yd",
+              "ppr": 11.6
+            }
+          ]
+        }
+      },
+      "headline": "Cam Little's 57-yard FG gives Jaguars 19-17 win over Eagles in wild finish in London"
+    }
+  },
+  "checks": [
+    {
+      "name": "next start → /api/health 200 within 60s",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "summary 200",
+      "ok": true,
+      "detail": "x-pare-cache=MISS"
+    },
+    {
+      "name": "Dak W5 ppr === 17.64 (Sleeper pts_ppr + bonus)",
+      "ok": true,
+      "detail": "got 17.64 after 1 request(s); first response 17.64"
+    },
+    {
+      "name": "Dak shows as 17.6 in the UI",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "every ppr is a number or null",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "QB first per team",
+      "ok": true,
+      "detail": "TB:QB DAL:QB"
+    },
+    {
+      "name": "another final week-5 game found",
+      "ok": true,
+      "detail": "PHI @ JAX (401872981)"
+    },
+    {
+      "name": "≥ 90% of shown lines have points",
+      "ok": true,
+      "detail": "8/8"
+    },
+    {
+      "name": "port 4000 free after stop",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "pass": true
+}

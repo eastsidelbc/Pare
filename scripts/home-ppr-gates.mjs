@@ -13,6 +13,8 @@
  * backticks (the plan's own rule text).
  *
  * `all` = every phase's static checks + vitest + check/test once + build + smoke once.
+ * The scope fence runs once there, with P3's allow-list (the union of all phases) —
+ * an earlier phase's fence is a snapshot of that phase and can't hold after later ones.
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
@@ -214,8 +216,8 @@ async function smoke(phase) {
   record(phase, 'port 4000 free after smoke', await portFree());
 }
 
-async function runPhase(phase, { heavy = true } = {}) {
-  check(phase, 'git diff --name-only main within scope', () => scopeCheck(phase));
+async function runPhase(phase, { heavy = true, scope = true } = {}) {
+  if (scope) check(phase, 'git diff --name-only main within scope', () => scopeCheck(phase));
   vitestGate(phase);
   if (phase === 'p2' && heavy) await build(phase);
   if (phase === 'p3' && heavy) {
@@ -233,7 +235,7 @@ const arg = process.argv[2];
 if (PHASES.includes(arg)) {
   await runPhase(arg);
 } else if (arg === 'all') {
-  for (const p of PHASES.slice(0, 3)) await runPhase(p, { heavy: false });
+  for (const p of PHASES.slice(0, 3)) await runPhase(p, { heavy: false, scope: false });
   await runPhase('p3');
 } else {
   console.error('usage: node scripts/home-ppr-gates.mjs <p0|p1|p2|p3|all>');

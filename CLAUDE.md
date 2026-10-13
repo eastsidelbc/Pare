@@ -51,6 +51,7 @@ All live from free public APIs — **no** CSV/PFR layer (removed 2026-10-01). En
 - **Defense:** points allowed via ESPN standings; yards + opponent 3rd-down % aggregated from final-game box scores (`lib/espnStats.ts`).
 - **Standings:** `lib/standings.ts` (ESPN official tiebreak order).
 - **Leaders:** ESPN byathlete (`lib/leaders.ts`); **fantasy (QB/RB/WR/TE/K/D-ST):** Sleeper (`lib/fantasy.ts`) — the ~20MB player map is fetched `no-store`, trimmed, and held in `unstable_cache` (24h).
+- **Fantasy points (Home box score + Leaders) = "Pare points"** = Sleeper `pts_ppr` + 3 per yardage-bonus flag (`parePoints`, `lib/fantasyPoints.ts`) — the number the Sleeper app shows (Dak W5 = 17.64). Never compute fantasy points from yards/TDs ourselves.
 - **Metrics:** `lib/metricsConfig.ts`. `availableInOffense/Defense` = only fields ESPN actually fills (AVAILABILITY CONVENTION comment; keep in sync with `espnStats.ts`). Defense exposes only *allowed* metrics (lower = better) — `useBarCalculation` swaps defense values on that assumption.
 - **Licensing:** ESPN is unofficial/undocumented; Sleeper is non-commercial only. Licensed data provider required **before** any monetization (ads/Pro tier).
 
