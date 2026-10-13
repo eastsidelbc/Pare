@@ -132,7 +132,7 @@ Our formula's gaps: INT −2 (Sleeper −1), no 2-pt conversions, no return/reco
 ## P2: Wire it in (parser, player map, route, one UI line)
 
 **Changes**
-- `lib/gameSummary.ts`: remove `PPR` + `pprOf`; `PlayerLine` gains `espnId`, `fullName`; `ppr: number | null`; `parseTeam` returns QB + all skill candidates. Update the header comment ("Full-PPR scoring…" → "points come from Sleeper `pts_ppr`, attached by /api/live/summary").
+- `lib/gameSummary.ts`: remove `PPR` + `pprOf`; `PlayerLine` gains `espnId`, `fullName`, `isPasser`, `scrimmageYds` (the `PointsLine` shape `applySleeperPoints` takes — P1); `ppr: number | null`; `parseTeam` returns QB + all skill candidates. Update the header comment ("Full-PPR scoring…" → "points come from Sleeper `pts_ppr`, attached by /api/live/summary").
 - `lib/fantasy.ts`: `SlimPlayer.espnId` for all players with an `espn_id` (keep `rookieEspnId` behavior for `getRookieIndex`); cache key → `sleeper-player-map-v5`.
 - `lib/fantasy.ts` (Leaders Fantasy tab, "everywhere"): the slim season stats keep the 4 `PARE_BONUS_FLAGS`; board points = `parePoints(s) ?? s.pts_std ?? 0` for skill/K rows (D/ST unchanged: no yardage flags). Season-stats cache key `sleeper-season-stats-v1` → `v2` (shape changed). Leaders UI unchanged.
 - `app/api/live/summary/route.ts` (or a helper in `lib/espnLive.ts`): after `getLiveSummary`, resolve season/week (P0 result), `getWeekLines(season, week, completed)` + `getPlayerMap()`, `buildPprIndex`, `applySleeperPoints`. If Sleeper fails → serve the summary with `ppr: null` (never fail the route because of Sleeper). Caching headers unchanged.
