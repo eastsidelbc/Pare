@@ -1,17 +1,18 @@
 /**
- * useGameSummary — post-game box score for a finished matchup, from ESPN's
- * public `summary` endpoint (CORS-open, browser-side, free). Parsing lives in
- * `lib/gameSummary.ts`. Fetched lazily on first open and cached by event id.
+ * useGameSummary — post-game box score for a finished matchup, from our own
+ * `/api/live/summary?event=ID` (the browser never calls ESPN). The server
+ * fetches ESPN's summary, parses it (`lib/gameSummary.ts`) and shares one copy
+ * (6h for a final game — lib/espnLive.ts). Fetched lazily on first open and
+ * cached here by event id.
  */
 
 'use client';
 
 import { useEffect, useState } from 'react';
-import { parseSummary, type EspnSummary, type GameSummary } from '@/lib/gameSummary';
+import type { GameSummary } from '@/lib/gameSummary';
 
 export type { PlayerLine, TeamBox, GameSummary } from '@/lib/gameSummary';
 
-const SUMMARY_URL = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary';
 const FETCH_TIMEOUT_MS = 8_000;
 
 const cache = new Map<string, GameSummary>();
@@ -43,14 +44,13 @@ export function useGameSummary(eventId: string | null): UseGameSummaryResult {
     setLoading(true);
     setError(false);
 
-    fetch(`${SUMMARY_URL}?event=${eventId}`, { signal: controller.signal })
+    fetch(`/api/live/summary?event=${eventId}`, { signal: controller.signal })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then((json: EspnSummary) => {
+      .then((parsed: GameSummary) => {
         if (cancelled) return;
-        const parsed = parseSummary(json);
         cache.set(eventId, parsed);
         setData(parsed);
       })

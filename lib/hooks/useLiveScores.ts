@@ -1,11 +1,12 @@
 /**
- * useLiveScores — live score/clock/state for the schedule, for FREE.
+ * useLiveScores — live score/clock/state for the schedule.
  *
- * WHY IT'S CHEAP:
- *   ESPN's scoreboard endpoint is CORS-open, so we poll it DIRECTLY from the
- *   browser — never through our own API route. ESPN's CDN absorbs the traffic;
- *   our server does zero work no matter how many viewers. One request returns
- *   the whole week's games.
+ * SOURCE:
+ *   Polls our own `/api/live/scoreboard?week=N` (the browser never calls ESPN).
+ *   The server fetches ESPN at most once per TTL for everyone (single-flight
+ *   memory cache, 15s while live — lib/espnLive.ts) and returns the whole
+ *   week's games already mapped; this hook only revives `kickoff` to a Date.
+ *   If ESPN fails, the server answers with its last good copy (`stale: true`).
  *
  * POLICY:
  *   • Poll while at least one loaded game is live, OR is about to kick off /
@@ -19,13 +20,15 @@
  *     progressive enhancement.
  *
  * The merge (by matchup id, change-detected) lives in ScheduleProvider's
- * `patchLiveMatchups`; this hook just fetches, maps, and hands it the games.
+ * `patchLiveMatchups`; this hook just fetches, revives, and hands it the games.
+ * A stale answer is still patched: it is never older than what this client last
+ * got from us, and the merge ignores unchanged games.
  */
 
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { mapEspnScoreboard, ESPN_SCOREBOARD_URL } from '@/lib/espnScoreboard';
+import { reviveMatchups, type LiveScoreboardResponse } from '@/lib/liveClient';
 import { shouldPollLive } from '@/lib/liveWindow';
 import type { Matchup } from '@/lib/schedule';
 
@@ -74,12 +77,12 @@ export function useLiveScores(
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
       try {
-        const url = `${ESPN_SCOREBOARD_URL}?seasontype=2&week=${pollWeek}`;
+        const url = `/api/live/scoreboard?week=${pollWeek}`;
         const res = await fetch(url, { signal: controller.signal, cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
+        const body = (await res.json()) as LiveScoreboardResponse;
         if (cancelled) return;
-        patchRef.current(mapEspnScoreboard(data, pollWeek));
+        patchRef.current(reviveMatchups(body.matchups));
       } catch {
         // Swallow — keep last-known data. Live scores are best-effort.
       } finally {

@@ -1,5 +1,6 @@
 /**
- * liveWindow — decides WHEN the schedule should poll ESPN for live scores.
+ * liveWindow — decides WHEN the schedule should poll for live scores, and how
+ * long the server may cache a scoreboard.
  *
  * Pure functions (no React) so they're unit-testable. `shouldPollLive` gates the
  * client poll (useLiveScores); `scoreboardTtlMs` sets the server cache TTL

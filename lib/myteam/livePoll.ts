@@ -5,7 +5,7 @@
  * lib/myteam/__tests__/livePoll.test.ts.
  *
  * Game state (live / final / kickoff) comes from ScheduleProvider's existing
- * ESPN poll — this module never adds a second one.
+ * live poll (/api/live/scoreboard) — this module never adds a second one.
  */
 
 import { KICKOFF_LEAD_MS, LATE_START_GRACE_MS, shouldPollLive } from '@/lib/liveWindow';

@@ -13,7 +13,7 @@ import { getMatchupsForWeek, MIN_WEEK, MAX_WEEK } from '@/lib/schedule';
 // `export const revalidate` is not applicable. Caching is handled at the fetch
 // level inside getMatchupsForWeek / lib/schedule.ts (next.revalidate:
 // LIVE_REVALIDATE_SECONDS = 300, i.e. 5 min). Live scores while viewing come from
-// the browser's own 15s ESPN poll (useLiveScores), not from this route.
+// the browser's 15s poll of /api/live/scoreboard (useLiveScores), not this route.
 
 export async function GET(req: NextRequest) {
   const weekParam = req.nextUrl.searchParams.get('week');
