@@ -41,8 +41,9 @@ const abs = (p) => join(ROOT, p);
 const read = (p) => readFileSync(abs(p), 'utf8').replace(/\r\n/g, '\n');
 const readJson = (p) => JSON.parse(read(p));
 
-function sh(cmd, args, { quiet = false } = {}) {
-  const res = spawnSync(cmd, args, { cwd: ROOT, encoding: 'utf8', shell: IS_WIN, maxBuffer: 64 * 1024 * 1024 });
+/** `shell` only for npm/npx (.cmd shims on Windows); a shell would split args with spaces. */
+function sh(cmd, args, { quiet = false, shell = IS_WIN && (cmd === 'npm' || cmd === 'npx') } = {}) {
+  const res = spawnSync(cmd, args, { cwd: ROOT, encoding: 'utf8', shell, maxBuffer: 64 * 1024 * 1024 });
   const out = `${res.stdout ?? ''}${res.stderr ?? ''}`;
   if (!quiet && res.status !== 0) console.log(out.split('\n').slice(-40).join('\n'));
   return { code: res.status ?? 1, out, stdout: res.stdout ?? '' };

@@ -7,7 +7,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { mapEspnScoreboard, type EspnScoreboard } from '@/lib/espnScoreboard';
-import { parseSummary } from '@/lib/hooks/useGameSummary';
+import { parseSummary } from '@/lib/gameSummary';
 
 const FIX = join(__dirname, '../__fixtures__/espn');
 const load = <T>(name: string): T => JSON.parse(readFileSync(join(FIX, name), 'utf8')) as T;
