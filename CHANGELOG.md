@@ -7,6 +7,11 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Added
+- **Live scores + box scores now come from pare.gg, not ESPN** (2026-10-12, branch `feat/live-scores-proxy`) — App Store prep: the browser talks only to our server.
+  - See: `docs/devnotes/2026-10-12-live-scores-proxy.md`, ADR `docs/adr/2026-10-12-live-scores-proxy.md`, `DATA_SOURCES.md` §6.
+  - New `GET /api/live/scoreboard?week=N` + `GET /api/live/summary?event=ID` (`lib/espnLive.ts`): one shared memory copy per key (15s live / ≤5 min idle, never past the next kickoff window; box scores 6h once final), last-good marked STALE on ESPN failure, 120/min ESPN budget, 6s upstream timeout, `X-Pare-Cache` header.
+  - `useLiveScores` / `useGameSummary` fetch those routes — same 15s policy, timeouts, signatures and UI. Summary parsing moved to `lib/gameSummary.ts`; new `createLiveCache` in `lib/apiCache.ts`; `scoreboardTtlMs` in `lib/liveWindow.ts`.
+  - /privacy updated (ESPN no longer sees visitors). Payload to the browser: 8.3 KB scoreboard vs ESPN's 251 KB.
 - **Settings gear on the Home header** (2026-10-12, branch `feat/settings-gear`) — Settings round 1 pick G1 + S2 (canvas "Pare Settings Mockups").
   - Web: `components/schedule/SettingsGearButton.tsx`, 44×44 gear at the far right of the Home header (`--subtext`, 7.6:1). In a browser it links to /about (which links /privacy).
   - In the iOS app it calls the new `postToApp({ type: 'openSettings' })` (`lib/platform.ts`, typed `window.webkit` bridge, tests in `lib/__tests__/platform.test.ts`) and the native Settings sheet opens instead — the in-app route to About / Privacy (App Review 5.1.1).

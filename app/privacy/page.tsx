@@ -15,7 +15,7 @@ import SiteFooter from '@/components/SiteFooter';
 export const metadata = { title: 'Privacy Policy · Pare' };
 
 /** Bump when the policy text changes (and on first deploy). */
-const EFFECTIVE_DATE = 'October 8, 2026';
+const EFFECTIVE_DATE = 'October 12, 2026';
 const SUPPORT_EMAIL = 'support@pare.gg';
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -134,10 +134,8 @@ export default function PrivacyPage() {
                   address to deliver pages and block attacks, and may set strictly necessary security cookies.
                 </li>
                 <li>
-                  <strong>ESPN</strong> (live scores and box scores). While a game is about to start or in progress,
-                  and when you open a finished game&apos;s box score, your browser or app loads that data directly
-                  from ESPN&apos;s public servers. As with any web request, ESPN receives your IP address and basic
-                  browser information, under ESPN&apos;s own privacy policy. We send ESPN nothing about you.
+                  <strong>ESPN</strong>. Scores, box scores and stats come from ESPN&apos;s public data. Only our
+                  server contacts ESPN; your browser or app does not, and we send ESPN nothing about you.
                 </li>
                 <li>
                   <strong>Sleeper</strong> (fantasy stats, injury tags and the Fantasy tab). Only our server contacts
@@ -153,8 +151,8 @@ export default function PrivacyPage() {
 
             <Section title="Sports data">
               <p>
-                Stats come from public sources. Standings, team stats, leaderboards and fantasy data are fetched by our
-                server, not your device; live scores and box scores are the exception described above.
+                Stats come from public sources. All sports data, including live scores and box scores, is fetched by
+                our server and delivered from pare.gg.
               </p>
             </Section>
 
