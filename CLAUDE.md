@@ -120,7 +120,7 @@ Bars grow inward and meet at the exact ratio; elite-vs-poor matchups get up to 3
 ## Docs ritual
 
 - Conventional Commits (`feat:` / `fix:` / `refactor:` / `perf:` / `chore:` / `docs:`).
-- Non-trivial change → dev note `docs/devnotes/YYYY-MM-DD-<task>.md` (rationale; link, don't duplicate) + `CHANGELOG.md` `[Unreleased]` bullet.
+- **Every feature or fix** → `CHANGELOG.md` (repo root) `[Unreleased]` bullet + dev note `docs/devnotes/YYYY-MM-DD-<task>.md` (rationale; link, don't duplicate), committed with the work. `docs/plans/` = plans only — never dev notes. (Same rule in `~/.claude/CLAUDE.md` for every project.)
 - Stale or wrong docs get corrected immediately.
 - Session start: read the vault brain doc + this file, skim `CHANGELOG.md` `[Unreleased]` and today's dev notes, propose a short plan before coding.
 
