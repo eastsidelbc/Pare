@@ -205,3 +205,178 @@ export function createCallBudget({ limit, windowMs, now = Date.now }: { limit: n
     },
   };
 }
+
+// ──────────────────────────────────────────────────────────────────────────
+//  Live cache (/api/live/*: ESPN scoreboard + box scores shared by everyone)
+// ──────────────────────────────────────────────────────────────────────────
+
+/** HIT = served from memory (incl. joining another request's fetch) · MISS = this request fetched · STALE = last-good after a failure / backoff / spent budget. */
+export type LiveCacheStatus = 'HIT' | 'MISS' | 'STALE';
+
+export interface LiveResult<T> {
+  value: T;
+  status: LiveCacheStatus;
+  /** When `value` was fetched (epoch ms). */
+  updatedAt: number;
+  /** How much longer `value` stays fresh (0 when STALE). */
+  freshForMs: number;
+}
+
+/** Thrown (as a rejection) when a call budget is spent and there is no last-good copy. */
+export class LiveBudgetError extends Error {
+  constructor() {
+    super('live call budget exhausted');
+    this.name = 'LiveBudgetError';
+  }
+}
+
+export interface LiveCacheOptions<T> {
+  /** Log prefix, e.g. `live:scoreboard`. */
+  label: string;
+  /** Max keys kept; least-recently-used keys are evicted past this. */
+  max: number;
+  /** Keys with no upstream activity for this long are dropped by the lazy sweep. */
+  retainMs: number;
+  /** Freshness for a value, decided when it is stored (`now` = store time). */
+  ttlFor: (value: T, now: number) => number;
+  /** First retry delay after a failure; doubles per consecutive failure. */
+  backoffBaseMs?: number;
+  /** Retry delay cap. */
+  backoffMaxMs?: number;
+  /** Every upstream call takes one from each; any spent → no call. */
+  budgets?: CallBudget[];
+  /** Clock (tests). */
+  now?: () => number;
+}
+
+export interface LiveCache<T> {
+  /** Never throws synchronously; rejects only when there is no last-good copy to serve. */
+  get(key: string, fetcher: () => Promise<T>): Promise<LiveResult<T>>;
+  /** Number of keys held. */
+  size(): number;
+  /** Drop keys idle past `retainMs` (runs lazily inside `get`, at most every LIVE_CACHE_SWEEP_MS). */
+  sweep(): void;
+}
+
+/** Longest gap between lazy sweeps. */
+export const LIVE_CACHE_SWEEP_MS = 60_000;
+
+/**
+ * Keyed single-flight cache for live upstream data. Unlike createKeyedCache it
+ * picks a TTL per value (live game 15s, idle 5 min …), backs off a failing key
+ * exponentially (5→10→…→120s) while serving last-good as STALE, respects call
+ * budgets, and reports HIT/MISS/STALE for the `X-Pare-Cache` header. Pull-based
+ * only: no timers — retention is a lazy sweep on read. Memory only, per process.
+ */
+export function createLiveCache<T>({
+  label,
+  max,
+  retainMs,
+  ttlFor,
+  backoffBaseMs = 5_000,
+  backoffMaxMs = 120_000,
+  budgets = [],
+  now = Date.now,
+}: LiveCacheOptions<T>): LiveCache<T> {
+  interface Slot {
+    entry: { value: T; at: number; ttlMs: number } | null;
+    failures: number;
+    failedAt: number;
+    retryAt: number;
+    lastError: unknown;
+  }
+  const slots = new Map<string, Slot>();
+  const inFlight = new Map<string, Promise<LiveResult<T>>>();
+  let lastSweep = now();
+
+  /** Get or create a slot and move it to the most-recent LRU position. */
+  const touch = (key: string): Slot => {
+    const slot = slots.get(key) ?? { entry: null, failures: 0, failedAt: 0, retryAt: 0, lastError: null };
+    slots.delete(key);
+    slots.set(key, slot);
+    while (slots.size > max) {
+      const oldest = slots.keys().next().value;
+      if (oldest === undefined) break;
+      slots.delete(oldest);
+    }
+    return slot;
+  };
+
+  const sweep = () => {
+    const t = now();
+    lastSweep = t;
+    const cutoff = t - retainMs;
+    for (const [key, slot] of slots) {
+      if (Math.max(slot.entry?.at ?? 0, slot.failedAt) < cutoff && !inFlight.has(key)) slots.delete(key);
+    }
+  };
+
+  const stale = (slot: Slot | undefined): LiveResult<T> | null =>
+    slot?.entry ? { value: slot.entry.value, status: 'STALE', updatedAt: slot.entry.at, freshForMs: 0 } : null;
+
+  return {
+    async get(key, fetcher) {
+      const t = now();
+      if (t - lastSweep >= LIVE_CACHE_SWEEP_MS) sweep();
+
+      const slot = slots.get(key);
+      if (slot?.entry && t - slot.entry.at < slot.entry.ttlMs) {
+        touch(key);
+        const { value, at, ttlMs } = slot.entry;
+        return { value, status: 'HIT', updatedAt: at, freshForMs: ttlMs - (t - at) };
+      }
+
+      const pending = inFlight.get(key);
+      if (pending) return pending.then((r) => (r.status === 'MISS' ? { ...r, status: 'HIT' } : r));
+
+      if (slot && t < slot.retryAt) {
+        const last = stale(slot);
+        if (last) return last;
+        throw slot.lastError;
+      }
+
+      if (!budgets.every((b) => b.remaining() > 0)) {
+        const last = stale(slot);
+        if (last) return last;
+        throw new LiveBudgetError();
+      }
+      for (const b of budgets) b.tryTake();
+
+      const run = (async (): Promise<LiveResult<T>> => {
+        try {
+          const value = await fetcher();
+          const at = now();
+          const ttlMs = ttlFor(value, at);
+          const s = touch(key);
+          s.entry = { value, at, ttlMs };
+          s.failures = 0;
+          s.retryAt = 0;
+          s.lastError = null;
+          return { value, status: 'MISS', updatedAt: at, freshForMs: ttlMs };
+        } catch (err) {
+          const s = touch(key);
+          s.failures += 1;
+          s.failedAt = now();
+          const waitMs = Math.min(backoffBaseMs * 2 ** (s.failures - 1), backoffMaxMs);
+          s.retryAt = s.failedAt + waitMs;
+          s.lastError = err;
+          const reason = err instanceof Error ? err.message : String(err);
+          const last = stale(s);
+          console.error(
+            `⚠️ [${label}] ${reason} — ${last ? 'serving last good copy' : 'no last good copy'}; retry in ${waitMs / 1000}s`,
+          );
+          if (last) return last;
+          throw err;
+        } finally {
+          inFlight.delete(key);
+        }
+      })();
+      inFlight.set(key, run);
+      return run;
+    },
+    size() {
+      return slots.size;
+    },
+    sweep,
+  };
+}
