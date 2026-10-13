@@ -164,18 +164,19 @@ from ESPN. Since 2026-10-12 they go through our server (`lib/espnLive.ts`, ADR
 
 | Our route | Validation | ESPN endpoint | Body | Server cache (memory, per process) |
 |---|---|---|---|---|
-| `GET /api/live/scoreboard?week=N` | `^\d{1,2}$`, 1–18 → else 400 `invalid-week` | `site.api.espn.com/.../scoreboard?seasontype=2&week=N` → `mapEspnScoreboard` | `{ week, updatedAt, stale, matchups }` (kickoff ISO) | 15s while any game is in its live window; otherwise ≤5 min, capped at the next live-window start (`scoreboardTtlMs` in `lib/liveWindow.ts`). 0 matchups = failure (last-good wins). Max 18 keys, 6h retention |
+| `GET /api/live/scoreboard?week=N` | `^\d{1,2}$`, 1–18 → else 400 `invalid-week` | `site.api.espn.com/.../scoreboard?seasontype=2&week=N` → `mapEspnScoreboard` | `{ week, updatedAt, stale, matchups }` (kickoff ISO) | 10s while any game is in its live window (the phone polls every 5s, `LIVE_POLL_MS`: ≤15 seconds behind ESPN worst case); otherwise ≤5 min, capped at the next live-window start (`scoreboardTtlMs` in `lib/liveWindow.ts`). 0 matchups = failure (last-good wins). Max 18 keys, 6h retention |
 | `GET /api/live/summary?event=ID` | `^\d{6,12}$` → else 400 `invalid-event` | `site.api.espn.com/.../summary?event=ID` → `parseSummary` (`lib/gameSummary.ts`) | `GameSummary` `{ byAbbr, headline }` — Pare points (Sleeper, §5) attached per response, not cached with the summary | 6h once `header.competitions[0].status.type.completed`, else 60s. Max 300 keys, 24h retention |
 
 - **Single-flight** per key (`createLiveCache`, `lib/apiCache.ts`): ESPN calls don't grow with viewers.
 - **Budgets:** 120 ESPN calls/min overall (`ESPN_LIVE_CALLS_PER_MIN`), of which summaries may use 60 (`SUMMARY_CALLS_PER_MIN`) — random event ids can't starve the scoreboard. Spent → last-good, else 503 `busy`.
 - **Upstream:** `cache: 'no-store'` + `AbortSignal.timeout(6_000)` (`ESPN_LIVE_TIMEOUT_MS`, under the client's 8s abort). Failure → last-good marked STALE (`stale: true` on the scoreboard) with per-key backoff 5→10→…→120s; no last-good → 502 `upstream`. Pull-based: no timers.
 - **Headers:** `X-Pare-Cache: HIT | MISS | STALE`; `Cache-Control: public, s-maxage=<remaining freshness>, stale-while-revalidate=<2×>` (errors: `no-store`). Cloudflare doesn't cache `/api/*` today (`cf-cache-status: DYNAMIC`); a Cache Rule could make the edge honor `s-maxage` later.
+- **gzip** (since 2026-10-12, `liveOk` in `lib/espnLive.ts`): only when the request's `Accept-Encoding` lists `gzip` with q > 0. The scoreboard is compressed at most once per upstream fetch per fresh/stale variant (kept on the cache entry); the summary per response, and only from 1 KB (`GZIP_MIN_BYTES`) — today's ~0.9 KB box scores go out plain. Every 200 carries `Vary: Accept-Encoding`; errors unchanged.
 - **Assumes one PM2 fork process** (`pare`): caches + budgets are per process. Cluster mode would multiply ESPN calls — see the ADR.
 - **Regular season only** (`seasontype=2`, weeks 1–18), same as before; playoffs need a `seasontype` param later.
-- Sizes measured 2026-10-13 (week 5): scoreboard 8.3 KB vs ESPN 251 KB raw / 20 KB gzip; summary 0.9 KB vs ESPN 578 KB raw. `next start` does not gzip these responses; Cloudflare compresses to browsers.
+- Sizes measured 2026-10-13 UTC (week 5): scoreboard 8.3 KB vs ESPN 251 KB raw / 20 KB gzip; summary 0.9 KB vs ESPN 578 KB raw. On the wire with our gzip (live-freshness F3): scoreboard 8,281 → **1,657 B**; summary 896 B (under 1 KB → plain). `next start` does not compress route handlers, so we gzip ourselves; Cloudflare may re-encode (br) to browsers.
 
-_Last verified: 2026-10-13 (`scripts/live-proxy-smoke.mjs`)._
+_Last verified: 2026-10-13 UTC (`scripts/live-proxy-smoke.mjs`, live-freshness F3 — `docs/plans/2026-10-12-live-freshness/f3-smoke.json`)._
 
 ---
 

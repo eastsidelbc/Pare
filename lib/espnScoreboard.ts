@@ -4,7 +4,7 @@
  *
  * Pure (no `fetch`, no Node-only imports). Used server-side by BOTH:
  *   • `lib/schedule.ts` — the SSR schedule + week switcher, and
- *   • `lib/espnLive.ts` — `/api/live/scoreboard`, which the browser's 15s
+ *   • `lib/espnLive.ts` — `/api/live/scoreboard`, which the browser's 5s
  *     live-score poll (useLiveScores) calls instead of ESPN.
  * Do not duplicate this logic anywhere else.
  */

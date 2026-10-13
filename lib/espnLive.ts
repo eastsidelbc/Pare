@@ -1,6 +1,6 @@
 /**
  * The one door to ESPN for live data (server-only): the week scoreboard the
- * schedule polls every 15s and the post-game box scores. Browsers call
+ * schedule polls every 5s and the post-game box scores. Browsers call
  * /api/live/* and never ESPN; this module fetches when a request needs it,
  * trims + maps the payload, keeps it in memory and serves one shared copy.
  *
@@ -13,8 +13,12 @@
  *   timeout always applies and our STALE/502 answer beats the browser's give-up.
  * - Memory is the only cache, per Node process (single PM2 fork assumed — see
  *   docs/adr/2026-10-12-live-scores-proxy.md).
+ * - We gzip 200s ourselves (`next start` sends route handlers uncompressed): the
+ *   scoreboard at most once per upstream fetch per fresh/stale variant, the
+ *   summary per response and only from 1 KB.
  */
 import 'server-only';
+import { gzipSync } from 'node:zlib';
 import { NextResponse } from 'next/server';
 import { createCallBudget, createLiveCache, LiveBudgetError, type LiveResult } from '@/lib/apiCache';
 import { ESPN_SCOREBOARD_URL, mapEspnScoreboard, type EspnScoreboard } from '@/lib/espnScoreboard';
@@ -55,11 +59,19 @@ export async function espnLiveJson<T>(url: string): Promise<T> {
 
 // ── scoreboard ──────────────────────────────────────────────────────────
 
+/** A response body as text, plus its gzip (filled in lazily, at most once). */
+export interface WireBody {
+  text: string;
+  gz: Uint8Array<ArrayBuffer> | null;
+}
+
 export interface ScoreboardEntry {
   week: number;
   matchups: Matchup[];
   /** `matchups` serialized once per upstream fetch, so hot reads never re-stringify. */
   matchupsJson: string;
+  /** Full body per variant (HIT/MISS → fresh, STALE → stale), built + gzipped once per fetch. */
+  wire: { fresh?: WireBody; stale?: WireBody };
 }
 
 const scoreboardCache = createLiveCache<ScoreboardEntry>({
@@ -75,7 +87,7 @@ async function fetchScoreboard(week: number): Promise<ScoreboardEntry> {
   const matchups = mapEspnScoreboard(raw, week);
   // Empty is never a real week — throw so last-good wins.
   if (matchups.length === 0) throw new Error('ESPN scoreboard empty');
-  return { week, matchups, matchupsJson: JSON.stringify(matchups) };
+  return { week, matchups, matchupsJson: JSON.stringify(matchups), wire: {} };
 }
 
 export function getLiveScoreboard(week: number): Promise<LiveResult<ScoreboardEntry>> {
@@ -86,6 +98,16 @@ export function getLiveScoreboard(week: number): Promise<LiveResult<ScoreboardEn
 export function scoreboardBody({ value, status, updatedAt }: LiveResult<ScoreboardEntry>): string {
   const updated = JSON.stringify(new Date(updatedAt).toISOString());
   return `{"week":${value.week},"updatedAt":${updated},"stale":${status === 'STALE'},"matchups":${value.matchupsJson}}`;
+}
+
+/**
+ * The scoreboard body for this result, memoized on the entry. One entry = one
+ * upstream fetch (same `updatedAt` for every HIT/MISS/STALE of it), so HIT and
+ * MISS share the fresh text and every STALE shares the stale text.
+ */
+export function scoreboardWire(result: LiveResult<ScoreboardEntry>): WireBody {
+  const variant = result.status === 'STALE' ? 'stale' : 'fresh';
+  return (result.value.wire[variant] ??= { text: scoreboardBody(result), gz: null });
 }
 
 // ── summary (post-game box score) ───────────────────────────────────────
@@ -161,20 +183,46 @@ export function isValidEventId(v: string | null): v is string {
   return v !== null && /^\d{6,12}$/.test(v);
 }
 
+/** Plain-string bodies below this go out uncompressed (gzip overhead isn't worth it). */
+export const GZIP_MIN_BYTES = 1024;
+
+/** True only for an explicit `gzip` token with q > 0 (null, empty, `br`, `identity`, `gzip;q=0` → false). */
+export function acceptsGzip(header: string | null): boolean {
+  if (!header) return false;
+  return header.split(',').some((part) => {
+    const [coding, ...params] = part.trim().toLowerCase().split(';');
+    if (coding.trim() !== 'gzip') return false;
+    const q = params.map((p) => p.trim()).find((p) => p.startsWith('q='));
+    return q === undefined || Number(q.slice(2)) > 0;
+  });
+}
+
 /**
  * 200 with a shared-cache header sized to the REMAINING freshness (a HIT at
- * 14s of 15s must not let an edge cache keep it another 15s). Browsers ignore
+ * 9s of 10s must not let an edge cache keep it another 10s). Browsers ignore
  * s-maxage; the hooks fetch no-store anyway.
+ *
+ * gzip when the client accepts it: a WireBody (scoreboard) is compressed once and
+ * kept; a plain string (summary — Sleeper points differ per response) is
+ * compressed per response, and only from GZIP_MIN_BYTES. `Vary: Accept-Encoding`
+ * on every 200 so a shared cache never hands gzip to a client that didn't ask.
  */
-export function liveOk(body: string, result: LiveResult<unknown>): NextResponse {
+export function liveOk(req: Request, body: string | WireBody, result: LiveResult<unknown>): NextResponse {
   const maxAge = Math.max(1, Math.ceil(result.freshForMs / 1000));
-  return new NextResponse(body, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Cache-Control': `public, s-maxage=${maxAge}, stale-while-revalidate=${2 * maxAge}`,
-      'X-Pare-Cache': result.status,
-    },
-  });
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Cache-Control': `public, s-maxage=${maxAge}, stale-while-revalidate=${2 * maxAge}`,
+    'X-Pare-Cache': result.status,
+    Vary: 'Accept-Encoding',
+  };
+  const text = typeof body === 'string' ? body : body.text;
+  const small = typeof body === 'string' && Buffer.byteLength(body) < GZIP_MIN_BYTES;
+  if (small || !acceptsGzip(req.headers.get('accept-encoding'))) return new NextResponse(text, { headers });
+
+  const gz = typeof body === 'string' ? new Uint8Array(gzipSync(body)) : (body.gz ??= new Uint8Array(gzipSync(body.text)));
+  headers['Content-Encoding'] = 'gzip';
+  headers['Content-Length'] = String(gz.byteLength);
+  return new NextResponse(gz, { headers });
 }
 
 export function liveFail(status: 400 | 502 | 503, error: 'invalid-week' | 'invalid-event' | 'upstream' | 'busy'): NextResponse {

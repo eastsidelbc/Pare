@@ -15,7 +15,7 @@ export async function GET(req: Request) {
   if (!isValidEventId(eventId)) return liveFail(400, 'invalid-event');
   try {
     const result = await getLiveSummary(eventId);
-    return liveOk(JSON.stringify(await summaryWithPoints(result.value)), result);
+    return liveOk(req, JSON.stringify(await summaryWithPoints(result.value)), result);
   } catch (err) {
     return liveUpstreamFailure(err);
   }

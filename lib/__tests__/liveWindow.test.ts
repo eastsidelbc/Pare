@@ -5,6 +5,7 @@ import {
   KICKOFF_LEAD_MS,
   LATE_START_GRACE_MS,
   LIVE_TTL_MS,
+  LIVE_POLL_MS,
   IDLE_TTL_MS,
 } from '@/lib/liveWindow';
 import { createLiveCache } from '@/lib/apiCache';
@@ -45,9 +46,13 @@ describe('shouldPollLive', () => {
 });
 
 describe('scoreboardTtlMs (server cache TTL)', () => {
-  it('live ttl: a game in progress → 15s', () => {
-    expect(scoreboardTtlMs([game('post'), game('in')], KICK + 60 * MIN)).toBe(15_000);
-    expect(LIVE_TTL_MS).toBe(15_000);
+  it('live ttl: a game in progress → 10s', () => {
+    expect(scoreboardTtlMs([game('post'), game('in')], KICK + 60 * MIN)).toBe(10_000);
+    expect(LIVE_TTL_MS).toBe(10_000);
+  });
+  it('freshness budget: LIVE_POLL_MS + LIVE_TTL_MS ≤ 15s (worst case behind ESPN)', () => {
+    expect(LIVE_POLL_MS).toBe(5_000);
+    expect(LIVE_POLL_MS + LIVE_TTL_MS).toBeLessThanOrEqual(15_000);
   });
   it('idle ttl no upcoming: all final → 5 min', () => {
     expect(scoreboardTtlMs([game('post'), game('post')], KICK + 4 * 60 * MIN)).toBe(300_000);

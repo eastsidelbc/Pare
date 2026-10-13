@@ -4,9 +4,10 @@
  * SOURCE:
  *   Polls our own `/api/live/scoreboard?week=N` (the browser never calls ESPN).
  *   The server fetches ESPN at most once per TTL for everyone (single-flight
- *   memory cache, 15s while live — lib/espnLive.ts) and returns the whole
- *   week's games already mapped; this hook only revives `kickoff` to a Date.
- *   If ESPN fails, the server answers with its last good copy (`stale: true`).
+ *   memory cache, one shared copy per 10s while live — lib/espnLive.ts) and
+ *   returns the whole week's games already mapped; this hook only revives
+ *   `kickoff` to a Date. If ESPN fails, the server answers with its last good
+ *   copy (`stale: true`).
  *
  * POLICY:
  *   • Poll while at least one loaded game is live, OR is about to kick off /
@@ -14,7 +15,12 @@
  *     That way a page opened BEFORE kickoff goes live on its own — no reload.
  *   • Re-check that window every 60s (cheap, no network) so polling switches
  *     on by itself as kickoff approaches, and off once every game is final.
- *   • Interval = 15s (ESPN itself refreshes ~every 15–20s; faster is wasted).
+ *   • Interval = LIVE_POLL_MS (5s). With the server's 10s copy, a score on
+ *     screen is at most 15 seconds behind ESPN (~7.5s on average). ESPN's own
+ *     feed is cached for 1s, so the waits that matter are ours.
+ *   • Requests never overlap: a tick while one is still in flight is skipped
+ *     (the 5s poll is shorter than the 8s timeout), so an older answer can
+ *     never land after a newer one.
  *   • Skip ticks while the tab is hidden; fire one immediately on refocus.
  *   • 8s timeout; failures are swallowed → last-known data stays. Pure
  *     progressive enhancement.
@@ -29,10 +35,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { reviveMatchups, type LiveScoreboardResponse } from '@/lib/liveClient';
-import { shouldPollLive } from '@/lib/liveWindow';
+import { LIVE_POLL_MS, shouldPollLive } from '@/lib/liveWindow';
 import type { Matchup } from '@/lib/schedule';
 
-const POLL_MS = 15_000;
 /** How often to re-evaluate the kickoff window (local check, no network). */
 const WINDOW_CHECK_MS = 60_000;
 const FETCH_TIMEOUT_MS = 8_000;
@@ -70,9 +75,12 @@ export function useLiveScores(
     if (!shouldPoll) return;
 
     let cancelled = false;
+    let inFlight = false;
 
     const tick = async () => {
+      if (inFlight) return; // 5s poll vs 8s timeout: never stack requests
       if (typeof document !== 'undefined' && document.hidden) return;
+      inFlight = true;
 
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
@@ -87,11 +95,12 @@ export function useLiveScores(
         // Swallow — keep last-known data. Live scores are best-effort.
       } finally {
         clearTimeout(timer);
+        inFlight = false;
       }
     };
 
     void tick();
-    const id = setInterval(tick, POLL_MS);
+    const id = setInterval(tick, LIVE_POLL_MS);
 
     const onVisible = () => {
       if (typeof document !== 'undefined' && !document.hidden) void tick();

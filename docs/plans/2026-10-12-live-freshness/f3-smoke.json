@@ -1,0 +1,175 @@
+{
+  "pass": true,
+  "ranAt": "2026-10-13T02:16:03.246Z",
+  "week": 5,
+  "checks": [
+    {
+      "name": "current week known",
+      "ok": true,
+      "detail": "W = 5"
+    },
+    {
+      "name": "next start → /api/health 200 within 60s",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "scoreboard 200 ×2",
+      "ok": true,
+      "detail": "200, 200"
+    },
+    {
+      "name": "scoreboard MISS then HIT",
+      "ok": true,
+      "detail": "MISS → HIT"
+    },
+    {
+      "name": "scoreboard shape (week, matchups[id/kickoff/state], stale false, ISO updatedAt)",
+      "ok": true,
+      "detail": "15 matchups"
+    },
+    {
+      "name": "scoreboard Cache-Control kept by Next",
+      "ok": true,
+      "detail": "public, s-maxage=10, stale-while-revalidate=20"
+    },
+    {
+      "name": "bad input → 400 (4 weeks + 4 events)",
+      "ok": true,
+      "detail": "400,400,400,400,400,400,400,400"
+    },
+    {
+      "name": "found a finished game",
+      "ok": true,
+      "detail": "2026-w5-TB-DAL (event 401872980)"
+    },
+    {
+      "name": "summary 200 ×2",
+      "ok": true,
+      "detail": "200, 200"
+    },
+    {
+      "name": "summary MISS then HIT",
+      "ok": true,
+      "detail": "MISS → HIT"
+    },
+    {
+      "name": "summary shape (byAbbr lines[], headline string|null)",
+      "ok": true,
+      "detail": "2 teams"
+    },
+    {
+      "name": "summary Cache-Control kept by Next",
+      "ok": true,
+      "detail": "public, s-maxage=21600, stale-while-revalidate=43200"
+    },
+    {
+      "name": "cold week 1: 50 parallel → all 200",
+      "ok": true,
+      "detail": "50/50"
+    },
+    {
+      "name": "cold week 1: exactly 1 MISS",
+      "ok": true,
+      "detail": "1 MISS, 49 HIT"
+    },
+    {
+      "name": "scoreboard gzip: content-encoding gzip, content-length = wire, wire < raw / 3",
+      "ok": true,
+      "detail": "raw 8,281 B, wire 1,657 B (gzip), content-length 1657"
+    },
+    {
+      "name": "scoreboard plain: no content-encoding, Vary: Accept-Encoding",
+      "ok": true,
+      "detail": "none, vary rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "name": "scoreboard: gzipped decoded JSON = plain JSON",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "summary: gzip iff raw ≥ 1,024 B",
+      "ok": true,
+      "detail": "raw 896 B, wire 896 B (none)"
+    },
+    {
+      "name": "summary: gzipped decoded JSON = plain JSON",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "ESPN calls ≤ 6",
+      "ok": true,
+      "detail": "4 (1 here + 3 MISS)"
+    },
+    {
+      "name": "server stopped (port 4000 free)",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "sizes": {
+    "scoreboard": {
+      "path": "/api/live/scoreboard?week=5",
+      "status": 200,
+      "raw": 8281,
+      "wire": 1657,
+      "contentEncoding": "gzip",
+      "contentLength": 1657,
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding",
+      "cache": "HIT"
+    },
+    "scoreboardPlain": {
+      "path": "/api/live/scoreboard?week=5",
+      "status": 200,
+      "raw": 8281,
+      "wire": 8281,
+      "contentEncoding": "none",
+      "contentLength": null,
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding",
+      "cache": "HIT"
+    },
+    "summary": {
+      "path": "/api/live/summary?event=401872980",
+      "status": 200,
+      "raw": 896,
+      "wire": 896,
+      "contentEncoding": "none",
+      "contentLength": null,
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding",
+      "cache": "HIT"
+    },
+    "summaryPlain": {
+      "path": "/api/live/summary?event=401872980",
+      "status": 200,
+      "raw": 896,
+      "wire": 896,
+      "contentEncoding": "none",
+      "contentLength": null,
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding",
+      "cache": "HIT"
+    }
+  },
+  "load": [
+    {
+      "viewers": 100,
+      "reqPerSec": "20.0",
+      "mbps": 0.26512,
+      "espn": "~6 (scoreboard, current week)"
+    },
+    {
+      "viewers": 1000,
+      "reqPerSec": "200.0",
+      "mbps": 2.6512,
+      "espn": "~6"
+    },
+    {
+      "viewers": 10000,
+      "reqPerSec": "2000.0",
+      "mbps": 26.512,
+      "espn": "~6"
+    }
+  ],
+  "espnCalls": 4
+}

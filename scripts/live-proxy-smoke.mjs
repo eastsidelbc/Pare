@@ -1,17 +1,21 @@
 #!/usr/bin/env node
 /**
- * P4 of docs/plans/2026-10-12-live-scores-proxy.md — smoke /api/live/* on a
- * local production server against real ESPN.
+ * Smoke /api/live/* on a local production server against real ESPN.
+ * First written for P4 of docs/plans/2026-10-12-live-scores-proxy.md (its
+ * p4-smoke.json + P4 table stay as that plan's record); extended for F3 of
+ * docs/plans/2026-10-12-live-freshness.md (5s poll + our own gzip).
  *
- *   npm run build   (or: node scripts/live-proxy-gates.mjs p4)
+ *   npm run build   (or: node scripts/live-fresh-gates.mjs f3)
  *   node scripts/live-proxy-smoke.mjs        # WEEK=N to override the current week
  *
  * Needs port 4000 free and an existing .next build. Starts `next start -p 4000`,
  * waits for /api/health, then: scoreboard MISS→HIT + shape + Cache-Control ·
  * 400s · summary MISS→HIT + shape · cold week 50 parallel → exactly 1 MISS ·
- * gzip wire sizes. Writes docs/plans/2026-10-12-live-scores-proxy/p4-smoke.json,
- * and on a pass fills the plan's P4 + load tables from it. Stops the server and
- * exits non-zero on any failure. ≤6 ESPN calls (1 here + one per MISS).
+ * gzip vs plain on both routes (scoreboard gzip, wire < raw/3, Vary; decoded =
+ * plain JSON; summary gzip iff raw ≥ 1 KB) + wire sizes. Writes
+ * docs/plans/2026-10-12-live-freshness/f3-smoke.json, and on a pass fills that
+ * plan's F3 + load tables from it. Stops the server and exits non-zero on any
+ * failure. ≤6 ESPN calls (1 here + one per MISS).
  */
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
@@ -19,16 +23,21 @@ import { request } from 'node:http';
 import { createServer } from 'node:net';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isDeepStrictEqual } from 'node:util';
 import { gunzipSync } from 'node:zlib';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const PLAN = join(ROOT, 'docs/plans/2026-10-12-live-scores-proxy.md');
-const OUT = join(ROOT, 'docs/plans/2026-10-12-live-scores-proxy/p4-smoke.json');
+const PLAN = join(ROOT, 'docs/plans/2026-10-12-live-freshness.md');
+const OUT = join(ROOT, 'docs/plans/2026-10-12-live-freshness/f3-smoke.json');
 const PORT = 4000;
 const BASE = `http://localhost:${PORT}`;
 const ESPN_DEFAULT = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard';
 const CACHE_CONTROL = /^public, s-maxage=\d+, stale-while-revalidate=\d+$/;
 const MAX_ESPN_CALLS = 6;
+/** Phone poll while live, seconds (= LIVE_POLL_MS in lib/liveWindow.ts). */
+const POLL_S = 5;
+/** Summary bodies from this size are gzipped (= GZIP_MIN_BYTES in lib/espnLive.ts). */
+const GZIP_MIN_BYTES = 1024;
 
 const checks = [];
 const check = (name, ok, detail = '') => {
@@ -58,23 +67,49 @@ async function get(path) {
   return { status: res.status, body, cache: res.headers.get('x-pare-cache'), cacheControl: res.headers.get('cache-control') };
 }
 
-/** Wire size with `accept-encoding: gzip` (node:http does not decode). */
-function measure(path) {
+/**
+ * Raw request (node:http does not decode), with or without `accept-encoding: gzip`.
+ * Returns wire bytes as sent, decoded size, the encoding headers and the decoded JSON.
+ */
+function measure(path, { gzip = true } = {}) {
   return new Promise((resolve, reject) => {
-    const req = request(`${BASE}${path}`, { headers: { 'accept-encoding': 'gzip' } }, (res) => {
+    const headers = gzip ? { 'accept-encoding': 'gzip' } : {};
+    const req = request(`${BASE}${path}`, { headers }, (res) => {
       const chunks = [];
       res.on('data', (c) => chunks.push(c));
       res.on('end', () => {
         const wire = Buffer.concat(chunks);
         const encoding = res.headers['content-encoding'] ?? null;
-        const raw = encoding === 'gzip' ? gunzipSync(wire).length : wire.length;
-        resolve({ status: res.statusCode, raw, wire: wire.length, contentEncoding: encoding ?? 'none' });
+        const decoded = encoding === 'gzip' ? gunzipSync(wire) : wire;
+        let json = null;
+        try {
+          json = JSON.parse(decoded.toString('utf8'));
+        } catch {
+          /* non-JSON body */
+        }
+        resolve({
+          status: res.statusCode,
+          raw: decoded.length,
+          wire: wire.length,
+          contentEncoding: encoding ?? 'none',
+          contentLength: res.headers['content-length'] === undefined ? null : Number(res.headers['content-length']),
+          vary: res.headers.vary ?? null,
+          cache: res.headers['x-pare-cache'] ?? null,
+          json,
+        });
       });
     });
     req.on('error', reject);
     req.end();
   });
 }
+
+/** Drop the decoded JSON before a measurement goes into the report. */
+const sizeOf = (m) => {
+  const rest = { ...m };
+  delete rest.json;
+  return rest;
+};
 
 function startServer() {
   const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'start', '-p', String(PORT)], {
@@ -111,9 +146,9 @@ async function waitHealthy(timeoutMs = 60_000) {
 }
 
 const fmt = (n) => n.toLocaleString('en-US');
-const mbps = (viewers, wire) => ((viewers / 15) * wire * 8) / 1e6;
+const mbps = (viewers, wire) => ((viewers / POLL_S) * wire * 8) / 1e6;
 
-/** Replace the TBD (or previously filled) P4 + load table rows with measured values. */
+/** Replace the TBD (or previously filled) F3 + load table rows with measured values. */
 function fillPlan(report) {
   const { scoreboard: sb, summary: sm } = report.sizes;
   let text = readFileSync(PLAN, 'utf8');
@@ -124,13 +159,13 @@ function fillPlan(report) {
     text = text.replace(re, `${prefix} ${cells.join(' | ')} |`);
   };
   row('| /api/live/scoreboard?week=W |', [fmt(sb.raw), fmt(sb.wire), sb.contentEncoding]);
-  row('| /api/live/summary?event=… |', [fmt(sm.raw), fmt(sm.wire), sm.contentEncoding]);
+  if (sm) row('| /api/live/summary?event=… |', [fmt(sm.raw), fmt(sm.wire), sm.contentEncoding]);
   for (const r of report.load) {
     row(`| ${fmt(r.viewers)} | ${r.reqPerSec} |`, [r.mbps.toFixed(2), r.espn]);
   }
   text = text.replace(
-    /^\*\*P4 results — our responses\*\*.*$/m,
-    `**P4 results — our responses** (filled by the run: ${report.ranAt}, week ${report.week}; source \`p4-smoke.json\`)`,
+    /^\*\*F3 results(?::| —) our responses\*\*.*$/m,
+    `**F3 results: our responses** (filled by the run: ${report.ranAt}, week ${report.week}; source \`f3-smoke.json\`)`,
   );
   writeFileSync(PLAN, crlf ? text.replace(/\n/g, '\r\n') : text);
 }
@@ -225,14 +260,43 @@ async function main() {
     check(`cold week ${cold}: 50 parallel → all 200`, burst.every((r) => r.status === 200), `${burst.filter((r) => r.status === 200).length}/50`);
     check(`cold week ${cold}: exactly 1 MISS`, burstMiss === 1, `${burstMiss} MISS, ${burst.filter((r) => r.cache === 'HIT').length} HIT`);
 
-    // 6. Sizes (HITs — no ESPN calls).
-    const sbSize = await measure(`/api/live/scoreboard?week=${week}`);
-    report.sizes.scoreboard = { path: `/api/live/scoreboard?week=${week}`, ...sbSize };
-    check('scoreboard size measured', sbSize.status === 200, `raw ${fmt(sbSize.raw)} B, wire ${fmt(sbSize.wire)} B (${sbSize.contentEncoding})`);
+    // 6. gzip vs plain + sizes (HITs — no ESPN calls unless the live TTL lapses mid-pair).
+    const sbPath = `/api/live/scoreboard?week=${week}`;
+    // A live 10s copy can turn over between the two requests → retry until both
+    // come from one upstream fetch (same updatedAt), so "decoded = plain" compares like with like.
+    let sbGz;
+    let sbPlain;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      sbGz = seen(await measure(sbPath, { gzip: true }));
+      sbPlain = seen(await measure(sbPath, { gzip: false }));
+      if (sbGz.json?.updatedAt === sbPlain.json?.updatedAt) break;
+    }
+    report.sizes.scoreboard = { path: sbPath, ...sizeOf(sbGz) };
+    report.sizes.scoreboardPlain = { path: sbPath, ...sizeOf(sbPlain) };
+    check(
+      'scoreboard gzip: content-encoding gzip, content-length = wire, wire < raw / 3',
+      sbGz.status === 200 && sbGz.contentEncoding === 'gzip' && sbGz.contentLength === sbGz.wire && sbGz.wire * 3 < sbGz.raw,
+      `raw ${fmt(sbGz.raw)} B, wire ${fmt(sbGz.wire)} B (${sbGz.contentEncoding}), content-length ${sbGz.contentLength}`,
+    );
+    check(
+      'scoreboard plain: no content-encoding, Vary: Accept-Encoding',
+      sbPlain.status === 200 && sbPlain.contentEncoding === 'none' && /accept-encoding/i.test(sbPlain.vary ?? ''),
+      `${sbPlain.contentEncoding}, vary ${sbPlain.vary ?? '(none)'}`,
+    );
+    check('scoreboard: gzipped decoded JSON = plain JSON', sbGz.json !== null && isDeepStrictEqual(sbGz.json, sbPlain.json));
+
     if (summaryPath) {
-      const smSize = await measure(summaryPath);
-      report.sizes.summary = { path: summaryPath, ...smSize };
-      check('summary size measured', smSize.status === 200, `raw ${fmt(smSize.raw)} B, wire ${fmt(smSize.wire)} B (${smSize.contentEncoding})`);
+      const smGz = seen(await measure(summaryPath, { gzip: true }));
+      const smPlain = seen(await measure(summaryPath, { gzip: false }));
+      report.sizes.summary = { path: summaryPath, ...sizeOf(smGz) };
+      report.sizes.summaryPlain = { path: summaryPath, ...sizeOf(smPlain) };
+      const wantGzip = smGz.raw >= GZIP_MIN_BYTES;
+      check(
+        `summary: gzip iff raw ≥ ${fmt(GZIP_MIN_BYTES)} B`,
+        smGz.status === 200 && (smGz.contentEncoding === 'gzip') === wantGzip && /accept-encoding/i.test(smGz.vary ?? ''),
+        `raw ${fmt(smGz.raw)} B, wire ${fmt(smGz.wire)} B (${smGz.contentEncoding})`,
+      );
+      check('summary: gzipped decoded JSON = plain JSON', smGz.json !== null && isDeepStrictEqual(smGz.json, smPlain.json));
     }
 
     report.espnCalls = espnCalls + misses;
@@ -240,9 +304,9 @@ async function main() {
 
     report.load = [100, 1_000, 10_000].map((viewers) => ({
       viewers,
-      reqPerSec: (viewers / 15).toFixed(1),
-      mbps: mbps(viewers, sbSize.wire),
-      espn: viewers === 100 ? '~4 (scoreboard, current week)' : '~4',
+      reqPerSec: (viewers / POLL_S).toFixed(1),
+      mbps: mbps(viewers, sbGz.wire),
+      espn: viewers === 100 ? '~6 (scoreboard, current week)' : '~6',
     }));
   } catch (err) {
     check('smoke ran to completion', false, err instanceof Error ? err.message : String(err));
@@ -256,14 +320,14 @@ async function main() {
   writeFileSync(OUT, JSON.stringify(report, null, 2) + '\n');
 
   console.log(`\n${'─'.repeat(72)}`);
-  console.log(`${report.pass ? 'PASS' : 'FAIL'}: ${checks.filter((c) => c.ok).length}/${checks.length} checks · p4-smoke.json written`);
+  console.log(`${report.pass ? 'PASS' : 'FAIL'}: ${checks.filter((c) => c.ok).length}/${checks.length} checks · f3-smoke.json written`);
   if (report.load.length) {
     console.log('\n| Viewers | Req/s to the Mac | Upload from the Mac (Mbps) | ESPN calls/min |');
     for (const r of report.load) console.log(`| ${fmt(r.viewers)} | ${r.reqPerSec} | ${r.mbps.toFixed(2)} | ${r.espn} |`);
   }
   if (report.pass) {
     fillPlan(report);
-    console.log('plan P4 + load tables filled');
+    console.log('plan F3 + load tables filled');
   }
   process.exit(report.pass ? 0 : 1);
 }
