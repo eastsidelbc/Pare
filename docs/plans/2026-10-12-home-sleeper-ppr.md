@@ -1,4 +1,4 @@
-# Plan — Home box-score fantasy points = Sleeper standard PPR
+# Plan — Home box-score fantasy points = Sleeper PPR + yardage bonuses ("Pare points")
 
 Branch `feat/home-sleeper-ppr` · plan date 2026-10-12 · status: proposed
 
@@ -8,7 +8,20 @@ Branch `feat/home-sleeper-ppr` · plan date 2026-10-12 · status: proposed
 
 Home → tap a finished game → `PostGameBox` shows each player's gold fantasy number. It's computed by our own formula in `parseSummary` (`PPR` constant, today in `lib/hooks/useGameSummary.ts`, moved to `lib/gameSummary.ts` by the proxy plan). It does not match Sleeper. Example: Dak Prescott, Week 5 (Thu Oct 8) shows **12.6** on Home.
 
-**Kobe's decision (fixed):** one global standard everywhere = **Sleeper's standard PPR (`pts_ppr`)**, the number the Fantasy tab shows. No league-specific scoring on Home. Simple, natural, no settings.
+**Kobe's decision (fixed, revised 2026-10-12 during P0):** one global standard **everywhere** (Home box score **and** the Leaders Fantasy tab) = the number Sleeper shows Kobe for a player: **"Pare points" = Sleeper `pts_ppr` + 3 per yardage bonus Sleeper flags on that game.** No league-specific scoring, no settings.
+
+**Pare points rule** (single function `parePoints(stats)` in `lib/fantasyPoints.ts`):
+
+```
+parePoints = pts_ppr + 3 × (bonus_pass_yd_300 + bonus_pass_yd_400 + bonus_rush_yd_200 + bonus_rec_yd_200)
+```
+
+- Why: Kobe's Sleeper app shows **Dak W5 = 17.64**. Sleeper `pts_ppr` = 14.64 (no bonuses). Dak threw 316 yd → Sleeper sets `bonus_pass_yd_300: 1` → +3 = **17.64**.
+- Sleeper's yardage flags are **exclusive tiers**: 300–399 pass yd sets `bonus_pass_yd_300`, 400+ sets `bonus_pass_yd_400` instead (verified on the W4 fixture: 412 and 428 yd passers have only `_400`). Kobe chose: **400+ also gets +3** (both flags count, no cliff); 200+ rush or rec yd +3; no 100-yd bonuses (`bonus_rush_yd_100` / `bonus_rec_yd_100` are ignored).
+- Every input is a Sleeper field (`pts_ppr` + flags) — Sleeper stat corrections flow through; Pare adds a constant per flag, it never scores yards/TDs itself.
+- Sleeper **season** stats sum the flags as counts (verified 2026-10-12: Dak season `bonus_pass_yd_300: 2`, `pts_ppr: 96.84` → 102.84), so the Leaders tab uses the same function on season totals — no extra Sleeper calls.
+- Risk: `bonus_rush_yd_200` / `bonus_rec_yd_200` not yet observed in live data (no 200-yd rush/rec game in 2026 W1–5; season totals show only `_100` flags). Names follow Sleeper's `scoring_settings` keys and the observed `_300`/`_400` pattern; P3 notes it, and the human gate checks the first 200-yd game.
+- My Team (league view) keeps **league** scoring — out of scope.
 
 ### Why the numbers differ (verified 2026-10-12 against `lib/myteam/__fixtures__/sleeper-com-stats-w4.json`)
 
@@ -17,7 +30,7 @@ Example: Deshaun Watson W4 — 268 pass yd, 1 TD, 1 INT, 22 rush yd, 1 fumble lo
 
 Our formula's gaps: INT −2 (Sleeper −1), no 2-pt conversions, no return/recovery TDs, and it scores ESPN's stats instead of Sleeper's (Sleeper stat corrections never reach Home).
 
-**Fix = stop calculating. Read Sleeper's `pts_ppr` and show it.** No formula of our own anywhere.
+**Fix = stop calculating yards/TDs. Read Sleeper's `pts_ppr` + Sleeper's bonus flags (`parePoints`) and show it.** No yard/TD scoring weights of our own anywhere.
 
 ## What exists (reuse, don't rebuild)
 
@@ -68,7 +81,7 @@ Our formula's gaps: INT −2 (Sleeper −1), no 2-pt conversions, no return/reco
 - `scripts/home-ppr-gates.mjs <p0|p1|p2|p3|all>`: runs every check for the phase, prints a PASS/FAIL table, exits 1 on any failure. Build checks confirm port 4000 is free first (`net.createServer().listen(4000)`).
 - `scripts/home-ppr-check.mjs` (dev script, ≤3 outbound calls, sequential):
   1. ESPN scoreboard `seasontype=2&week=5` → find the DAL game event id.
-  2. `api.sleeper.com/stats/nfl/2026/5?season_type=regular&position[]=QB` → Dak Prescott's `pts_ppr` and raw stats.
+  2. `api.sleeper.com/stats/nfl/2026/5?season_type=regular&position[]=QB` → Dak Prescott's `pts_ppr`, bonus flags, raw stats, and `pare.points` (`parePoints`).
   3. ESPN `summary?event=<id>` → confirm `header.week === 5` and `header.season.year === 2026`.
   Writes `docs/plans/2026-10-12-home-sleeper-ppr/p0-check.json` and fills the table below.
 - Read `lib/myteam/__fixtures__/espn-summary-boxscore.json` → record whether `header.week` exists (expect 4).
@@ -81,36 +94,39 @@ Our formula's gaps: INT −2 (Sleeper −1), no 2-pt conversions, no return/reco
 | Dak W5 on Home today (our formula) | 12.6 |
 | Dak W5 Sleeper `pts_ppr` | **14.64** (Sleeper id 3294, ESPN event 401872980 TB @ DAL, final) |
 | Dak W5 raw (pass yd/TD/INT, rush yd/TD, fum lost, 2-pt) | 316 / 1 / 2 · 0 / 0 · 0 · 0 |
+| **Dak W5 Pare points (`parePoints`) — what Kobe's Sleeper app shows** | **17.64** = 14.64 + 3 (`bonus_pass_yd_300: 1`). Confirmed by Kobe |
 | Explained by the formula gaps above? | **Yes** — ours 12.64 (−2/INT) vs Sleeper 14.64 (−1/INT): 2 INTs = exactly the 2.0 gap. Sleeper rules reproduce 14.64 exactly |
 | ESPN summary `header.week` present (fixture / live) | Yes / yes — fixture `4` (season 2026), live `5` (season 2026) |
 | Week source used in P2 (`header.week` or schedule fallback) | `header.week` + `header.season.year` (schedule fallback only if missing) |
 
-**Gate `p0`:** `p0-check.json` exists with a numeric Dak `pts_ppr` · plan has no `TBD-P0` · `git diff --name-only main` ⊆ `scripts/home-ppr-*.mjs`, `docs/plans/2026-10-12-home-sleeper-ppr*` · `npm run check` + `npm run test:run` pass.
+**Gate `p0`:** `p0-check.json` exists with a numeric Dak `pts_ppr` and `pare.points === 17.64` · plan has no `TBD-P0` · `git diff --name-only main` ⊆ `scripts/home-ppr-*.mjs`, `docs/plans/2026-10-12-home-sleeper-ppr*` · `npm run check` + `npm run test:run` pass.
 
 ```
-/goal P0 of docs/plans/2026-10-12-home-sleeper-ppr.md — write scripts/home-ppr-gates.mjs + scripts/home-ppr-check.mjs, run the check (Dak W5 Sleeper pts_ppr, ESPN header.week), fill the P0 table. Done when `node scripts/home-ppr-gates.mjs p0` exits 0, then commit "test(fantasy): P0 Sleeper PPR check + gate scripts" and `git status --porcelain -uno` prints nothing.
+/goal P0 of docs/plans/2026-10-12-home-sleeper-ppr.md — write scripts/home-ppr-gates.mjs + scripts/home-ppr-check.mjs, run the check (Dak W5 Sleeper pts_ppr + Pare points 17.64, ESPN header.week), fill the P0 table. Done when `node scripts/home-ppr-gates.mjs p0` exits 0, then commit "test(fantasy): P0 Sleeper PPR check + gate scripts" and `git status --porcelain -uno` prints nothing.
 ```
 
 ## P1: Pure points module + tests (no wiring yet)
 
 **Changes**
 - `lib/fantasyPoints.ts` (pure, client-safe, no `server-only`):
-  - `buildPprIndex(lines: PlayerGameLine[], players: Record<string, { name: string; espnId?: string }>)` → `{ byEspnId: Map<string, number>, byNameTeam: Map<string, number> }` from `stats.pts_ppr` (QB/RB/WR/TE/K only).
+  - `buildPprIndex(lines: PlayerGameLine[], players: Record<string, { name: string; espnId?: string }>)` → `{ byEspnId: Map<string, number>, byNameTeam: Map<string, number> }` from `parePoints(stats)` (QB/RB/WR/TE/K only).
+  - `parePoints(stats)` → `number | null`: `null` when `pts_ppr` is missing; else the rule above. Exports `PARE_BONUS_FLAGS` (the 4 flag names) and `PARE_BONUS_POINTS = 3`.
   - `pprFor(index, { espnId, fullName, team })` → `number | null` (espnId first, then `rookieKey(fullName, team)`).
   - `applySleeperPoints(summary, index)` → new `GameSummary` (design above). Pure, doesn't mutate input.
 - `lib/__tests__/fantasyPoints.test.ts` (names must contain these phrases; the gate greps them):
-  1. `pts_ppr is the source`: for every fixture line with `pts_ppr`, `pprFor` returns exactly that value.
+  1. `pts_ppr is the source`: for every fixture line with `pts_ppr`, `pprFor` returns exactly `pts_ppr + 3 × flags` (equal to `pts_ppr` on lines with no flags).
+  8. `bonus rule`: Dak W5 stats from `p0-check.json` (14.64 + `bonus_pass_yd_300: 1`) → **17.64**; a 412-yd line with only `bonus_pass_yd_400` → +3; `bonus_rush_yd_200` / `bonus_rec_yd_200` → +3 each; `bonus_rec_yd_100` / `bonus_rush_yd_100` / `bonus_fd_qb` / `bonus_pass_cmp_25` → +0; missing `pts_ppr` → `null`.
   2. `formula proof`: standard-PPR rules (above) through `scoreLine` (`lib/myteam/fpa.ts`) equal `pts_ppr` on ≥99% of week-4 QB/RB/WR/TE lines (documents the formula; nothing in the app uses it).
   3. `join hit rate`: every QB/RB/WR/TE in `espn-summary-boxscore.json` with ≥1 stat gets a non-null `ppr` from the week-4 Sleeper fixture (100%; any exception is listed in the test with a reason and capped at 1).
   4. `qb pinned`: QB first, then top 3 skill by `ppr` desc.
   5. `no points yet`: empty index → all `ppr: null`, skill ordered by scrimmage yards.
   6. `name fallback`: a player with no `espnId` still matches by name + team (incl. a `Jr.`/`III` case).
-  7. `no homemade formula`: `lib/fantasyPoints.ts` source contains no `0.04` / `0.1` / scoring weights.
+  7. `no homemade formula`: `lib/fantasyPoints.ts` source contains no `0.04` / `0.1` / yard or TD scoring weights (the flat `3` per Sleeper bonus flag is the only constant).
 
-**Gate `p1`:** `npx vitest run lib/__tests__/fantasyPoints.test.ts --reporter=json` → ≥7 passed, 0 failed · all 7 phrases present · `git diff --name-only main` ⊆ P0 files + `lib/fantasyPoints.ts`, `lib/__tests__/fantasyPoints.test.ts` · `git diff --exit-code main -- package.json package-lock.json` · `npm run check` + `npm run test:run` pass.
+**Gate `p1`:** `npx vitest run lib/__tests__/fantasyPoints.test.ts --reporter=json` → ≥8 passed, 0 failed · all 8 phrases present · `git diff --name-only main` ⊆ P0 files + `lib/fantasyPoints.ts`, `lib/__tests__/fantasyPoints.test.ts` · `git diff --exit-code main -- package.json package-lock.json` · `npm run check` + `npm run test:run` pass.
 
 ```
-/goal P1 of docs/plans/2026-10-12-home-sleeper-ppr.md — add pure lib/fantasyPoints.ts (buildPprIndex, pprFor, applySleeperPoints) reading Sleeper pts_ppr only, with tests on the week-4 ESPN + Sleeper fixtures. Done when `node scripts/home-ppr-gates.mjs p1` exits 0, then commit "feat(fantasy): Sleeper PPR lookup for box-score players" and `git status --porcelain -uno` prints nothing.
+/goal P1 of docs/plans/2026-10-12-home-sleeper-ppr.md — add pure lib/fantasyPoints.ts (parePoints, buildPprIndex, pprFor, applySleeperPoints) reading Sleeper pts_ppr + bonus flags only, with tests on the week-4 ESPN + Sleeper fixtures. Done when `node scripts/home-ppr-gates.mjs p1` exits 0, then commit "feat(fantasy): Sleeper PPR lookup for box-score players" and `git status --porcelain -uno` prints nothing.
 ```
 
 ## P2: Wire it in (parser, player map, route, one UI line)
@@ -118,39 +134,41 @@ Our formula's gaps: INT −2 (Sleeper −1), no 2-pt conversions, no return/reco
 **Changes**
 - `lib/gameSummary.ts`: remove `PPR` + `pprOf`; `PlayerLine` gains `espnId`, `fullName`; `ppr: number | null`; `parseTeam` returns QB + all skill candidates. Update the header comment ("Full-PPR scoring…" → "points come from Sleeper `pts_ppr`, attached by /api/live/summary").
 - `lib/fantasy.ts`: `SlimPlayer.espnId` for all players with an `espn_id` (keep `rookieEspnId` behavior for `getRookieIndex`); cache key → `sleeper-player-map-v5`.
+- `lib/fantasy.ts` (Leaders Fantasy tab, "everywhere"): the slim season stats keep the 4 `PARE_BONUS_FLAGS`; board points = `parePoints(s) ?? s.pts_std ?? 0` for skill/K rows (D/ST unchanged: no yardage flags). Season-stats cache key `sleeper-season-stats-v1` → `v2` (shape changed). Leaders UI unchanged.
 - `app/api/live/summary/route.ts` (or a helper in `lib/espnLive.ts`): after `getLiveSummary`, resolve season/week (P0 result), `getWeekLines(season, week, completed)` + `getPlayerMap()`, `buildPprIndex`, `applySleeperPoints`. If Sleeper fails → serve the summary with `ppr: null` (never fail the route because of Sleeper). Caching headers unchanged.
 - `components/schedule/PostGameBox.tsx`: `—` when `ppr === null`. No other UI change.
 - `lib/__tests__/liveParity.test.ts` + `lib/__fixtures__/espn/parity/summary-final.json`: snapshot regenerated **once, intentionally** (parser now returns all candidates with `ppr: null`). Commit message says so.
 - `lib/__tests__/liveRoutes.test.ts`: new cases, names containing:
-  - `sleeper points attached`: mocked Sleeper week lines → every displayed `ppr` equals the fixture `pts_ppr`.
+  - `sleeper points attached`: mocked Sleeper week lines → every displayed `ppr` equals `parePoints` of the fixture line.
+- `lib/__tests__/fantasyBoards.test.ts` (or the existing fantasy test file if one exists): `leaders pare points` — a season row with `pts_ppr: 96.84, bonus_pass_yd_300: 2` ranks with 102.84.
   - `sleeper down`: Sleeper fetch rejects → 200, all `ppr: null`, ESPN data intact.
   - `points after cache`: summary cached (HIT), Sleeper lines change → next response shows the new points (proves response-time attach).
 
 **Gate `p2`:**
 - `git grep -n "passYd: 0.04\|PPR = {" -- lib components app` → no matches (homemade formula gone).
-- `git grep -c "sleeper-player-map-v5" -- lib/fantasy.ts` = 1.
+- `git grep -c "sleeper-player-map-v5" -- lib/fantasy.ts` = 1 · `sleeper-season-stats-v2` = 1 · `lib/fantasy.ts` calls `parePoints`.
 - `git diff --name-only main` ⊆ P0/P1 files + the files listed above. `git diff main -- components` touches only `PostGameBox.tsx`, ≤ 3 changed lines.
-- `npx vitest run lib/__tests__/liveRoutes.test.ts lib/__tests__/liveParity.test.ts lib/__tests__/fantasyPoints.test.ts --reporter=json` → 0 failed, includes the 3 new phrases.
+- `npx vitest run lib/__tests__/fantasyBoards.test.ts lib/__tests__/liveRoutes.test.ts lib/__tests__/liveParity.test.ts lib/__tests__/fantasyPoints.test.ts --reporter=json` → 0 failed, includes the 4 new phrases.
 - `npm run check` + `npm run test:run` pass · port 4000 free → clean + build passes.
 
 ```
-/goal P2 of docs/plans/2026-10-12-home-sleeper-ppr.md — remove the homemade PPR formula from lib/gameSummary.ts, keep espnId for all players in the Sleeper player map (v5), attach Sleeper pts_ppr in /api/live/summary at response time, show "—" when missing in PostGameBox. Done when `node scripts/home-ppr-gates.mjs p2` exits 0, then commit "feat(home): box-score fantasy points from Sleeper PPR (parity snapshot updated intentionally)" and `git status --porcelain -uno` prints nothing.
+/goal P2 of docs/plans/2026-10-12-home-sleeper-ppr.md — remove the homemade PPR formula from lib/gameSummary.ts, keep espnId for all players in the Sleeper player map (v5), attach Pare points (Sleeper pts_ppr + bonus flags) in /api/live/summary at response time, use parePoints on the Leaders Fantasy tab, show "—" when missing in PostGameBox. Done when `node scripts/home-ppr-gates.mjs p2` exits 0, then commit "feat(home): box-score fantasy points from Sleeper PPR (parity snapshot updated intentionally)" and `git status --porcelain -uno` prints nothing.
 ```
 
 ## P3: Real-data smoke + docs
 
 **Changes**
 - `scripts/home-ppr-smoke.mjs`: requires port 4000 free + a fresh build. Spawns `next start -p 4000`, waits for `/api/health` 200 (60s max). Then:
-  1. `/api/live/summary?event=<Dak W5 event from p0-check.json>` → Dak's `ppr` **===** Sleeper `pts_ppr` from `p0-check.json` (rounded to 1 decimal, same as the UI).
+  1. `/api/live/summary?event=<Dak W5 event from p0-check.json>` → Dak's `ppr` **=== 17.64** (`pare.points` from `p0-check.json`; UI shows 17.6).
   2. Every non-null `ppr` in that response is a number; QB first per team.
   3. One more final game from week 5 → ≥90% of displayed lines have non-null `ppr`.
   Writes `docs/plans/2026-10-12-home-sleeper-ppr/p3-smoke.json` (`pass`, Dak before/after). Kills the server (Windows fallback `taskkill /pid <pid> /T /F`). ≤4 outbound calls.
-- Docs: `CHANGELOG.md` `[Unreleased]` one bullet · `DATA_SOURCES.md` one line ("Home box-score fantasy points = Sleeper `pts_ppr` (standard PPR), same as Leaders/Fantasy; Pare never computes fantasy points itself") · `CLAUDE.md` one line in the data section · `docs/devnotes/2026-10-12-home-sleeper-ppr.md` (why, the formula-gap table, Watson + Dak examples).
+- Docs: `CHANGELOG.md` `[Unreleased]` one bullet · `DATA_SOURCES.md` one line ("Fantasy points everywhere (Home box score + Leaders Fantasy) = Sleeper `pts_ppr` + 3 per Sleeper yardage-bonus flag (`bonus_pass_yd_300/_400`, `bonus_rush_yd_200`, `bonus_rec_yd_200`) — `parePoints` in `lib/fantasyPoints.ts`; Pare never scores yards/TDs itself") · `CLAUDE.md` one line in the data section · `docs/devnotes/2026-10-12-home-sleeper-ppr.md` (why, the formula-gap table, Watson + Dak examples).
 
-**Gate `p3`:** `node scripts/home-ppr-smoke.mjs` exits 0 · `p3-smoke.json` `pass: true` · port 4000 free afterward · `CHANGELOG.md` and `DATA_SOURCES.md` contain `pts_ppr` · devnote exists · `npm run check` + `npm run test:run` pass.
+**Gate `p3`:** `node scripts/home-ppr-smoke.mjs` exits 0 · `p3-smoke.json` `pass: true` with Dak `after === 17.64` · port 4000 free afterward · `CHANGELOG.md` and `DATA_SOURCES.md` contain `pts_ppr` · devnote exists · `npm run check` + `npm run test:run` pass.
 
 ```
-/goal P3 of docs/plans/2026-10-12-home-sleeper-ppr.md — smoke the local production build against real ESPN + Sleeper (Dak W5 Home number === Sleeper pts_ppr), then update CHANGELOG, DATA_SOURCES, CLAUDE.md and a devnote. Done when `node scripts/home-ppr-gates.mjs p3` exits 0, then commit "test(home): Sleeper PPR smoke + docs" and `git status --porcelain -uno` prints nothing.
+/goal P3 of docs/plans/2026-10-12-home-sleeper-ppr.md — smoke the local production build against real ESPN + Sleeper (Dak W5 Home number === 17.64 Pare points), then update CHANGELOG, DATA_SOURCES, CLAUDE.md and a devnote. Done when `node scripts/home-ppr-gates.mjs p3` exits 0, then commit "test(home): Sleeper PPR smoke + docs" and `git status --porcelain -uno` prints nothing.
 ```
 
 ## Run all
@@ -163,7 +181,9 @@ Our formula's gaps: INT −2 (Sleeper −1), no 2-pt conversions, no return/reco
 
 ## Human gate (Kobe, after deploy)
 
-- [ ] pare.gg → Home → Week 5 → DAL game → Dak's gold number = Sleeper app's Week 5 points for Dak.
+- [ ] pare.gg → Home → Week 5 → DAL game → Dak's gold number = **17.6** (Sleeper app: 17.64).
+- [ ] Leaders → Fantasy → QB → Dak's season points include the +3 per 300-yd game (= Sleeper app season total).
+- [ ] First 200-yd rush or rec game of the season: the player's number on Home = Sleeper app (proves the `_200` flag names).
 - [ ] Two more players from different games match Sleeper.
 - [ ] A game that just went final shows "—" for a few minutes, then numbers (≤30 min for the current week — the `getWeekLines` cache).
 
@@ -175,7 +195,9 @@ Our formula's gaps: INT −2 (Sleeper −1), no 2-pt conversions, no return/reco
 | Sleeper down | Route still 200 with ESPN data, `ppr: null` (tested). `getWeekLines` serves last-good when it has one. |
 | Name mismatch (nicknames, suffixes) | ESPN id first; name fallback uses `normalizePlayerName`; P1 hit-rate test + P3 ≥90% check. |
 | Player map v5 key = one fresh ~20MB Sleeper download | Once per 24h anyway; same as any key bump (v3→v4 precedent). |
-| Fantasy tab (My Team) shows *league* scoring | Out of scope. Equal to `pts_ppr` for standard PPR leagues; Home stays global PPR by decision. |
+| Fantasy tab (My Team) shows *league* scoring | Out of scope. Home + Leaders use Pare points by decision. |
+| `bonus_rush_yd_200` / `bonus_rec_yd_200` names unobserved in live data | Named after Sleeper `scoring_settings` keys + observed `_300`/`_400` pattern; unit-tested on synthetic lines; human gate checks the first 200-yd game. |
+| Sleeper changes which flags it emits | Points silently fall back to plain `pts_ppr` (never wrong by more than the bonus); P1 `bonus rule` test documents the contract. |
 | Live (in-game) points on Home | Out of scope — finished games only, same as today. |
 
 ## This /plan run (after approval)

@@ -106,6 +106,7 @@ const SCOPE = {
     'lib/__tests__/liveParity.test.ts',
     'lib/__fixtures__/espn/parity/summary-final.json',
     'lib/__tests__/liveRoutes.test.ts',
+    'lib/__tests__/fantasyBoards.test.ts',
   ],
   p3: ['CHANGELOG.md', 'DATA_SOURCES.md', 'CLAUDE.md', 'docs/devnotes/2026-10-12-home-sleeper-ppr.md'],
 };
@@ -128,14 +129,21 @@ const P1_PHRASES = [
   'no points yet',
   'name fallback',
   'no homemade formula',
+  'bonus rule',
 ];
-const P2_PHRASES = ['sleeper points attached', 'sleeper down', 'points after cache'];
+const P2_PHRASES = ['sleeper points attached', 'sleeper down', 'points after cache', 'leaders pare points'];
+// Kobe, 2026-10-12: Dak W5 = Sleeper pts_ppr 14.64 + 3 (300–399 pass yd bonus) = 17.64.
+const DAK_W5_PARE = 17.64;
 
 const STATIC = {
   p0: [
     ['p0-check.json has a numeric Dak pts_ppr', () => {
       const j = readJson(`${ART}/p0-check.json`);
       return [typeof j.sleeper?.pts_ppr === 'number', `pts_ppr=${j.sleeper?.pts_ppr}`];
+    }],
+    ['p0-check.json Dak Pare points === 17.64', () => {
+      const j = readJson(`${ART}/p0-check.json`);
+      return [j.pare?.points === DAK_W5_PARE, `pare=${j.pare?.points}`];
     }],
     ['plan has no TBD-P0', () => {
       const m = read(PLAN).replace(/`TBD-P\d`/g, '').match(/TBD-P0/g);
@@ -155,6 +163,12 @@ const STATIC = {
       const n = (read('lib/fantasy.ts').match(/sleeper-player-map-v5/g) ?? []).length;
       return [n === 1, `${n}`];
     }],
+    ['lib/fantasy.ts: sleeper-season-stats-v2 once + calls parePoints', () => {
+      const text = read('lib/fantasy.ts');
+      const n = (text.match(/sleeper-season-stats-v2/g) ?? []).length;
+      const calls = text.includes('parePoints(');
+      return [n === 1 && calls, `v2=${n} parePoints=${calls}`];
+    }],
     ['components diff = PostGameBox.tsx only, ≤ 3 changed lines', () => {
       const files = changedVsMain('components');
       const stat = git('diff', '--numstat', 'main', '--', 'components').stdout.trim().split('\n').filter(Boolean);
@@ -166,7 +180,7 @@ const STATIC = {
   p3: [
     ['p3-smoke.json pass: true', () => {
       const j = readJson(`${ART}/p3-smoke.json`);
-      return [j.pass === true, `dak before=${j.dak?.before} after=${j.dak?.after} sleeper=${j.dak?.sleeper}`];
+      return [j.pass === true && j.dak?.after === DAK_W5_PARE, `dak before=${j.dak?.before} after=${j.dak?.after} expected=${DAK_W5_PARE}`];
     }],
     ['CHANGELOG.md contains pts_ppr', () => read('CHANGELOG.md').includes('pts_ppr')],
     ['DATA_SOURCES.md contains pts_ppr', () => read('DATA_SOURCES.md').includes('pts_ppr')],
@@ -178,11 +192,12 @@ function vitestGate(phase) {
   if (phase === 'p1') {
     const r = vitestJson(['lib/__tests__/fantasyPoints.test.ts']);
     const missing = P1_PHRASES.filter((p) => !r.names.some((n) => n.includes(p)));
-    record(phase, 'fantasyPoints tests ≥ 7 passed, 0 failed', r.passed >= 7 && r.failed === 0, `passed=${r.passed} failed=${r.failed}`);
+    record(phase, 'fantasyPoints tests ≥ 8 passed, 0 failed', r.passed >= 8 && r.failed === 0, `passed=${r.passed} failed=${r.failed}`);
     record(phase, 'P1 test phrases present', missing.length === 0, missing.length ? `missing: ${missing.join(' | ')}` : '');
   }
   if (phase === 'p2') {
     const r = vitestJson([
+      'lib/__tests__/fantasyBoards.test.ts',
       'lib/__tests__/liveRoutes.test.ts',
       'lib/__tests__/liveParity.test.ts',
       'lib/__tests__/fantasyPoints.test.ts',

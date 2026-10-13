@@ -7,7 +7,7 @@
  *
  * Three outbound calls, sequential, ≥300 ms apart:
  *   1. ESPN scoreboard week 5 → the DAL game's event id
- *   2. Sleeper week-5 QB stat lines → Dak Prescott's pts_ppr + raw stats
+ *   2. Sleeper week-5 QB stat lines → Dak Prescott's pts_ppr, bonus flags + raw stats
  *   3. ESPN summary for that event → header.week / header.season.year
  * Writes docs/plans/2026-10-12-home-sleeper-ppr/p0-check.json.
  */
@@ -29,6 +29,8 @@ const GAP_MS = 300;
 const OURS = { passYd: 0.04, passTd: 4, int: -2, rushYd: 0.1, rushTd: 6, rec: 1, recYd: 0.1, recTd: 6, fumLost: -2 };
 // Sleeper standard PPR, as documented in the plan (explains the gap; the app never uses it).
 const SLEEPER_PPR = { ...OURS, int: -1, twoPt: 2 };
+// Pare points (Kobe, 2026-10-12) = pts_ppr + 3 per Sleeper yardage-bonus flag below.
+const PARE_BONUS = { bonus_pass_yd_300: 3, bonus_pass_yd_400: 3, bonus_rush_yd_200: 3, bonus_rec_yd_200: 3 };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let lastCallAt = 0;
@@ -95,12 +97,18 @@ const result = {
     team: dak.team,
     gameId: dak.game_id,
     pts_ppr: typeof s.pts_ppr === 'number' ? s.pts_ppr : null,
+    bonusFlags: Object.fromEntries(Object.entries(s).filter(([k]) => k.startsWith('bonus_'))),
     raw,
   },
   formula: {
     ours: score(s, OURS),
     sleeperRules: score(s, SLEEPER_PPR),
   },
+};
+result.pare = {
+  rule: 'pts_ppr + 3 × (bonus_pass_yd_300 + bonus_pass_yd_400 + bonus_rush_yd_200 + bonus_rec_yd_200)',
+  points: result.sleeper.pts_ppr === null ? null
+    : round2(result.sleeper.pts_ppr + Object.entries(PARE_BONUS).reduce((sum, [k, w]) => sum + n(s[k]) * w, 0)),
 };
 result.formula.sleeperRulesMatch = result.sleeper.pts_ppr !== null && Math.abs(result.formula.sleeperRules - result.sleeper.pts_ppr) < 0.01;
 
