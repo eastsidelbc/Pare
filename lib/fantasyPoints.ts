@@ -63,7 +63,7 @@ export function pprFor(index: PprIndex, player: { espnId?: string; fullName: str
   return index.byNameTeam.get(rookieKey(player.fullName, player.team)) ?? null;
 }
 
-/** What `applySleeperPoints` needs from a box-score line (lib/gameSummary.ts `PlayerLine`). */
+/** What `applySleeperPoints` needs from a box-score line (lib/gameSummary.ts `BoxLine`). */
 export interface PointsLine {
   espnId?: string;
   fullName: string;

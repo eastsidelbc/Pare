@@ -56,7 +56,7 @@ Our formula's gaps: INT −2 (Sleeper −1), no 2-pt conversions, no return/reco
 
 **Parser change (`lib/gameSummary.ts`):** delete the `PPR` constant and `pprOf`. `parseTeam` returns the QB + **all** skill candidates (not top 3), each with `espnId` and `fullName`, `ppr: null`. `PlayerLine.ppr` becomes `number | null`.
 
-**Enrichment (`applySleeperPoints(summary, index)`, pure):** fill `ppr` from the index, then per team: QB pinned first, then top 3 skill players by `ppr` desc. If nobody in a team has points yet, order skill by scrimmage yards (rush + rec) desc, top 3. Strip `espnId`/`fullName` from the response only if the payload grows > 20% vs before (measure in P2; otherwise keep, they're tiny).
+**Enrichment (`applySleeperPoints(summary, index)`, pure):** fill `ppr` from the index, then per team: QB pinned first, then top 3 skill players by `ppr` desc. If nobody in a team has points yet, order skill by scrimmage yards (rush + rec) desc, top 3. Strip `espnId`/`fullName` from the response only if the payload grows > 20% vs before (measure in P2; otherwise keep, they're tiny). **P2 measured: +75% (870 → 1521 bytes on the TB @ DAL fixture) → stripped.** Server-only `BoxLine` (join fields) vs wire `PlayerLine` (`role/name/stat/ppr`); `toWireSummary` drops them → +1% (875 bytes).
 
 **UI (`components/schedule/PostGameBox.tsx`):** one change — `line.ppr === null ? '—' : line.ppr.toFixed(1)`. Nothing else.
 

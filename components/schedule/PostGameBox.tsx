@@ -28,7 +28,7 @@ function PlayerCell({ line, align }: { line: PlayerLine | undefined; align: 'lef
           <span style={{ color: 'var(--muted)', fontWeight: 700 }}>{line.role}</span> {line.name}
         </span>
         <span className="flex-none tabular-nums" style={{ fontSize: '11px', color: 'var(--gold)', fontWeight: 700 }}>
-          {line.ppr.toFixed(1)}
+          {line.ppr === null ? '—' : line.ppr.toFixed(1)}
         </span>
       </div>
       <div className="tabular-nums" style={{ fontSize: '10px', color: 'var(--subtext)', lineHeight: 1.35 }}>
