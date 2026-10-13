@@ -39,6 +39,10 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Performance audit (sandbox, 4× CPU, median of 3): LCP 0.56s, view switch 83–131ms tap→paint, scroll 60 fps / 0 dropped, ~1% idle CPU, 0 running animations on iPhone 14 Pro + iPad portrait/landscape → no perf fixes needed. Table in the dev note.
 
 ### Changed
+- **Live scores are now at most 15 seconds behind ESPN (was ~30s)** (2026-10-12, branch `feat/live-freshness`) — ~7.5s behind on average (was ~15s).
+  - See: `docs/devnotes/2026-10-12-live-freshness.md`, ADR amendment in `docs/adr/2026-10-12-live-scores-proxy.md`, plan `docs/plans/2026-10-12-live-freshness.md`.
+  - Phone polls every **5s** while a game is live (was 15s, `LIVE_POLL_MS`), never two requests at once; server keeps one shared copy for **10s** (was 15s, `LIVE_TTL_MS`). Idle behavior unchanged. A test holds poll + TTL ≤ 15s.
+  - `/api/live/*` responses are now **gzip**ped by us (`next start` doesn't): scoreboard 8.3 → 1.7 KB, compressed once per ESPN fetch; box scores only from 1 KB. Upload at 10,000 viewers drops from 44 to ~27 Mbps despite 3× the requests.
 - **Leaders: an open card keeps its width and grows down; tap anywhere on it to open/close** (2026-10-07, `feat/my-team-sleeper`) — dropped the phone `col-span-full`; the footer button stays the accessible control; collapsing scrolls the card back into view if its top went off-screen. `docs/design-system.md` §9.3.
 - **Header toggles match the bottom nav — one "glass toggle" recipe** (2026-10-06, `main`)
   - Standings Division/Conf/Playoffs, Fantasy TOT/PPG and the Leaders jump capsule now use the nav's sliding gold pill (new `components/ui/ActivePill.tsx`, framer `layoutId` spring 420/34, static glow, `will-change: transform`, reduced motion → instant) and its label styles (new `components/ui/glassControl.tsx`: 500 inactive → 700 active, `GlassLabel` reserves the bold width so neighbours don't shift). BottomNav uses the same two pieces; its look, sizing and `'nav-active-pill'` are unchanged.

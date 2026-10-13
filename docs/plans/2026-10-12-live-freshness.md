@@ -235,20 +235,20 @@ const tick = async () => {
   - `CHANGELOG.md` `[Unreleased]`: a new `### Changed` section with one bullet. It says live scores are ≤15s behind ESPN (was ~30s) and covers the phone 5s / server 10s / gzip changes, with the date, the branch `feat/live-freshness`, and a `See:` link to the devnote.
   - `docs/devnotes/2026-10-12-live-freshness.md`: why, what changed (key files), how it was verified (gates + smoke numbers), and open risks. It links this plan and the ADR amendment.
 
-**F3 results: our responses** (TBD-F3, filled by the smoke from `f3-smoke.json`)
+**F3 results: our responses** (filled by the run: 2026-10-13T02:16:03.246Z, week 5; source `f3-smoke.json`)
 
 | Route | Raw bytes | Wire bytes (gzip) | content-encoding |
 |---|---|---|---|
-| /api/live/scoreboard?week=W | TBD-F3 | TBD-F3 | TBD-F3 |
-| /api/live/summary?event=… | TBD-F3 | TBD-F3 | TBD-F3 |
+| /api/live/scoreboard?week=W | 8,281 | 1,657 | gzip |
+| /api/live/summary?event=… | 896 | 896 | none |
 
 **Load table, 5s poll + gzip** (measured scoreboard wire size; one request per viewer per 5s while live; Cloudflare not caching)
 
 | Viewers | Req/s to the Mac | Upload from the Mac (Mbps) | ESPN calls/min |
 |---|---|---|---|
-| 100 | 20.0 | TBD-F3 | TBD-F3 |
-| 1,000 | 200.0 | TBD-F3 | TBD-F3 |
-| 10,000 | 2000.0 | TBD-F3 | TBD-F3 |
+| 100 | 20.0 | 0.27 | ~6 (scoreboard, current week) |
+| 1,000 | 200.0 | 2.65 | ~6 |
+| 10,000 | 2000.0 | 26.51 | ~6 |
 | nobody watching / no games | 0 | 0 | 0 |
 
 **Gate `f3`:**

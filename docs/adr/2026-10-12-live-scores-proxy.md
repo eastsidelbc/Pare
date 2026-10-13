@@ -37,6 +37,7 @@ Supporting choices: TTL 15s live / ≤5 min idle, capped at the next live-window
 - **Mac upload saturation or high req/s** on game day → Cloudflare Cache Rule on `/api/live/*` ("Eligible for cache" + use origin Cache-Control; headers are already correct), and/or gzip the route responses.
 - **ESPN shape change** → the mapper (`lib/espnScoreboard.ts`) / parser (`lib/gameSummary.ts`); parity snapshots in `lib/__fixtures__/espn/parity/` catch drift in our own code.
 - **Playoffs:** routes accept weeks 1–18 and `seasontype=2` only (same as before).
+- **~2,000 req/s at 10,000 viewers** with the 5s poll (amendment below) → Cloudflare Cache Rule on `/api/live/*` first (headers incl. `Vary` are ready).
 
 ## Alternatives Considered
 - **Keep the browser on ESPN** — zero server load, but ESPN sees every visitor and /privacy can't promise "only pare.gg" for the App Store.
@@ -49,3 +50,15 @@ Supporting choices: TTL 15s live / ≤5 min idle, capped at the next live-window
 - Plan + measurements: `docs/plans/2026-10-12-live-scores-proxy.md` (P0 + P4 tables)
 - Data: `DATA_SOURCES.md` §6
 - CLAUDE: `CLAUDE.md#data-espn--sleeper--no-csv` (freshness table), Key facts "Privacy policy"
+
+## Amendment — 2026-10-12: live freshness
+
+**Why:** during MNF Kobe saw 1:11 on Pare while the real clock read 0:37. Before this, a 15s phone poll plus a 15s server copy put a score ~15s behind ESPN on average and ~30s at worst. Kobe's target is a worst case of 15 seconds. ESPN is not the bottleneck: its scoreboard is served with `Cache-Control: max-age=1` (proxy plan P0).
+
+**Decisions (supersede Decision 2's 15s and the 15s live TTL above; the rest stands):**
+1. Server live TTL 15s → **10s** (`LIVE_TTL_MS`). ~6 ESPN calls/min per live week; budgets unchanged (120/min, 60/min summaries).
+2. Phone live poll 15s → **5s** (`LIVE_POLL_MS`), only inside the existing live window. Idle behavior is unchanged (no polling outside the window, hidden tab pauses, refocus fires one tick). An in-flight guard keeps it to one request at a time, since 5s is shorter than the 8s client timeout.
+3. Product rule, enforced by a test: `LIVE_POLL_MS + LIVE_TTL_MS ≤ 15s` → ~7.5s behind ESPN on average, ~15s worst case.
+4. **We gzip `/api/live/*` ourselves**, because `next start` sends route handlers uncompressed. The scoreboard is compressed at most once per upstream fetch per fresh/stale variant; summaries are compressed per response and only from 1 KB; `Vary: Accept-Encoding` on every 200.
+
+**Consequences:** 3× the requests to the Mac while live (2,000 req/s at 10,000 viewers), but ~5× fewer bytes: the scoreboard is 8,281 → 1,657 B, so upload at 10,000 viewers drops from 44 to 26.5 Mbps. Measured in `docs/plans/2026-10-12-live-freshness.md` (F3). Dev note: `docs/devnotes/2026-10-12-live-freshness.md`.

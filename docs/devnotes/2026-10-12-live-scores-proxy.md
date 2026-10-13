@@ -15,9 +15,10 @@ App Store prep: the browser/app should talk only to pare.gg. The last two direct
 
 ## Measurements
 P0 (ESPN today) and P4 (our responses + load table) are in the plan, filled from `docs/plans/2026-10-12-live-scores-proxy/p0-capture.json` and `p4-smoke.json`. Headline: scoreboard 8.3 KB vs ESPN 251 KB raw; 50 parallel cold requests → 1 ESPN call.
+- 5s poll + gzip follow-up (2026-10-12): scoreboard 8,281 → 1,657 B on the wire; the load table at a 5s poll is in `docs/plans/2026-10-12-live-freshness.md` (F3). Dev note: `docs/devnotes/2026-10-12-live-freshness.md`.
 
 ## Gotchas found
-- **`next start` doesn't gzip route-handler responses** (P4: `content-encoding: none` with `accept-encoding: gzip`). Browsers still get compression from Cloudflare, but the Mac → tunnel leg is uncompressed, so the load table's Mbps uses raw bytes. Gzipping in the route (or a Cloudflare Cache Rule) is the first lever if upload gets tight.
+- **`next start` doesn't gzip route-handler responses** (P4: `content-encoding: none` with `accept-encoding: gzip`). Browsers still get compression from Cloudflare, but the Mac → tunnel leg is uncompressed, so the load table's Mbps uses raw bytes. Gzipping in the route (or a Cloudflare Cache Rule) is the first lever if upload gets tight. **Fixed 2026-10-12 (live-freshness):** `liveOk` now gzips itself.
 - **Cloudflare default:** caches by file extension only, so `/api/live/*` is `cf-cache-status: DYNAMIC` and our `s-maxage` is ignored at the edge today. Browsers ignore `s-maxage`, and the hooks fetch `no-store`. A Cache Rule ("Eligible for cache" + origin Cache-Control) would cut origin traffic to ~1 request per key per TTL per PoP.
 - `s-maxage` is the **remaining** freshness, not the full TTL — a HIT at 14s of 15s must not let an edge keep it 15s more.
 - Gate tooling (`scripts/live-proxy-gates.mjs`): on Windows, `spawnSync(..., { shell: true })` splits args at spaces, so `git grep "function x"` silently matched nothing. Shell only for npm/npx now.
