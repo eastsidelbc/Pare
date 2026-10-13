@@ -251,7 +251,7 @@ function parseTeam(entry: EspnBoxTeam): TeamBox {
   return { abbr: normAbbr(entry.team?.abbreviation), lines };
 }
 
-function parseSummary(data: EspnSummary): GameSummary {
+export function parseSummary(data: EspnSummary): GameSummary {
   const byAbbr: Record<string, TeamBox> = {};
   for (const t of data.boxscore?.players ?? []) {
     const box = parseTeam(t);

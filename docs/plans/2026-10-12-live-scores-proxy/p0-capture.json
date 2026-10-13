@@ -1,0 +1,35 @@
+{
+  "capturedAt": "2026-10-13T01:02:43.027Z",
+  "week": 5,
+  "summaryEvent": {
+    "id": "401872980",
+    "week": 5
+  },
+  "scoreboard": {
+    "raw": 251226,
+    "gzip": 20442,
+    "contentEncoding": "gzip",
+    "cacheControl": "max-age=1",
+    "age": null,
+    "date": "Tue, 13 Oct 2026 01:02:41 GMT",
+    "events": 15,
+    "states": {
+      "pre": 0,
+      "in": 1,
+      "post": 14
+    }
+  },
+  "summary": {
+    "raw": 577511,
+    "gzip": 52618,
+    "contentEncoding": "gzip",
+    "cacheControl": "max-age=9",
+    "age": null,
+    "date": "Tue, 13 Oct 2026 01:02:41 GMT"
+  },
+  "summaryTrimmed": {
+    "raw": 109595,
+    "gzip": 10083
+  },
+  "espnCalls": 3
+}

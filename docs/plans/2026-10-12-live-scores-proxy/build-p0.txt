@@ -1,0 +1,63 @@
+
+> pare-nextjs@0.1.0 build
+> next build --turbopack
+
+   ▲ Next.js 15.5.27 (Turbopack)
+   - Experiments (use with caution):
+     ✓ optimizeCss
+
+   Creating an optimized production build ...
+ ✓ Finished writing to disk in 217ms
+ ✓ Compiled successfully in 3.0s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/17) ...
+   Generating static pages (4/17) 
+   Generating static pages (8/17) 
+⚡ [DEFENSE-s61d0kslq] Served 32 teams from ESPN standings (2026)
+   Generating static pages (12/17) 
+⚡ [OFFENSE-il7uhx76z] Served 32 teams from ESPN (2026)
+⚡ [OFFENSE-il7uhx76z] Processed 32 teams via ESPN: 244ms
+⚡ [DEFENSE-AGG] Aggregated 78 games (skipped 0), 32 teams. CONSISTENCY allowed/gained → total=51579/51579 (MATCH) pass=34165/34165 (MATCH) rush=17414/17414 (MATCH)
+⚡ [DEFENSE-s61d0kslq] Enriched yards-allowed for 32/32 teams
+⚡ [DEFENSE-s61d0kslq] Processed 32 teams via ESPN-STANDINGS: 2050ms
+ ✓ Generating static pages (17/17)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                         Size  First Load JS  Revalidate  Expire
+┌ ○ /                            38.2 kB         221 kB          5m      1y
+├ ○ /_not-found                      0 B         183 kB          5m      1y
+├ ○ /about                           0 B         183 kB          5m      1y
+├ ƒ /api/health                      0 B            0 B
+├ ƒ /api/leaders                     0 B            0 B
+├ ƒ /api/myteam/league               0 B            0 B
+├ ƒ /api/myteam/live                 0 B            0 B
+├ ƒ /api/myteam/user                 0 B            0 B
+├ ○ /api/nfl-2025/defense            0 B            0 B          5m      1y
+├ ○ /api/nfl-2025/offense            0 B            0 B         10m      1y
+├ ƒ /api/preferences                 0 B            0 B
+├ ƒ /api/schedule                    0 B            0 B
+├ ƒ /api/standings                   0 B            0 B
+├ ○ /compare                     37.4 kB         220 kB          5m      1y
+├ ○ /leaderboards                5.11 kB         188 kB          5m      1y
+├ ○ /myteam                      23.6 kB         207 kB          5m      1y
+├ ○ /privacy                         0 B         183 kB          5m      1y
+├ ○ /sandbox/myteam              22.4 kB         205 kB          5m      1y
+├ ƒ /standings                   5.23 kB         188 kB
+└ ○ /teams                       2.62 kB         186 kB          5m      1y
++ First Load JS shared by all     200 kB
+  ├ chunks/322ba7e00c4089c9.js   14.7 kB
+  ├ chunks/456ed60749583254.js     43 kB
+  ├ chunks/ad1c74dfbc45aecd.js   11.1 kB
+  ├ chunks/cd4f2fe7e0172a9a.js   17.7 kB
+  ├ chunks/ead2e353b21e2084.js   59.2 kB
+  ├ chunks/d6e3278127cff18c.css  16.4 kB
+  └ other shared chunks (total)  38.1 kB
+
+
+ƒ Middleware                     39.2 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

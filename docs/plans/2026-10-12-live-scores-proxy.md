@@ -102,17 +102,21 @@ Every phase ends with: gate exits 0, then commit with the listed message, then `
 - Build baseline: `npm run clean`, then `npm run build > docs/plans/2026-10-12-live-scores-proxy/build-p0.txt`.
 - Fill the P0 table + inventory below.
 
-**P0 results — ESPN today** (filled by the run)
+**P0 results — ESPN today** (filled by the run: 2026-10-13 01:02 UTC, week W = 5, states 0 pre / 1 in / 14 post; source `p0-capture.json`)
 
 | Endpoint | Raw bytes | Gzip bytes | ESPN content-encoding | ESPN Cache-Control | Age |
 |---|---|---|---|---|---|
-| scoreboard week W | TBD-P0 | TBD-P0 | TBD-P0 | TBD-P0 | TBD-P0 |
-| summary (final) | TBD-P0 | TBD-P0 | TBD-P0 | TBD-P0 | TBD-P0 |
-| summary fixture after trim | TBD-P0 | TBD-P0 | — | — | — |
+| scoreboard week W | 251,226 | 20,442 | gzip | max-age=1 | (none) |
+| summary (final) | 577,511 | 52,618 | gzip | max-age=9 | (none) |
+| summary fixture after trim | 109,595 | 10,083 | — | — | — |
+
+Raw = decoded JSON bytes; gzip = `zlib.gzipSync` of that body (≈ wire size).
 
 **P0 inventory — third-party requests the browser makes** (filled by the run from `live-proxy-inventory.mjs`). Expected: only the two ESPN calls above. Anything else is listed here and **not fixed** in this plan.
 
-- TBD-P0
+- `lib/hooks/useLiveScores.ts` → `site.api.espn.com/.../scoreboard` (via `ESPN_SCOREBOARD_URL`), every 15s in the live window.
+- `lib/hooks/useGameSummary.ts` → `site.api.espn.com/.../summary?event=…`, when a final game's accordion opens.
+- Nothing else. Team logos are local SVGs (`components/ui/TeamIdentity.tsx`). The ESPN logo/headshot URLs carried in leader rows (`lib/leaders.ts`, `lib/fantasy.ts`) are never rendered by any component. Every other ESPN/Sleeper URL lives in server-only modules; `app/layout.tsx`'s `pare.gg` is first-party metadata.
 
 **Gate `p0`:**
 - `lib/__fixtures__/espn/scoreboard-week.json` parses with `events.length ≥ 1`.
