@@ -121,8 +121,10 @@ The browser **never** calls Sleeper. Every call below is made by our server.
 ### Leaders (`lib/fantasy.ts`) — shared, not per user
 | Endpoint | Used for | Cache |
 |---|---|---|
-| `https://api.sleeper.app/v1/players/nfl` | player map (~14MB raw → trimmed: name, team, position, `injury`, `fantasyPositions`, rookie ids) — also My Team's injury tags | `unstable_cache` 24h over no-store, 20s timeout, key `sleeper-player-map-v4` |
-| `https://api.sleeper.app/v1/stats/nfl/regular/{season}` | season fantasy totals (`pts_ppr` / `pts_std` / `gp`) | `unstable_cache` 30 min over no-store, 8s timeout |
+| `https://api.sleeper.app/v1/players/nfl` | player map (~14MB raw → trimmed: name, team, position, `injury`, `fantasyPositions`, rookie ids, `espnId` for all — Home box-score join) — also My Team's injury tags | `unstable_cache` 24h over no-store, 20s timeout, key `sleeper-player-map-v5` |
+| `https://api.sleeper.app/v1/stats/nfl/regular/{season}` | season fantasy totals (`pts_ppr` / `pts_std` / `gp` + the 4 Pare bonus flags) | `unstable_cache` 30 min over no-store, 8s timeout, key `sleeper-season-stats-v2` |
+
+**Fantasy points everywhere (Home box score + Leaders Fantasy) = Sleeper `pts_ppr` + 3 per Sleeper yardage-bonus flag (`bonus_pass_yd_300`, `bonus_pass_yd_400`, `bonus_rush_yd_200`, `bonus_rec_yd_200`)** — `parePoints` in `lib/fantasyPoints.ts`; Pare never scores yards/TDs itself. Home gets them from the weekly lines below (`getWeekLines`), joined to ESPN players by ESPN id, then name + team. My Team keeps league scoring.
 
 ### My Team (`lib/myteam/sleeper/*`) — one door: `sleeperJson()` in `http.ts`
 Every call goes through a process-wide budget of **600 calls/min**
@@ -163,7 +165,7 @@ from ESPN. Since 2026-10-12 they go through our server (`lib/espnLive.ts`, ADR
 | Our route | Validation | ESPN endpoint | Body | Server cache (memory, per process) |
 |---|---|---|---|---|
 | `GET /api/live/scoreboard?week=N` | `^\d{1,2}$`, 1–18 → else 400 `invalid-week` | `site.api.espn.com/.../scoreboard?seasontype=2&week=N` → `mapEspnScoreboard` | `{ week, updatedAt, stale, matchups }` (kickoff ISO) | 15s while any game is in its live window; otherwise ≤5 min, capped at the next live-window start (`scoreboardTtlMs` in `lib/liveWindow.ts`). 0 matchups = failure (last-good wins). Max 18 keys, 6h retention |
-| `GET /api/live/summary?event=ID` | `^\d{6,12}$` → else 400 `invalid-event` | `site.api.espn.com/.../summary?event=ID` → `parseSummary` (`lib/gameSummary.ts`) | `GameSummary` `{ byAbbr, headline }` | 6h once `header.competitions[0].status.type.completed`, else 60s. Max 300 keys, 24h retention |
+| `GET /api/live/summary?event=ID` | `^\d{6,12}$` → else 400 `invalid-event` | `site.api.espn.com/.../summary?event=ID` → `parseSummary` (`lib/gameSummary.ts`) | `GameSummary` `{ byAbbr, headline }` — Pare points (Sleeper, §5) attached per response, not cached with the summary | 6h once `header.competitions[0].status.type.completed`, else 60s. Max 300 keys, 24h retention |
 
 - **Single-flight** per key (`createLiveCache`, `lib/apiCache.ts`): ESPN calls don't grow with viewers.
 - **Budgets:** 120 ESPN calls/min overall (`ESPN_LIVE_CALLS_PER_MIN`), of which summaries may use 60 (`SUMMARY_CALLS_PER_MIN`) — random event ids can't starve the scoreboard. Spent → last-good, else 503 `busy`.

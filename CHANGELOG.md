@@ -7,6 +7,9 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Added
+- **Fantasy points = what the Sleeper app shows, everywhere** (2026-10-12, branch `feat/home-sleeper-ppr`) — Home box score + Leaders Fantasy now show Pare points = Sleeper `pts_ppr` + 3 per Sleeper yardage-bonus flag (300+ pass yd, 200+ rush yd, 200+ rec yd). Dak Prescott W5: Home 12.6 → **17.6** (Sleeper 17.64).
+  - See: `docs/devnotes/2026-10-12-home-sleeper-ppr.md`, plan `docs/plans/2026-10-12-home-sleeper-ppr.md`.
+  - Homemade formula removed from `lib/gameSummary.ts`; `parePoints` / join / ranking in `lib/fantasyPoints.ts`; `/api/live/summary` attaches points per response (3s cap; Sleeper down/slow → "—", still 200). Player map `sleeper-player-map-v5` (ESPN id for all), season stats `sleeper-season-stats-v2` (bonus flags).
 - **Live scores + box scores now come from pare.gg, not ESPN** (2026-10-12, branch `feat/live-scores-proxy`) — App Store prep: the browser talks only to our server.
   - See: `docs/devnotes/2026-10-12-live-scores-proxy.md`, ADR `docs/adr/2026-10-12-live-scores-proxy.md`, `DATA_SOURCES.md` §6.
   - New `GET /api/live/scoreboard?week=N` + `GET /api/live/summary?event=ID` (`lib/espnLive.ts`): one shared memory copy per key (15s live / ≤5 min idle, never past the next kickoff window; box scores 6h once final), last-good marked STALE on ESPN failure, 120/min ESPN budget, 6s upstream timeout, `X-Pare-Cache` header.

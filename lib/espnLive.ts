@@ -18,9 +18,21 @@ import 'server-only';
 import { NextResponse } from 'next/server';
 import { createCallBudget, createLiveCache, LiveBudgetError, type LiveResult } from '@/lib/apiCache';
 import { ESPN_SCOREBOARD_URL, mapEspnScoreboard, type EspnScoreboard } from '@/lib/espnScoreboard';
-import { isSummaryFinal, parseSummary, type EspnSummary, type EspnSummaryStatus, type GameSummary } from '@/lib/gameSummary';
+import { getPlayerMap } from '@/lib/fantasy';
+import { applySleeperPoints, buildPprIndex, type PprIndex } from '@/lib/fantasyPoints';
+import {
+  isSummaryFinal,
+  parseSummary,
+  summaryWeek,
+  toWireSummary,
+  type EspnSummary,
+  type EspnSummaryStatus,
+  type GameSummary,
+  type ParsedSummary,
+} from '@/lib/gameSummary';
 import { scoreboardTtlMs } from '@/lib/liveWindow';
-import type { Matchup } from '@/lib/schedule';
+import { getWeekLines } from '@/lib/myteam/sleeper/statLines';
+import { getCurrentWeekInfo, type Matchup } from '@/lib/schedule';
 
 export const ESPN_SUMMARY_URL = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary';
 export const ESPN_LIVE_TIMEOUT_MS = 6_000;
@@ -79,9 +91,10 @@ export function scoreboardBody({ value, status, updatedAt }: LiveResult<Scoreboa
 // ── summary (post-game box score) ───────────────────────────────────────
 
 export interface SummaryEntry {
-  summary: GameSummary;
-  /** `summary` serialized once per upstream fetch. */
-  json: string;
+  /** Parsed box score, every candidate line, `ppr: null` — points are attached per response. */
+  summary: ParsedSummary;
+  /** Season + week of the game (ESPN header), for the Sleeper week lines. */
+  gameWeek: { season: number; week: number } | null;
   final: boolean;
 }
 
@@ -95,12 +108,44 @@ const summaryCache = createLiveCache<SummaryEntry>({
 
 async function fetchSummary(eventId: string): Promise<SummaryEntry> {
   const raw = await espnLiveJson<EspnSummary & EspnSummaryStatus>(`${ESPN_SUMMARY_URL}?event=${eventId}`);
-  const summary = parseSummary(raw);
-  return { summary, json: JSON.stringify(summary), final: isSummaryFinal(raw) };
+  return { summary: parseSummary(raw), gameWeek: summaryWeek(raw), final: isSummaryFinal(raw) };
 }
 
 export function getLiveSummary(eventId: string): Promise<LiveResult<SummaryEntry>> {
   return summaryCache.get(eventId, () => fetchSummary(eventId));
+}
+
+// ── Pare points on the box score (Sleeper) ──────────────────────────────
+// Attached per response, not inside the 6h summary cache, so Sleeper's numbers
+// (posted minutes after the final) and stat corrections show up as soon as
+// getWeekLines has them. Sleeper trouble never fails the route: lines go out
+// with `ppr: null` ("—").
+
+/** Cap on the Sleeper step — a cold ~20MB player-map download must not hold the box score. */
+const SLEEPER_POINTS_BUDGET_MS = 3_000;
+const NO_POINTS: PprIndex = { byEspnId: new Map(), byNameTeam: new Map() };
+
+async function weekPointsIndex({ season, week }: { season: number; week: number }): Promise<PprIndex> {
+  const current = await getCurrentWeekInfo();
+  const completed = season < current.season || (season === current.season && week < current.week);
+  const [lines, players] = await Promise.all([getWeekLines(season, week, completed), getPlayerMap()]);
+  return buildPprIndex(lines, players);
+}
+
+/** Resolves with `fallback` on rejection or after `ms`; the slow call keeps running (it fills its caches). */
+function within<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(fallback), ms);
+    promise.then(resolve, () => resolve(fallback)).finally(() => clearTimeout(timer));
+  });
+}
+
+/** The box score as served: Pare points attached, passer + top 3 skill per team, join fields dropped. */
+export async function summaryWithPoints(entry: SummaryEntry): Promise<GameSummary> {
+  const index = entry.gameWeek
+    ? await within(weekPointsIndex(entry.gameWeek), SLEEPER_POINTS_BUDGET_MS, NO_POINTS)
+    : NO_POINTS;
+  return toWireSummary(applySleeperPoints(entry.summary, index));
 }
 
 // ── validation + responses ──────────────────────────────────────────────

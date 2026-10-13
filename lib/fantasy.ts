@@ -2,7 +2,8 @@
  * Fantasy leaderboards seam — one source: Sleeper.
  *
  * Sleeper computes fantasy points for every player AND team defense (full PPR in
- * `pts_ppr`), so the whole Fantasy section (QB/RB/WR/TE/K/D-ST) is built from a
+ * `pts_ppr`; skill/K boards show Pare points = `pts_ppr` + Sleeper's yardage-bonus
+ * flags, `parePoints` in lib/fantasyPoints.ts), so the whole Fantasy section (QB/RB/WR/TE/K/D-ST) is built from a
  * single pair of Sleeper responses:
  *   • the season stats  (keyed by numeric player id; D/ST keyed by team abbr)
  *   • the player map     (id → name/position/team) — needed to identify + group
@@ -21,6 +22,7 @@ import { getCurrentWeekInfo } from './schedule';
 import { getTeamByAbbr, normalizeTeamAbbr, type NflTeam } from './teams';
 import { rookieKey, type RookieIndex } from './rookieMatch';
 import { createTtlCache, liveWithLastGood } from './apiCache';
+import { PARE_BONUS_FLAGS, parePoints } from './fantasyPoints';
 
 const SLEEPER_STATS_URL = 'https://api.sleeper.app/v1/stats/nfl/regular';
 const SLEEPER_PLAYERS_URL = 'https://api.sleeper.app/v1/players/nfl';
@@ -31,11 +33,12 @@ const PLAYERS_TTL_SECONDS = 24 * 60 * 60; // 24h — revalidate window for the c
 const BOARD_SIZE = 50; // send extra candidates so the client can re-rank by PPG
 const FANTASY: LeaderSection = 'fantasy';
 
-interface SleeperStat {
+type PareBonusFlag = (typeof PARE_BONUS_FLAGS)[number];
+type SleeperStat = {
   pts_ppr?: number;
   pts_std?: number;
   gp?: number;
-}
+} & Partial<Record<PareBonusFlag, number>>;
 interface SleeperPlayer {
   full_name?: string;
   first_name?: string;
@@ -90,6 +93,8 @@ export interface SlimPlayer {
   rookie?: true;
   /** ESPN athlete id — rookies only, and only when Sleeper has it (rare). */
   rookieEspnId?: string;
+  /** ESPN athlete id, any player, when Sleeper has it (Home box-score points join). */
+  espnId?: string;
   /** Sleeper injury_status, only when set (My Team injury tags; ≤24h fresh — the map is cached 24h). */
   injury?: string;
   /** fantasy_positions, only when the player is eligible at more than one position. */
@@ -123,6 +128,7 @@ const getCachedPlayerMap = unstable_cache(
         team: p.team ?? '',
         ...(isRookie ? { rookie: true as const } : {}),
         ...(isRookie && hasEspnId ? { rookieEspnId: String(p.espn_id) } : {}),
+        ...(hasEspnId ? { espnId: String(p.espn_id) } : {}),
         ...(p.injury_status ? { injury: p.injury_status } : {}),
         ...(p.fantasy_positions && p.fantasy_positions.length > 1 ? { fantasyPositions: p.fantasy_positions } : {}),
       };
@@ -130,9 +136,9 @@ const getCachedPlayerMap = unstable_cache(
     if (Object.keys(slim).length === 0) throw new Error('empty player map');
     return slim;
   },
-  // v3: the slim map gained `rookie` + `rookieEspnId`; v4: `injury` + `fantasyPositions` (My Team)
-  // — new key so an old cached copy isn't reused.
-  ['sleeper-player-map-v4'],
+  // v3: the slim map gained `rookie` + `rookieEspnId`; v4: `injury` + `fantasyPositions` (My Team);
+  // v5: `espnId` for every player (Home box-score points) — new key so an old cached copy isn't reused.
+  ['sleeper-player-map-v5'],
   { revalidate: PLAYERS_TTL_SECONDS, tags: ['sleeper-player-map'] }
 );
 
@@ -154,7 +160,7 @@ export function getPlayerMap(): Promise<Record<string, SlimPlayer>> {
 }
 
 /**
- * This season's Sleeper stats, trimmed to the 3 fields we use and cached 30 min.
+ * This season's Sleeper stats, trimmed to the fields we use (points, games, bonus flags) and cached 30 min.
  * Same pattern as the ESPN boards (lib/leaders.ts getBoardRows): no-store fetch so the
  * timeout always applies, `unstable_cache` keeps the previous good copy when a refresh
  * throws, and an empty response throws so it's never cached.
@@ -166,11 +172,13 @@ const getCachedSeasonStats = unstable_cache(
     for (const [id, st] of Object.entries(raw ?? {})) {
       if (!st) continue;
       slim[id] = { pts_ppr: st.pts_ppr, pts_std: st.pts_std, gp: st.gp };
+      for (const flag of PARE_BONUS_FLAGS) if (st[flag]) slim[id][flag] = st[flag];
     }
     if (Object.keys(slim).length === 0) throw new Error('empty stats');
     return slim;
   },
-  ['sleeper-season-stats-v1'],
+  // v2: keeps the Pare bonus flags.
+  ['sleeper-season-stats-v2'],
   { revalidate: STATS_REVALIDATE, tags: ['sleeper-season-stats'] }
 );
 
@@ -222,7 +230,7 @@ export async function getFantasyBoards(): Promise<LeaderBoard[]> {
   const dst: { team: NflTeam; points: number; games: number }[] = [];
 
   for (const [id, s] of Object.entries(stats)) {
-    const points = s.pts_ppr ?? s.pts_std ?? 0;
+    const points = parePoints(s) ?? s.pts_std ?? 0;
     const games = s.gp ?? 0;
 
     // D/ST: a bare team-abbr key (skip the "TEAM_xxx" totals entry).
