@@ -256,7 +256,8 @@ const STATIC = {
     }],
     ['no threshold literals outside config.ts', () => {
       const files = sourceFiles('lib/leans').filter((f) => !f.endsWith('/config.ts') && !f.endsWith('/types.ts'));
-      const bad = files.filter((f) => /(?<![\w.$])(?:[2-9]|[1-9]\d+)(?:\.\d+)?(?![\w.])/.test(codeOnly(read(f))));
+      // 0, 1 and the percent scale 100 are fine; any other number (incl. 0.6) is a threshold.
+      const bad = files.filter((f) => /(?<![\w.$])(?!100(?![\w.]))(?:[2-9]|[1-9]\d+|0\.\d+)(?:\.\d+)?(?![\w.])/.test(codeOnly(read(f))));
       return [bad.length === 0, bad.join(', ')];
     }],
   ],
