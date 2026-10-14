@@ -177,7 +177,7 @@ export function totalLean(awayTeam: string, homeTeam: string, line: number | nul
     verdict: 'none',
     signals: shown,
     okCount: count(shown),
-    summary: line == null ? 'No total posted yet' : `Only **${count(shown)} of ${SIGNALS}** signals point ${dir.toUpperCase()}`,
+    summary: line == null ? 'No total posted yet' : count(shown) === 0 ? 'Data splits on the total' : `Only **${count(shown)} of ${SIGNALS}** signals point ${dir.toUpperCase()}`,
     short: 'Data splits on the total',
   };
 }
@@ -280,7 +280,7 @@ export function spreadLean(
     ctx,
     favorite,
     (shown, side) =>
-      !hasLine ? 'No spread posted yet' : !shown[0].ok ? marginsTooClose(ctx) : `Only **${count(shown)} of ${SIGNALS}** signals point to ${teamOf(side)}`,
+      !hasLine ? 'No spread posted yet' : !shown[0].ok ? marginsTooClose(ctx) : count(shown) === 0 ? 'Data splits on the spread' : `Only **${count(shown)} of ${SIGNALS}** signals point to ${teamOf(side)}`,
     (side) => ({
       summary: `Margins, season and covers all point to **${teamOf(side)}**`,
       short: `Form + margins favor ${teamOf(side)}`,
@@ -310,7 +310,7 @@ export function moneylineLean(awayTeam: string, homeTeam: string, hasLine: boole
     ctx,
     'home',
     (shown, side) =>
-      !hasLine ? 'No moneyline posted yet' : !shown[0].ok ? marginsTooClose(ctx) : `Only **${count(shown)} of ${SIGNALS}** signals point to ${teamOf(side)}`,
+      !hasLine ? 'No moneyline posted yet' : !shown[0].ok ? marginsTooClose(ctx) : count(shown) === 0 ? 'Data splits on the moneyline' : `Only **${count(shown)} of ${SIGNALS}** signals point to ${teamOf(side)}`,
     (side) => ({ summary: `Margins, season and wins all point to **${teamOf(side)}**`, short: `Form + wins favor ${teamOf(side)}` }),
     'Data splits on the moneyline',
   );
