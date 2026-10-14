@@ -154,6 +154,7 @@ function routeRule(phase, afterPath) {
     const after = parseRouteTable(readFileSync(afterPath, 'utf8'));
     const failures = [];
     if (before.size === 0) failures.push('build-l0: no route table');
+    for (const must of ['/leans', '/standings']) if (!after.has(must)) failures.push(`${must}: not in build`);
     for (const [route, b] of before) {
       const a = after.get(route);
       if (!a) failures.push(`${route}: missing`);

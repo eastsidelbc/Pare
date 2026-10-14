@@ -24,21 +24,28 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarDays, GitCompareArrows, ListOrdered, Shirt, Trophy, type LucideIcon } from 'lucide-react';
+import { CalendarDays, GitCompareArrows, ListOrdered, Scale, Shirt, Trophy, type LucideIcon } from 'lucide-react';
 import ActivePill from '@/components/ui/ActivePill';
 import { GlassLabel, glassColor, GLASS_COLOR_TRANSITION } from '@/components/ui/glassControl';
 
-interface NavItem {
+export interface NavItem {
   href: string;
   label: string;
   icon: LucideIcon;
   isActive: (pathname: string) => boolean;
 }
 
+/**
+ * Standings left the nav for the Leans tab (Leans DECISIONS §2–3, 2026-10-14); it now
+ * opens from the Home header's ListOrdered button. Kept here so swapping it back is one
+ * line: put `STANDINGS,` in place of the Leans row in ITEMS.
+ */
+export const STANDINGS: NavItem = { href: '/standings', label: 'Standings', icon: ListOrdered, isActive: (p) => p.startsWith('/standings') };
+
 const ITEMS: NavItem[] = [
   { href: '/', label: 'Home', icon: CalendarDays, isActive: (p) => p === '/' },
   { href: '/compare', label: 'Compare', icon: GitCompareArrows, isActive: (p) => p.startsWith('/compare') },
-  { href: '/standings', label: 'Standings', icon: ListOrdered, isActive: (p) => p.startsWith('/standings') },
+  { href: '/leans', label: 'Leans', icon: Scale, isActive: (p) => p.startsWith('/leans') },
   { href: '/leaderboards', label: 'Leaders', icon: Trophy, isActive: (p) => p.startsWith('/leaderboards') },
   { href: '/myteam', label: 'Fantasy', icon: Shirt, isActive: (p) => p.startsWith('/myteam') },
 ];
