@@ -28,6 +28,17 @@ export interface MatchupOdds {
   spread: string;
   /** Over/under total, e.g. 42.5. `null` when not provided. */
   overUnder: number | null;
+  /**
+   * The favorite and its line, parsed from `spread` ("KC -2.5" → { team: 'KC', line: -2.5 },
+   * team aliases applied). `null` = pick'em ("EVEN") or unreadable. Absent on lines that
+   * didn't come from the scoreboard (closing-odds fallback). Added for Leans (2026-10-14).
+   */
+  spreadLine?: { team: string; line: number } | null;
+  /**
+   * American moneyline per side (−142 / +120) from ESPN `odds[0].moneyline` (close, else open).
+   * A side is `null` when not offered; the field is `null`/absent when ESPN sent no moneyline.
+   */
+  moneyline?: { away: number | null; home: number | null } | null;
 }
 
 /** A single scheduled game. `away` plays AT `home`. */
