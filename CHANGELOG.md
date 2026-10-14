@@ -21,6 +21,8 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - iOS: `SettingsView` restyled to S2 — same native grouped list, gold tint, BgDeep background, deep-navy rows, white titles with gold icons + chevrons, "Email support" row, Pare LLC footer, half-height sheet with grab handle (drag to full).
 
 ### Fixed
+- **tsconfig: removed deprecated `baseUrl`** (2026-10-12, `main`) — clears the "baseUrl is deprecated (TS 7.0)" editor error; `@/*` imports unchanged (`paths` resolves relative to tsconfig).
+  - See: `docs/devnotes/2026-10-12-tsconfig-baseurl.md`.
 - **Home peek: no dead space above "Open full"** (2026-10-06, `main`) — the inline variant no longer inherits the Compare page's bottom-nav reserve (`MobileCompareLayout` `padBottom` → 8px for `inline`); "Open full" is now a gold neon capsule matching the nav's `ActivePill`.
 - **Schedule odds no longer stay blank for a whole session** (2026-10-06, `main`)
   - See: `docs/devnotes/2026-10-06-schedule-odds-freshness.md`.
