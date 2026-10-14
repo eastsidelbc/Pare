@@ -46,13 +46,12 @@ function hitSummary(e: EvaluatedProp): { lead: string; season: string } | null {
   return { lead: `${word} in **${lastN} of last ${last.games}**`, season: `${seasonN} of ${season.games} this season` };
 }
 
-export function PropBody({ e, why, children }: { e: EvaluatedProp; why: readonly WhyRow[]; children?: ReactNode }) {
+export function PropBody({ e, why, children, nameHref }: { e: EvaluatedProp; why: readonly WhyRow[]; children?: ReactNode; nameHref?: string }) {
   const { prop } = e;
   const pill = pillFor(e);
   const sum = hitSummary(e);
-  return (
+  const head = (
     <>
-      <div className="flex items-center" style={{ gap: 10, lineHeight: 'normal' }}>
         <PositionCircle player={circlePlayer(prop, e.player?.injury ?? null)} />
         <div className="min-w-0 flex-1">
           <div className="truncate" style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{prop.playerName}</div>
@@ -69,7 +68,20 @@ export function PropBody({ e, why, children }: { e: EvaluatedProp; why: readonly
             {lineShort(prop.side, prop.line, prop.stat)}
           </div>
         </div>
-      </div>
+    </>
+  );
+  const headStyle = { gap: 10, lineHeight: 'normal' } as const;
+  return (
+    <>
+      {nameHref ? (
+        <Link href={nameHref} aria-label={`${prop.playerName} vs ${prop.opp} — the full matchup`} className="flex items-center touch-optimized active:opacity-80" style={headStyle}>
+          {head}
+        </Link>
+      ) : (
+        <div className="flex items-center" style={headStyle}>
+          {head}
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center" style={{ gap: 10, lineHeight: 'normal' }}>
         <LeanPill verdict={pill.verdict} text={pill.text} big />

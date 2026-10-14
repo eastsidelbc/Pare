@@ -503,6 +503,7 @@
    padding / gradient / glow on its root button) is switched off here — only inside
    .leans-frame-card. MatchupCard itself stays untouched; if its frame markup changes,
    update this rule. */
+.leans-search::-webkit-search-cancel-button { -webkit-appearance: none; display: none; } /* Leans player picker: no native clear × */
 .leans-frame-card > button {
   padding: 0 !important;
   background: none !important;

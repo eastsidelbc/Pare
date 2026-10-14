@@ -5,10 +5,13 @@
  */
 import { createElement } from 'react';
 import { describe, expect, it } from 'vitest';
+import AddLineSheet from '@/components/leans/AddLineSheet';
 import GameView from '@/components/leans/GameView';
+import PlayerPickerSheet from '@/components/leans/PlayerPickerSheet';
+import PropDetailView from '@/components/leans/PropDetailView';
 import LeansListView, { groupByDay } from '@/components/leans/LeansListView';
 import { evaluateProp, leagueFormFor, leansForGame, propWhy } from '../evaluate';
-import { LONDON, bundle, matchup, render, savedProp } from './renderFixtures';
+import { BIJAN, JEANTY, LONDON, bundle, matchup, render, savedProp } from './renderFixtures';
 
 const FOOTER = '21+ · Info only, not betting advice · <span class="whitespace-nowrap">Gambling problem? 1-800-GAMBLER</span>';
 
@@ -94,5 +97,56 @@ describe('Leans game screen (/leans/[gameId])', () => {
     expect(html).toContain('Data leans OVER');
     expect(html).toContain('LV allows the 1st-most RB pts');
     expect(html).not.toContain('No prop lines yet');
+  });
+});
+
+describe('Leans prop detail (/leans/prop/[propId]) + sheets', () => {
+  const b = bundle();
+  const view = (p: ReturnType<typeof savedProp>) => {
+    const e = evaluateProp(p, b);
+    return render(createElement(PropDetailView, { e, why: propWhy(e, b), onEdit: () => {}, onRemove: () => {}, loading: false }));
+  };
+  const over = view(savedProp());
+  const none = view(savedProp({ id: 'p2', playerId: LONDON.id, playerName: LONDON.name, position: 'WR', stat: 'rec_yd', line: 64.5 }));
+  const thin = view(savedProp({ id: 'p3', playerId: JEANTY.id, playerName: JEANTY.name, team: 'LV', opp: 'ATL', home: true }));
+
+  it('prop: footer', () => {
+    for (const html of [over, none, thin]) expect(html).toContain(FOOTER);
+  });
+  it('prop: lean pill + "Why — 3 of 3 signals agree"', () => {
+    expect(over).toMatch(/data-lean="over"[^>]*>.*?Data leans OVER<\/span>/);
+    expect(over).toContain('Why — 3 of 3 signals agree');
+    expect(over).toMatch(/LV allows <\/span><b[^>]*>132\.0<\/b><span> rush yds \/ game/);
+    expect(over).toContain('Edit line');
+  });
+  it('prop: No lean + "Why no lean — signals split" + the reason', () => {
+    expect(none).toMatch(/data-lean="none"[^>]*>No lean<\/span>/);
+    expect(none).toContain('Why no lean — signals split (');
+    expect(none).toContain('Pare only shows a lean when all three signals point the same way');
+    expect(none).toContain('data-injury="Q"');
+  });
+  it('prop: not enough games (2 played)', () => {
+    expect(thin).toContain('Not enough games yet');
+    expect(thin).toContain('has played 2 games so far');
+  });
+  it('sheet: add line (stat chips, Over | Under, live dots, device-only note)', () => {
+    const html = render(
+      createElement(AddLineSheet, {
+        open: true, onClose: () => {}, matchup: matchup('ATL', 'LV'), player: BIJAN, onChangePlayer: () => {}, onSaved: () => {},
+        initial: savedProp(),
+      }),
+    );
+    for (const s of ['Rush yds', 'Rec yds', 'Receptions', 'Rush + rec yds', 'Anytime TD', 'Over', 'Under', 'Save &amp; check the data', 'Pare never sees your sportsbook. The line stays on this device.']) {
+      expect(html).toContain(s);
+    }
+    expect((html.match(/data-hit="yes"/g) ?? []).length).toBe(4);
+    expect(html).toContain(FOOTER);
+  });
+  it('sheet: player picker lists both teams with meters + injury badge', () => {
+    const html = render(createElement(PlayerPickerSheet, { open: true, onClose: () => {}, matchup: matchup('ATL', 'LV'), bundle: b, onPick: () => {} }));
+    expect(html).toContain('In this game · ATL @ LV');
+    expect(html).toContain('B. Robinson');
+    expect(html).toContain('data-meter');
+    expect(html).toContain('data-injury="Q"');
   });
 });

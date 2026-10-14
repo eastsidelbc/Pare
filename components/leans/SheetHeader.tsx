@@ -7,7 +7,7 @@ import { X } from 'lucide-react';
 
 export default function SheetHeader({ title, onClose }: { title: string; onClose: () => void }) {
   return (
-    <div className="flex items-center justify-between" style={{ minHeight: 44, padding: '0 4px 0 16px' }}>
+    <div className="flex items-center justify-between" style={{ minHeight: 44, marginTop: 8, padding: '0 16px' }}>
       <h2 style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.2em', color: 'var(--gold-bright)', textTransform: 'uppercase' }}>{title}</h2>
       <button
         type="button"

@@ -7,8 +7,9 @@
 
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import ComparePane from '@/components/compare/ComparePane';
 import { useSharedNflStats } from '@/components/NflStatsProvider';
 import { DEFAULT_DEFENSE_METRICS, DEFAULT_OFFENSE_METRICS } from '@/lib/metricsConfig';
@@ -16,7 +17,10 @@ import { useLeansBundle, weekOfGameId } from '@/lib/leans/client';
 import { evaluateProp, leagueFormFor, leansForGame, propWhy } from '@/lib/leans/evaluate';
 import { useSavedProps } from '@/lib/leans/propStore';
 import MatchupCardSkeleton from '@/components/schedule/MatchupCardSkeleton';
+import AddLineSheet from './AddLineSheet';
 import type { LineKind } from './GameLinesCard';
+import PlayerPickerSheet from './PlayerPickerSheet';
+import { propHref } from './PropRow';
 import GameView from './GameView';
 import LeansFooter from './LeansFooter';
 import { LeansShell, LeansTitleBar } from './LeansShell';
@@ -24,7 +28,17 @@ import { useWeekGames } from './useWeekGames';
 
 export type GameSheet = 'add' | 'pick' | null;
 
-export default function GameScreen({ gameId, initialSheet = null }: { gameId: string; initialSheet?: GameSheet }) {
+export default function GameScreen({
+  gameId,
+  initialSheet = null,
+  initialPlayerId = null,
+}: {
+  gameId: string;
+  initialSheet?: GameSheet;
+  /** Preselected player for the add sheet (from the player screen's "Check a prop line"). */
+  initialPlayerId?: string | null;
+}) {
+  const router = useRouter();
   const week = weekOfGameId(gameId);
   const { status, matchups } = useWeekGames(week);
   const matchup = matchups.find((m) => m.id === gameId) ?? null;
@@ -37,7 +51,15 @@ export default function GameScreen({ gameId, initialSheet = null }: { gameId: st
   const [openLine, setOpenLine] = useState<LineKind | null>(null);
   const [offMetrics, setOffMetrics] = useState<string[]>(DEFAULT_OFFENSE_METRICS);
   const [defMetrics, setDefMetrics] = useState<string[]>(DEFAULT_DEFENSE_METRICS);
-  const [, setSheet] = useState<GameSheet>(initialSheet);
+  // Adding always starts by picking a player, unless one was passed in.
+  const [sheet, setSheet] = useState<GameSheet>(initialSheet === 'add' && !initialPlayerId ? 'pick' : initialSheet);
+  const [playerId, setPlayerId] = useState<string | null>(initialPlayerId);
+  const player = bundle?.players.find((p) => p.id === playerId) ?? null;
+
+  // Drop the ?add / ?pick query once the sheet opened, so Back / reload don't reopen it.
+  useEffect(() => {
+    if (initialSheet) window.history.replaceState(window.history.state, '', window.location.pathname);
+  }, [initialSheet]);
 
   const league = useMemo(() => (bundle && week != null ? leagueFormFor(bundle, week) : null), [bundle, week]);
   const leans = useMemo(() => (bundle && matchup && league ? leansForGame(bundle, matchup, league) : null), [bundle, matchup, league]);
@@ -106,7 +128,28 @@ export default function GameScreen({ gameId, initialSheet = null }: { gameId: st
           />
         }
         props={props}
-        onAddProp={() => setSheet('add')}
+        onAddProp={() => setSheet('pick')}
+      />
+      <PlayerPickerSheet
+        open={sheet === 'pick'}
+        onClose={() => setSheet(null)}
+        matchup={matchup}
+        bundle={bundle}
+        onPick={(p) => {
+          setPlayerId(p.id);
+          setSheet('add');
+        }}
+      />
+      <AddLineSheet
+        open={sheet === 'add'}
+        onClose={() => setSheet(null)}
+        matchup={matchup}
+        player={player}
+        onChangePlayer={() => setSheet('pick')}
+        onSaved={(prop) => {
+          setSheet(null);
+          router.push(propHref(prop.id));
+        }}
       />
     </LeansShell>
   );
