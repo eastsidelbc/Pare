@@ -157,3 +157,35 @@ export function AddCard({ title, sub, onClick }: { title: string; sub: string; o
     </button>
   );
 }
+
+export interface WhyListRow {
+  /** `**bold**` allowed. */
+  label: string;
+  /** Optional right-hand value (13/800), before the rank. */
+  value?: string;
+  rank: string;
+}
+
+/** Why-stats box (My Team §9.4 recipe): 36px rows, label left, [value] + rank right. */
+export function WhyList({ rows }: { rows: readonly WhyListRow[] }) {
+  if (rows.length === 0) return null;
+  return (
+    <dl data-why style={WHY_BOX}>
+      {rows.map((w, i) => (
+        <div
+          key={w.label}
+          className="flex items-center justify-between"
+          style={{ gap: 10, minHeight: 36, padding: '0 10px', borderTop: i > 0 ? '1px solid var(--hairline)' : 'none', lineHeight: 'normal' }}
+        >
+          <dt style={{ fontSize: 12, fontWeight: 600, color: 'var(--subtext)' }}>
+            <Bolded text={w.label} />
+          </dt>
+          <dd className="flex flex-none items-center tabular-nums" style={{ gap: 10 }}>
+            {w.value != null && <b style={{ fontSize: 13, fontWeight: 800, color: 'var(--text)' }}>{w.value}</b>}
+            <span style={{ minWidth: 28, textAlign: 'right', fontSize: 11, fontWeight: 700, color: 'var(--subtext)' }}>{w.rank}</span>
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}

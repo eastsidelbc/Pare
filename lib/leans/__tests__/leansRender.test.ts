@@ -8,9 +8,11 @@ import { describe, expect, it } from 'vitest';
 import AddLineSheet from '@/components/leans/AddLineSheet';
 import GameView from '@/components/leans/GameView';
 import PlayerPickerSheet from '@/components/leans/PlayerPickerSheet';
+import PlayerVsDefenseView from '@/components/leans/PlayerVsDefenseView';
 import PropDetailView from '@/components/leans/PropDetailView';
+import { buildRanks, cellFor } from '@/lib/myteam/viewModel';
 import LeansListView, { groupByDay } from '@/components/leans/LeansListView';
-import { evaluateProp, leagueFormFor, leansForGame, propWhy } from '../evaluate';
+import { evaluateProp, fpaBefore, leagueFormFor, leansForGame, propWhy, ratingFor, whyFor } from '../evaluate';
 import { BIJAN, JEANTY, LONDON, bundle, matchup, render, savedProp } from './renderFixtures';
 
 const FOOTER = '21+ · Info only, not betting advice · <span class="whitespace-nowrap">Gambling problem? 1-800-GAMBLER</span>';
@@ -148,5 +150,38 @@ describe('Leans prop detail (/leans/prop/[propId]) + sheets', () => {
     expect(html).toContain('B. Robinson');
     expect(html).toContain('data-meter');
     expect(html).toContain('data-injury="Q"');
+  });
+});
+
+describe('Leans player vs defense (/leans/player/[playerId])', () => {
+  const b = bundle();
+  const m = matchup('ATL', 'LV');
+  const { rating, of } = ratingFor(b, 'RB', 'LV', 7, 'season');
+  const ranks = buildRanks(fpaBefore(b.fpa, 7), 'season');
+  const rp = { playerId: BIJAN.id, name: BIJAN.name, position: 'RB' as const, nflTeam: 'ATL', group: 'starter' as const, slot: null, injury: null };
+  const cells = [7, 8, 9].map((w) => cellFor(rp, w, b.schedule, ranks));
+  const html = render(
+    createElement(PlayerVsDefenseView, {
+      player: BIJAN, matchup: m, window: 'season', onWindow: () => {}, rating, of,
+      why: whyFor(b, 'RB', 'LV', 7, 'season'), cells, weekRange: 'Oct 22 – Oct 26',
+      bars: { label: 'rush yds', games: BIJAN.games.slice(-4).map((g) => ({ week: g.week, value: g.rush_yd })) },
+      addHref: '/leans/2026-w7-ATL-LV?add=1&player=9509',
+    }),
+  );
+  it('player: footer', () => {
+    expect(html).toContain(FOOTER);
+  });
+  it('player: allows the Nth-most + PPR pts/g line + meter + why-stats', () => {
+    expect(html).toContain('LV allows the 1st-most RB pts');
+    expect(html).toContain('PPR pts/g to RBs · #32 of 32');
+    expect(html).toContain('data-meter');
+    expect(html).toContain('Rush yds / game');
+  });
+  it('player: last-4 bars, week cells with a bye, Season | Last 4, add link', () => {
+    expect(html).toContain('Bijan · rush yds, last 4');
+    expect((html.match(/data-weekcell/g) ?? []).length).toBe(3);
+    expect(html).toContain('data-bye="true"');
+    expect(html).toContain('Last 4');
+    expect(html).toContain('href="/leans/2026-w7-ATL-LV?add=1&amp;player=9509"');
   });
 });

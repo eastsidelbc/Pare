@@ -47,7 +47,7 @@ Tailwind's `rounded-xl` is 12px — do not use it for cards; cards are `--radius
 **Shadows:** `--shadow-card` (resting cards) · `--shadow-pop` (floating/overlays). No ad-hoc
 `shadow-2xl shadow-black/50`.
 
-**My Team scoped families (Fantasy tab only — §9 rule 3, §9.4; added 2026-10-07).** Values live in
+**My Team scoped families (Fantasy + Leans tabs — §9 rule 3 and its Leans amendment, §9.4, §9.5; added 2026-10-07, Leans 2026-10-14).** Values live in
 `app/globals.css :root` only; listed here so the meaning is reviewable.
 
 | Token | Value | Meaning |
@@ -352,6 +352,12 @@ week cells, start/sit); (b) `--pos-*` for the position circle; (c) `--inj-*` for
 Each is **always paired with text** (tier word + rank, position letters, injury letter) — never color
 alone. `--matchup-1` (Avoid) sits near RankBadge red and `--red` (live): they're kept apart by shape
 (5-bar meter vs badge vs 6px live dot + clock text).
+**Amendment (Leans, 2026-10-14):** the same scoped families are also allowed **inside the Leans tab** (§9.5):
+`--matchup-*` on the matchup meter / tier bars / week cells, `--pos-*` on the position circle, `--inj-*` on the
+injury badge — **always with the tier word + rank ("Great #30") or the position / injury letters**, never color
+alone. Team colors stay identity-only (Leans' last-4 bars are neutral `--subtext`). No new colors: the lean
+pill is `--gold` (emphasis — it is *not* tappable) and `--gold-bright` stays for things you tap; a hit dot is
+`--green` (its "win" meaning), a miss a hollow `--muted` ring.
 
 **4. Team identity — logos OR names, behind one switch** (`config/teamIdentity.ts`, 2026-10-06).
 Every team mark renders through `components/ui/TeamIdentity.tsx`: `default` = `'logo'` | `'name'`
@@ -515,7 +521,7 @@ management, opponent scoreboards).
 | iPad (QE) | List left; **PINNED** panel right (340px portrait / 440px landscape): pin icon + "PINNED" + count + "Clear all"; empty = dashed gold card "Pin players to keep them here". Pins stack in order; a pinned card (gold edge, 35% → 60% when open) starts short (34px circle, name, line 2, 64px meter, ✕ 44px, next-5 cells with the week inside, chevron hint) and opens on a tap anywhere to show the hero ("· #27", 22px), why-stats (34px rows) and Open in Compare (44px) |
 | Onboarding | **Inline** on the My Team screen: header + week bar + a **setup card** where the roster goes + 4 ghost rows ("Your starters, bench and IR / Taxi show up here."). Card: "Link your fantasy league" + one line of value · "Sleeper username" input (48px, 16px text, edge `--seed-edge`, `--radius-md`) · **Continue** (gold-ring glass button) · lock line "Read-only — Pare can't change your lineup. Your username is saved on this device and only used to load your leagues." States in the same card: not found / bad characters (inline red line + red field edge, `role=alert`) · loading (shimmer skeleton, no spinner) · pick a league (64px rows, format + "In season" chip; skipped when there's only one) · no leagues ("Check again" + "Use another username") · pre-draft ("{league} hasn't drafted yet" + Check again) · can't reach Sleeper ("Try again"). Keyboard: Continue stays visible (`visualViewport` handler). iPad: card max 560px |
 | Game day (P6) | Layout reserved now: points column beside the meter (the meter is never hidden), small starters total in the STARTERS header (`aria-live="polite"`), bench points shown, Pare's `.pare-live-dot`. **No total card** |
-| Nav (all pages) | Floating capsule, **5 tabs**, icon (18) stacked over an 11px label, items **66×48**, gap 2, padding 5 → `--nav-pill-h` **58**, `--nav-h` **78**; sliding gold ring (`ActivePill` `'nav-active-pill'`). Tabs: Home · Compare · Standings · Leaders · **Fantasy** (lucide `Shirt`) |
+| Nav (all pages) | Floating capsule, **5 tabs**, icon (18) stacked over an 11px label, items **66×48**, gap 2, padding 5 → `--nav-pill-h` **58**, `--nav-h` **78**; sliding gold ring (`ActivePill` `'nav-active-pill'`). Tabs: Home · Compare · **Leans** (lucide `Scale`, since 2026-10-14 — §9.5) · Leaders · **Fantasy** (lucide `Shirt`). Standings left the nav for a 44px `ListOrdered` button in the Home header; `components/BottomNav.tsx` exports a `STANDINGS` item so swapping back is one line |
 | Radii · motion | Radii 6 / 10 / 14 / 20 only. 0 animations at rest; reduced motion = no slides / flashes, live dot steady |
 
 Shipped: P5 `dc93658`, mockup fix pass `b84a91d` (source of truth `docs/design/my-team-p4/Final*.dc.html`,
@@ -526,3 +532,36 @@ tier-colored hero number; everything else follows the mockup.
 Data attributes kept for machine checks: `data-tier="great|good|avg|tough|avoid"` on every meter,
 `data-bye="true"` on bye meters, `data-injury="Q|D|O|IR"` on injury badges, `data-state` on each
 state root.
+
+### 9.5 Leans — the Leans tab (Leans DECISIONS, built 2026-10-14)
+
+Picked on the "Matchups & Betting R1" boards: **A2** (own tab) + **G2** game screen + **B1** player vs defense
++ **B2** props. Spec: `docs/plans/2026-10-14-leans-tab/DECISIONS.md` + the boards in that folder; plan
+`docs/plans/2026-10-14-leans-tab.md` (incl. the "Mockup differences" table). Components `components/leans/*`,
+pure logic `lib/leans/*` (thresholds: `lib/leans/config.ts` only).
+
+**Principle:** Leans reads the data next to a line; it never places, recommends or promises a bet. Words
+allowed: "Data leans OVER / UNDER / <TEAM>", "lean", "No lean", "Not enough games yet", "edge", "matchup".
+Never: lock, guarantee(d), sure thing, free money, can't lose, bet now — and no sportsbook names or logos
+(`lib/__tests__/leansCopy.test.ts` fails the build on any). Every Leans screen ends with
+`21+ · Info only, not betting advice · Gambling problem? 1-800-GAMBLER` (`LeansFooter`, 10/600 `--subtext`).
+
+| Part | Recipe |
+|---|---|
+| Header (list) | H1 Inline: "Pare" + gold-bright **LEANS** label; ★ · WeekControl capsule · gear (Home's controls) |
+| Header (pushed screens) | 44px title row: ‹ back (44) · centred 13/800 "ATL @ LV" + `--subtext` " · Week 7" |
+| List order | YOUR PROPS (D1 label + "n this week") → saved prop rows **or** dashed "Track a prop line" add row → day groups (D1 labels) of game cards → footer. One column, 16px gutter, 8px gaps |
+| Game card | Home's **Frame Row** (§9.1) — `MatchupCard` itself, odds removed from its centre — inside one 1.5px frame with a **lines row** (3 cells Spread · Total · Moneyline: 9px label + 13/800 value, hairline dividers) and a **44px lean row** (lean pill · 11/600 `--subtext` reason, ellipsis · gold-bright ▾). Card tap → game screen; lean row tap → the 3 checks open in the card |
+| Lean pill | 26px, radius 10, 11.5/800, `--gold` text + 60% outline + 12% fill, arrow icon for OVER/UNDER; big = 32px / 13px. "No lean" / "Not enough games yet" = `--subtext` text + 35% `--subtext` outline, no fill |
+| Game screen order | MatchupHero (lg, **names not tappable** — `interactive={false}`) → "Sun, Oct 25 · 3:05 PM · CBS" 11/600 → glass button "⇄ Compare these teams ▾" (36px, gold-bright 12/700; open = "Hide team stats ▴") → Offense + Defense in place (`ComparePane inline showHero={false}`) → Game lines → PROPS → footer |
+| Game lines card | Neon Frame (§8): 2px team frame, radius 20, both 34px glows. Header 28px "GAME LINES" 11/800 .22em + "One line per game ⓘ". Rows Spread · Total · Moneyline: 9px label, 15/800 line, pill right, reason 11/600 `--subtext` (bold = white 800). Tap → opens in place (gold-bright 4% tint, ▴): last-4 cells (34px team column + 4 dark `--nav-bg` cells, radius 6, ✓ = on the lean side) + "Why — 3 of 3 signals agree" + the checks. One row open at a time |
+| Signal list ("the 3 checks") | Always shown, always 3. Label 9px ("Why — 3 of 3 signals agree" / "Why no lean — signals split (1 of 3)"), then the near-black why box: 36px rows, ✓ `--green` / ✕ `--muted` (14px column), 12/600 `--subtext`, numbers white 800 |
+| Prop card | Deep list card (§9.2), padding 12, gap 12: position circle (38, `--pos-*`, injury badge) + name 14/700 + "ATL · @ LV · Rush yds" · "YOUR LINE" + 17/800 "o85.5" → big pill + "Over in **3 of last 4** · 4 of 6 this season" → hit dots → tier bars + "LV allows the 3rd-most RB pts" → why-stats box. Tap → prop detail |
+| Hit dots | grid of 6 (last 6 games): 12px dot (hit `--green` + 6px glow, miss 2px `--muted` ring) · value 11/800 · "W3" 10/700 `--subtext` |
+| Tier bars | My Team meter in a row: 5 bars 7px wide, 4→20px, tier n fills n in `--matchup-n` + "Great #30" 11/800 tier color + reason. (Pickers use `MatchupMeter` itself, stacked) |
+| Sheets | `BottomSheet` (grab="header"): header 44px, gold-bright 11/800 .2em title + ✕ 44. **Pick a player**: 44px search, RESULTS, "In this game · ATL @ LV" rows (52px, circle, short name, team · pos, `MatchupMeter`). **Add a prop line**: player + Change · stat chips (32px drawn / 44 tap, glass recipe) · 48px line field (16px text, `--seed-edge`) + Over | Under glass toggle (`leans-side`) · live hit dots · 48px gold-ring "Save & check the data" · "Pare never sees your sportsbook. The line stays on this device." · footer |
+| Prop detail | Prop card + the 3 checks (+ the no-lean reason) in one card; Edit line / Remove (48px, radius 10) and "ⓘ How Pare makes a lean" (44px, gold-bright) below. The player row links to the player screen |
+| Player vs defense | Header card (circle, 20/800 name, "ATL · RB · Week 7 @ LV · Sun 3:05 PM") → "WEEK 7 Oct 22 – Oct 26" + Season | Last 4 (`WindowToggle`) → card: `MatchupMeter` + bold "LV allows the 3rd-most RB pts" / 22px tier-colored pts/g + "PPR pts/g to RBs · #30 of 32" → why-stats → last-4 bars (**neutral `--subtext` gradient**, max 44px wide, radius 6 6 2 2) → "Next 5 weeks" `WeekCells` → 48px "+ Check a prop line for Bijan ›" |
+| Storage | Props on the device only: `localStorage` `pare:leans-props:v1` (`{ v: 1, props }`), every read/write in try/catch (`lib/leans/propStore.ts`) |
+| Radii · targets · motion | 6 / 10 / 14 / 20 only; 44px targets (`.pare-hit44` on 30–32px chips); the only motion is the glass-toggle pill slide and the ▾ rotate. 0 animations at rest |
+

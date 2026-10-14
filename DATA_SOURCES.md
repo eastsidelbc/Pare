@@ -180,6 +180,26 @@ _Last verified: 2026-10-13 UTC (`scripts/live-proxy-smoke.mjs`, live-freshness F
 
 ---
 
+## 7. Leans (`/api/leans/data`) — lines + data leans (2026-10-14)
+
+No new upstream. Everything Leans shows comes from sources above, reused server-side:
+
+| Piece | Source | Notes |
+|---|---|---|
+| Spread · total · **moneyline** | ESPN scoreboard `odds[0]` (`lib/espnScoreboard.ts`) | `MatchupOdds` gained optional `spreadLine { team, line }` (parsed from `details`, "SEA -2.5") and `moneyline { away, home }` (`odds[0].moneyline.{away,home}.close.odds`, else `.open.odds`; American strings → numbers, "EVEN" = +100). `odds[0].spread` is **not** used — its sign flips by side. The `spread` string Home renders is unchanged. Verified on the live week-6 scoreboard 2026-10-14: 14/14 games carry moneylines. Fixture: `lib/__fixtures__/espn/scoreboard-odds.json` (provider names + deep links stripped) |
+| Points for / against per team per week | ESPN final box scores → `getTeamGameLog()` (`lib/espnStats.ts`, same log My Team uses) | total / spread / moneyline signals |
+| Player weekly prop stats | Sleeper `api.sleeper.com` week lines → `getWeekLines()` (`lib/myteam/sleeper/statLines.ts`) | `rush_yd`, `rec`, `rec_yd`, `rush_td`, `rec_td` (absent key = 0); `pts_ppr` ranks players + scores the FPA table |
+| Matchup tier + rank | `buildFpaTable(lines, { pts_ppr: 1 })` → `rankFpa` / `rateMatchup` (`lib/myteam/fpa.ts`, `rating.ts`) | plain Sleeper PPR (Leans has no league), QB/RB/WR/TE only, ranked client-side |
+| Names + injury tags | Sleeper player map `getPlayerMap()` (`lib/fantasy.ts`, 24h) | a player without a name is left out |
+| Next weeks | `getSeasonSchedule()` (`lib/myteam/seasonSchedule.ts`) | week cells |
+| Not available | — | defense **yards per carry** (box scores carry no rush attempts) → that why-row isn't shown |
+
+`GET /api/leans/data?teams=ATL,LV` (`lib/leans/bundle.ts`, `server-only`, `force-dynamic`, `private, no-store`): one
+shared in-memory bundle per 10 min (`createKeyedCache`, last good on failure; a missing completed week throws so it
+never skews ranks), then filtered to the asked teams' players + schedule. Carries **team abbreviations only** — the
+user's prop lines stay in `localStorage` (`pare:leans-props:v1`) and never reach the server. ~65 KB for two teams,
+~1.5 s cold. Lean thresholds: `lib/leans/config.ts`.
+
 # Appendix: FULL field chart — team statistics endpoint
 
 Every stat the endpoint returns, by category. Each stat object carries

@@ -26,7 +26,7 @@ import HitDots from './HitDots';
 import LeanPill from './LeanPill';
 import { circlePlayer, propHref } from './PropRow';
 import TierBars from './TierBars';
-import { Bolded, LABEL9, WHY_BOX } from './ui';
+import { Bolded, LABEL9, WhyList } from './ui';
 
 function pillFor(e: EvaluatedProp) {
   const v = e.lean?.verdict ?? 'none';
@@ -96,24 +96,7 @@ export function PropBody({ e, why, children, nameHref }: { e: EvaluatedProp; why
 
       <TierBars rating={e.rating} note={allowsText(prop.opp, prop.position, e.rating, e.ratingOf)} />
 
-      {why.length > 0 && (
-        <dl data-why style={WHY_BOX}>
-          {why.map((w, i) => (
-            <div
-              key={w.label}
-              className="flex items-center justify-between"
-              style={{ gap: 10, minHeight: 36, padding: '0 10px', borderTop: i > 0 ? '1px solid var(--hairline)' : 'none' }}
-            >
-              <dt style={{ fontSize: 12, fontWeight: 600, color: 'var(--subtext)' }}>
-                <Bolded text={w.label} />
-              </dt>
-              <dd className="flex-none tabular-nums" style={{ minWidth: 28, textAlign: 'right', fontSize: 11, fontWeight: 700, color: 'var(--subtext)' }}>
-                {w.rank}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      )}
+      <WhyList rows={why} />
       {children}
     </>
   );
