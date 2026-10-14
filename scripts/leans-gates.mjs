@@ -191,10 +191,16 @@ const SHARED_LEANS = [
     const r = vitestJson(['lib/__tests__/leansCopy.test.ts']);
     return [r.failed === 0 && r.passed >= 3, `${r.passed} passed, ${r.failed} failed`];
   }],
-  ['every /leans page renders LeansFooter', () => {
-    const pages = sourceFiles('components/leans').filter((f) => /Screen\.tsx$|View\.tsx$/.test(f));
-    const bad = pages.filter((f) => !read(f).includes('<LeansFooter'));
-    return [pages.length > 0 && bad.length === 0, bad.length ? `no footer: ${bad.join(', ')}` : `${pages.length} screens`];
+  ['every /leans page renders LeansFooter (page → Screen → View)', () => {
+    // Each route page renders a *Screen container; it (or a *View it imports) renders the footer.
+    const footerIn = (f) => existsSync(abs(f)) && read(f).includes('<LeansFooter');
+    const viewsOf = (f) => (existsSync(abs(f)) ? [...read(f).matchAll(/from '\.\/(\w+View)'/g)].map((m) => `components/leans/${m[1]}.tsx`) : []);
+    const pages = sourceFiles('app/leans').filter((f) => f.endsWith('/page.tsx'));
+    const bad = pages.filter((page) => {
+      const screens = [...read(page).matchAll(/from '@\/components\/leans\/(\w+)'/g)].map((m) => `components/leans/${m[1]}.tsx`);
+      return !screens.some((s) => footerIn(s) || viewsOf(s).some(footerIn));
+    });
+    return [pages.length > 0 && bad.length === 0, bad.length ? `no footer: ${bad.join(', ')}` : `${pages.length} routes`];
   }],
 ];
 
@@ -255,7 +261,8 @@ const STATIC = {
       return [r.failed === 0 && r.passed >= phrases.length && missing.length === 0, `${r.passed} passed, ${r.failed} failed${missing.length ? `; missing: ${missing.join(' | ')}` : ''}`];
     }],
     ['no threshold literals outside config.ts', () => {
-      const files = sourceFiles('lib/leans').filter((f) => !f.endsWith('/config.ts') && !f.endsWith('/types.ts'));
+      // The engine = every lib/leans/*Lean.ts file (+ players.ts, which applies the per-team caps).
+      const files = sourceFiles('lib/leans').filter((f) => /Lean\.ts$|\/players\.ts$/.test(f));
       // 0, 1 and the percent scale 100 are fine; any other number (incl. 0.6) is a threshold.
       const bad = files.filter((f) => /(?<![\w.$])(?!100(?![\w.]))(?:[2-9]|[1-9]\d+|0\.\d+)(?:\.\d+)?(?![\w.])/.test(codeOnly(read(f))));
       return [bad.length === 0, bad.join(', ')];

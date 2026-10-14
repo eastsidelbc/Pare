@@ -63,6 +63,18 @@ export const LEAN_CONFIG = {
     /** … and the other side won ≤ this many of its last N. Margin + rank signals = spread's. */
     otherWinMax: 1,
   },
+
+  /** Not lean thresholds — data plumbing sizes, kept here so the engine files stay literal-free. */
+  data: {
+    /** Prop-eligible players per team and position, by season PPR points (picker size). */
+    playersPerTeam: { QB: 2, RB: 3, WR: 5, TE: 3 },
+    /** Shared server bundle + client copy freshness (same window as Compare stats). */
+    cacheTtlMs: 10 * 60 * 1000,
+    /** Most teams one /api/leans/data request may ask for. */
+    maxTeams: 32,
+    /** Weeks shown in the player screen's week cells, counting the game week. */
+    weekCells: 5,
+  },
 } as const;
 
 export type LeanConfig = typeof LEAN_CONFIG;
