@@ -1,0 +1,471 @@
+{
+ "_note": "Trimmed live ESPN scoreboard sample (2026-10-14, week 6) for the Leans moneyline parse. Provider names + deep links stripped. Last event has its odds removed on purpose.",
+ "season": {
+  "year": 2026
+ },
+ "week": {
+  "number": 6
+ },
+ "events": [
+  {
+   "id": "401872995",
+   "date": "2026-10-16T00:15Z",
+   "name": "Seattle Seahawks at Denver Broncos",
+   "shortName": "SEA @ DEN",
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "abbreviation": "DEN"
+       },
+       "score": "0",
+       "records": [
+        {
+         "name": "overall",
+         "type": "total",
+         "summary": "3-2"
+        }
+       ]
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "abbreviation": "SEA"
+       },
+       "score": "0",
+       "records": [
+        {
+         "name": "overall",
+         "type": "total",
+         "summary": "3-2"
+        }
+       ]
+      }
+     ],
+     "status": {
+      "type": {
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "shortDetail": "10/15 - 8:15 PM EDT"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "Prime Video"
+       ]
+      }
+     ],
+     "odds": [
+      {
+       "details": "SEA -2.5",
+       "overUnder": 40.5,
+       "spread": 2.5,
+       "awayTeamOdds": {
+        "favorite": true,
+        "underdog": false
+       },
+       "homeTeamOdds": {
+        "favorite": false,
+        "underdog": true
+       },
+       "moneyline": {
+        "away": {
+         "close": {
+          "odds": "-142"
+         },
+         "open": {
+          "odds": "-130"
+         }
+        },
+        "home": {
+         "close": {
+          "odds": "+120"
+         },
+         "open": {
+          "odds": "+110"
+         }
+        }
+       },
+       "pointSpread": {
+        "away": {
+         "close": {
+          "line": "-2.5"
+         }
+        },
+        "home": {
+         "close": {
+          "line": "+2.5"
+         }
+        }
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872996",
+   "date": "2026-10-18T13:30Z",
+   "name": "Houston Texans at Jacksonville Jaguars",
+   "shortName": "HOU VS JAX",
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "abbreviation": "JAX"
+       },
+       "score": "0",
+       "records": [
+        {
+         "name": "overall",
+         "type": "total",
+         "summary": "4-1"
+        }
+       ]
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "abbreviation": "HOU"
+       },
+       "score": "0",
+       "records": [
+        {
+         "name": "overall",
+         "type": "total",
+         "summary": "1-4"
+        }
+       ]
+      }
+     ],
+     "status": {
+      "type": {
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "shortDetail": "10/18 - 9:30 AM EDT"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "NFL Net"
+       ]
+      }
+     ],
+     "odds": [
+      {
+       "details": "JAX -2.5",
+       "overUnder": 42.5,
+       "spread": -2.5,
+       "awayTeamOdds": {
+        "favorite": false,
+        "underdog": true
+       },
+       "homeTeamOdds": {
+        "favorite": true,
+        "underdog": false
+       },
+       "moneyline": {
+        "away": {
+         "close": {
+          "odds": "+120"
+         },
+         "open": {
+          "odds": "-115"
+         }
+        },
+        "home": {
+         "close": {
+          "odds": "-142"
+         },
+         "open": {
+          "odds": "-105"
+         }
+        }
+       },
+       "pointSpread": {
+        "away": {
+         "close": {
+          "line": "+2.5"
+         }
+        },
+        "home": {
+         "close": {
+          "line": "-2.5"
+         }
+        }
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872999",
+   "date": "2026-10-18T17:00Z",
+   "name": "Chicago Bears at Atlanta Falcons",
+   "shortName": "CHI @ ATL",
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "abbreviation": "ATL"
+       },
+       "score": "0",
+       "records": [
+        {
+         "name": "overall",
+         "type": "total",
+         "summary": "2-3"
+        }
+       ]
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "abbreviation": "CHI"
+       },
+       "score": "0",
+       "records": [
+        {
+         "name": "overall",
+         "type": "total",
+         "summary": "3-2"
+        }
+       ]
+      }
+     ],
+     "status": {
+      "type": {
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "shortDetail": "10/18 - 1:00 PM EDT"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "Fox"
+       ]
+      }
+     ],
+     "odds": [
+      {
+       "details": "CHI -1.5",
+       "overUnder": 50.5,
+       "spread": 1.5,
+       "awayTeamOdds": {
+        "favorite": true,
+        "underdog": false
+       },
+       "homeTeamOdds": {
+        "favorite": false,
+        "underdog": true
+       },
+       "moneyline": {
+        "away": {
+         "close": {
+          "odds": "-122"
+         },
+         "open": {
+          "odds": "-166"
+         }
+        },
+        "home": {
+         "close": {
+          "odds": "+102"
+         },
+         "open": {
+          "odds": "+140"
+         }
+        }
+       },
+       "pointSpread": {
+        "away": {
+         "close": {
+          "line": "-1.5"
+         }
+        },
+        "home": {
+         "close": {
+          "line": "+1.5"
+         }
+        }
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872997",
+   "date": "2026-10-18T17:00Z",
+   "name": "Baltimore Ravens at Cleveland Browns",
+   "shortName": "BAL @ CLE",
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "abbreviation": "CLE"
+       },
+       "score": "0",
+       "records": [
+        {
+         "name": "overall",
+         "type": "total",
+         "summary": "3-2"
+        }
+       ]
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "abbreviation": "BAL"
+       },
+       "score": "0",
+       "records": [
+        {
+         "name": "overall",
+         "type": "total",
+         "summary": "4-1"
+        }
+       ]
+      }
+     ],
+     "status": {
+      "type": {
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "shortDetail": "10/18 - 1:00 PM EDT"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "Fox"
+       ]
+      }
+     ],
+     "odds": [
+      {
+       "details": "BAL -5.5",
+       "overUnder": 42.5,
+       "spread": 5.5,
+       "awayTeamOdds": {
+        "favorite": true,
+        "underdog": false
+       },
+       "homeTeamOdds": {
+        "favorite": false,
+        "underdog": true
+       },
+       "moneyline": {
+        "away": {
+         "close": {
+          "odds": "-258"
+         },
+         "open": {
+          "odds": "-270"
+         }
+        },
+        "home": {
+         "close": {
+          "odds": "+210"
+         },
+         "open": {
+          "odds": "+220"
+         }
+        }
+       },
+       "pointSpread": {
+        "away": {
+         "close": {
+          "line": "-5.5"
+         }
+        },
+        "home": {
+         "close": {
+          "line": "+5.5"
+         }
+        }
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873003",
+   "date": "2026-10-18T17:00Z",
+   "name": "Tennessee Titans at Indianapolis Colts",
+   "shortName": "TEN @ IND",
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "abbreviation": "IND"
+       },
+       "score": "0",
+       "records": [
+        {
+         "name": "overall",
+         "type": "total",
+         "summary": "2-3"
+        }
+       ]
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "abbreviation": "TEN"
+       },
+       "score": "0",
+       "records": [
+        {
+         "name": "overall",
+         "type": "total",
+         "summary": "0-5"
+        }
+       ]
+      }
+     ],
+     "status": {
+      "type": {
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "shortDetail": "10/18 - 1:00 PM EDT"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "Fox"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

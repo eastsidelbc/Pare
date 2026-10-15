@@ -33,6 +33,8 @@ interface MobileCompareLayoutProps {
    * for the Home accordion peek. Same compare UI either way — no duplication.
    */
   variant?: 'full' | 'inline' | 'quadrant';
+  /** Opt-in, default true. false = no wordmark hero above the panels (host shows its own). */
+  showHero?: boolean;
 }
 
 function MobileCompareLayout({
@@ -46,6 +48,7 @@ function MobileCompareLayout({
   selectedDefenseMetrics,
   isLoading,
   variant = 'full',
+  showHero = true,
 }: MobileCompareLayoutProps) {
   
   // Use default 5 metrics if none selected
@@ -109,7 +112,7 @@ function MobileCompareLayout({
       style={{ paddingBottom: padBottom, paddingRight: padRight, paddingLeft: padLeft, paddingTop: padTop }}
     >
       {/* Team wordmarks (replace logos on Compare) — tap a name to change team */}
-      <MatchupHero
+      {showHero && <MatchupHero
         teamA={selectedTeamA}
         teamB={selectedTeamB}
         teamARecord={teamARecord}
@@ -120,7 +123,7 @@ function MobileCompareLayout({
         onTeamAChange={onTeamAChange}
         onTeamBChange={onTeamBChange}
         size={variant === 'full' ? 'lg' : 'sm'}
-      />
+      />}
 
       {/* Offense Panel */}
       <CompactPanel

@@ -9,7 +9,7 @@
  * Do not duplicate this logic anywhere else.
  */
 
-import { resolveTeamByAbbr, type NflTeam } from './teams';
+import { normalizeTeamAbbr, resolveTeamByAbbr, type NflTeam } from './teams';
 import type { Matchup, GameState, MatchupOdds } from './schedule';
 
 /** Public ESPN scoreboard endpoint (free, no key). Server-side only. */
@@ -38,9 +38,17 @@ interface EspnStatusType {
   completed?: boolean;
   shortDetail?: string;
 }
+interface EspnOddsQuote {
+  odds?: string;
+}
+interface EspnOddsSide {
+  close?: EspnOddsQuote;
+  open?: EspnOddsQuote;
+}
 interface EspnOdds {
   details?: string;
   overUnder?: number;
+  moneyline?: { away?: EspnOddsSide; home?: EspnOddsSide };
 }
 interface EspnBroadcast {
   market?: string;
@@ -73,6 +81,37 @@ function parseScore(raw: string | undefined): number | null {
   if (raw == null) return null;
   const n = Number(raw);
   return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * American odds string → number: "-142" → -142, "+120" → 120, "EVEN" → 100.
+ * Anything else (missing, "OFF", "") → null.
+ */
+export function parseAmericanOdds(raw: string | undefined): number | null {
+  if (raw == null) return null;
+  const s = raw.trim().toUpperCase();
+  if (s === 'EVEN' || s === 'EV') return 100;
+  if (!/^[+-]?\d{3,5}$/.test(s)) return null;
+  const n = Number(s);
+  return Number.isFinite(n) && n !== 0 ? n : null;
+}
+
+/** Spread details "KC -2.5" → { team: 'KC', line: -2.5 }; "EVEN" / "PK" / unreadable → null. */
+export function parseSpreadDetails(details: string | undefined): { team: string; line: number } | null {
+  const m = /^([A-Za-z]{2,4})\s+([+-]?\d+(?:\.\d+)?)$/.exec((details ?? '').trim());
+  if (!m) return null;
+  const line = Number(m[2]);
+  if (!Number.isFinite(line)) return null;
+  return { team: normalizeTeamAbbr(m[1].toUpperCase()), line };
+}
+
+/** Moneyline per side from `odds[0].moneyline` (closing price, else opening); null when absent. */
+function parseMoneyline(raw: EspnOdds['moneyline']): { away: number | null; home: number | null } | null {
+  if (!raw) return null;
+  const side = (s: EspnOddsSide | undefined) => parseAmericanOdds(s?.close?.odds) ?? parseAmericanOdds(s?.open?.odds);
+  const away = side(raw.away);
+  const home = side(raw.home);
+  return away == null && home == null ? null : { away, home };
 }
 
 /**
@@ -131,9 +170,16 @@ export function mapEspnScoreboard(data: EspnScoreboard, fallbackWeek = 1): Match
     // and the client live-poll merge never overwrites a known line with null
     // (ScheduleProvider.patchLiveMatchups).
     const rawOdds = competition?.odds?.[0];
+    // `spread` stays ESPN's string (Home renders it as-is); Leans reads the parsed
+    // `spreadLine` + `moneyline`. (`odds[0].spread` is not used — its sign flips by side.)
     const odds: MatchupOdds | null =
       rawOdds?.details
-        ? { spread: rawOdds.details, overUnder: rawOdds.overUnder ?? null }
+        ? {
+            spread: rawOdds.details,
+            overUnder: rawOdds.overUnder ?? null,
+            spreadLine: parseSpreadDetails(rawOdds.details),
+            moneyline: parseMoneyline(rawOdds.moneyline),
+          }
         : null;
 
     // Overall W-L(-T) record for each side, straight from the scoreboard payload

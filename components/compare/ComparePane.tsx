@@ -35,6 +35,9 @@ export interface ComparePaneProps {
   /** Quadrant (Compare 2×2) peek: like `inline` but with a tight, balanced
    *  bottom reserve for the floating corner controls. Requires `inline`. */
   quadrant?: boolean;
+  /** Opt-in, default true. false = skip the wordmark hero above the panels (the host
+   *  screen already shows one — Leans game screen "Compare these teams"). */
+  showHero?: boolean;
   teamA: string;
   teamB: string;
   offenseData: TeamData[];
@@ -57,6 +60,7 @@ export interface ComparePaneProps {
 function ComparePane({
   inline = false,
   quadrant = false,
+  showHero = true,
   teamA,
   teamB,
   offenseData,
@@ -90,6 +94,7 @@ function ComparePane({
   return (
     <MobileCompareLayout
       variant={inline ? (quadrant ? 'quadrant' : 'inline') : 'full'}
+      showHero={showHero}
       selectedTeamA={teamA}
       selectedTeamB={teamB}
       onTeamAChange={onTeamAChange}

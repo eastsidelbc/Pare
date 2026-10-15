@@ -498,6 +498,19 @@
 .pare-hit44 { position: relative; }
 .pare-hit44::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 44px; transform: translateY(-50%); }
 
+/* Leans list card (components/leans/GameCard.tsx): Home's MatchupCard renders inside one
+   Leans Frame Row that also wraps the lines + lean rows, so the card's OWN frame (inline
+   padding / gradient / glow on its root button) is switched off here — only inside
+   .leans-frame-card. MatchupCard itself stays untouched; if its frame markup changes,
+   update this rule. */
+.leans-search::-webkit-search-cancel-button { -webkit-appearance: none; display: none; } /* Leans player picker: no native clear × */
+.leans-frame-card > button {
+  padding: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
 /* Site footer (components/SiteFooter.tsx). Links --subtext → white on hover, gold
    focus ring. Hidden inside the iOS app: <html data-app="ios"> is set before paint
    by the inline script from lib/platform.ts. */

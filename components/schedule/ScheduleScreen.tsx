@@ -2,7 +2,7 @@
  * ScheduleScreen — the Home screen shell + the continuous multi-week scroll.
  *
  * State lives in <ScheduleProvider> (in layout.tsx) so it survives navigation;
- * this component owns only the DOM: the fixed header (Pare + WeekControl), the
+ * this component owns only the DOM: the fixed header (Pare + ★ · Standings · WeekControl · gear), the
  * single scroll region, and the scroll mechanics.
  *
  * Scroll mechanics (one rAF-throttled handler):
@@ -35,7 +35,8 @@ import { useSchedule, type WeekStatus } from './ScheduleProvider';
 import WeekControl from './WeekControl';
 import WeekSection from './WeekSection';
 import SettingsGearButton from './SettingsGearButton';
-import { Star } from 'lucide-react';
+import Link from 'next/link';
+import { ListOrdered, Star } from 'lucide-react';
 import { useFavorites } from '@/components/FavoritesProvider';
 import SiteFooter from '@/components/SiteFooter';
 
@@ -284,6 +285,16 @@ export default function ScheduleScreen() {
                 aria-hidden
               />
             </button>
+            {/* Standings moved out of the nav for Leans (Leans DECISIONS §3): a 44px
+                header button, same box + press state as the star and the gear. */}
+            <Link
+              href="/standings"
+              aria-label="Standings"
+              className="flex items-center justify-center rounded-full touch-optimized active:opacity-70"
+              style={{ width: 44, height: 44 }}
+            >
+              <ListOrdered size={20} strokeWidth={1.8} aria-hidden style={{ color: 'var(--subtext)' }} />
+            </Link>
             <WeekControl
               activeWeek={activeWeek}
               onStep={(dir) => jumpToWeek(activeWeek + dir)}

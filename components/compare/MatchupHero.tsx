@@ -7,7 +7,8 @@
  *   CHIEFS (outlined)          BILLS (outlined)
  * Each nickname is outlined in its team's bar color (lib/teamColors) with a soft
  * glow, and auto-shrinks for long names (Commanders, Buccaneers) so it never
- * wraps at 393px. Tapping a team opens the existing CompactTeamSelector.
+ * wraps at 393px. Tapping a team opens the existing CompactTeamSelector
+ * (opt-in `interactive={false}` → plain text, no picker — the Leans game screen).
  *
  * Presentational + its own open/closed picker state; team changes go up through
  * the same onTeamAChange/onTeamBChange handlers as before.
@@ -35,6 +36,11 @@ interface MatchupHeroProps {
   onTeamBChange: (team: string) => void;
   /** 'lg' = phone Compare tab, 'sm' = Home peek + tablet quadrants. */
   size?: 'lg' | 'sm';
+  /**
+   * Opt-in, default true. false = the names are plain text (no tap → change team), for
+   * screens where a tap would mean something else (Leans game screen — DECISIONS §4).
+   */
+  interactive?: boolean;
 }
 
 /** Nickname font size by length so the longest names fit half of a 393px screen. */
@@ -60,6 +66,7 @@ function MatchupHero({
   onTeamAChange,
   onTeamBChange,
   size = 'lg',
+  interactive = true,
 }: MatchupHeroProps) {
   const [open, setOpen] = useState<'A' | 'B' | null>(null);
   const refA = useRef<HTMLButtonElement>(null);
@@ -74,16 +81,8 @@ function MatchupHero({
     const nickname = (team?.nickname ?? name).toUpperCase();
     const city = (team?.location ?? '').toUpperCase();
     const fontSize = wordmarkSize(nickname, size);
-    return (
-      <button
-        ref={isA ? refA : refB}
-        type="button"
-        onClick={() => setOpen((o) => (o === which ? null : which))}
-        className={`min-w-0 touch-optimized active:opacity-60 ${isA ? 'text-left' : 'text-right'}`}
-        aria-label={`${name}${record ? `, record ${record}` : ''} — tap to change team`}
-        aria-haspopup="listbox"
-        aria-expanded={open === which}
-      >
+    const body = (
+      <>
         <div
           className="truncate"
           style={{ fontSize: size === 'lg' ? 10 : 9, fontWeight: 700, letterSpacing: '0.18em', color: 'var(--subtext)' }}
@@ -114,6 +113,26 @@ function MatchupHero({
             {nickname}
           </div>
         </TeamIdentity>
+      </>
+    );
+    if (!interactive) {
+      return (
+        <div role="group" className={`min-w-0 ${isA ? 'text-left' : 'text-right'}`} aria-label={`${name}${record ? `, record ${record}` : ''}`}>
+          {body}
+        </div>
+      );
+    }
+    return (
+      <button
+        ref={isA ? refA : refB}
+        type="button"
+        onClick={() => setOpen((o) => (o === which ? null : which))}
+        className={`min-w-0 touch-optimized active:opacity-60 ${isA ? 'text-left' : 'text-right'}`}
+        aria-label={`${name}${record ? `, record ${record}` : ''} — tap to change team`}
+        aria-haspopup="listbox"
+        aria-expanded={open === which}
+      >
+        {body}
       </button>
     );
   };

@@ -7,6 +7,12 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Added
+- **Leans tab — lines + data leans for every game, and your own prop lines** (2026-10-14, branch `feat/leans-tab`) — new third tab **Leans** (lucide Scale): Home · Compare · Leans · Leaders · Fantasy.
+  - See: `docs/devnotes/2026-10-14-leans-tab.md`, plan `docs/plans/2026-10-14-leans-tab.md` (incl. "Mockup differences"), decisions `docs/plans/2026-10-14-leans-tab/DECISIONS.md`, design-system §9.5.
+  - `/leans`: this week's games as Home's Frame Row card + a Spread · Total · Moneyline row + a lean row; "Your props" on top. `/leans/[gameId]`: team wordmarks, "Compare these teams ▾" (today's Offense + Defense panels in place), Game lines card (rows open to the last-4 numbers + the 3 checks), Props. `/leans/prop/[id]` prop detail, `/leans/player/[id]` player vs defense (Season / Last 4).
+  - Lean rule: "Data leans OVER / UNDER / <TEAM>" only when all 3 signals agree, else "No lean"; < 4 games → "Not enough games yet". Thresholds in `lib/leans/config.ts`. Every Leans screen carries the 21+ / 1-800-GAMBLER footer; banned words + sportsbook names are a failing test.
+  - Prop lines are typed by you and saved on this device only (`pare:leans-props:v1`); /privacy updated. New `GET /api/leans/data` (team logs + Sleeper PPR matchup table + player week lines, shared 10-min copy).
+  - Standings left the nav (unchanged page) — it opens from a new 44px ListOrdered button in the Home header. `MatchupOdds` gained `moneyline` + `spreadLine` (Home renders identically). `MatchupHero` / `ComparePane` got opt-in props (`interactive`, `showHero`), defaults unchanged.
 - **Fantasy points = what the Sleeper app shows, everywhere** (2026-10-12, branch `feat/home-sleeper-ppr`) — Home box score + Leaders Fantasy now show Pare points = Sleeper `pts_ppr` + 3 per Sleeper yardage-bonus flag (300+ pass yd, 200+ rush yd, 200+ rec yd). Dak Prescott W5: Home 12.6 → **17.6** (Sleeper 17.64).
   - See: `docs/devnotes/2026-10-12-home-sleeper-ppr.md`, plan `docs/plans/2026-10-12-home-sleeper-ppr.md`.
   - Homemade formula removed from `lib/gameSummary.ts`; `parePoints` / join / ranking in `lib/fantasyPoints.ts`; `/api/live/summary` attaches points per response (3s cap; Sleeper down/slow → "—", still 200). Player map `sleeper-player-map-v5` (ESPN id for all), season stats `sleeper-season-stats-v2` (bonus flags).
@@ -21,6 +27,8 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - iOS: `SettingsView` restyled to S2 — same native grouped list, gold tint, BgDeep background, deep-navy rows, white titles with gold icons + chevrons, "Email support" row, Pare LLC footer, half-height sheet with grab handle (drag to full).
 
 ### Fixed
+- **tsconfig: removed deprecated `baseUrl`** (2026-10-12, `main`) — clears the "baseUrl is deprecated (TS 7.0)" editor error; `@/*` imports unchanged (`paths` resolves relative to tsconfig).
+  - See: `docs/devnotes/2026-10-12-tsconfig-baseurl.md`.
 - **Home peek: no dead space above "Open full"** (2026-10-06, `main`) — the inline variant no longer inherits the Compare page's bottom-nav reserve (`MobileCompareLayout` `padBottom` → 8px for `inline`); "Open full" is now a gold neon capsule matching the nav's `ActivePill`.
 - **Schedule odds no longer stay blank for a whole session** (2026-10-06, `main`)
   - See: `docs/devnotes/2026-10-06-schedule-odds-freshness.md`.
