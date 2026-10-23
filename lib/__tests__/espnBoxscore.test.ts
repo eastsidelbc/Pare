@@ -98,6 +98,12 @@ describe('parseGameBox (fixture box score: PIT @ CLE, week 4)', () => {
     expect(pit).toMatchObject({ points: 24, passTd: 3, rushTd: 0, interceptions: 2, sacks: 5, fumblesLost: 0, turnovers: 2, redZoneAtt: 3, drives: 12 });
     expect(cle).toMatchObject({ points: 27, passTd: 1, rushTd: 2, interceptions: 1, sacks: 2, fumblesLost: 1, turnovers: 2, redZoneAtt: 2, drives: 13 });
   });
+  it('reads the Last-4 Compare fields (completions are "a/b")', () => {
+    const pit = teams?.find((t) => t.teamId === '23');
+    const cle = teams?.find((t) => t.teamId === '5');
+    expect(pit).toMatchObject({ firstDowns: 24, passCmp: 22, passAtt: 40, rushAtt: 19, plays: 64 });
+    expect(cle).toMatchObject({ firstDowns: 22, passCmp: 24, passAtt: 33, rushAtt: 27, plays: 62 });
+  });
   it('missing required yards → null + which team', () => {
     const broken: EspnSummaryResponse = {
       boxscore: { teams: [{ team: { id: '9' }, statistics: [] }, { team: { id: '8' }, statistics: [] }] },
@@ -149,5 +155,10 @@ describe('toTeamGameLines', () => {
     const pit = lines.find((l) => l.team === 'PIT');
     expect(pit).toMatchObject({ opponent: 'CLE', week: 4, points: 24, pointsAllowed: 27, passTd: 3, sacks: 5 });
     expect(lines.find((l) => l.team === 'CLE')).toMatchObject({ opponent: 'PIT', pointsAllowed: 24 });
+  });
+  it('carries third downs + the Last-4 Compare fields', () => {
+    expect(lines.find((l) => l.team === 'PIT')).toMatchObject({
+      td3Conv: 4, td3Att: 13, firstDowns: 24, passCmp: 22, passAtt: 40, rushAtt: 19, plays: 64,
+    });
   });
 });

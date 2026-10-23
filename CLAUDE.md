@@ -49,6 +49,7 @@ All live from free public APIs — **no** CSV/PFR layer (removed 2026-10-01). En
 - **Schedule + live scores:** ESPN scoreboard (`lib/espnScoreboard.ts` mapper, `lib/schedule.ts`). Betting line kept for any game state; closing-odds fallback cached 6h. Live scores + box scores go through our proxy `/api/live/scoreboard` + `/api/live/summary` (`lib/espnLive.ts`: shared memory cache, last-good on ESPN failure, responses gzipped by us) — the browser never calls ESPN (ADR `docs/adr/2026-10-12-live-scores-proxy.md`).
 - **Offense stats:** ESPN team statistics (`lib/espnStats.ts`). Yards are NET (`netPassingYards`/`netTotalYards`) so offense matches defense-allowed.
 - **Defense:** points allowed via ESPN standings; yards + opponent 3rd-down % aggregated from final-game box scores (`lib/espnStats.ts`).
+- **Last 4 (Compare `PG | L4 | TOT`):** `/api/nfl-2025/last4` sums each team's last 4 games played from the box-score game log (`lib/last4.ts`, `DATA_SOURCES.md` §8); rows carry `g` = games in the window so the per-game transform gives averages and ranks are among all 32 teams' last 4.
 - **Standings:** `lib/standings.ts` (ESPN official tiebreak order).
 - **Leaders:** ESPN byathlete (`lib/leaders.ts`); **fantasy (QB/RB/WR/TE/K/D-ST):** Sleeper (`lib/fantasy.ts`) — the ~20MB player map is fetched `no-store`, trimmed, and held in `unstable_cache` (24h).
 - **Fantasy points (Home box score + Leaders) = "Pare points"** = Sleeper `pts_ppr` + 3 per yardage-bonus flag (`parePoints`, `lib/fantasyPoints.ts`) — the number the Sleeper app shows (Dak W5 = 17.64). Never compute fantasy points from yards/TDs ourselves.
@@ -65,6 +66,7 @@ All live from free public APIs — **no** CSV/PFR layer (removed 2026-10-01). En
 | Home schedule + `/api/schedule` | fetch cache 5 min (`LIVE_REVALIDATE_SECONDS`); a loaded week >5 min old is re-fetched (week ±1) on scroll-into-view / app foreground (`ScheduleProvider.refreshStaleWeeks`) | ≤5 min after you look |
 | Compare offense/defense + W-L on Compare | route ISR + fetch cache 10 min (`REVALIDATE_SECONDS`) | ≤10 min |
 | Final box scores (yards-allowed) | per-game `unstable_cache` 24h | new finals next refresh |
+| Compare **L4** rows (`/api/nfl-2025/last4`) | route ISR 10 min over the 24h per-game box scores; client prefetches on idle, re-fetches on return after 10 min (`Last4StatsProvider`) | ≤10 min after a final |
 | Leaderboards (+ rookies, fantasy) | page ISR 5 min (`revalidate = 300`); board rows / rookie scans / Sleeper stats in `unstable_cache` 30 min over **no-store** fetches with timeouts (5s / 10s / 8s); failed or empty → previous cached copy, then in-memory last-good; Sleeper player map 24h (never caches `{}`); open tab re-fetches on return after 10 min | ≤~40 min worst case |
 
 - **One timer per data type.** The offense/defense routes' in-memory copy is a *last-good backup* only (served on ESPN failure) — never in front of ISR.
@@ -135,6 +137,13 @@ npm run check          # tsc --noEmit && eslint   (gate before committing)
 npm run test:run       # vitest
 npm run clean          # wipe .next etc. (run before a prod build)
 ```
+
+**Dev server = always port 4000 (Kobe's rule, 2026-10-23).** Never start a second dev server on
+another port (4001…). To show code from another folder, git worktree or branch: stop whatever holds
+:4000 first, then `npm run dev` from that folder. On Windows, stopping the task leaves node holding
+the port, so find it (`netstat -ano | findstr :4000`), run `taskkill /PID <pid> /T /F`, and check the
+port is free. Restart the dev server whenever needed (stale code, a crash, a switched branch). Then
+tell Kobe which folder/branch :4000 is serving. Never run `npm run build` while dev is running.
 
 **Deploy (manual — Cloudflare only tunnels):** commit + push from the Windows box (soypc), then on the M1 Mac mini:
 

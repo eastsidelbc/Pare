@@ -12,6 +12,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { TeamData } from '@/lib/useNflStats';
 import { useDisplayMode } from '@/lib/useDisplayMode';
+import { useSharedLast4Stats } from '@/components/Last4StatsProvider';
 import CompactPanelHeader from './CompactPanelHeader';
 import CompactComparisonRow from './CompactComparisonRow';
 import { getMatchupPalettes } from '@/lib/teamColors';
@@ -46,8 +47,9 @@ function CompactPanel({
   onTeamBChange
 }: CompactPanelProps) {
   
-  // Display mode management (per-game vs total)
+  // Display mode management (per-game / last-4 average / total)
   const { mode, setMode, transformTeamData, transformAllData } = useDisplayMode('per-game');
+  const last4 = useSharedLast4Stats();
   
   // Ranking dropdown state management
   const [activeDropdown, setActiveDropdown] = useState<{
@@ -55,8 +57,20 @@ function CompactPanel({
     team: 'A' | 'B';
   } | null>(null);
 
-  // Select correct dataset
-  const allData = type === 'offense' ? allOffenseData : allDefenseData;
+  // Select correct dataset. L4 swaps in the last-4 rows (all 32 teams, so ranks
+  // are among every team's last 4); not loaded yet / failed → no row → "—".
+  const isLast4 = mode === 'last4';
+  const allData = isLast4
+    ? (type === 'offense' ? last4.offense : last4.defense)
+    : (type === 'offense' ? allOffenseData : allDefenseData);
+  const baseTeamAData = useMemo(
+    () => (isLast4 ? allData.find((t) => t.team === teamA) ?? null : teamAData),
+    [isLast4, allData, teamA, teamAData],
+  );
+  const baseTeamBData = useMemo(
+    () => (isLast4 ? allData.find((t) => t.team === teamB) ?? null : teamBData),
+    [isLast4, allData, teamB, teamBData],
+  );
   
   // Transform data based on display mode.
   // Rank by displayed values: per-game averages in per-game mode, totals in total
@@ -66,12 +80,12 @@ function CompactPanel({
     [transformAllData, allData],
   );
   const transformedTeamAData = useMemo(
-    () => transformTeamData(teamAData),
-    [transformTeamData, teamAData],
+    () => transformTeamData(baseTeamAData),
+    [transformTeamData, baseTeamAData],
   );
   const transformedTeamBData = useMemo(
-    () => transformTeamData(teamBData),
-    [transformTeamData, teamBData],
+    () => transformTeamData(baseTeamBData),
+    [transformTeamData, baseTeamBData],
   );
   
   // Handle team change from ranking dropdown (stable identity so memoized rows

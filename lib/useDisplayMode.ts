@@ -59,7 +59,7 @@ export function useDisplayMode(initialMode: DisplayMode = 'per-game'): UseDispla
   // Computed values
   const isPerGameMode = mode === 'per-game';
   const isTotalMode = mode === 'total';
-  const modeLabel = mode === 'per-game' ? 'PER GAME' : 'TOTAL';
+  const modeLabel = mode === 'per-game' ? 'PER GAME' : mode === 'last4' ? 'LAST 4' : 'TOTAL';
 
   return {
     // Current mode

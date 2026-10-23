@@ -383,6 +383,9 @@ async function fetchGameBox(eventId: string): Promise<GameTeamBox[] | null> {
  * v2 (2026-10-07, My Team): each entry also carries points, TDs by type, INT,
  * sacks, fumbles, turnovers, red-zone trips and drives — new key so old
  * yards-only entries aren't reused.
+ *
+ * v3 (2026-10-23, Compare L4): + first downs, completions/attempts, rush
+ * attempts and plays — new key so v2 entries (without them) aren't reused.
  */
 function getGameBox(eventId: string): Promise<GameTeamBox[]> {
   return unstable_cache(
@@ -391,7 +394,7 @@ function getGameBox(eventId: string): Promise<GameTeamBox[]> {
       if (!box) throw new Error(`incomplete box score for event ${eventId}`);
       return box;
     },
-    ['final-boxscore-v2', eventId],
+    ['final-boxscore-v3', eventId],
     {
       revalidate: APP_CONSTANTS.CACHE.FINAL_BOXSCORE_REVALIDATE_SECONDS,
       tags: ['final-boxscore-yards'],
@@ -509,7 +512,7 @@ export async function fetchDefenseYardsAllowed(): Promise<Map<string, YardsAllow
 
 /**
  * Per-team, per-week game lines (each team's offense + what it allowed), for
- * My Team's Season / Last-4 windows. Same scoreboards + per-game cache as the
+ * My Team's Season / Last-4 windows and Compare's L4 rows. Same scoreboards + per-game cache as the
  * yards aggregation — no extra ESPN calls once those are warm. Must not be
  * called from inside an `unstable_cache`.
  */
