@@ -56,6 +56,14 @@ export interface TeamStanding {
   divRecord: string;
   /** Conference playoff seed from ESPN (`playoffSeed`): 1–7 in, 8–16 out; null if missing. */
   seed: number | null;
+  /** Splits (Wave B4): home / road / vs-conference records, e.g. "2-1"; "—" when missing. */
+  homeRecord: string;
+  roadRecord: string;
+  confRecord: string;
+  /** Games behind the division leader (computed — ESPN's is vs the conference leader): "—" for the leader, else "1.5". */
+  gamesBehind: string;
+  /** ESPN clinch mark (x / y / z / * / e) late in the season; null before. */
+  clincher: string | null;
 }
 
 export interface DivisionStandings {
@@ -73,10 +81,12 @@ export interface ConferenceStandings {
 // ── Minimal shape of the ESPN standings response (only the fields we read) ──
 interface EspnStat {
   name?: string;
+  /** Record splits are keyed by type: total / home / road / vsdiv / vsconf. */
+  type?: string;
   value?: number;
   displayValue?: string;
 }
-interface EspnEntry {
+export interface EspnEntry {
   team?: { abbreviation?: string };
   stats?: EspnStat[];
 }
@@ -96,6 +106,8 @@ const num = (stats: EspnStat[], name: string): number | undefined =>
   stats.find((s) => s.name === name)?.value;
 const disp = (stats: EspnStat[], name: string): string | undefined =>
   stats.find((s) => s.name === name)?.displayValue;
+const byType = (stats: EspnStat[], type: string): string | undefined =>
+  stats.find((s) => s.type === type)?.displayValue;
 
 /** Format ESPN win % (0..1) as ".625" / "1.000". */
 function formatPct(v: number | undefined): string {
@@ -109,8 +121,21 @@ function toSeed(v: number | undefined): number | null {
   return typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 16 ? v : null;
 }
 
+/**
+ * Games behind the division leader (the first team — ESPN's official order):
+ * ((leader W − W) + (L − leader L)) / 2. Leader and anyone level with it → "—".
+ */
+export function withDivisionGamesBehind(teams: readonly TeamStanding[]): TeamStanding[] {
+  const lead = teams[0];
+  if (!lead) return [];
+  return teams.map((t) => {
+    const gb = (lead.wins - t.wins + (t.losses - lead.losses)) / 2;
+    return { ...t, gamesBehind: gb <= 0 ? '—' : Number.isInteger(gb) ? String(gb) : gb.toFixed(1) };
+  });
+}
+
 /** Map one ESPN entry → TeamStanding, or null if the team can't be resolved. */
-function mapEntry(entry: EspnEntry): { team: NflTeam; standing: TeamStanding } | null {
+export function mapEntry(entry: EspnEntry): { team: NflTeam; standing: TeamStanding } | null {
   const team = resolveTeam(entry.team?.abbreviation);
   if (!team) return null;
   const stats = entry.stats ?? [];
@@ -141,6 +166,12 @@ function mapEntry(entry: EspnEntry): { team: NflTeam; standing: TeamStanding } |
       streak: disp(stats, 'streak') ?? '—',
       divRecord: disp(stats, 'divisionRecord') ?? '—',
       seed: toSeed(num(stats, 'playoffSeed')),
+      homeRecord: byType(stats, 'home') ?? '—',
+      roadRecord: byType(stats, 'road') ?? '—',
+      confRecord: byType(stats, 'vsconf') ?? '—',
+      // Filled per division in fetchStandings (ESPN's own gamesBehind here is vs the CONFERENCE leader).
+      gamesBehind: '—',
+      clincher: disp(stats, 'clincher')?.trim() || null,
     },
   };
 }
@@ -214,7 +245,7 @@ async function fetchStandings(): Promise<ConferenceStandings[]> {
     divisions: DIVISION_ORDER.map((division) => ({
       division,
       label: `${conf} ${division}`,
-      teams: buckets.get(keyOf(conf, division)) ?? [],
+      teams: withDivisionGamesBehind(buckets.get(keyOf(conf, division)) ?? []),
     })),
   });
 

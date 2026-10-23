@@ -7,6 +7,7 @@ import { NFL_TEAMS } from '@/lib/teams';
 const team = (abbr: string, seed: number | null, ties = 0): TeamStanding => ({
   abbr, name: abbr, nickname: abbr, wins: 1, losses: 1, ties, pct: '.500',
   pointsFor: 10, pointsAgainst: 10, diff: '0', streak: 'W1', divRecord: '0-0', seed,
+  homeRecord: '1-0', roadRecord: '0-1', confRecord: '1-1', gamesBehind: '—', clincher: null,
 });
 
 // 16 teams in 4 divisions, seeds scrambled across divisions (like ESPN).

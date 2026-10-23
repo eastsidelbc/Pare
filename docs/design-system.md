@@ -486,6 +486,10 @@ Standards scorecard (R2): header hit area 44px ✓ · smallest text 10px (header
 11pt, accepted for dense column labels) · lowest small-text contrast 6.06:1 ✓ · worst team abbr ≥ 4.5:1 ✓ ·
 no clipping at 281px with or without T ✓.
 
+> **Splits view (2026-10-23, Wave B4):** 4th glass toggle option "Splits"; per division a `ListCard` with the same 32px
+> row recipe: TEAM (abbr only) · HOME · ROAD · DIV · CONF · GB (subtext) · DIFF (subtext when negative); `CardGrid`
+> min 300 / max 420 / 4 cols. Clinch letter (10/800 subtext, e = muted) after the abbreviation in every view.
+
 ### 9.3 Leaders — R3 "edge-to-edge" + Rookies (final pick 2026-10-06)
 
 History: "Pare Rookie Leaders" Round 3 option 1 "Standings match" (2026-10-04, built in `786cdf6`), then

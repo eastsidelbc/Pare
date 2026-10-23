@@ -990,17 +990,17 @@ Base: `https://site.api.espn.com/apis/v2/sports/football/nfl`
 | `streak` | ✅ Used |
 | `divisionRecord` | ✅ Used |
 | `playoffSeed` | ✅ Used |
-| `clincher` | ⬜ Not used |
+| `clincher` | ✅ Used |
 | `gamesBehind` | ⬜ Not used |
 | `divisionWins` | ⬜ Not used |
 | `divisionLosses` | ⬜ Not used |
 | `divisionTies` | ⬜ Not used |
 | `lockedDivRank` | ⬜ Not used |
 | `overall` | ⬜ Not used |
-| `Home` | ⬜ Not used |
-| `Road` | ⬜ Not used |
+| `Home` | ✅ Used |
+| `Road` | ✅ Used |
 | `vs.Div.` | ⬜ Not used |
-| `vs.Conf.` | ⬜ Not used |
+| `vs.Conf.` | ✅ Used |
 
 ---
 

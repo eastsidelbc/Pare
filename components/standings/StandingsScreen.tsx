@@ -1,7 +1,7 @@
 /**
  * StandingsScreen — client shell for the Standings tab (design-system §9.2).
  *
- * Fixed "H1 · Inline" header (Pare + NFL, and a Division / Conf / Playoffs glass
+ * Fixed "H1 · Inline" header (Pare + NFL, and a Division / Conf / Playoffs / Splits glass
  * toggle) + the single scroll region. The page (server component) fetches once and
  * hands the data down; switching views is pure client state over the same data — no
  * refetch. The T column follows the league-wide rule (`leagueHasTies`).
@@ -25,9 +25,10 @@ import { GlassLabel, glassCapsule } from '@/components/ui/glassControl';
 import DivisionTable from './DivisionTable';
 import ConferenceTable from './ConferenceTable';
 import PlayoffPicture from './PlayoffPicture';
+import SplitsTable from './SplitsTable';
 import { SectionLabel } from './StandingsRow';
 
-type View = 'division' | 'conference' | 'playoffs';
+type View = 'division' | 'conference' | 'playoffs' | 'splits';
 
 /** Refresh on return if the standings on screen are at least this old. */
 const REFRESH_ON_RETURN_AFTER_MS = 60_000;
@@ -36,6 +37,7 @@ const VIEWS: ReadonlyArray<{ id: View; label: string }> = [
   { id: 'division', label: 'Division' },
   { id: 'conference', label: 'Conf' },
   { id: 'playoffs', label: 'Playoffs' },
+  { id: 'splits', label: 'Splits' },
 ];
 
 function ViewToggle({ view, onChange }: { view: View; onChange: (v: View) => void }) {
@@ -120,6 +122,18 @@ export default function StandingsScreen({ conferences }: { conferences: Conferen
                 <CardGrid minCard={270} maxCard={340} maxCols={4}>
                   {conf.divisions.map((division) => (
                     <DivisionTable key={division.label} division={division} showTies={showTies} />
+                  ))}
+                </CardGrid>
+              </section>
+            ))}
+
+          {view === 'splits' &&
+            conferences.map((conf) => (
+              <section key={conf.conference} className="mb-4">
+                <SectionLabel>{conf.conference}</SectionLabel>
+                <CardGrid minCard={300} maxCard={420} maxCols={4}>
+                  {conf.divisions.map((division) => (
+                    <SplitsTable key={division.label} division={division} />
                   ))}
                 </CardGrid>
               </section>
