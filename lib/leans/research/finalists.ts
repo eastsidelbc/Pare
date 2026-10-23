@@ -16,5 +16,52 @@ export interface Finalists {
 }
 
 // <finalists>
-export const FINALISTS: Finalists = { shippable: false, bar: 0, rules: [] };
+export const FINALISTS: Finalists = {
+  "shippable": true,
+  "bar": 0.13100401615239987,
+  "rules": [
+    {
+      "market": "rec:WR",
+      "side": "under",
+      "conds": [
+        {
+          "feature": "form_hit3",
+          "op": "<=",
+          "threshold": 0
+        },
+        {
+          "feature": "opp_yacAllowed",
+          "op": "<=",
+          "threshold": 0.612903
+        },
+        {
+          "feature": "use_shareTrend",
+          "op": ">=",
+          "threshold": -0.0388109
+        }
+      ]
+    },
+    {
+      "market": "rec:WR",
+      "side": "under",
+      "conds": [
+        {
+          "feature": "form_hit3",
+          "op": "<=",
+          "threshold": 0
+        },
+        {
+          "feature": "opp_yacAllowed",
+          "op": "<=",
+          "threshold": 0.612903
+        },
+        {
+          "feature": "form_mean5",
+          "op": "<=",
+          "threshold": 0.2
+        }
+      ]
+    }
+  ]
+};
 // </finalists>
