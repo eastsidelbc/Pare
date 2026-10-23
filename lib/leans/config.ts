@@ -794,9 +794,11 @@ export const PROP_V2_FROZEN: FrozenParams = {
 // </prop-v2-frozen>
 
 /*
- * Prop engine v2 — what ships, per market + side: written by `scripts/leans-backtest-v2.ts --grade 2025` from the
- * pre-registered gate (≥ 50 decided bets, hit % above the average break-even, ROI > 0,
- * walk-forward ROI ≥ 0). A unit not listed is "off" (data rows only, no lean).
+ * Prop engine v2 — what the pre-registered gate would ship, per market + side: written by
+ * `scripts/leans-backtest-v2.ts --grade 2025` (≥ 50 decided bets, hit % above the average
+ * break-even, ROI > 0, walk-forward ROI ≥ 0). NOT WIRED into the app — Kobe 2026-10-23: 5 of 36
+ * tests passed vs ≈ 9.9 from luck alone, so v2 ships as data rows only (ADR
+ * docs/adr/2026-10-23-prop-engine-v2.md). Kept as the grade's record.
  */
 // <prop-v2-ship>
 export const PROP_V2_SHIP: ShipTable = {

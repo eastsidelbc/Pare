@@ -315,59 +315,94 @@ export function similarDefenseMock(ctx: Pick<PropContext, 'tables' | 'position' 
   return { bucket, games, overs: games.filter((g) => g.over).length };
 }
 
+// ── matchup facts (the numbers behind the signals, for the prop screen's data rows) ──
+
+export interface RankOf {
+  rank: number;
+  n: number;
+}
+
+export interface MatchupFacts {
+  /** His median of this stat this season. */
+  median: number | null;
+  /** His share of his team's targets / carries / touches: season and last `recentGames`. */
+  share: { season: number; recent: number | null } | null;
+  /** His snap share: season and last `recentGames`. */
+  snaps: { season: number; recent: number | null } | null;
+  /** Implied team points from the line (total / 2 − spread / 2) vs his team's shrunk points per game. */
+  implied: { points: number; ppg: number | null } | null;
+  /** Tonight's defense: this stat allowed per game to his position (#1 = allows the least). */
+  allow: (RankOf & { perGame: number }) | null;
+  /** …and its efficiency allowed (catch %, yds / target, yds / carry, yds / touch). */
+  eff: (RankOf & { rate: number }) | null;
+  /** His team's pass rate (#1 = most pass-heavy). */
+  passRate: (RankOf & { rate: number }) | null;
+  role: DefenseVsRoleMock | null;
+  similar: SimilarDefenseMock | null;
+}
+
+export function matchupFacts(ctx: PropContext): MatchupFacts {
+  const values = ctx.games.map((g) => statValue(g, ctx.stat));
+  const recent = ctx.games.slice(-CFG.recentGames);
+  const shareSeason = shares(ctx, ctx.games);
+  const snapSeason = snapPctOf(ctx.games);
+  const ppg = teamPpg(ctx.teamLog, ctx.team, ctx.tables.asOfWeek);
+  const def = ctx.tables.allow[ctx.opp]?.[ctx.position];
+
+  const allowRank = oppAllowRank(ctx);
+  const effRank = defenseRanks(ctx.tables, `eff:${ctx.stat}`, (t) => allowedRate(t, ctx.stat), ctx.position).get(ctx.opp) ?? null;
+  const effRate = def ? allowedRate(def, ctx.stat) : null;
+
+  // Team pass rate among teams with enough games: #1 = most pass-heavy.
+  const passEntries: Array<readonly [string, number]> = [];
+  for (const [team, byWeek] of Object.entries(ctx.tables.teamWeek)) {
+    const weeks = Object.values(byWeek);
+    const plays = weeks.reduce((sum, w) => sum + w.passAtt + w.rushAtt, 0);
+    if (weeks.length >= CFG.minTeamGames && plays > 0) passEntries.push([team, weeks.reduce((sum, w) => sum + w.passAtt, 0) / plays]);
+  }
+  const passRank = rankAll(passEntries, true).get(ctx.team);
+  const passRate = passEntries.find(([t]) => t === ctx.team)?.[1];
+
+  return {
+    median: percentile(values, MEDIAN),
+    share: shareSeason === null ? null : { season: shareSeason, recent: shares(ctx, recent) },
+    snaps: snapSeason === null ? null : { season: snapSeason, recent: snapPctOf(recent) },
+    implied: ctx.total !== null && ctx.teamLine !== null ? { points: ctx.total * HALF - ctx.teamLine * HALF, ppg } : null,
+    allow: allowRank && def && def.games > 0 ? { ...allowRank, perGame: allowedStat(def, ctx.stat) / def.games } : null,
+    eff: effRank && effRate !== null ? { ...effRank, rate: effRate } : null,
+    passRate: passRank && passRate !== undefined ? { rank: passRank.rank, n: passEntries.length, rate: passRate } : null,
+    role: defenseVsRoleMock(ctx),
+    similar: similarDefenseMock(ctx),
+  };
+}
+
 // ── the signals ─────────────────────────────────────────────────────────
 
 export function computeSignals(ctx: PropContext): SignalValue[] {
   const values = ctx.games.map((g) => statValue(g, ctx.stat));
   const last = values.slice(-LEAN_CONFIG.lastN);
-  const recent = ctx.games.slice(-CFG.recentGames);
   const rush = isRush(ctx.stat);
+  const f = matchupFacts(ctx);
 
   const l4Hits = last.length >= LEAN_CONFIG.lastN ? last.filter((v) => v > ctx.line).length - LEAN_CONFIG.lastN * HALF : null;
   const season = overShare(values, ctx.line);
-  const median = percentile(values, MEDIAN);
   const proj = projectProp(ctx);
-
-  const shareSeason = shares(ctx, ctx.games);
-  const shareRecent = shares(ctx, recent);
-  const usageTrend = shareSeason && shareRecent !== null ? (shareRecent - shareSeason) / shareSeason : null;
-  const snapSeason = snapPctOf(ctx.games);
-  const snapRecent = snapPctOf(recent);
-  const snapTrend = snapSeason !== null && snapRecent !== null ? snapRecent - snapSeason : null;
-
-  const ppg = teamPpg(ctx.teamLog, ctx.team, ctx.tables.asOfWeek);
-  const implied = ctx.total !== null && ctx.teamLine !== null ? ctx.total * HALF - ctx.teamLine * HALF : null;
-
-  const allowRank = oppAllowRank(ctx);
-  const effRank = defenseRanks(ctx.tables, `eff:${ctx.stat}`, (t) => allowedRate(t, ctx.stat), ctx.position).get(ctx.opp) ?? null;
   // Rank #1 = allows the least → the far end (+1) = allows the most = over.
-  const scaled = (r: { rank: number; n: number } | null) => (r ? rankScale(r.rank, r.n) : null);
-
-  const role = defenseVsRoleMock(ctx);
-  const similar = similarDefenseMock(ctx);
-
-  // Team pass rate rank among teams with enough games: #1 = most pass-heavy.
-  const passEntries: Array<readonly [string, number]> = [];
-  for (const [team, byWeek] of Object.entries(ctx.tables.teamWeek)) {
-    const weeks = Object.values(byWeek);
-    const plays = weeks.reduce((s, w) => s + w.passAtt + w.rushAtt, 0);
-    if (weeks.length >= CFG.minTeamGames && plays > 0) passEntries.push([team, weeks.reduce((s, w) => s + w.passAtt, 0) / plays]);
-  }
-  const passRank = rankAll(passEntries, true).get(ctx.team);
-  const passScaled = passRank ? rankScale(passRank.rank, passEntries.length) : null;
+  const scaled = (r: RankOf | null) => (r ? rankScale(r.rank, r.n) : null);
+  const passScaled = scaled(f.passRate);
 
   const x: Record<SignalId, number | null> = {
     l4Hits,
     seasonHit: season === null ? null : season - HALF,
-    medianEdge: median === null || ctx.line <= 0 ? null : (median - ctx.line) / ctx.line,
+    medianEdge: f.median === null || ctx.line <= 0 ? null : (f.median - ctx.line) / ctx.line,
     projEdge: proj ? proj.pOver - HALF : null,
-    usageTrend,
-    snapTrend,
-    impliedTotal: implied !== null && ppg !== null ? implied - ppg : null,
-    oppAllow: scaled(allowRank),
-    oppEff: scaled(effRank),
-    defVsRole: role ? role.overs / role.cells.length - HALF : null,
-    similarDef: similar ? similar.overs / similar.games.length - HALF : null,
+    usageTrend: f.share && f.share.season && f.share.recent !== null ? (f.share.recent - f.share.season) / f.share.season : null,
+    snapTrend: f.snaps && f.snaps.recent !== null ? f.snaps.recent - f.snaps.season : null,
+    impliedTotal: f.implied && f.implied.ppg !== null ? f.implied.points - f.implied.ppg : null,
+    oppAllow: scaled(f.allow),
+    oppEff: scaled(f.eff),
+    defVsRole: f.role ? f.role.overs / f.role.cells.length - HALF : null,
+    similarDef: f.similar ? f.similar.overs / f.similar.games.length - HALF : null,
     // Rank #1 = most pass-heavy → −(scale): pass-heavy = + for receiving, flipped for rushing.
     passRate: passScaled === null ? null : rush ? passScaled : -passScaled,
     // −3 = favored: rushing likes a lead (+3), receiving likes chasing (−3 → getting points = +).

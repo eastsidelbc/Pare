@@ -12,6 +12,7 @@ import { FavoritesProvider } from '@/components/FavoritesProvider';
 import type { FpaTable } from '@/lib/myteam/fpa';
 import { getTeamByAbbr } from '@/lib/teams';
 import type { Matchup, MatchupOdds } from '@/lib/schedule';
+import type { PropTables } from '../tables';
 import type { LeansBundle, LeansPlayer, PlayerGame, SavedProp, TeamGame } from '../types';
 
 export const WEEK = 7;
@@ -56,6 +57,31 @@ export function bundle(): LeansBundle {
       LV: { 7: { opp: 'ATL', home: true, kickoff: '2026-10-25T20:05:00.000Z', eventId: '1' } },
     },
     generatedAt: '2026-10-14T00:00:00.000Z',
+  };
+}
+
+/**
+ * Prop engine v2 tables (hand-built): LV allows RBs the most rush yds (132 / game, the rest
+ * 100), Bijan is ATL's RB1 (LV's last 5 RB1s ran for 90 / 70 / 110 / 95 / 120), London its WR1
+ * (LV's last 4 WR1s caught 6 / 5 / 7 / 4, WR2s 3 / 4 / 2 / 5).
+ */
+export function v2Tables(): PropTables {
+  const teams = [...FILLERS, 'ATL', 'LV'];
+  const rb = (t: string) => ({ games: 6, rec: 24, tgt: 30, recYd: 180, rushAtt: 120, rushYd: t === 'LV' ? 792 : 600 });
+  const weeks = (passAtt: number) => Object.fromEntries(WEEKS.map((w) => [w, { tgt: 32, rushAtt: 26, passAtt }]));
+  return {
+    asOfWeek: WEEK,
+    allow: Object.fromEntries(teams.map((t) => [t, { RB: rb(t) }])),
+    league: { RB: { games: 6 * teams.length, rec: 24 * teams.length, tgt: 30 * teams.length, recYd: 180 * teams.length, rushAtt: 120 * teams.length, rushYd: 600 * teams.length + 192 } },
+    teamWeek: Object.fromEntries(teams.map((t, i) => [t, weeks(t === 'ATL' ? 40 : 30 + (i % 5))])),
+    roleLog: {
+      LV: {
+        RB1: [90, 70, 110, 95, 120].map((rushYd, i) => ({ week: i + 2, team: FILLERS[i], playerId: `f${i}`, rec: 3, recYd: 20, rushYd })),
+        WR1: [6, 5, 7, 4].map((rec, i) => ({ week: i + 3, team: FILLERS[i], playerId: `w1${i}`, rec, recYd: rec * 12, rushYd: 0 })),
+        WR2: [3, 4, 2, 5].map((rec, i) => ({ week: i + 3, team: FILLERS[i], playerId: `w2${i}`, rec, recYd: rec * 10, rushYd: 0 })),
+      },
+    },
+    roles: { [BIJAN.id]: 'RB1', [LONDON.id]: 'WR1' },
   };
 }
 

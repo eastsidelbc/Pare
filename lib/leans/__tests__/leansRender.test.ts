@@ -11,7 +11,8 @@ import PropDetailView from '@/components/leans/PropDetailView';
 import { buildRanks, cellFor } from '@/lib/myteam/viewModel';
 import LeansListView, { groupByDay } from '@/components/leans/LeansListView';
 import { evaluateProp, fpaBefore, leagueFormFor, leansForGame, propWhy, ratingFor, whyFor } from '../evaluate';
-import { BIJAN, JEANTY, LONDON, bundle, matchup, render, savedProp } from './renderFixtures';
+import { propMatchupData } from '../matchupData';
+import { BIJAN, JEANTY, LONDON, ODDS, bundle, matchup, render, savedProp, v2Tables } from './renderFixtures';
 
 const FOOTER = '21+ · Info only, not betting advice · <span class="whitespace-nowrap">Gambling problem? 1-800-GAMBLER</span>';
 
@@ -138,6 +139,44 @@ describe('Leans prop detail (/leans/prop/[propId])', () => {
   it('prop: not enough games (2 played)', () => {
     expect(thin).toContain('Not enough games yet');
     expect(thin).toContain('has played 2 games so far');
+  });
+});
+
+describe('Leans prop detail — matchup data (prop engine v2, info only)', () => {
+  const b = { ...bundle(), tables: v2Tables() };
+  const e = evaluateProp(savedProp(), b);
+  const data = propMatchupData(e, b, ODDS);
+  const html = render(createElement(PropDetailView, { e, why: propWhy(e, b), loading: false, data }));
+
+  it('prop: matchup data block with the defense-vs-role row and facts', () => {
+    expect(html).toContain('Matchup data · info only');
+    expect(html).toMatch(/vs RB1s, last 5: LV allowed <\/span><b[^>]*>97<\/b><span> rush yds · over 85\.5 in <\/span><b[^>]*>4 of 5<\/b>/);
+    expect(html).toContain('LV allows rush yds / game to RBs');
+    expect(html).toContain('ATL points the line implies');
+  });
+  it('prop: data rows never add a lean (one lean pill only, the v1 one)', () => {
+    expect(html.match(/data-lean=/g)).toHaveLength(1);
+  });
+  it('prop: no tables in the bundle → no matchup data block', () => {
+    expect(propMatchupData(e, bundle(), ODDS)).toBeNull();
+    const plain = render(createElement(PropDetailView, { e, why: propWhy(e, bundle()), loading: false }));
+    expect(plain).not.toContain('data-matchup-data');
+  });
+  it('prop: receptions → the defense vs each receiver role, his role marked; rushing → none', () => {
+    const rec = evaluateProp(savedProp({ id: 'p8', playerId: LONDON.id, playerName: LONDON.name, position: 'WR', stat: 'rec', line: 5.5 }), b);
+    const d = propMatchupData(rec, b, ODDS);
+    expect(d?.roles.map((r) => [r.label, r.value])).toEqual([
+      ["vs WR1s, last 4 · **Drake's role**", '5.5'],
+      ['vs WR2s, last 4', '3.5'],
+      ['vs RB1s, last 5', '3'],
+    ]);
+    expect(data?.roles).toEqual([]);
+    const out = render(createElement(PropDetailView, { e: rec, why: propWhy(rec, b), loading: false, data: d }));
+    expect(out).toContain('LV vs each receiver · receptions / game');
+  });
+  it('prop: anytime TD has no matchup data', () => {
+    const td = evaluateProp(savedProp({ id: 'p9', stat: 'anytime_td', line: 0.5 }), b);
+    expect(propMatchupData(td, b, ODDS)).toBeNull();
   });
 });
 

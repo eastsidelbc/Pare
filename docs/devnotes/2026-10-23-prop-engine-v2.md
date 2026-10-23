@@ -1,4 +1,4 @@
-# 2026-10-23 — Prop engine v2: signals, backtest, held-out grade (A1–A5)
+# 2026-10-23 — Prop engine v2: signals, backtest, held-out grade, matchup data rows (A1–A6)
 
 Branch `feat/prop-engine-v2`. Plan: `docs/plans/pasted-content-id-fcbb-the-prop-deep-crescent.md`.
 Pre-registration: `docs/plans/2026-10-23-prop-engine-v2/preregistration.md`. Report:
@@ -9,7 +9,7 @@ Kobe wanted prop leans tailored to the stat, the position and the opponent: more
 all agree", what a defense allows to each role (WR1 / WR2 / RB1 …), a "mock" of the prop against defenses like
 tonight's, and a real backtest with an out-of-sample test before anything goes live.
 
-## What was built (nothing user-visible yet — the live engine still runs v1)
+## What was built in A1–A5 (research; the user-visible part is A6 below)
 - `lib/leans/roles.ts` — role going into a week: WR1–3 / TE1 by target share, RB1–2 by touch share, over the
   games he played for that team before the week, shrunk; candidates passed in (who played / healthy roster).
 - `lib/leans/tables.ts` — `buildPropTables(lines, week)`: defense allowance per position, league averages, team
@@ -43,11 +43,31 @@ tonight's, and a real backtest with an out-of-sample test before anything goes l
   `propSignals.test.ts`, logistic tests).
 - `node scripts/leans-gates.mjs l3` 5/5 with the widened literal scan.
 
-## Open — needs Kobe's call before A6 (wiring into the app)
-- Ship the 3 units as live leans (labelled with their held-out record + "beat always-under"), or keep v2 as data
-  rows only. Mock rows + signal rows can ship either way.
+## Decision (Kobe, after reading the report): data rows only — A6
+No v2 lean ships; the v1 pill and its 3 checks stay exactly as they were. ADR `docs/adr/2026-10-23-prop-engine-v2.md`.
+`PROP_V2_SHIP` stays in config as the grade's record, not wired.
+
+What A6 added:
+- `LeansBundle.tables` (`lib/leans/bundle.ts`): `buildPropTables(lines, week)` with roles from the healthy roster
+  (Sleeper map, minus D / O / IR); per request trimmed to the asked teams' roles + their opponents' role logs.
+  Dev, ATL + MIA: bundle 101.6 KB raw / 14.0 KB gzipped, of which tables 22.2 KB / 3.7 KB. (Plan said a separate
+  `/api/leans/tables`; trimming inside the bundle was smaller and needs no new endpoint or hook — my call.)
+- `matchupFacts` (`propSignals.ts`): the numbers behind the signals, shared with `computeSignals` (refactor checked:
+  identical 2025 feature hash `57ca0246…` before / after).
+- `lib/leans/matchupData.ts` + `components/leans/MatchupData.tsx`: "Matchup data · info only" in the prop card —
+  defense vs his role (last ≤ 6, hit dots), vs similar defenses (hit dots), receiving props: the defense vs each
+  receiver role (WR1 / WR2 / WR3 / TE1 / RB1 — Kobe's "last 6 average per receiver"), and the facts box. No
+  projections / P(over) (2026-10-23 backtest decision).
+- Live sample (dev, week 7, SF defense): Bijan rush yds — "vs RB1s, last 5: SF allowed 58.4 rush yds · over 75.5
+  in 1 of 5"; London receptions — SF vs WR1s 6.2 / WR2s 1.6 / WR3s 2.2 / TE1s 4.4 / RB1s 3.2 per game.
+- Docs: design-system §9.5 row, DATA_SOURCES §7, data-catalog (ESPN roster, `pass_att`, `rush_att`), CLAUDE.md.
+
+Verified after A6: `npm run check` clean; `npm run test:run` 566 pass (new render tests: block + role row, one lean
+pill only, hidden without tables, none for anytime TD, per-role table); leans gates l3 5/5, l5 14/15 and l6 16/17 —
+the only failures are the build step (dev holds :4000). Not run: `npm run build` (stop dev first). UI: Kobe to check
+a prop screen on :4000 at 393px.
 
 ## Risks
 - 2025 isn't perfectly unseen (v1's 2025 results were looked at while designing); opening lines only; live
   shows current lines.
-- Small samples: 63–285 bets per shipped unit; p-values 0.13–0.37.
+- Small samples: 63–285 bets per gate-passing unit; p-values 0.13–0.37.

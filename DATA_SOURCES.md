@@ -221,7 +221,10 @@ No new upstream. Everything Leans shows comes from sources above, reused server-
 | Not shown yet | — | defense **yards per carry** — box scores carry `rushingAttempts` since 2026-10-23 (parsed for Compare L4, §8), but the Leans why-row isn't built |
 
 `GET /api/leans/data?teams=ATL,LV` (`lib/leans/bundle.ts`, `server-only`, `force-dynamic`, `private, no-store`): one
-shared in-memory bundle per 10 min (`createKeyedCache`, last good on failure; a missing completed week throws so it
+shared in-memory bundle per 10 min (since 2026-10-23 it also carries `tables` = `buildPropTables(lines, week)`
+(`lib/leans/tables.ts`): every defense's allowance per position, league averages, team volume per week, roles going
+in for the asked teams' players (healthy roster = Sleeper map minus D / O / IR), and role logs only for the
+defenses they face — +22 KB raw / ~3.7 KB gzipped for two teams; player games also carry targets, carries, snaps) (`createKeyedCache`, last good on failure; a missing completed week throws so it
 never skews ranks), then filtered to the asked teams' players + schedule. Carries **team abbreviations only**. ~65 KB
 for two teams, ~1.5 s cold. Lean thresholds: `lib/leans/config.ts`.
 

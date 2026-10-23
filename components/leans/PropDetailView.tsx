@@ -3,7 +3,8 @@
  * One deep card: the prop card body (PropBody) + "Why — 3 of 3 signals agree" (or
  * "Why no lean — signals split (1 of 3)") with the three checks; "How Pare makes a
  * lean" below it. (Edit line / Remove retired with typed lines, 2026-10-23.) The player row
- * opens the player-vs-defense screen.
+ * opens the player-vs-defense screen. Under the checks: "Matchup data" (prop engine v2 facts +
+ * the defense-vs-role and similar-defenses history rows — info only, no lean).
  */
 
 'use client';
@@ -11,7 +12,9 @@
 import { useState } from 'react';
 import { Info } from 'lucide-react';
 import type { EvaluatedProp, WhyRow } from '@/lib/leans/evaluate';
+import type { MatchupData as MatchupDataModel } from '@/lib/leans/matchupData';
 import LeansFooter from './LeansFooter';
+import MatchupData from './MatchupData';
 import { PROP_CARD_STYLE, PropBody } from './PropCard';
 import { SignalList } from './ui';
 
@@ -23,9 +26,11 @@ export interface PropDetailViewProps {
   why: readonly WhyRow[];
   /** The bundle is still loading (vs. loaded without this player). */
   loading: boolean;
+  /** Prop engine v2 data rows; null = not available (no tables yet, anytime TD). */
+  data?: MatchupDataModel | null;
 }
 
-export default function PropDetailView({ e, why, loading }: PropDetailViewProps) {
+export default function PropDetailView({ e, why, loading, data = null }: PropDetailViewProps) {
   const [how, setHow] = useState(false);
   const lean = e.lean;
   return (
@@ -47,6 +52,7 @@ export default function PropDetailView({ e, why, loading }: PropDetailViewProps)
         ) : (
           <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--subtext)' }}>{loading ? 'Checking the data…' : 'No data for this player yet.'}</p>
         )}
+        {data && <MatchupData data={data} side={e.prop.side} opp={e.prop.opp} stat={e.prop.stat} />}
       </div>
       <button
         type="button"

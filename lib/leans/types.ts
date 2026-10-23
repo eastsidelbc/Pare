@@ -7,6 +7,7 @@ import type { DefenseGame } from '@/lib/myteam/defenseProfile';
 import type { FpaTable } from '@/lib/myteam/fpa';
 import type { TeamSchedule } from '@/lib/myteam/schedule';
 import type { InjuryTag } from '@/lib/myteam/types';
+import type { PropTables } from './tables';
 
 /** What the data says about one line. `side` = spread / moneyline lean (with `side` set). */
 export type LeanVerdict = 'over' | 'under' | 'side' | 'none' | 'not-enough';
@@ -93,6 +94,12 @@ export interface LeansBundle {
   players: LeansPlayer[];
   /** Only the requested teams (next-5 week cells). */
   schedule: TeamSchedule;
+  /**
+   * Prop engine v2 tables as of this week (lib/leans/tables.ts): league-wide allowance + team
+   * volume, roles for the requested teams' players, role logs only for their opponents.
+   * Optional so older fixtures / cached copies still parse.
+   */
+  tables?: PropTables;
   generatedAt: string;
 }
 
