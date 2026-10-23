@@ -53,6 +53,15 @@ export function toPlayerGame(line: PlayerGameLine): PlayerGame {
     att: stat(line, 'rush_att'),
     snp: line.stats.off_snp ?? null,
     tmSnp: line.stats.tm_off_snp ?? null,
+    air: stat(line, 'rec_air_yd'),
+    rzTgt: stat(line, 'rec_rz_tgt'),
+    rzAtt: stat(line, 'rush_rz_att'),
+    yac: stat(line, 'rec_yar'),
+    rushYac: stat(line, 'rush_yac'),
+    recFd: stat(line, 'rec_fd'),
+    rushFd: stat(line, 'rush_fd'),
+    drop: stat(line, 'rec_drop'),
+    btkl: stat(line, 'rush_btkl'),
   };
 }
 

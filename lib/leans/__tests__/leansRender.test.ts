@@ -187,6 +187,38 @@ describe('Leans prop detail — matchup data (prop engine v2, info only)', () =>
   });
 });
 
+describe('Leans week by week (prop research v3)', () => {
+  const b = { ...bundle(), tables: v2Tables() };
+  const e = evaluateProp(savedProp(), b);
+  const data = propMatchupData(e, b, ODDS);
+
+  it('prop: his weeks newest first, dot = cleared tonight’s line', async () => {
+    const { default: PropHistory } = await import('@/components/leans/PropHistory');
+    const html = render(createElement(PropHistory, { his: data?.his ?? [], defense: data?.defense ?? [], name: BIJAN.name, opp: 'LV', position: 'RB', stat: 'rush_yd', side: 'over', role: data?.role ?? null }));
+    expect(html).toContain('Week by week');
+    const weeks = [...html.matchAll(/data-hit="(yes|no)"/g)].map((m) => m[1]);
+    // Bijan 64, 92, 112, 71, 97, 104 (W1–W6) vs 85.5 → newest first: W6 yes, W5 yes, W4 no, W3 yes, W2 yes, W1 no.
+    expect(weeks).toEqual(['yes', 'yes', 'no', 'yes', 'yes', 'no']);
+  });
+  it('prop: the defense’s weeks — who it faced, allowed to RBs, his role’s player by name', async () => {
+    const { default: PropHistory } = await import('@/components/leans/PropHistory');
+    const html = render(createElement(PropHistory, { his: data?.his ?? [], defense: data?.defense ?? [], name: BIJAN.name, opp: 'LV', position: 'RB', stat: 'rush_yd', side: 'over', role: 'RB1', initialView: 'def' }));
+    expect(html).toContain('data-view="def"');
+    expect(html).toContain('RB1 that week');
+    expect(html).toContain('I. Pacheco');
+    expect((html.match(/role="row"/g) ?? []).length).toBe(1 + 6);
+  });
+  it('player: game log Usage view (targets, carries, share, snaps, aDOT, red zone)', async () => {
+    const { default: GameLog } = await import('@/components/leans/GameLog');
+    const html = render(createElement(GameLog, { games: BIJAN.games, position: 'RB', tables: v2Tables(), initialView: 'usage' }));
+    expect(html).toContain('data-view="usage"');
+    for (const h of ['Tgt', 'Car', 'Share', 'Snap', 'aDOT', 'RZ']) expect(html).toContain(`>${h}</span>`);
+  });
+  it('prop: depth rows — red-zone looks the defense allows, with a rank', () => {
+    expect(data?.rows.some((r) => r.label === 'LV allows red-zone looks / game to RBs' && r.rank.startsWith('#'))).toBe(true);
+  });
+});
+
 describe('Leans player vs defense (/leans/player/[playerId])', () => {
   const b = bundle();
   const m = matchup('ATL', 'LV');

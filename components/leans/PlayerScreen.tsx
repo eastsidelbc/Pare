@@ -100,6 +100,7 @@ export default function PlayerScreen({ playerId, gameId }: { playerId: string; g
         weekRange={weekRange}
         bars={view.bars}
         propsHref={`${gameHref(gameId)}#props`}
+        tables={bundle?.tables ?? null}
       />
     </LeansShell>
   );

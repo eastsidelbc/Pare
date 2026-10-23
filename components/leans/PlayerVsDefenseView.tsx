@@ -8,7 +8,7 @@
  *     why-stats ("Rush yds / game  132.1  #29")
  *     BIJAN · RUSH YDS, LAST 4   neutral --subtext bars (team color = identity, tier = matchup)
  *     NEXT 5 WEEKS               My Team week cells ]
- *   SEASON GAME LOG            W · OPP · RUSH · REC · REC YD · TD, newest first (Wave C1)
+ *   SEASON GAME LOG            Stats | Usage (W · OPP · RUSH · REC · REC YD · TD / TGT · CAR · SHARE · SNAP · aDOT · RZ)
  *   [ See prop lines for Bijan › ]
  */
 
@@ -27,6 +27,8 @@ import { allowsText } from '@/lib/leans/copy';
 import { rankLabel } from '@/lib/leans/format';
 import type { LeansPlayer } from '@/lib/leans/types';
 import type { Matchup } from '@/lib/schedule';
+import type { PropTables } from '@/lib/leans/tables';
+import GameLog from './GameLog';
 import LeansFooter from './LeansFooter';
 import { circlePlayer } from './PropRow';
 import { LABEL9, WhyList } from './ui';
@@ -47,42 +49,12 @@ export interface PlayerVsDefenseViewProps {
   bars: { label: string; games: ReadonlyArray<{ week: number; value: number }> };
   /** The game screen's Props section (book lines for this game). */
   propsHref: string;
+  /** Prop engine tables (team totals for the game log's Usage view). */
+  tables?: PropTables | null;
 }
 
-const LOG_COLS = '34px minmax(0,1fr) repeat(4, minmax(0,.9fr))';
-
-/** Every game this season, newest first (Wave C1 — from the bundle, no extra request). */
-export function GameLog({ games }: { games: LeansPlayer['games'] }) {
-  if (games.length === 0) return null;
-  const rows = [...games].sort((a, b) => b.week - a.week);
-  const cell = { fontSize: 12, fontWeight: 700, color: 'var(--text)', textAlign: 'center' as const };
-  return (
-    <section data-gamelog aria-label="Season game log" className="flex flex-col" style={{ ...LIST_CARD, padding: '10px 12px', gap: 6 }}>
-      <div style={LABEL9}>Season game log</div>
-      <div role="table" aria-label="Season game log">
-        <div role="row" className="grid items-center" style={{ gridTemplateColumns: LOG_COLS, height: 22, borderBottom: '1px solid var(--hairline)', ...LABEL9 }}>
-          {['W', 'Opp', 'Rush', 'Rec', 'Rec yd', 'TD'].map((h, i) => (
-            <span key={h} role="columnheader" style={{ textAlign: i < 2 ? 'left' : 'center' }}>
-              {h}
-            </span>
-          ))}
-        </div>
-        {rows.map((g, i) => (
-          <div key={g.week} role="row" className="grid items-center tabular-nums" style={{ gridTemplateColumns: LOG_COLS, height: 32, borderTop: i > 0 ? '1px solid var(--hairline)' : 'none' }}>
-            <span role="cell" style={{ ...cell, textAlign: 'left', color: 'var(--subtext)' }}>{g.week}</span>
-            <span role="cell" style={{ textAlign: 'left' }}>
-              <TeamAbbr abbr={g.opp} size={12} />
-            </span>
-            <span role="cell" style={cell}>{g.rush_yd}</span>
-            <span role="cell" style={cell}>{g.rec}</span>
-            <span role="cell" style={cell}>{g.rec_yd}</span>
-            <span role="cell" style={{ ...cell, color: g.rush_td + g.rec_td > 0 ? 'var(--text)' : 'var(--muted)' }}>{g.rush_td + g.rec_td}</span>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
+/** The season game log lives in ./GameLog (Stats | Usage toggle, 2026-10-23); re-exported for old imports. */
+export { default as GameLog } from './GameLog';
 
 const statValue = (s: WhyStat) => (Number.isFinite(s.value) ? s.value.toFixed(1) : '—');
 
@@ -112,7 +84,7 @@ function LastBars({ games }: { games: PlayerVsDefenseViewProps['bars']['games'] 
   );
 }
 
-export default function PlayerVsDefenseView({ player, matchup, window, onWindow, rating, of, why, cells, weekRange, bars, propsHref }: PlayerVsDefenseViewProps) {
+export default function PlayerVsDefenseView({ player, matchup, window, onWindow, rating, of, why, cells, weekRange, bars, propsHref, tables = null }: PlayerVsDefenseViewProps) {
   const home = player.team === matchup.home.abbr;
   const opp = home ? matchup.away.abbr : matchup.home.abbr;
   const first = player.name.split(/\s+/)[0];
@@ -176,7 +148,7 @@ export default function PlayerVsDefenseView({ player, matchup, window, onWindow,
         )}
       </div>
 
-      <GameLog games={player.games} />
+      <GameLog games={player.games} position={player.position} tables={tables} />
 
       <Link
         href={propsHref}

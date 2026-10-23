@@ -5,6 +5,7 @@
  * for the current week (`/api/leans/tables`), the backtest once per week — the same code.
  *
  *   allow    defense → position → what it allowed per game (receptions, targets, yards …)
+ *   allowWeeks  defense → position → the same, week by week, with the offense it faced
  *   league   position → the league's per-game average (priors + "factor vs league")
  *   teamWeek team → week → its offense volume (targets, carries, pass attempts)
  *   roleLog  defense → role → the opposing WR1 / RB1 … it faced, newest last (≤ roleLastN)
@@ -28,12 +29,27 @@ export interface VolumeTotals {
   recYd: number;
   rushAtt: number;
   rushYd: number;
+  /** Air yards, red-zone targets / carries and yards after the catch allowed (research v3). */
+  air: number;
+  rzTgt: number;
+  rzAtt: number;
+  yac: number;
+}
+
+/** One week of what a defense allowed to a position, and who it faced. */
+export interface AllowWeek extends Omit<VolumeTotals, 'games'> {
+  week: number;
+  team: string;
 }
 
 export interface TeamWeekVolume {
   tgt: number;
   rushAtt: number;
   passAtt: number;
+  /** Air yards + red-zone targets / carries (research v3; air / red-zone shares). */
+  air: number;
+  rzTgt: number;
+  rzAtt: number;
 }
 
 export interface RoleCell {
@@ -49,22 +65,29 @@ export interface RoleCell {
 export interface PropTables {
   asOfWeek: number;
   allow: Record<string, Partial<Record<PropPosition, VolumeTotals>>>;
+  allowWeeks: Record<string, Partial<Record<PropPosition, AllowWeek[]>>>;
   league: Partial<Record<PropPosition, VolumeTotals>>;
   teamWeek: Record<string, Record<number, TeamWeekVolume>>;
   roleLog: Record<string, Partial<Record<Role, RoleCell[]>>>;
   roles: Record<string, Role>;
+  /** Names for the role-log players (the live bundle adds them; pure builds leave it out). */
+  names?: Record<string, string>;
 }
 
 const stat = (l: PlayerGameLine, k: string) => l.stats[k] ?? 0;
-const emptyTotals = (): VolumeTotals => ({ games: 0, rec: 0, tgt: 0, recYd: 0, rushAtt: 0, rushYd: 0 });
+const emptyTotals = (): VolumeTotals => ({ games: 0, rec: 0, tgt: 0, recYd: 0, rushAtt: 0, rushYd: 0, air: 0, rzTgt: 0, rzAtt: 0, yac: 0 });
 const isPropPosition = (p: string): p is PropPosition => (POSITIONS as readonly string[]).includes(p);
 
-function addLine(t: VolumeTotals, l: PlayerGameLine): void {
+function addLine(t: Omit<VolumeTotals, 'games'>, l: PlayerGameLine): void {
   t.rec += stat(l, 'rec');
   t.tgt += stat(l, 'rec_tgt');
   t.recYd += stat(l, 'rec_yd');
   t.rushAtt += stat(l, 'rush_att');
   t.rushYd += stat(l, 'rush_yd');
+  t.air += stat(l, 'rec_air_yd');
+  t.rzTgt += stat(l, 'rec_rz_tgt');
+  t.rzAtt += stat(l, 'rush_rz_att');
+  t.yac += stat(l, 'rec_yar');
 }
 
 export interface BuildTablesOptions {
@@ -83,6 +106,7 @@ export function buildPropTables(allLines: readonly PlayerGameLine[], asOfWeek: n
 
   // Defense allowance + league average per position; a game = a week the defense was faced.
   const allow: PropTables['allow'] = {};
+  const allowWeeks: PropTables['allowWeeks'] = {};
   const defWeeks = new Map<string, Set<number>>();
   const league: PropTables['league'] = {};
   for (const l of lines) {
@@ -90,6 +114,13 @@ export function buildPropTables(allLines: readonly PlayerGameLine[], asOfWeek: n
     const byPos = (allow[l.opponent] ??= {});
     addLine((byPos[l.position] ??= emptyTotals()), l);
     addLine((league[l.position] ??= emptyTotals()), l);
+    const byWeek = ((allowWeeks[l.opponent] ??= {})[l.position] ??= []);
+    let w = byWeek.find((x) => x.week === l.week);
+    if (!w) {
+      w = { week: l.week, team: l.team, rec: 0, tgt: 0, recYd: 0, rushAtt: 0, rushYd: 0, air: 0, rzTgt: 0, rzAtt: 0, yac: 0 };
+      byWeek.push(w);
+    }
+    addLine(w, l);
     const weeks = defWeeks.get(l.opponent) ?? new Set<number>();
     weeks.add(l.week);
     defWeeks.set(l.opponent, weeks);
@@ -101,15 +132,19 @@ export function buildPropTables(allLines: readonly PlayerGameLine[], asOfWeek: n
     for (const t of Object.values(byPos)) t.games = games;
   }
   for (const t of Object.values(league)) t.games = leagueGames;
+  for (const byPos of Object.values(allowWeeks)) for (const list of Object.values(byPos)) list?.sort((a, b) => a.week - b.week);
 
   // Offense volume per team-week.
   const teamWeek: PropTables['teamWeek'] = {};
   for (const l of lines) {
     const byWeek = (teamWeek[l.team] ??= {});
-    const v = (byWeek[l.week] ??= { tgt: 0, rushAtt: 0, passAtt: 0 });
+    const v = (byWeek[l.week] ??= { tgt: 0, rushAtt: 0, passAtt: 0, air: 0, rzTgt: 0, rzAtt: 0 });
     v.tgt += stat(l, 'rec_tgt');
     v.rushAtt += stat(l, 'rush_att');
     v.passAtt += stat(l, 'pass_att');
+    v.air += stat(l, 'rec_air_yd');
+    v.rzTgt += stat(l, 'rec_rz_tgt');
+    v.rzAtt += stat(l, 'rush_rz_att');
   }
 
   // The roles each defense faced (role as of that earlier week), newest last.
@@ -137,5 +172,5 @@ export function buildPropTables(allLines: readonly PlayerGameLine[], asOfWeek: n
     for (const [id, role] of rolesAsOf(book, team, asOfWeek, candidates)) roles[id] = role;
   }
 
-  return { asOfWeek, allow, league, teamWeek, roleLog, roles };
+  return { asOfWeek, allow, allowWeeks, league, teamWeek, roleLog, roles };
 }

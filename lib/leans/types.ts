@@ -53,6 +53,20 @@ export interface PlayerGame {
   /** Offensive snaps and his team's; null = Sleeper sent none. */
   snp?: number | null;
   tmSnp?: number | null;
+  /**
+   * Depth + efficiency (prop research v3, 2026-10-23; absent key = 0 upstream): air yards on his
+   * targets, red-zone targets / carries, yards after the catch / after contact, receiving / rushing
+   * first downs, drops, broken tackles.
+   */
+  air?: number;
+  rzTgt?: number;
+  rzAtt?: number;
+  yac?: number;
+  rushYac?: number;
+  recFd?: number;
+  rushFd?: number;
+  drop?: number;
+  btkl?: number;
 }
 
 /** A player's role on his team going into a week (target share; RBs by touches). */

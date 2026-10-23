@@ -52,7 +52,7 @@ export default function PropDetailView({ e, why, loading, data = null }: PropDet
         ) : (
           <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--subtext)' }}>{loading ? 'Checking the data…' : 'No data for this player yet.'}</p>
         )}
-        {data && <MatchupData data={data} side={e.prop.side} opp={e.prop.opp} stat={e.prop.stat} />}
+        {data && <MatchupData data={data} side={e.prop.side} opp={e.prop.opp} stat={e.prop.stat} name={e.prop.playerName} position={e.prop.position} />}
       </div>
       <button
         type="button"

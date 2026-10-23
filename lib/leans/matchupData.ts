@@ -10,13 +10,16 @@
  * No projections or P(over) (they didn't beat the market — 2026-10-23 backtest decision).
  */
 
+import { rankAll } from '@/lib/ranking';
 import type { MatchupOdds } from '@/lib/schedule';
 import { LEAN_CONFIG } from './config';
 import { gamesBefore, type EvaluatedProp } from './evaluate';
 import { pct, PROP_STAT_SHORT, rankLabel } from './format';
 import { lineFor } from './gameLean';
+import { defenseWeeks, playerWeeks, type DefenseWeek, type PlayerWeek } from './history';
 import { cellValue, matchupFacts, type Bucket, type LineStat } from './propSignals';
-import type { LeansBundle, PropStat, Role } from './types';
+import type { PropTables, TeamWeekVolume, VolumeTotals } from './tables';
+import type { LeansBundle, PlayerGame, PropPosition, PropStat, Role } from './types';
 
 /** One fact row (the why-stats box recipe): label, value, rank ("#29" / "—"). */
 export interface DataRow {
@@ -46,6 +49,11 @@ export interface MatchupData {
    * (WR1 / WR2 / WR3 / TE1 / RB1), last ≤ 6 games — his role marked. Empty for rushing props.
    */
   roles: DataRow[];
+  /** Week by week (newest first): his games, and tonight's defense (prop research v3). */
+  his: PlayerWeek[];
+  defense: DefenseWeek[];
+  /** His role going in (WR1, RB1 …), null = none. */
+  role: Role | null;
   vsRole: MockRow | null;
   vsSimilar: MockRow | null;
 }
@@ -76,6 +84,62 @@ const BUCKET_TEXT: Readonly<Record<Bucket, string>> = {
 
 const ROLE_PLURAL = (r: Role) => `${r}s`;
 const RECEIVING_ROLES: readonly Role[] = ['WR1', 'WR2', 'WR3', 'TE1', 'RB1'];
+
+/** Defense rank on `value` among defenses with enough games: #1 = allows the least. */
+function defRank(tables: PropTables, position: PropPosition, opp: string, value: (t: VolumeTotals) => number | null): { value: number; rank: number } | null {
+  const entries: Array<readonly [string, number]> = [];
+  for (const [def, byPos] of Object.entries(tables.allow)) {
+    const t = byPos[position];
+    if (!t || t.games < LEAN_CONFIG.propV2.minTeamGames) continue;
+    const v = value(t);
+    if (v !== null) entries.push([def, v]);
+  }
+  const r = rankAll(entries, false).get(opp);
+  const v = entries.find(([d]) => d === opp)?.[1];
+  return r && v !== undefined ? { value: v, rank: r.rank } : null;
+}
+
+const sum = (games: readonly PlayerGame[], f: (g: PlayerGame) => number) => games.reduce((acc, g) => acc + f(g), 0);
+const per = (a: number, b: number) => (b > 0 ? a / b : null);
+
+/**
+ * Depth + efficiency rows (prop research v3, Kobe's picks: air yards + aDOT, red-zone looks,
+ * efficiency): his season numbers and what tonight's defense allows to his position.
+ */
+function depthRows(games: readonly PlayerGame[], tables: PropTables, opp: string, position: PropPosition, team: string, name: string, rushing: boolean): DataRow[] {
+  const rows: DataRow[] = [];
+  const tgt = sum(games, (g) => g.tgt ?? 0);
+  const att = sum(games, (g) => g.att ?? 0);
+  const rec = sum(games, (g) => g.rec);
+  const teamSum = (f: (t: TeamWeekVolume) => number) =>
+    games.reduce((acc, g) => {
+      const t = g.team ? tables.teamWeek[g.team]?.[g.week] : undefined;
+      return acc + (t ? f(t) : 0);
+    }, 0);
+  const push = (label: string, v: number | null, fmt: (n: number) => string, rank = '—') => {
+    if (v !== null && Number.isFinite(v)) rows.push({ label, value: fmt(v), rank });
+  };
+  const defRow = (label: string, value: (t: VolumeTotals) => number | null, fmt: (n: number) => string) => {
+    const r = defRank(tables, position, opp, value);
+    if (r) rows.push({ label: `${opp} allows ${label} to ${position}s`, value: fmt(r.value), rank: rankLabel(r.rank) });
+  };
+  if (!rushing) {
+    push(`${name}'s aDOT (air yds / target)`, per(sum(games, (g) => g.air ?? 0), tgt), one);
+    push(`${name}'s share of ${team} air yards`, per(sum(games, (g) => g.air ?? 0), teamSum((t) => t.air)), pct);
+    push(`${name}'s catch rate · drops`, per(rec, tgt), (v) => `${pct(v)} · ${sum(games, (g) => g.drop ?? 0)}`);
+    push(`${name}'s yds after catch / catch`, per(sum(games, (g) => g.yac ?? 0), rec), one);
+    push(`${name}'s 1st downs / target`, per(sum(games, (g) => g.recFd ?? 0), tgt), (v) => v.toFixed(2));
+    push(`${name}'s red-zone targets · share`, per(sum(games, (g) => g.rzTgt ?? 0), teamSum((t) => t.rzTgt)), (v) => `${sum(games, (g) => g.rzTgt ?? 0)} · ${pct(v)}`);
+    defRow('aDOT', (t) => per(t.air, t.tgt), one);
+    defRow('yds after catch / catch', (t) => per(t.yac, t.rec), one);
+  } else {
+    push(`${name}'s red-zone carries · share`, per(sum(games, (g) => g.rzAtt ?? 0), teamSum((t) => t.rzAtt)), (v) => `${sum(games, (g) => g.rzAtt ?? 0)} · ${pct(v)}`);
+    push(`${name}'s yds after contact / carry`, per(sum(games, (g) => g.rushYac ?? 0), att), one);
+    push(`${name}'s broken tackles · 1st downs / carry`, per(sum(games, (g) => g.rushFd ?? 0), att), (v) => `${sum(games, (g) => g.btkl ?? 0)} · ${v.toFixed(2)}`);
+  }
+  defRow('red-zone looks / game', (t) => per(t.rzTgt + t.rzAtt, t.games), one);
+  return rows;
+}
 
 /** Null when the bundle has no v2 tables yet, the player isn't in it, or it's an anytime-TD prop. */
 export function propMatchupData(e: EvaluatedProp, bundle: LeansBundle | null, odds: MatchupOdds | null): MatchupData | null {
@@ -121,6 +185,7 @@ export function propMatchupData(e: EvaluatedProp, bundle: LeansBundle | null, od
     rows.push({ label: `${prop.team} points the line implies${ppg}`, value: one(f.implied.points), rank: '—' });
   }
   if (f.passRate) rows.push({ label: `${prop.team} pass rate`, value: pct(f.passRate.rate), rank: rankLabel(f.passRate.rank) });
+  rows.push(...depthRows(games, tables, prop.opp, prop.position, prop.team, name, stat === 'rush_yd' || stat === 'rush_rec_yd'));
 
   const vsRole: MockRow | null = f.role
     ? {
@@ -145,5 +210,7 @@ export function propMatchupData(e: EvaluatedProp, bundle: LeansBundle | null, od
           return [{ label: `vs ${ROLE_PLURAL(role)}, last ${cells.length}${role === mine ? ` · **${name}'s role**` : ''}`, value: one(avg), rank: '—' }];
         })
       : [];
-  return { rows, roles, vsRole, vsSimilar };
+  const his = playerWeeks(games, prop.position, tables, stat, prop.line);
+  const defense = defenseWeeks(tables, prop.opp, prop.position, stat, mine ?? null, prop.line);
+  return { rows, roles, his, defense, role: mine ?? null, vsRole, vsSimilar };
 }
