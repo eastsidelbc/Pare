@@ -7,6 +7,8 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Added
+- **Fantasy: "Trending · free in your league"** (2026-10-23, branch `feat/data-rollout`) — under your roster: Sleeper's most-added players of the last 24 hours that nobody in your league has, only positions your league can start, with the add count ("412K adds").
+  - See: `docs/devnotes/2026-10-23-fantasy-waiver-watch.md`. `lib/myteam/waiver.ts`, provider `getWaiverWatch` (trending cached 15 min, shared), `components/myteam/WaiverWatch.tsx`, `LeagueBundle.waiver` (best-effort).
 - **Leans Market card: ESPN model row** (2026-10-23, branch `feat/data-rollout`) — ESPN's own win chance + projected margin (matchup predictor / FPI), labelled as ESPN's, next to the market's no-vig win chance. PIT @ NO: ESPN 60% / 40%, PIT by 2.6.
   - See: `docs/devnotes/2026-10-23-leans-market.md` (addendum). `parseModel` (`lib/leans/market.ts`), third optional call in `marketServer.ts`.
 - **Home: live down & distance** (2026-10-23, branch `feat/data-rollout`) — under the red live clock: "2nd & 7" and who has the ball ("KC ball"), gold-bright with "· RZ" in the red zone. Comes with the 5-second live poll we already run; nothing shows when ESPN sends no situation.

@@ -9,6 +9,7 @@
  */
 
 import type { LeagueSeason } from './leagueSeason';
+import type { WaiverPlayer } from './waiver';
 import type {
   FantasyLeague,
   FantasyRoster,
@@ -30,6 +31,8 @@ export interface FantasyProvider {
   getLivePoints(leagueId: string, userId: string, week: number): Promise<LivePoints | null>;
   /** Record, points rank, all-play luck, bench left over `weeks` (completed regular-season weeks); null = no roster. */
   getLeagueSeason(leagueId: string, userId: string, weeks: readonly number[]): Promise<LeagueSeason | null>;
+  /** The platform's most-added players (24h) nobody in this league rosters. */
+  getWaiverWatch(leagueId: string): Promise<WaiverPlayer[]>;
 }
 
 export interface StatLineSource {

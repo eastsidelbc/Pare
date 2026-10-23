@@ -23,6 +23,7 @@ import RosterView, { type RosterSection } from './RosterView';
 import { dateRangeText } from './style';
 import WeekBar from './WeekBar';
 import SeasonSummary from './SeasonSummary';
+import WaiverWatch from './WaiverWatch';
 
 interface Props {
   bundle: LeagueBundle;
@@ -182,6 +183,7 @@ export default function MyTeamScreen({
               },
             }}
           />
+          <WaiverWatch players={bundle.waiver} />
         </div>
         <PinnedPanel
           rows={pinnedRows}

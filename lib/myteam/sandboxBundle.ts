@@ -162,6 +162,11 @@ export function buildSandboxBundle(): LeagueBundle {
     schedule: sandboxSchedule(),
     fpa: sandboxFpa(),
     usage: sandboxUsage(),
+    waiver: [
+      { playerId: 'sbw1', name: 'Rico Dawson', position: 'WR', team: 'NYJ', adds: 412_300 },
+      { playerId: 'sbw2', name: 'Tate Morrow', position: 'RB', team: 'ARI', adds: 98_750 },
+      { playerId: 'sbw3', name: 'Wes Kimura', position: 'TE', team: 'SEA', adds: 12_400 },
+    ],
     leagueSeason: { wins: 5, losses: 1, ties: 0, pointsFor: 812.4, pointsRank: 2, teams: 10, benchLeft: 96.3, allPlay: { wins: 38, losses: 16, ties: 0 }, expectedWins: 4.22, luck: 0.78, weeks: 6 },
     defenseLog,
     offenseLog,

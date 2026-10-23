@@ -159,6 +159,8 @@ Per-user data (username, user/league ids, rosters, matchups) is **never** put in
 
 **Your season (2026-10-23, `lib/myteam/leagueSeason.ts`):** record + points from `/league/{id}/rosters` `settings` (`wins`/`losses`/`ties`, `fpts`+`fpts_decimal`/100, `ppts`+`ppts_decimal`/100); all-play from `/league/{id}/matchups/{week}` for every completed regular-season week (< `playoff_week_start`), cached 1h per league+week (`pastMatchups`). Best-effort: a failure leaves `LeagueBundle.leagueSeason` null, the roster still loads.
 
+**Waiver watch (2026-10-23, `lib/myteam/waiver.ts`):** `/v1/players/nfl/trending/add?lookback_hours=24&limit=50` (one shared copy, 15 min) minus every player on any roster in the league (`players` + `reserve` + `taxi` from the rosters call) → the first 5 at positions the league can start (`startablePositions` from `roster_positions`), names from the 24h player map. Best-effort (`LeagueBundle.waiver` null on failure).
+
 ### ESPN endpoints added for My Team (server-only, shared)
 | Endpoint | Used for | Cache |
 |---|---|---|

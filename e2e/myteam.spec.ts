@@ -217,6 +217,16 @@ test.describe('My Team', () => {
     await noHorizontalScroll(page);
   });
 
+  test('waiver watch (Wave B5): trending adds free in the league, under the roster', async ({ page }) => {
+    await openRoster(page);
+    const card = page.locator('[data-waiver]');
+    await expect(card).toBeVisible();
+    await expect(card.locator('li')).toHaveCount(3);
+    await expect(card).toContainText('Rico Dawson');
+    await expect(card).toContainText('412K');
+    await noHorizontalScroll(page);
+  });
+
   test('Season ⇄ Last 4 changes meter text; ⓘ opens its note', async ({ page }) => {
     await openRoster(page);
     const meters = page.locator('section[data-section="starters"] button[aria-expanded] [data-tier]');

@@ -15,6 +15,7 @@ import { toFantasyLeague, toFantasyUser, toLeagueDetail, type SleeperLeagueRaw, 
 import { findMyRoster, normalizeRoster, type SleeperPlayerInfo, type SleeperRoster } from './roster';
 import { SLEEPER_API, sleeperJson } from './http';
 import { buildLeagueSeason, type LeagueSeason } from '../leagueSeason';
+import { pickAvailable, startablePositions, type TrendingRaw, type WaiverPlayer } from '../waiver';
 
 const MIN = 60_000;
 const HOUR = 60 * MIN;
@@ -39,6 +40,10 @@ const rosters = createKeyedCache<FantasyRoster | null>({ ttlMs: 5 * MIN, max: 1_
 const matchups = createKeyedCache<SleeperMatchupRaw[]>({ ttlMs: MIN, max: 500 });
 /** Completed weeks' matchups ("Your season" all-play) — final, so an hour is plenty. */
 const pastMatchups = createKeyedCache<SleeperMatchupRaw[]>({ ttlMs: HOUR, max: 5_000 });
+/** Sleeper-wide trending adds (24h) — one shared copy, 15 min. */
+const trending = createKeyedCache<TrendingRaw[]>({ ttlMs: 15 * MIN, max: 2 });
+/** How deep into the trending list to look for players still available in a league. */
+const TRENDING_DEPTH = 50;
 
 function loadLeague(leagueId: string): Promise<LeagueRecord> {
   return leagues.get(
@@ -150,6 +155,25 @@ export const sleeperProvider: FantasyProvider = {
       ),
     );
     return buildLeagueSeason(list, mine.roster_id, scores);
+  },
+
+  async getWaiverWatch(leagueId): Promise<WaiverPlayer[]> {
+    const [list, league, adds, map] = await Promise.all([
+      loadRosterList(leagueId),
+      loadLeague(leagueId),
+      trending.get(
+        'add',
+        async () => {
+          const raw = await sleeperJson<TrendingRaw[] | null>(`${SLEEPER_API}/players/nfl/trending/add?lookback_hours=24&limit=${TRENDING_DEPTH}`);
+          if (!Array.isArray(raw)) throw new Error('trending missing');
+          return raw;
+        },
+        'myteam:trending',
+      ),
+      getPlayerMap(),
+    ]);
+    const owned = new Set(list.flatMap((r) => [...(r.players ?? []), ...(r.reserve ?? []), ...(r.taxi ?? [])]));
+    return pickAvailable(adds, owned, map, startablePositions(league.rosterPositions));
   },
 };
 

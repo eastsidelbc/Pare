@@ -2758,8 +2758,8 @@ Base: `https://api.sleeper.app/v1`
 
 | Field | Status |
 |---|---|
-| `player_id` | ⬜ Not used |
-| `count` | ⬜ Not used |
+| `player_id` | ✅ Used |
+| `count` | ✅ Used |
 
 #### state — 10 fields
 
