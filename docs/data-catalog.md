@@ -9,6 +9,7 @@
 >   **This file is the source of truth**; the page is a view of it.
 > - Probe IDs: team `6` (DAL), athlete `2577417` (Dak Prescott), event `401772694` (KC @ DAL, 2025 W13),
 >   upcoming event `401873009`. Full-season data = **2025** (`seasontype` 2 = regular). Both APIs default to **2026** now.
+>   Odds + props probed the same day on `401873009` (DraftKings, id 100) and `401772694` (ESPN BET, id 58).
 > - **Verified complete against live responses (2026-10-23):** all 288 ESPN core team stats (11 categories), all 260
 >   Sleeper stat keys (season + weeks 1 and 8), and every box-score team and player field in `/summary`. Other lists come
 >   from one live response each, so rarely-filled fields can be missing.
@@ -20,6 +21,7 @@
 
 - [Summary](#summary)
 - [What we could build next](#what-we-could-build-next)
+- [Formulas](#formulas)
 - [Traps found while probing](#traps-found-while-probing)
 - [Licensing](#licensing)
 - [Conventions and response shapes](#conventions-and-response-shapes)
@@ -44,6 +46,7 @@
   - [Opponent split · the "allowed" side](#opponent-split--the-allowed-side)
   - [Per-game team stats (310)](#per-game-team-stats-310)
   - [Game odds (3 books)](#game-odds-3-books)
+  - [Player + game props (propBets)](#player--game-props-propbets)
   - [Win probability (per play)](#win-probability-per-play)
   - [Matchup predictor](#matchup-predictor)
   - [Live game details](#live-game-details)
@@ -85,7 +88,7 @@
 
 | Provider | Endpoints that work | Pare uses | Fields listed | Fields used | Empty / wrong |
 |---|---|---|---|---|---|
-| ESPN | ~64 | 7 | 1275 | 92 (7%) | 83 |
+| ESPN | ~65 | 7 | 1294 | 92 (7%) | 83 |
 | Sleeper | ~29 | 8 | 493 | 48 (10%) | 3 |
 
 Counts are field slots in this catalog. A few names repeat across categories (e.g. `totalPoints` in several ESPN categories). Endpoint counts treat a card that groups several URLs (e.g. My Team's 5 Sleeper calls) as that many endpoints.
@@ -101,11 +104,20 @@ Ranked by value to an everyday fan for the effort. **Small** = a few lines in th
 | 3 | **New team stats fans know** — Red-zone TD % and scoring %, 4th-down %, time of possession, takeaways, turnover differential, sacks taken, completion %, passer rating, explosive plays (20+ yard runs and passes), yards after catch. | Small | Core team stats | Each new metric needs its higher/lower-is-better direction checked. |
 | 4 | **Fuller box score with no extra requests** — The summary we already download has defense (tackles, sacks, TFL, QB hits), kicking, punting and returns per player, plus drives, scoring plays, a win-probability line, officials and venue. | Medium | Site /summary | UI only; the data is already fetched. |
 | 5 | **Matchup preview odds** — ESPN's predictor and FPI give a win % and projected margin for every game, plus EPA by offense, defense and special teams. Good for the Home accordion and Leans. | Medium | Core predictor<br>Core powerindex |  |
-| 6 | **Line movement for Leans** — Core odds already returns open, close and current spreads, totals and moneylines from three books. We read only the first book's closing line. | Medium | Core odds |  |
+| 6 | **Line movement + prop lines for Leans** — Core odds already returns open, close and current spreads, totals and moneylines. We read only the first book's closing line. propBets adds ~1,000 player and game prop lines per game (open + current), so Leans can fill prop lines in instead of the user typing them, and 2025 lines still exist for a backtest. | Medium | Core odds<br>Core propBets | Decided 2026-10-23: prop lines auto-fill only. |
 | 7 | **Fantasy usage stats** — Snap %, target share, air yards, red-zone targets and carries, drops, broken tackles, and fantasy points allowed by position, for My Team start/sit and Leans. | Medium | Sleeper stat keys | Already in the weekly rows we fetch; just not read. |
 | 8 | **Projections, trending and roster %** — RotoWire projections per week, the most added and dropped players in the last 24h, and how often each player is rostered and started. | Medium | Sleeper projections<br>Sleeper trending<br>Sleeper research |  |
 | 9 | **Player pages** — Game logs, home/away/opponent/quarter splits, career stats, QBR and EPA, contracts, depth-chart slot and practice status. That's a full player screen for Leaders and Leans. | Big | Web gamelog + splits<br>Core QBR<br>Sleeper player map |  |
 | 10 | **Standings depth** — Home, road, division and conference records, clinch flags, games behind, and points per game for and against. | Small | Standings<br>Core record |  |
+
+## Formulas
+
+Pare's own metrics built on top of these fields (Pythagorean wins, points per drive, no-vig odds, prop over-probability, target share, …) are planned, not built yet:
+
+- Ideas, odds findings and the rollout waves for unused data: [`docs/plans/check-datacatalog-md-and-come-vivid-bunny.md`](plans/check-datacatalog-md-and-come-vivid-bunny.md)
+- Formula library plan (code will live in `lib/formulas/`): [`docs/plans/2026-10-23-formula-library.md`](plans/2026-10-23-formula-library.md)
+
+When a formula ships, list it here with the fields it reads.
 
 ## Traps found while probing
 
@@ -122,6 +134,11 @@ Ranked by value to an everyday fan for the effort. **Small** = a few lines in th
 - **`interceptions` appears twice** in core team stats: `passing.interceptions` = thrown, `defensiveInterceptions.interceptions` = made. Pare's flattener keeps the first occurrence (thrown) — intended for offense.
 - **Box-score `interceptions`** row appears twice in `boxscore.teams[].statistics`.
 - **ESPN QBR at team level** shows `--` in the summary box score.
+- **Odds books change per game and season.** The upcoming 2026 game returned only DraftKings (100); the 2025 final returned DraftKings (100, no props), ESPN BET (58, props) and ESPN Bet Live (59, props). Never hardcode a provider id — pick the first book in `/odds` whose `propBets` link exists.
+- **propBets is paged.** `limit=1000` still gives 2 pages (~1,050–1,100 items); read `pageCount` and fetch every page.
+- **Props have several lines per player and market** (main line plus alternates). Pick the main line: the one with `over`/`under` prices when present, otherwise the median `target`.
+- **Prop prices are partial.** 2025 ESPN BET: ~200 of ~1,100 props carry `over`/`under` prices. 2026 DraftKings: none — only `target`. Assume -110 when a price is missing.
+- **TD-scorer props.** 2025: Anytime TD has `target` 0.5. 2026 DraftKings: TD-scorer markets come back with empty `open`/`current`.
 
 ## Licensing
 
@@ -1429,7 +1446,7 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 - **Pare uses it for:** Home closing line on final games (fallback when the scoreboard has dropped odds)
 - **Code:** `lib/schedule.ts:208-236`
 - **Cache:** 6h
-- **Notes:** Providers: DraftKings (100), ESPN BET (58), ESPN Bet Live (59). Pare reads only the first item's details + overUnder.
+- **Notes:** Providers: DraftKings (100), ESPN BET (58), ESPN Bet Live (59) — which ones appear changes per game (the upcoming 2026 game had DraftKings only). Pare reads only the first item's details + overUnder. Upcoming probe: home spread open -3 → current +4.5.
 
 #### line — 9 fields, 2 used
 
@@ -1443,7 +1460,7 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 | `underOdds` | ⬜ Not used |
 | `moneylineWinner` | ⬜ Not used |
 | `spreadWinner` | ⬜ Not used |
-| `propBets` | ⬜ Not used |
+| `propBets` | ⬜ Not used — a `$ref` to the [propBets](#player--game-props-propbets) list |
 
 #### prices (open / close / current) — 16 fields
 
@@ -1467,6 +1484,45 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 | `homeTeamOdds.current.pointSpread` | ⬜ Not used |
 | `favorite` | ⬜ Not used |
 | `underdog` | ⬜ Not used |
+
+### Player + game props (propBets)
+
+⬜ **Available, not used**
+
+- **URL:** `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/events/{id}/competitions/{id}/odds/{providerId}/propBets?limit=1000&page={n}`
+- **Notes:** Player, team and game prop lines from one book. ~1,044 items (upcoming 2026 game, DraftKings 100) and ~1,105 (2025 final, ESPN BET 58), 2 pages each. Still served for finished 2025 games, with the last pregame line in `current` — enough history for a backtest. Player name/position = follow the `athlete` `$ref`. Traps: see [Traps](#traps-found-while-probing) (provider per game, paging, alternate lines, partial prices).
+
+#### item — 10 fields
+
+> Each price comes as `american`, `decimal`, `fraction` and `value` (decimal). A finished game has no `close`.
+
+| Field | Status |
+|---|---|
+| `athlete` | ⬜ Not used |
+| `team` | ⬜ Not used |
+| `type.id` | ⬜ Not used |
+| `type.name` | ⬜ Not used |
+| `open.target` | ⬜ Not used |
+| `current.target` | ⬜ Not used |
+| `open.over` / `open.under` | ⬜ Not used |
+| `current.over` / `current.under` | ⬜ Not used |
+| `lastUpdated` | ⬜ Not used |
+| `provider` | ⬜ Not used |
+
+#### markets (by `type.id`) — 8 fields
+
+> 2026 DraftKings had 68 market types, 2025 ESPN BET 42. Names end in "(incl. overtime)" for full-game player totals.
+
+| Field | Status |
+|---|---|
+| `8–24` player totals: pass yds/cmp/att/TD/INT, carries, rush yds, rec yds, receptions, longest pass/rush/rec, pass+rush, rush+rec, kicking pts, XP, FG | ⬜ Not used |
+| `26–28`, `71` defensive player: tackles, tackles+assists, sacks, INTs (2025 only) | ⬜ Not used |
+| `29–33`, `66`, `67`, `181` TD scorer: first, last, anytime, 2+, 3+, 1st half, 1st quarter, first team TD | ⬜ Not used |
+| `72–86` halves + quarters: total, moneyline, spread | ⬜ Not used |
+| `98`, `99`, `104` team: total points, 1st-half points, total TDs | ⬜ Not used |
+| `153` overtime yes/no | ⬜ Not used |
+| `161–163` generic player / team / game props (2025 only) | ⬜ Not used |
+| `186–216` 1st-half / 1st-quarter yardage + milestones (2026 DraftKings) | ⬜ Not used |
 
 ### Win probability (per play)
 
@@ -1721,6 +1777,7 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 ⬜ **Available, not used**
 
 - **URL:** `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/{yr}/futures`
+- **Notes:** 2026 (probed 2026-10-23): 19 markets from DraftKings. Shape: `items[].name` + `futures[].provider` + `futures[].books[] = { athlete or team $ref, value: "+185" }` (American odds as a string). The season-yardage markets were in an earlier probe and aren't in 2026 yet.
 
 #### markets — 14 fields
 
@@ -1737,6 +1794,7 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 | `AFCWinner` | ⬜ Not used |
 | `NFCWinner` | ⬜ Not used |
 | `DivisionWinners(8)` | ⬜ Not used |
+| `TeamToWinMostGames` | ⬜ Not used |
 | `SeasonRushingYards` | ⬜ Not used |
 | `SeasonReceivingYards` | ⬜ Not used |
 | `SeasonRushingTDs` | ⬜ Not used |
