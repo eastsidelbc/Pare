@@ -1914,7 +1914,7 @@ Base: `https://site.web.api.espn.com/apis/common/v3/sports/football/nfl`
 
 | Field | Status |
 |---|---|
-| `receptions` | ⬜ Not used |
+| `receptions` | ✅ Used |
 | `receivingTargets` | ⬜ Not used |
 | `receivingYards` | ✅ Used |
 | `yardsPerReception` | ⬜ Not used |
@@ -1936,8 +1936,8 @@ Base: `https://site.web.api.espn.com/apis/common/v3/sports/football/nfl`
 | `totalTackles` | ✅ Used |
 | `sacks` | ✅ Used |
 | `sackYards` | ⬜ Not used |
-| `tacklesForLoss` | ⬜ Not used |
-| `passesDefended` | ⬜ Not used |
+| `tacklesForLoss` | ✅ Used |
+| `passesDefended` | ✅ Used |
 | `longInterception` | ⬜ Not used |
 | `interceptions` | ✅ Used |
 | `interceptionYards` | ⬜ Not used |
