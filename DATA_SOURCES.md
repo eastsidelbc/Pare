@@ -88,6 +88,12 @@ Decision pending (Kobe leaning: drop Sc% from the default 5, swap in an ESPN met
 
 ---
 
+### Wave B3 (2026-10-23): more Compare metrics
+
+- **Offense:** `ESPN_FIELD_MAP` (lib/espnStats.ts) adds net yds/att, pass + rush 1st downs, rush yds/att, penalties, penalty yds, penalty 1st downs, red-zone TD %, 4th-down %, takeaways, turnover diff, sacks taken (= first-occurrence `sacks` = passing), completion %, passer rating (`QBRating`); `derivedFields`: yds/play = netTotalYards / totalOffensivePlays, explosive plays = passingBigPlays + rushingBigPlays, possession = possessionTimeSeconds / 60 (total minutes; per-game → M:SS).
+- **Defense:** `fetchDefenseOpponentStats` reads `/statistics/900` for all 32 teams (same 10-min fetch cache) and the defense route merges ONLY `DEFENSE_OPPONENT_FIELDS` (allowed stats whose offense direction is higher-is-better, so the defense bar swap stays right), never overwriting points / yards / 3rd-down. Best-effort: failure → "—".
+- L4 rows don't carry the new fields → "—" in L4. Verified DAL 2026: offense red zone 77.27 %, defense allowed 66.67 %; both routes 32/32 rows.
+
 ## 3. ESPN team ID map (needed for the stats endpoint + lib/teams.ts)
 ```
 1  ATL   2  BUF   3  CHI   4  CIN   5  CLE   6  DAL   7  DEN   8  DET

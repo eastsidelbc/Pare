@@ -88,7 +88,7 @@
 
 | Provider | Endpoints that work | Pare uses | Fields listed | Fields used | Empty / wrong |
 |---|---|---|---|---|---|
-| ESPN | ~65 | 9 | 1294 | 136 (11%) | 83 |
+| ESPN | ~65 | 10 | 1294 | 170 (13%) | 83 |
 | Sleeper | ~29 | 8 | 493 | 58 (12%) | 3 |
 
 Counts are field slots in this catalog. A few names repeat across categories (e.g. `totalPoints` in several ESPN categories). Endpoint counts treat a card that groups several URLs (e.g. My Team's 5 Sleeper calls) as that many endpoints.
@@ -1013,7 +1013,7 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 ✅ **Used by Pare**
 
 - **URL:** `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/{yr}/types/2/teams/{id}/statistics`
-- **Pare uses it for:** Compare offense (season mode): 16 stats via ESPN_FIELD_MAP
+- **Pare uses it for:** Compare offense (season mode): 30 fields via ESPN_FIELD_MAP + 3 derived (yds/play, explosive plays, possession minutes) since 2026-10-23
 - **Code:** `lib/espnStats.ts:52-72`
 - **Cache:** 10 min (fetch + route ISR)
 - **Notes:** Each stat carries value, displayValue, perGameValue, rank and rankDisplayValue. Pare computes ranks itself (useRanking). Gold marks the exact category Pare reads each stat from, so interceptions under defensiveInterceptions (INTs made) stay unused.
@@ -1034,15 +1034,15 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 | `offensiveTwoPtReturns` | ❌ Empty / wrong |
 | `offensiveFumblesTouchdowns` | ❌ Empty / wrong |
 | `defensiveFumblesTouchdowns` | ❌ Empty / wrong |
-| `totalPenalties` | ⬜ Not used |
-| `totalPenaltyYards` | ⬜ Not used |
+| `totalPenalties` | ✅ Used |
+| `totalPenaltyYards` | ✅ Used |
 
 #### passing — 47 fields, 9 used, 7 empty/wrong
 
 | Field | Status |
 |---|---|
 | `avgGain` | ❌ Empty / wrong |
-| `completionPct` | ⬜ Not used |
+| `completionPct` | ✅ Used |
 | `completions` | ✅ Used |
 | `ESPNQBRating` | ❌ Empty / wrong |
 | `interceptionPct` | ⬜ Not used |
@@ -1054,8 +1054,8 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 | `netTotalYards` | ✅ Used |
 | `netYardsPerGame` | ⬜ Not used |
 | `passingAttempts` | ✅ Used |
-| `passingBigPlays` | ⬜ Not used |
-| `passingFirstDowns` | ⬜ Not used |
+| `passingBigPlays` | ✅ Used |
+| `passingFirstDowns` | ✅ Used |
 | `passingFumbles` | ⬜ Not used |
 | `passingFumblesLost` | ⬜ Not used |
 | `passingTouchdownPct` | ⬜ Not used |
@@ -1064,8 +1064,8 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 | `passingYardsAfterCatch` | ⬜ Not used |
 | `passingYardsAtCatch` | ⬜ Not used |
 | `passingYardsPerGame` | ⬜ Not used |
-| `QBRating` | ⬜ Not used |
-| `sacks` | ⬜ Not used |
+| `QBRating` | ✅ Used |
+| `sacks` | ✅ Used |
 | `sackYardsLost` | ⬜ Not used |
 | `netPassingAttempts` | ⬜ Not used |
 | `teamGamesPlayed` | ✅ Used |
@@ -1082,7 +1082,7 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 | `yardsPerCompletion` | ⬜ Not used |
 | `yardsPerGame` | ⬜ Not used |
 | `yardsPerPassAttempt` | ⬜ Not used |
-| `netYardsPerPassAttempt` | ⬜ Not used |
+| `netYardsPerPassAttempt` | ✅ Used |
 | `quarterbackRating` | ⬜ Not used |
 | `offensiveSnapPct` | ❌ Empty / wrong |
 | `targetSharePct` | ❌ Empty / wrong |
@@ -1100,8 +1100,8 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 | `netTotalYards` | ⬜ Not used |
 | `netYardsPerGame` | ⬜ Not used |
 | `rushingAttempts` | ✅ Used |
-| `rushingBigPlays` | ⬜ Not used |
-| `rushingFirstDowns` | ⬜ Not used |
+| `rushingBigPlays` | ✅ Used |
+| `rushingFirstDowns` | ✅ Used |
 | `rushingFumbles` | ⬜ Not used |
 | `rushingFumblesLost` | ⬜ Not used |
 | `rushingTouchdowns` | ✅ Used |
@@ -1121,7 +1121,7 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 | `twoPtRushAttempts` | ⬜ Not used |
 | `yardsFromScrimmagePerGame` | ⬜ Not used |
 | `yardsPerGame` | ⬜ Not used |
-| `yardsPerRushAttempt` | ⬜ Not used |
+| `yardsPerRushAttempt` | ✅ Used |
 
 #### receiving — 30 fields, 4 empty/wrong
 
@@ -1341,31 +1341,31 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 |---|---|
 | `firstDowns` | ✅ Used |
 | `firstDownsPassing` | ⬜ Not used |
-| `firstDownsPenalty` | ⬜ Not used |
+| `firstDownsPenalty` | ✅ Used |
 | `firstDownsPerGame` | ⬜ Not used |
 | `firstDownsRushing` | ⬜ Not used |
 | `fourthDownAttempts` | ⬜ Not used |
-| `fourthDownConvPct` | ⬜ Not used |
+| `fourthDownConvPct` | ✅ Used |
 | `fourthDownConvs` | ⬜ Not used |
 | `fumblesLost` | ⬜ Not used |
-| `possessionTimeSeconds` | ⬜ Not used |
+| `possessionTimeSeconds` | ✅ Used |
 | `redzoneEfficiencyPct` | ⬜ Not used |
 | `redzoneFieldGoalPct` | ⬜ Not used |
 | `redzoneScoringPct` | ⬜ Not used |
-| `redzoneTouchdownPct` | ⬜ Not used |
+| `redzoneTouchdownPct` | ✅ Used |
 | `thirdDownAttempts` | ⬜ Not used |
 | `thirdDownConvPct` | ✅ Used |
 | `thirdDownConvs` | ⬜ Not used |
 | `totalGiveaways` | ✅ Used |
-| `totalPenalties` | ⬜ Not used |
-| `totalPenaltyYards` | ⬜ Not used |
-| `totalTakeaways` | ⬜ Not used |
+| `totalPenalties` | ✅ Used |
+| `totalPenaltyYards` | ✅ Used |
+| `totalTakeaways` | ✅ Used |
 | `totalDrives` | ❌ Empty / wrong |
-| `turnOverDifferential` | ⬜ Not used |
+| `turnOverDifferential` | ✅ Used |
 
 ### Opponent split · the "allowed" side
 
-⬜ **Available, not used**
+✅ **Used by Pare** (since 2026-10-23: `fetchDefenseOpponentStats`, the allowed-only `DEFENSE_OPPONENT_FIELDS` merged into the defense route)
 
 - **URL:** `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/{yr}/types/2/teams/{id}/statistics/900`
 - **Notes:** Same 288 stat names as above, counted for this team's opponents. Checked live: DAL 2025 allowed 511 points; opponents' passing sacks = 35, which matches the sacks DAL made. One request per team would give every defense metric directly instead of standings plus summed box scores. /statistics/0 and ?opponent=true do NOT do this (they return the team's own stats).
@@ -1377,28 +1377,28 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 | Field | Status |
 |---|---|
 | `totalPoints` | ⬜ Not used |
-| `netTotalYards` | ⬜ Not used |
+| `netTotalYards` | ✅ Used |
 | `netPassingYards` | ⬜ Not used |
 | `rushingYards` | ⬜ Not used |
-| `totalOffensivePlays` | ⬜ Not used |
-| `firstDowns` | ⬜ Not used |
-| `passingFirstDowns` | ⬜ Not used |
-| `rushingFirstDowns` | ⬜ Not used |
+| `totalOffensivePlays` | ✅ Used |
+| `firstDowns` | ✅ Used |
+| `passingFirstDowns` | ✅ Used |
+| `rushingFirstDowns` | ✅ Used |
 | `thirdDownConvPct` | ⬜ Not used |
-| `fourthDownConvPct` | ⬜ Not used |
+| `fourthDownConvPct` | ✅ Used |
 | `redzoneScoringPct` | ⬜ Not used |
-| `redzoneTouchdownPct` | ⬜ Not used |
-| `netYardsPerPassAttempt` | ⬜ Not used |
-| `yardsPerRushAttempt` | ⬜ Not used |
-| `passingTouchdowns` | ⬜ Not used |
-| `rushingTouchdowns` | ⬜ Not used |
-| `completionPct` | ⬜ Not used |
+| `redzoneTouchdownPct` | ✅ Used |
+| `netYardsPerPassAttempt` | ✅ Used |
+| `yardsPerRushAttempt` | ✅ Used |
+| `passingTouchdowns` | ✅ Used |
+| `rushingTouchdowns` | ✅ Used |
+| `completionPct` | ✅ Used |
 | `passing.sacks` | ⬜ Not used |
 | `passing.interceptions` | ⬜ Not used |
 | `totalGiveaways` | ⬜ Not used |
-| `passingBigPlays` | ⬜ Not used |
-| `rushingBigPlays` | ⬜ Not used |
-| `possessionTimeSeconds` | ⬜ Not used |
+| `passingBigPlays` | ✅ Used |
+| `rushingBigPlays` | ✅ Used |
+| `possessionTimeSeconds` | ✅ Used |
 
 ### Per-game team stats (310)
 

@@ -11,7 +11,7 @@
 
 import { NextResponse } from 'next/server';
 import { type TeamStats } from '@/lib/types';
-import { fetchDefenseStatsFromESPN, fetchDefenseYardsAllowed } from '@/lib/espnStats';
+import { fetchDefenseOpponentStats, fetchDefenseStatsFromESPN, fetchDefenseYardsAllowed } from '@/lib/espnStats';
 import { NFL_TEAMS } from '@/lib/teams';
 import { APP_CONSTANTS } from '@/config/constants';
 import { logger } from '@/utils/logger';
@@ -96,6 +96,24 @@ export async function GET() {
           { context: 'DEFENSE', requestId },
           `Yards aggregation failed (keeping "—"): ${aggMsg}`
         );
+      }
+
+      // Wave B3 — best-effort: "allowed" stats from ESPN's opponent split (/900):
+      // yds/play, net yds/att, 1st downs, TDs, red zone, 4th down, completion %,
+      // passer rating, explosive plays, possession. Only fields not already set, so
+      // points / yards / 3rd-down keep their sources. Failure → those stay "—".
+      try {
+        const opp = await fetchDefenseOpponentStats();
+        rows = rows.map((r) => {
+          const extra = opp.get(r.team);
+          if (!extra) return r;
+          const merged: TeamStats = { ...r };
+          for (const [k, v] of Object.entries(extra)) if (merged[k] === undefined) merged[k] = v;
+          return merged;
+        });
+        logger.performance({ context: 'DEFENSE', requestId }, `Opponent split for ${opp.size}/${rows.length} teams`);
+      } catch (oppError) {
+        logger.error({ context: 'DEFENSE', requestId }, `Opponent split failed (keeping "—"): ${oppError instanceof Error ? oppError.message : String(oppError)}`);
       }
     } catch (espnError) {
       const msg = espnError instanceof Error ? espnError.message : String(espnError);

@@ -114,6 +114,7 @@ function shouldConvertFieldToPerGame(key: string, value: unknown): boolean {
     'yds_per_play_offense', // Already per-play
     'rush_yds_per_att',     // Already per-attempt
     'pass_yds_per_att',     // Already per-attempt
+    'passer_rating',        // A rating, not a count (Wave B3)
   ];
   
   // Skip percentage fields (containing 'pct')
