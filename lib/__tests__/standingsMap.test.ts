@@ -3,7 +3,9 @@
  * entries trimmed to name/type/value/displayValue (lib/__fixtures__/espn/standings-afc-east-2026.json).
  */
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('server-only', () => ({}));
 import { mapEntry, withDivisionGamesBehind, type EspnEntry, type TeamStanding } from '@/lib/standings';
 
 const entries = JSON.parse(readFileSync(new URL('../__fixtures__/espn/standings-afc-east-2026.json', import.meta.url), 'utf8')) as EspnEntry[];
