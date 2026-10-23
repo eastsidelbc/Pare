@@ -11,6 +11,8 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - See: `docs/devnotes/2026-10-23-compare-select-all-stats.md`.
 
 ### Added
+- **Leaders: division standings strip** (2026-10-23, branch `feat/leaders-standings`) — at the top of Leaders, under the Pare Leaders bar and above Fantasy: one small card per division (team + W-L, leader tinted) that swipes sideways; tap a card for the full Standings. Up to ~6 min behind live (the Standings page itself stays instant).
+  - See: `docs/devnotes/2026-10-23-leaders-standings-strip.md`. `components/leaderboards/DivisionStrip.tsx`, `getStandingsCached` (`lib/standings.ts`).
 - **Fantasy: League moves** (2026-10-23, branch `feat/data-rollout`) — under the waiver card: your league's latest adds, drops and trades (this week + last), each team by its team name, yours in gold, with how long ago. `/privacy` updated first (the server now also reads your league's public matchup scores, member team names and transactions).
   - See: `docs/devnotes/2026-10-23-fantasy-league-moves.md`. `lib/myteam/leagueMoves.ts`, provider `getLeagueMoves` (transactions 5 min, users 1h), `components/myteam/LeagueMoves.tsx`, `LeagueBundle.moves` (best-effort).
 - **Leaders: Receptions, Tackles for Loss, Passes Defended boards** (2026-10-23, branch `feat/data-rollout`) — plus their rookie versions. Sort keys verified live. A passer-rating board was left out on purpose: ESPN's list isn't attempts-qualified (a 48-attempt QB would lead it).
