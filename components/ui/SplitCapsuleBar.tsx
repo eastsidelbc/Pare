@@ -6,7 +6,9 @@
  * Each half is a see-through neon tube in its team's color (lib/teamColors).
  *
  * Tier effects (lib/rankTier):
- *   first (#1)  → gold ring hugging the half + gold sparks + fast team-color breathe
+ *   first (#1)  → gold ring hugging the half + gold sparks + fast team-color breathe,
+ *                 LOOPING (Kobe 2026-10-23); `.pare-fx-loop` pauses them off screen
+ *                 and mid-swipe/scroll (lib/ambientFx, globals.css)
  *   top (#2–5)  → slow, soft team-color breathe (no gold — gold is #1's alone)
  *   others      → plain tube
  * The leading half glows brighter; a short white divider marks where they meet.
@@ -15,7 +17,8 @@
  * team swap / PG↔TOT. Glow layers are opacity-only CSS animations (cheap).
  * PERF (Pass 2): tier effects PLAY ON CHANGE, THEN SETTLE. The aura stays
  * invisible while the bar slides (so its blur isn't re-drawn every frame of the
- * spring), breathes twice, then holds a steady glow. `effectKey` re-mounts the
+ * spring), breathes twice, then holds a steady glow (#2–5) or keeps breathing
+ * (#1, see above). `effectKey` re-mounts the
  * effect layers so they replay on a team swap / PG↔TOT.
  * Purely visual → aria-hidden (the row already announces values + ranks).
  */
@@ -83,7 +86,7 @@ function SplitCapsuleBar({
           {(s.tier === 'first' || s.tier === 'top') && (
             <motion.div
               key={`aura-${effectKey}`}
-              className={s.tier === 'first' ? 'pare-breathe-fast' : 'pare-breathe'}
+              className={s.tier === 'first' ? 'pare-breathe-fast pare-fx-loop' : 'pare-breathe'}
               initial={false}
               animate={{ width: `${s.p}%` }}
               transition={SPRING}
@@ -144,9 +147,9 @@ function SplitCapsuleBar({
                 key={`sparks-${effectKey}`}
                 style={{ position: 'absolute', ...s.anchor, top: -2, height: height + 4, width: `${s.p}%`, pointerEvents: 'none' }}
               >
-                <span className="pare-spark" style={{ left: '18%', bottom: 0 }} />
-                <span className="pare-spark" style={{ left: '48%', bottom: 2, animationDelay: '0.55s' }} />
-                <span className="pare-spark" style={{ left: '78%', bottom: 0, animationDelay: '1.1s' }} />
+                <span className="pare-spark pare-fx-loop" style={{ left: '18%', bottom: 0 }} />
+                <span className="pare-spark pare-fx-loop" style={{ left: '48%', bottom: 2, animationDelay: '0.55s' }} />
+                <span className="pare-spark pare-fx-loop" style={{ left: '78%', bottom: 0, animationDelay: '1.1s' }} />
               </div>
             </>
           )}

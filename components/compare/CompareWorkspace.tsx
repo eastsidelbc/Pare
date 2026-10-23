@@ -25,6 +25,7 @@ import { useComparisons } from '@/components/ComparisonsProvider';
 import { useFillComparison } from '@/lib/comparisons/useFillComparison';
 import { abbrToTeamName } from '@/lib/teams';
 import { useIsMobile } from '@/lib/hooks/useIsMobile';
+import { pauseAmbientFor, resumeAmbient } from '@/lib/ambientFx';
 import { APP_CONSTANTS } from '@/config/constants';
 import ComparePane from '@/components/compare/ComparePane';
 import CompareTabBar from '@/components/compare/CompareTabBar';
@@ -141,6 +142,22 @@ export default function CompareWorkspace() {
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
   }, []);
+
+  // Looping effects (#1 bar, Power Surge) freeze while the track moves (drag,
+  // spring, tab tap) or a pane scrolls, so the gesture gets every frame
+  // (lib/ambientFx). Scroll doesn't bubble → listen in the capture phase.
+  useEffect(() => {
+    const stopX = x.on('change', () => pauseAmbientFor('swipe'));
+    const el = viewportRef.current;
+    const onScroll = () => pauseAmbientFor('scroll');
+    el?.addEventListener('scroll', onScroll, { capture: true, passive: true });
+    return () => {
+      stopX();
+      el?.removeEventListener('scroll', onScroll, { capture: true });
+      resumeAmbient('swipe');
+      resumeAmbient('scroll');
+    };
+  }, [x, isPhone]);
 
   // Windowing center that only moves once the slide has LANDED (perf Pass 3).
   // Panes mount around `settledIndex`, so the next neighbor is built after the

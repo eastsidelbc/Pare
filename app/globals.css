@@ -389,8 +389,10 @@
    NEON FRAME effects (Compare redesign, Round 5 "R")
    PLAY ON CHANGE, THEN SETTLE (perf Pass 2, 2026-10-03): every effect runs a
    short, finite burst when its element mounts (first load, team swap, PG/TOT),
-   then holds a still state — nothing loops forever, so an idle Compare screen
-   costs ~nothing. Components re-key the effect element to replay it.
+   then holds a still state. Components re-key the effect element to replay it.
+   EXCEPTION (Kobe, 2026-10-23): the #1 bar aura + sparks loop (.pare-fx-loop,
+   paused off screen and mid-swipe/scroll) — see the Power Surge note in
+   design-system §9.8.
    Only transform/opacity animate — and every animated effect sits on its OWN
    GPU layer (will-change, perf Pass 4): on iPhone Safari an un-layered fading
    glow made Safari repaint the whole card area ~7×/s for the ~5 s an effect
@@ -421,14 +423,31 @@
   66%      { opacity: 0.15; }
 }
 
+/* #1 only — after the intro breath the aura keeps breathing (Kobe's call
+   2026-10-23: the #1 bar + Power Surge LOOP; everything else still settles).
+   Starts at the intro's end value (0.7) so the hand-off is seamless. */
+@keyframes pare-glow-loop {
+  0%, 100% { opacity: 0.7; }
+  50%      { opacity: 0.35; }
+}
+
 .pare-breathe { animation: pare-breathe 4.2s ease-in-out 0.5s 1 both; will-change: opacity; }      /* #2–5 slow + soft */
-.pare-breathe-fast { animation: pare-breathe 2.6s ease-in-out 0.5s 1 both; will-change: opacity; } /* #1 faster */
+.pare-breathe-fast {                                                                                 /* #1 faster, then loops */
+  animation: pare-breathe 2.6s ease-in-out 0.5s 1 both, pare-glow-loop 2.6s ease-in-out 3.1s infinite;
+  will-change: opacity;
+}
 .pare-spark {
   position: absolute; width: 3px; height: 3px; border-radius: 50%;
   background: var(--gold-bright); box-shadow: 0 0 6px var(--gold-bright);
-  animation: pare-spark 1.6s ease-out 0.5s 3 both; /* 3 rises, then gone */
+  animation: pare-spark 1.6s ease-out 0.5s infinite both; /* #1: keeps rising */
   will-change: transform, opacity;
 }
+/* Looping effects (.pare-fx-loop) freeze while nobody can see them move:
+   the user is swiping / scrolling (<html data-fx="paused">, lib/ambientFx) or
+   the card is off screen (data-fx-off, set by CompactPanel's observer).
+   Compositor-only animations, but a paused one costs nothing at all. */
+:root[data-fx='paused'] .pare-fx-loop,
+[data-fx-off] .pare-fx-loop { animation-play-state: paused; }
 .pare-ember {
   position: relative;
   box-shadow: 0 0 6px rgba(239, 68, 68, 0.7), inset 0 0 4px rgba(255, 180, 120, 0.4);
