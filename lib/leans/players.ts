@@ -3,7 +3,10 @@
  *
  * One entry per QB / RB / WR / TE who has played this season: name + injury from
  * the Sleeper player map, current team (map, else the team of his last game),
- * and his games as the five prop stats. Per team, only the top players by
+ * and his games as the five prop stats — only weeks he actually played (`playedGame`:
+ * Sleeper sends a row for every rostered player every week, inactive ones with no
+ * `gp` and empty stats; counting those as 0-yard games pulled every hit rate toward
+ * the under). Per team, only the top players by
  * season PPR points (config `data.playersPerTeam`) — the picker stays short.
  * A player the map has no name for is left out (never shown as an id).
  */
@@ -24,6 +27,17 @@ export interface PlayerInfo {
 }
 
 const stat = (line: PlayerGameLine, key: string) => line.stats[key] ?? 0;
+
+/**
+ * Did he play that week? Sleeper `gp` (games played) — set on every played row, missing on
+ * inactive ones (2025: 7,032 played rows, 5,042 without `gp`, 1 of those with any stat). A
+ * book voids a prop when the player doesn't play, so the backtest grades only played weeks.
+ */
+export function playedGame(line: PlayerGameLine): boolean {
+  if ((line.stats.gp ?? 0) > 0) return true;
+  // The rare row Sleeper left without `gp` but with real numbers.
+  return stat(line, 'off_snp') > 0 || stat(line, 'rec_tgt') > 0 || stat(line, 'rush_att') > 0 || stat(line, 'pass_att') > 0;
+}
 
 export function toPlayerGame(line: PlayerGameLine): PlayerGame {
   return {
@@ -51,6 +65,8 @@ export function selectPlayers(lines: readonly PlayerGameLine[], info: Readonly<R
     const p = info[id];
     if (!p?.name) continue;
     const sorted = [...list].sort((a, b) => a.week - b.week);
+    const played = sorted.filter(playedGame);
+    if (played.length === 0) continue;
     const last = sorted[sorted.length - 1];
     const position = last.position as PropPosition;
     scored.push({
@@ -60,7 +76,7 @@ export function selectPlayers(lines: readonly PlayerGameLine[], info: Readonly<R
         position,
         team: normalizeTeamAbbr(p.team) || last.team,
         injury: toInjuryTag(p.injury),
-        games: sorted.map(toPlayerGame),
+        games: played.map(toPlayerGame),
       },
       ppr: sorted.reduce((sum, l) => sum + stat(l, 'pts_ppr'), 0),
     });

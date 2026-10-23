@@ -67,7 +67,7 @@ export default function LeansListView({ week, status, groups, props, propsState 
       )}
 
       <p data-props-record style={{ margin: '0 4px', fontSize: 10.5, fontWeight: 600, lineHeight: 1.4, color: 'var(--muted)' }}>
-        How prop leans did on past seasons (book opening lines): {recordText(LEANS_RECORD.props)}. Treat them as a read of the data, not an edge.
+        How prop leans did on past seasons (book opening lines; return at the book’s prices): {recordText(LEANS_RECORD.props)}. Treat them as a read of the data, not an edge.
       </p>
 
       {status === 'loading' &&

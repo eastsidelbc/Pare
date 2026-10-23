@@ -13,8 +13,10 @@ import { americanToDecimal } from '@/lib/formulas/odds';
 import { anytimeTdProb, propOverProb } from '@/lib/formulas/player';
 import { mean, shrink, stdev } from '@/lib/formulas/stats';
 import { blendForm, projectedMargin, projectedTotal } from '@/lib/formulas/team';
+import type { PlayerGameLine } from '@/lib/myteam/types';
 import { LEAN_CONFIG } from './config';
 import { ratingFor } from './evaluate';
+import { playedGame } from './players';
 import { gameLeans, leagueForm, lineFor, type LeagueForm } from './gameLean';
 import { effectiveLine, propLean, statValue } from './propLean';
 export { mergeOffers, pickMainLine, type PropOffer } from './propLines';
@@ -35,6 +37,13 @@ export interface BacktestGame {
   hasSpread: boolean;
   total: number | null;
   moneyline: { away: number | null; home: number | null } | null;
+  /**
+   * The book's OPENING home spread (−3 = home gives 3) and total. Prop lines are graded on
+   * their openers, so prop features read the game's openers too (closing lines are later
+   * news). null = the book kept no opener.
+   */
+  openHomeLine?: number | null;
+  openTotal?: number | null;
 }
 
 /** One graded-able prop: a player's main line for one stat in one game. */
@@ -48,6 +57,8 @@ export interface BacktestProp {
   line: number;
   overPrice: number | null;
   underPrice: number | null;
+  /** Would the live app have listed him that week (top `playersPerTeam` by PPR so far)? */
+  capped?: boolean;
 }
 
 // ── Lines + grading ─────────────────────────────────────────────────────
@@ -297,6 +308,40 @@ export function calibrate(games: readonly BacktestGame[]): Calibration {
 }
 
 // ── Props ───────────────────────────────────────────────────────────────
+
+/**
+ * Who the live app would have listed each week — `selectPlayers` as of that week: per team
+ * (team-at-week) and position, the top `data.playersPerTeam` by PPR points in games played
+ * BEFORE the week. Keys `playerId|week`. Week 1 has no earlier games → nobody (same as live).
+ */
+export function lineupCapSet(lines: readonly PlayerGameLine[]): Set<string> {
+  const caps: Readonly<Record<string, number>> = LEAN_CONFIG.data.playersPerTeam;
+  const byPlayer = new Map<string, PlayerGameLine[]>();
+  for (const l of lines) {
+    if (!(l.position in caps)) continue;
+    const list = byPlayer.get(l.playerId) ?? [];
+    list.push(l);
+    byPlayer.set(l.playerId, list);
+  }
+  const out = new Set<string>();
+  for (const week of new Set(lines.map((l) => l.week))) {
+    const groups = new Map<string, Array<{ id: string; ppr: number }>>();
+    for (const [id, list] of byPlayer) {
+      const row = list.find((l) => l.week === week);
+      const before = list.filter((l) => l.week < week && playedGame(l));
+      if (!row || before.length === 0) continue;
+      const key = `${row.team}|${row.position}`;
+      const g = groups.get(key) ?? [];
+      g.push({ id, ppr: before.reduce((sum, l) => sum + (l.stats.pts_ppr ?? 0), 0) });
+      groups.set(key, g);
+    }
+    for (const [key, g] of groups) {
+      g.sort((a, b) => b.ppr - a.ppr || a.id.localeCompare(b.id));
+      for (const x of g.slice(0, caps[key.split('|')[1]] ?? 0)) out.add(`${x.id}|${week}`);
+    }
+  }
+  return out;
+}
 
 export interface PlayerSeason {
   playerId: string;

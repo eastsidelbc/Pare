@@ -9,7 +9,10 @@ Small samples swing a lot: under ~100 bets, ±10 points of hit rate is noise.
 ## Data
 
 - Games: 272 finals · spread 271 · total 271 · moneyline 271 (first pregame book with a line; in-game "Live" books skipped).
-- Props: 3496 main lines (3496 priced) on 271 games · graded 3461 · voided (player inactive) 35.
+- Props: 7495 main lines (7495 priced) on 271 games · graded 7454 · voided (player inactive) 41.
+- Player join (ESPN athlete → Sleeper): by id 3496 · by name + team 3999 · unmatched 16 (dropped).
+- Live lineup cap (top `playersPerTeam` by PPR before the week — what the app lists): 7293 of 7495 props.
+- A week counts only if he played (Sleeper `gp`); an inactive week is voided, never graded as a 0.
 - Player lines: 11770 Sleeper weekly rows (QB/RB/WR/TE).
 
 ## Market calibration (how good the closing line was)
@@ -21,7 +24,7 @@ Small samples swing a lot: under ~100 bets, ±10 points of hit rate is noise.
 | Favorites covered | 53.1% | — |
 | Home covered | 49.8% | — |
 | Overs hit | 54.2% | — |
-| Prop overs hit (opening main lines) | rec 47.5% of 1178 · rush_yd 46.4% of 403 · rec_yd 51.9% of 968 · rush_rec_yd 49.9% of 912 | — |
+| Prop overs hit (opening main lines) | rec 46.2% of 2493 · rush_yd 47.7% of 895 · rec_yd 50.7% of 2062 · rush_rec_yd 49.8% of 2004 | — |
 
 ## Current engine — game lines
 
@@ -35,21 +38,37 @@ Verdicts: moneyline:none 176 · moneyline:not-enough 64 · moneyline:side 32 · 
 | total over | 1 | 1-0-0 | 100.0% | +90.9% ✅ |
 | total under | 4 | 1-3-0 | 25.0% | -52.3% |
 
-## Current engine — props
+## Current engine — props (live lineup cap — what the app would have shown)
 
-Verdicts: rec:none 819 · rec:not-enough 207 · rec:over 41 · rec:under 111 · rec_yd:none 652 · rec_yd:not-enough 213 · rec_yd:over 42 · rec_yd:under 61 · rush_rec_yd:none 606 · rush_rec_yd:not-enough 204 · rush_rec_yd:over 43 · rush_rec_yd:under 59 · rush_yd:none 267 · rush_yd:not-enough 93 · rush_yd:over 19 · rush_yd:under 24
+Verdicts: rec:none 1731 · rec:not-enough 435 · rec:over 96 · rec:under 186 · rec_yd:none 1363 · rec_yd:not-enough 420 · rec_yd:over 93 · rec_yd:under 131 · rush_rec_yd:none 1324 · rush_rec_yd:not-enough 441 · rush_rec_yd:over 90 · rush_rec_yd:under 116 · rush_yd:none 586 · rush_yd:not-enough 193 · rush_yd:over 36 · rush_yd:under 46
 
 | Lean | Bets | W-L-P | Hit % | ROI |
 |---|---|---|---|---|
-| props (all) | 400 | 225-175-0 | 56.3% | -2.7% |
-| rec over | 41 | 26-15-0 | 63.4% | +6.7% ✅ |
-| rec under | 111 | 72-39-0 | 64.9% | +6.7% ✅ |
-| rec_yd over | 42 | 24-18-0 | 57.1% | -2.6% |
-| rec_yd under | 61 | 31-30-0 | 50.8% | -13.2% |
-| rush_rec_yd over | 43 | 15-28-0 | 34.9% | -36.1% |
-| rush_rec_yd under | 59 | 36-23-0 | 61.0% | +12.2% ✅ |
-| rush_yd over | 19 | 7-12-0 | 36.8% | -37.2% |
-| rush_yd under | 24 | 14-10-0 | 58.3% | +15.5% ✅ |
+| props (all) | 794 | 439-355-0 | 55.3% | -5.6% |
+| rec over | 96 | 54-42-0 | 56.3% | -7.4% |
+| rec under | 186 | 118-68-0 | 63.4% | +1.6% ✅ |
+| rec_yd over | 93 | 47-46-0 | 50.5% | -13.3% |
+| rec_yd under | 131 | 71-60-0 | 54.2% | -8.4% |
+| rush_rec_yd over | 90 | 37-53-0 | 41.1% | -24.3% |
+| rush_rec_yd under | 116 | 68-48-0 | 58.6% | +8.6% ✅ |
+| rush_yd over | 36 | 16-20-0 | 44.4% | -24.7% |
+| rush_yd under | 46 | 28-18-0 | 60.9% | +8.7% ✅ |
+
+## Current engine — props (every matched line)
+
+Verdicts: rec:none 1745 · rec:not-enough 457 · rec:over 96 · rec:under 195 · rec_yd:none 1364 · rec_yd:not-enough 472 · rec_yd:over 93 · rec_yd:under 133 · rush_rec_yd:none 1333 · rush_rec_yd:not-enough 457 · rush_rec_yd:over 90 · rush_rec_yd:under 124 · rush_yd:none 589 · rush_yd:not-enough 222 · rush_yd:over 36 · rush_yd:under 48
+
+| Lean | Bets | W-L-P | Hit % | ROI |
+|---|---|---|---|---|
+| props (all) | 815 | 457-358-0 | 56.1% | -4.0% |
+| rec over | 96 | 54-42-0 | 56.3% | -7.4% |
+| rec under | 195 | 126-69-0 | 64.6% | +4.5% ✅ |
+| rec_yd over | 93 | 47-46-0 | 50.5% | -13.3% |
+| rec_yd under | 133 | 72-61-0 | 54.1% | -8.6% |
+| rush_rec_yd over | 90 | 37-53-0 | 41.1% | -24.3% |
+| rush_rec_yd under | 124 | 75-49-0 | 60.5% | +11.7% ✅ |
+| rush_yd over | 36 | 16-20-0 | 44.4% | -24.7% |
+| rush_yd under | 48 | 30-18-0 | 62.5% | +12.2% ✅ |
 
 ## Formula candidates — game lines (Pare projection vs closing line)
 
@@ -73,26 +92,26 @@ Projected margin = shrunk season point differential/game blended 0.6/0.4 with la
 
 | Lean | Bets | W-L-P | Hit % | ROI |
 |---|---|---|---|---|
-| formula props (all), P ≥ 0.6 | 1129 | 616-513-0 | 54.6% | -6.5% |
-| formula props (all), P ≥ 0.7 | 349 | 205-144-0 | 58.7% | -0.8% |
-| formula props (all), P ≥ 0.55 | 1851 | 1001-850-0 | 54.1% | -5.3% |
-| formula props (all), P ≥ 0.65 | 629 | 344-285-0 | 54.7% | -7.1% |
-| formula rec_yd, P ≥ 0.6 | 315 | 174-141-0 | 55.2% | -6.8% |
-| formula rec_yd, P ≥ 0.7 | 78 | 41-37-0 | 52.6% | -10.1% |
-| formula rec_yd, P ≥ 0.55 | 511 | 286-225-0 | 56.0% | -3.5% |
-| formula rec_yd, P ≥ 0.65 | 160 | 86-74-0 | 53.8% | -10.0% |
-| formula rec, P ≥ 0.6 | 408 | 237-171-0 | 58.1% | -5.1% |
-| formula rec, P ≥ 0.7 | 150 | 98-52-0 | 65.3% | +3.7% ✅ |
-| formula rec, P ≥ 0.55 | 670 | 372-298-0 | 55.5% | -5.7% |
-| formula rec, P ≥ 0.65 | 252 | 146-106-0 | 57.9% | -6.2% |
-| formula rush_rec_yd, P ≥ 0.6 | 272 | 131-141-0 | 48.2% | -11.6% |
-| formula rush_rec_yd, P ≥ 0.7 | 85 | 44-41-0 | 51.8% | -4.4% |
-| formula rush_rec_yd, P ≥ 0.55 | 466 | 230-236-0 | 49.4% | -9.2% |
-| formula rush_rec_yd, P ≥ 0.65 | 152 | 73-79-0 | 48.0% | -11.8% |
-| formula rush_yd, P ≥ 0.6 | 134 | 74-60-0 | 55.2% | +0.4% ✅ |
-| formula rush_yd, P ≥ 0.7 | 36 | 22-14-0 | 61.1% | +9.4% ✅ |
-| formula rush_yd, P ≥ 0.55 | 204 | 113-91-0 | 55.4% | +0.5% ✅ |
-| formula rush_yd, P ≥ 0.65 | 65 | 39-26-0 | 60.0% | +7.0% ✅ |
+| formula props (all), P ≥ 0.6 | 2184 | 1185-999-0 | 54.3% | -7.8% |
+| formula props (all), P ≥ 0.7 | 609 | 359-250-0 | 58.9% | -4.0% |
+| formula props (all), P ≥ 0.55 | 3795 | 2041-1754-0 | 53.8% | -6.6% |
+| formula props (all), P ≥ 0.65 | 1169 | 644-525-0 | 55.1% | -8.3% |
+| formula rec_yd, P ≥ 0.6 | 584 | 322-262-0 | 55.1% | -7.4% |
+| formula rec_yd, P ≥ 0.7 | 129 | 74-55-0 | 57.4% | -3.5% |
+| formula rec_yd, P ≥ 0.55 | 1051 | 586-465-0 | 55.8% | -3.8% |
+| formula rec_yd, P ≥ 0.65 | 281 | 154-127-0 | 54.8% | -9.0% |
+| formula rec, P ≥ 0.6 | 779 | 449-330-0 | 57.6% | -6.7% |
+| formula rec, P ≥ 0.7 | 255 | 171-84-0 | 67.1% | +0.4% ✅ |
+| formula rec, P ≥ 0.55 | 1340 | 739-601-0 | 55.1% | -7.5% |
+| formula rec, P ≥ 0.65 | 466 | 277-189-0 | 59.4% | -6.8% |
+| formula rush_rec_yd, P ≥ 0.6 | 559 | 269-290-0 | 48.1% | -11.7% |
+| formula rush_rec_yd, P ≥ 0.7 | 152 | 73-79-0 | 48.0% | -11.9% |
+| formula rush_rec_yd, P ≥ 0.55 | 967 | 477-490-0 | 49.3% | -9.3% |
+| formula rush_rec_yd, P ≥ 0.65 | 283 | 132-151-0 | 46.6% | -14.2% |
+| formula rush_yd, P ≥ 0.6 | 262 | 145-117-0 | 55.3% | -4.1% |
+| formula rush_yd, P ≥ 0.7 | 73 | 41-32-0 | 56.2% | -3.4% |
+| formula rush_yd, P ≥ 0.55 | 437 | 239-198-0 | 54.7% | -4.4% |
+| formula rush_yd, P ≥ 0.65 | 139 | 81-58-0 | 58.3% | +0.0% ✅ |
 
 ---
-Network calls this run: 0 · 1.5s
+Network calls this run: 904 · 15.3s

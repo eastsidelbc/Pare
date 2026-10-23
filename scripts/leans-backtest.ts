@@ -18,6 +18,7 @@ import { LEAN_CONFIG } from '@/lib/leans/config';
 import {
   calibrate,
   hitPct,
+  lineupCapSet,
   pickMainLine,
   replayGameFormulas,
   replayGameLeans,
@@ -30,7 +31,8 @@ import {
   type PropOffer,
   type TallyMap,
 } from '@/lib/leans/backtest';
-import { toPlayerGame } from '@/lib/leans/players';
+import { buildAthleteIndex, matchAthlete, type AthleteIndex } from '@/lib/leans/athleteMatch';
+import { playedGame, toPlayerGame } from '@/lib/leans/players';
 import { PROP_TYPES } from '@/lib/leans/propLines';
 import { statValue } from '@/lib/leans/propLean';
 import type { PropPosition, PropStat, TeamGame } from '@/lib/leans/types';
@@ -101,11 +103,17 @@ const https = (ref: string) => ref.replace(/^http:/, 'https:');
 interface EspnPrice {
   american?: string;
 }
+interface EspnOpenValue {
+  american?: string;
+}
 interface EspnOddsItem {
   provider?: { id?: string; name?: string };
   details?: string;
   overUnder?: number;
-  homeTeamOdds?: { moneyLine?: number };
+  /** Opening total, e.g. { american: "43.5" }. */
+  open?: { total?: EspnOpenValue };
+  /** Opening home spread lives at homeTeamOdds.open.pointSpread ({ american: "-4.5" }). */
+  homeTeamOdds?: { moneyLine?: number; open?: { pointSpread?: EspnOpenValue } };
   awayTeamOdds?: { moneyLine?: number };
   propBets?: { $ref?: string };
 }
@@ -131,7 +139,19 @@ interface EspnPropBet {
 interface SleeperPlayer {
   espn_id?: string | number | null;
   position?: string | null;
+  full_name?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
 }
+interface EspnAthleteRaw {
+  fullName?: string;
+  position?: { abbreviation?: string };
+}
+
+const numOrNull = (v: string | undefined) => {
+  const n = Number(v);
+  return v !== undefined && v !== '' && Number.isFinite(n) ? n : null;
+};
 
 /** In-game books carry live prices (a final game shows the end-of-game line) — never a pregame line. */
 const isLiveBook = (o: EspnOddsItem) => /live/i.test(o.provider?.name ?? '');
@@ -169,6 +189,8 @@ async function loadGames(): Promise<{ games: BacktestGame[]; teamLog: TeamGame[]
         hasSpread: !!book?.details,
         total: book?.overUnder ?? null,
         moneyline: home === null && away === null ? null : { away, home },
+        openHomeLine: numOrNull(book?.homeTeamOdds?.open?.pointSpread?.american),
+        openTotal: numOrNull(book?.open?.total?.american),
       });
       teamLog.push(
         { team: m.away.abbr, opp: m.home.abbr, week: m.week, points: m.awayScore as number, pointsAllowed: m.homeScore as number },
@@ -190,14 +212,34 @@ async function loadLines(): Promise<PlayerGameLine[]> {
   return weeks.flatMap((w) => toGameLines(w));
 }
 
-async function loadProps(games: readonly BacktestGame[], propBooks: ReadonlyMap<string, string>, lines: readonly PlayerGameLine[]): Promise<BacktestProp[]> {
-  const map = await getJson<Record<string, SleeperPlayer>>(`${SLEEPER_APP}/players/nfl`, 'sleeper/players');
-  const byEspn = new Map<string, { id: string; position: PropPosition }>();
-  for (const [id, p] of Object.entries(map ?? {})) {
-    const pos = p.position ?? '';
-    if (p.espn_id != null && (PROP_POSITIONS as readonly string[]).includes(pos)) byEspn.set(String(p.espn_id), { id, position: pos as PropPosition });
-  }
+/** Prop lines joined to Sleeper players; `join` counts how each join was made (report). */
+async function loadProps(
+  games: readonly BacktestGame[],
+  propBooks: ReadonlyMap<string, string>,
+  lines: readonly PlayerGameLine[],
+): Promise<{ props: BacktestProp[]; join: { byId: number; byName: number; unmatched: number } }> {
+  const map = (await getJson<Record<string, SleeperPlayer>>(`${SLEEPER_APP}/players/nfl`, 'sleeper/players')) ?? {};
+  const nameOf = (p: SleeperPlayer | undefined) => p?.full_name ?? `${p?.first_name ?? ''} ${p?.last_name ?? ''}`.trim();
+  const espnOf = (id: string) => (map[id]?.espn_id != null ? String(map[id]?.espn_id) : undefined);
+  // The old id-only join (today's map) — fallback for a player with no row that week.
+  const byEspn = new Map<string, string>();
+  for (const [id, p] of Object.entries(map)) if (p.espn_id != null && (PROP_POSITIONS as readonly string[]).includes(p.position ?? '')) byEspn.set(String(p.espn_id), id);
+  // Per-week index from that week's rows: team-at-week (trades) + position-at-week.
+  const weekIdx = new Map<number, AthleteIndex>();
+  const idxFor = (week: number) => {
+    let idx = weekIdx.get(week);
+    if (!idx) {
+      idx = buildAthleteIndex(
+        lines
+          .filter((l) => l.week === week && (PROP_POSITIONS as readonly string[]).includes(l.position))
+          .map((l) => ({ id: l.playerId, name: nameOf(map[l.playerId]), position: l.position, team: l.team, espnId: espnOf(l.playerId) })),
+      );
+      weekIdx.set(week, idx);
+    }
+    return idx;
+  };
   const lineOf = new Map(lines.map((l) => [`${l.playerId}|${l.week}`, l] as const));
+  const join = { byId: 0, byName: 0, unmatched: 0 };
   const out: BacktestProp[] = [];
   await Promise.all(
     games.map(async (g) => {
@@ -218,17 +260,31 @@ async function loadProps(games: readonly BacktestGame[], propBooks: ReadonlyMap<
         list.push({ target, over: parseAmericanOdds(item.open?.over?.american), under: parseAmericanOdds(item.open?.under?.american) });
         offers.set(key, list);
       }
+      const idx = idxFor(g.week);
+      const teams = [g.away, g.home];
       for (const [key, list] of offers) {
         const [athlete, stat] = key.split('|') as [string, PropStat];
-        const player = byEspn.get(athlete);
         const main = pickMainLine(list);
-        if (!player || !main) continue;
-        const played = lineOf.get(`${player.id}|${g.week}`);
+        if (!main) continue;
+        let playerId = idx.byEspn.get(athlete) ?? byEspn.get(athlete) ?? null;
+        if (playerId) join.byId += 1;
+        else {
+          const a = await getJson<EspnAthleteRaw>(`${CORE}/seasons/${SEASON}/athletes/${athlete}`, `athletes/${athlete}`);
+          playerId = matchAthlete(idx, { espnId: athlete, name: a?.fullName, position: a?.position?.abbreviation, teams });
+          if (!playerId) {
+            join.unmatched += 1;
+            continue;
+          }
+          join.byName += 1;
+        }
+        const played = lineOf.get(`${playerId}|${g.week}`);
+        const position = played?.position ?? map[playerId]?.position ?? '';
+        if (!(PROP_POSITIONS as readonly string[]).includes(position)) continue;
         out.push({
           eventId: g.eventId,
           week: g.week,
-          playerId: player.id,
-          position: player.position,
+          playerId,
+          position: position as PropPosition,
           opp: played?.opponent ?? '',
           stat,
           line: main.target,
@@ -238,13 +294,15 @@ async function loadProps(games: readonly BacktestGame[], propBooks: ReadonlyMap<
       }
     }),
   );
-  return out;
+  const cap = lineupCapSet(lines);
+  for (const p of out) p.capped = cap.has(`${p.playerId}|${p.week}`);
+  return { props: out, join };
 }
 
 function playerSeasons(lines: readonly PlayerGameLine[]): Map<string, PlayerSeason> {
   const out = new Map<string, PlayerSeason>();
   for (const l of [...lines].sort((a, b) => a.week - b.week)) {
-    if (!(PROP_POSITIONS as readonly string[]).includes(l.position)) continue;
+    if (!(PROP_POSITIONS as readonly string[]).includes(l.position) || !playedGame(l)) continue;
     const s = out.get(l.playerId) ?? { playerId: l.playerId, position: l.position as PropPosition, games: [] };
     s.games.push(toPlayerGame(l));
     out.set(l.playerId, s);
@@ -277,7 +335,8 @@ async function main() {
   const t0 = Date.now();
   const { games, teamLog, propBooks } = await loadGames();
   const lines = await loadLines();
-  const props = await loadProps(games, propBooks, lines);
+  const { props, join } = await loadProps(games, propBooks, lines);
+  const cappedProps = props.filter((p) => p.capped);
   const players = playerSeasons(lines);
   const fpa = buildFpaTable(lines, { pts_ppr: 1 });
 
@@ -285,6 +344,7 @@ async function main() {
   const engine = replayGameLeans(teamLog, games);
   const formula = replayGameFormulas(teamLog, games, EDGES);
   const propEngine = replayPropLeans(props, players, fpa);
+  const propEngineCapped = replayPropLeans(cappedProps, players, fpa);
   const propFormula = replayPropFormula(props, players, PROBS);
   const withLine = games.filter((g) => g.hasSpread).length;
   const withTotal = games.filter((g) => g.total !== null).length;
@@ -315,6 +375,9 @@ Small samples swing a lot: under ~100 bets, ±10 points of hit rate is noise.
 
 - Games: ${games.length} finals · spread ${withLine} · total ${withTotal} · moneyline ${games.filter((g) => g.moneyline).length} (first pregame book with a line; in-game "Live" books skipped).
 - Props: ${props.length} main lines (${priced} priced) on ${propBooks.size} games · graded ${propEngine.graded} · voided (player inactive) ${propEngine.voided}.
+- Player join (ESPN athlete → Sleeper): by id ${join.byId} · by name + team ${join.byName} · unmatched ${join.unmatched} (dropped).
+- Live lineup cap (top \`playersPerTeam\` by PPR before the week — what the app lists): ${cappedProps.length} of ${props.length} props.
+- A week counts only if he played (Sleeper \`gp\`); an inactive week is voided, never graded as a 0.
 - Player lines: ${lines.length} Sleeper weekly rows (QB/RB/WR/TE).
 
 ## Market calibration (how good the closing line was)
@@ -334,7 +397,13 @@ Verdicts: ${verdictLine(engine.verdicts)}
 
 ${table(engine.tallies)}
 
-## Current engine — props
+## Current engine — props (live lineup cap — what the app would have shown)
+
+Verdicts: ${verdictLine(propEngineCapped.verdicts)}
+
+${table(propEngineCapped.tallies)}
+
+## Current engine — props (every matched line)
 
 Verdicts: ${verdictLine(propEngine.verdicts)}
 

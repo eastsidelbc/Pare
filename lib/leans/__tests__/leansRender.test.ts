@@ -178,7 +178,7 @@ describe('Leans player vs defense (/leans/player/[playerId])', () => {
 describe('Leans track record (honesty note)', () => {
   it('list: shows the measured prop-lean record under PROP LEANS', () => {
     const html = render(createElement(LeansListView, { week: 7, status: 'ready', groups: [], props: [], propsState: 'ready' }));
-    expect(html).toContain('2025 112–113 · 2024 225–175');
+    expect(html).toContain('2025 317–273 (−2.7%) · 2024 439–355 (−5.6%)');
     expect(html).toContain('not an edge');
   });
 });

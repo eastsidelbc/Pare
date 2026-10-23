@@ -214,7 +214,7 @@ No new upstream. Everything Leans shows comes from sources above, reused server-
 | **Market facts** (game screen, since 2026-10-23) | `GET /api/leans/market?event=ID` → `lib/leans/marketServer.ts`: ESPN Core `/odds` (book = `pregameBook`, `lib/espnCoreOdds.ts`: first non-"Live" book with `details`, else total-only) + site `/summary` `gameInfo` (weather pregame only, venue) | Home spread / total / moneyline **open → current**, no-vig win chance (`noVig(impliedProb)`), key numbers (`lib/formulas/config.ts`), weather, venue. One shared copy per game, 5 min, last good on failure; 5s timeouts. Facts only — Pare projections don't beat closing lines (backtest). Home's closing-line fallback (`lib/schedule.ts`) uses the same `pregameBook` since 2026-10-23 (was `items[0]`: total-only or in-game books on old finals) |
 | Spread · total · **moneyline** | ESPN scoreboard `odds[0]` (`lib/espnScoreboard.ts`) | `MatchupOdds` gained optional `spreadLine { team, line }` (parsed from `details`, "SEA -2.5") and `moneyline { away, home }` (`odds[0].moneyline.{away,home}.close.odds`, else `.open.odds`; American strings → numbers, "EVEN" = +100). `odds[0].spread` is **not** used — its sign flips by side. The `spread` string Home renders is unchanged. Verified on the live week-6 scoreboard 2026-10-14: 14/14 games carry moneylines. Fixture: `lib/__fixtures__/espn/scoreboard-odds.json` (provider names + deep links stripped) |
 | Points for / against per team per week | ESPN final box scores → `getTeamGameLog()` (`lib/espnStats.ts`, same log My Team uses) | total / spread / moneyline signals |
-| Player weekly prop stats | Sleeper `api.sleeper.com` week lines → `getWeekLines()` (`lib/myteam/sleeper/statLines.ts`) | `rush_yd`, `rec`, `rec_yd`, `rush_td`, `rec_td` (absent key = 0); `pts_ppr` ranks players + scores the FPA table |
+| Player weekly prop stats | Sleeper `api.sleeper.com` week lines → `getWeekLines()` (`lib/myteam/sleeper/statLines.ts`) | `rush_yd`, `rec`, `rec_yd`, `rush_td`, `rec_td` (absent key = 0); `pts_ppr` ranks players + scores the FPA table. Only **played** weeks count (`playedGame`: `gp` > 0) — Sleeper sends an empty row for every inactive rostered player (2025: 5,042 of 12,074 rows) |
 | Matchup tier + rank | `buildFpaTable(lines, { pts_ppr: 1 })` → `rankFpa` / `rateMatchup` (`lib/myteam/fpa.ts`, `rating.ts`) | plain Sleeper PPR (Leans has no league), QB/RB/WR/TE only, ranked client-side |
 | Names + injury tags | Sleeper player map `getPlayerMap()` (`lib/fantasy.ts`, 24h) | a player without a name is left out |
 | Next weeks | `getSeasonSchedule()` (`lib/myteam/seasonSchedule.ts`) | week cells |
@@ -230,7 +230,9 @@ for two teams, ~1.5 s cold. Lean thresholds: `lib/leans/config.ts`.
 every page (`limit=1000`, 2 pages) → `parseBookLines` (`lib/leans/propLines.ts`): ESPN market types 12 rush yds, 13 rec
 yds, 14 receptions, 20 rush+rec yds, 31 anytime TD; the over + under items are merged by target; priced main line =
 closest to even, unpriced feeds (2026: one line per player) = that line; open + current kept. ESPN athlete id → Sleeper id
-via the player map `espnId`. One shared copy per game for 10 min, last good on failure; a failing game is left out of the
+via the player map `espnId`, else **name + team** from the game's two ESPN team rosters (site `/teams/{espnId}/roster`,
+`unstable_cache` 24h over a no-store 6s fetch, ~350 KB raw → id/name/position) through `lib/leans/athleteMatch.ts`
+(since 2026-10-23: Sleeper has ESPN ids for only ~¼ of skill players — week 7: 60 → 192 players with lines). One shared copy per game for 10 min, last good on failure; a failing game is left out of the
 week. Client (`lib/leans/autoProps.ts`): only bundle players; before kickoff the current line, after kickoff the opener
 (`current` moves in-game). Week 7 2026: 14 games, ~21 KB. TD-scorer markets are often empty → no Anytime TD props then.
 
