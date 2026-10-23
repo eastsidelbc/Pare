@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "check": "tsc --noEmit && eslint",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "backtest:leans": "vite-node --config vitest.config.ts scripts/leans-backtest.ts"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.16",

@@ -216,13 +216,29 @@ export default function MatchupCard({ matchup, isOpen = false, onToggle }: Match
               {odds && <OddsText odds={odds} />}
             </>
           ) : state === 'in' ? (
-            <span
-              className="inline-flex items-center whitespace-nowrap tabular-nums leading-none"
-              style={{ gap: 5, fontSize: 11, fontWeight: 700, color: 'var(--red)' }}
-            >
-              <span className="pare-live-dot" aria-hidden />
-              {statusDetail || 'Live'}
-            </span>
+            <>
+              <span
+                className="inline-flex items-center whitespace-nowrap tabular-nums leading-none"
+                style={{ gap: 5, fontSize: 11, fontWeight: 700, color: 'var(--red)' }}
+              >
+                <span className="pare-live-dot" aria-hidden />
+                {statusDetail || 'Live'}
+              </span>
+              {/* Live down & distance + ball (Wave C2). Gold-bright in the red zone (red already means "live"). */}
+              {matchup.situation?.down && (
+                <span className="whitespace-nowrap tabular-nums leading-none" style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text)' }}>
+                  {matchup.situation.down}
+                </span>
+              )}
+              {matchup.situation?.possession && (
+                <span
+                  className="whitespace-nowrap leading-none"
+                  style={{ fontSize: 9, fontWeight: 700, color: matchup.situation.redZone ? 'var(--gold-bright)' : 'var(--muted)' }}
+                >
+                  {`${matchup.situation.possession === 'away' ? away.abbr : home.abbr} ball${matchup.situation.redZone ? ' · RZ' : ''}`}
+                </span>
+              )}
+            </>
           ) : (
             <>
               <span className="tabular-nums leading-none" style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)' }}>

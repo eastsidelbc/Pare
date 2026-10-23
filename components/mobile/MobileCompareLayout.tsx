@@ -46,6 +46,8 @@ function MobileCompareLayout({
   defenseData,
   selectedOffenseMetrics,
   selectedDefenseMetrics,
+  onOffenseMetricsChange,
+  onDefenseMetricsChange,
   isLoading,
   variant = 'full',
   showHero = true,
@@ -139,6 +141,7 @@ function MobileCompareLayout({
         allDefenseData={defenseData}
         onTeamAChange={onTeamAChange}
         onTeamBChange={onTeamBChange}
+        onMetricsChange={onOffenseMetricsChange}
       />
 
       {/* Defense Panel */}
@@ -155,6 +158,7 @@ function MobileCompareLayout({
         allDefenseData={defenseData}
         onTeamAChange={onTeamAChange}
         onTeamBChange={onTeamBChange}
+        onMetricsChange={onDefenseMetricsChange}
       />
     </div>
   );

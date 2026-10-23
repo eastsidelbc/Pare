@@ -162,3 +162,13 @@ describe('toTeamGameLines', () => {
     });
   });
 });
+
+describe('clockSeconds (possession time, Wave B3 L4)', async () => {
+  const { clockSeconds } = await import('@/lib/espnBoxscore');
+  it('"29:06" → 1746; junk → 0', () => {
+    expect(clockSeconds('29:06')).toBe(1746);
+    expect(clockSeconds(' 30:54 ')).toBe(1854);
+    expect(clockSeconds('')).toBe(0);
+    expect(clockSeconds(undefined)).toBe(0);
+  });
+});

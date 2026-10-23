@@ -7,6 +7,9 @@
  *
  * Defense = the OPPONENTS' lines in that team's window, limited to the fields
  * Compare's defense side shows (`availableInDefense` in lib/metricsConfig.ts).
+ *
+ * Wave B3 fields (2026-10-23) come from the same box scores; red-zone TD %, passer
+ * rating and explosive plays have no box-score source and stay "—" in L4.
  */
 
 import type { TeamGameLine } from './espnBoxscore';
@@ -53,6 +56,34 @@ function baseRow(team: string, t: Totals): TeamStats {
   return row;
 }
 
+const ratio = (a: number, b: number) => (b > 0 ? String(a / b) : undefined);
+const pctOf = (a: number, b: number) => (b > 0 ? String(Math.round((a / b) * 1000) / 10) : undefined);
+
+/** Fields computed the same way for a team's own lines (offense) and its opponents' (defense allowed). */
+function sharedB3(lines: readonly TeamGameLine[]): Record<string, string | undefined> {
+  const yards = sum(lines, (l) => l.totalYards);
+  const plays = sum(lines, (l) => l.plays);
+  const passAtt = sum(lines, (l) => l.passAtt);
+  return {
+    first_down: String(sum(lines, (l) => l.firstDowns)),
+    pass_fd: String(sum(lines, (l) => l.passFd)),
+    rush_fd: String(sum(lines, (l) => l.rushFd)),
+    pass_td: String(sum(lines, (l) => l.passTd)),
+    rush_td: String(sum(lines, (l) => l.rushTd)),
+    yds_per_play_offense: ratio(yards, plays),
+    // Net yards per pass attempt counts sacks as attempts (ESPN/NFL "NY/A").
+    pass_net_yds_per_att: ratio(sum(lines, (l) => l.passYds), passAtt + sum(lines, (l) => l.sacks)),
+    rush_yds_per_att: ratio(sum(lines, (l) => l.rushYds), sum(lines, (l) => l.rushAtt)),
+    pass_cmp_pct: pctOf(sum(lines, (l) => l.passCmp), passAtt),
+    fourth_down_pct: pctOf(sum(lines, (l) => l.td4Conv), sum(lines, (l) => l.td4Att)),
+    time_of_possession: String(sum(lines, (l) => l.topSec) / 60),
+  };
+}
+
+/** Drop undefined (no denominator → "—"). */
+const defined = (o: Record<string, string | undefined>): Record<string, string> =>
+  Object.fromEntries(Object.entries(o).filter((e): e is [string, string] => e[1] !== undefined));
+
 export function buildLast4Rows(
   lines: readonly TeamGameLine[],
   teams: ReadonlyArray<{ abbr: string; name: string }>,
@@ -74,8 +105,16 @@ export function buildLast4Rows(
     const weeks = new Set(windowWeeks(own.map((l) => l.week), 'last4'));
     const games = own.filter((l) => weeks.has(l.week));
 
+    const opp = games.flatMap((l) => byEventTeam.get(`${l.eventId}|${l.opponent}`) ?? []);
+    const takeaways = sum(opp, (l) => l.turnovers);
     offense.push({
       ...baseRow(name, totals(games)),
+      ...defined(sharedB3(games)),
+      penalties: String(sum(games, (l) => l.penalties)),
+      penalty_yds: String(sum(games, (l) => l.penaltyYds)),
+      pen_fd: String(sum(games, (l) => l.penFd)),
+      sacks_taken: String(sum(games, (l) => l.sacks)),
+      ...(opp.length ? { takeaways: String(takeaways), turnover_diff: String(takeaways - sum(games, (l) => l.turnovers)) } : {}),
       pass_cmp: String(sum(games, (l) => l.passCmp)),
       pass_att: String(sum(games, (l) => l.passAtt)),
       pass_td: String(sum(games, (l) => l.passTd)),
@@ -88,8 +127,7 @@ export function buildLast4Rows(
       turnovers: String(sum(games, (l) => l.turnovers)),
     });
 
-    const opp = games.flatMap((l) => byEventTeam.get(`${l.eventId}|${l.opponent}`) ?? []);
-    if (opp.length) defense.push(baseRow(name, totals(opp)));
+    if (opp.length) defense.push({ ...baseRow(name, totals(opp)), ...defined(sharedB3(opp)) });
   }
   return { offense, defense };
 }

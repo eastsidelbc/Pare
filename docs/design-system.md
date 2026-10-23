@@ -329,6 +329,11 @@ for the first 4 s, then 20 fps; skips frames on a hidden tab or mid-swipe/scroll
 (`lib/ambientFx.ts`); glow faked with wide faint strokes (no `shadowBlur`), node glows from one
 pre-rendered sprite. Reduced motion → still glow.
 
+> **Compare metric picker (2026-10-23, Wave B3):** STATS button in the 28px panel header (10/800 .14em `--subtext`,
+> sliders icon, `pare-hit44`) → `BottomSheet` "Offense stats" / "Defense stats (allowed)": category labels 10/800
+> uppercase `--muted`, rows in a `--nav-bg` box with hairlines, 44px, 20px checkbox (gold-bright ring + 18% fill when on),
+> name 13/700 + description 10.5/600 subtext; max 8 per card (extra rows dim to 45%). `components/compare/MetricPickerSheet.tsx`.
+
 ## 9. Global rules — Neon Frame app-wide (written 2026-10-03, Compare finished)
 
 Compare is the reference screen. Every other tab (Home, Standings, Leaders, and anything new)
@@ -481,6 +486,10 @@ Standards scorecard (R2): header hit area 44px ✓ · smallest text 10px (header
 11pt, accepted for dense column labels) · lowest small-text contrast 6.06:1 ✓ · worst team abbr ≥ 4.5:1 ✓ ·
 no clipping at 281px with or without T ✓.
 
+> **Splits view (2026-10-23, Wave B4):** 4th glass toggle option "Splits"; per division a `ListCard` with the same 32px
+> row recipe: TEAM (abbr only) · HOME · ROAD · DIV · CONF · GB (subtext) · DIFF (subtext when negative); `CardGrid`
+> min 300 / max 420 / 4 cols. Clinch letter (10/800 subtext, e = muted) after the abbreviation in every view.
+
 ### 9.3 Leaders — R3 "edge-to-edge" + Rookies (final pick 2026-10-06)
 
 History: "Pare Rookie Leaders" Round 3 option 1 "Standings match" (2026-10-04, built in `786cdf6`), then
@@ -546,6 +555,8 @@ state root.
 
 ### 9.5 Leans — the Leans tab (Leans DECISIONS, built 2026-10-14)
 
+> **Market card (2026-10-23, Wave B1):** under Game lines on the game screen — `LeansLabel` "Market" + a `LIST_CARD` holding one `WHY_BOX` of ≥44px rows (label 12/600 subtext, nowrap · value 13/800 white, right-aligned, may stack · sub 10.5/600 muted): Spread (home) open → current + "Moved N toward X", Total + "Up/Down N", Win chance (no-vig), Key numbers, Weather, Venue. Footnote says these are market facts, not a Pare lean. `components/leans/MarketCard.tsx`.
+
 Picked on the "Matchups & Betting R1" boards: **A2** (own tab) + **G2** game screen + **B1** player vs defense
 + **B2** props. Spec: `docs/plans/2026-10-14-leans-tab/DECISIONS.md` + the boards in that folder; plan
 `docs/plans/2026-10-14-leans-tab.md` (incl. the "Mockup differences" table). Components `components/leans/*`,
@@ -573,6 +584,6 @@ Never: lock, guarantee(d), sure thing, free money, can't lose, bet now — and n
 | Sheets | `BottomSheet` (grab="header"): header 44px, gold-bright 11/800 .2em title + ✕ 44. **Pick a player**: 44px search, RESULTS, "In this game · ATL @ LV" rows (52px, circle, short name, team · pos, `MatchupMeter`). **Add a prop line**: player + Change · stat chips (32px drawn / 44 tap, glass recipe) · 48px line field (16px text, `--seed-edge`) + Over | Under glass toggle (`leans-side`) · live hit dots · 48px gold-ring "Save & check the data" · "Pare never sees your sportsbook. The line stays on this device." · footer |
 | Prop detail | Prop card + the 3 checks (+ the no-lean reason) in one card; Edit line / Remove (48px, radius 10) and "ⓘ How Pare makes a lean" (44px, gold-bright) below. The player row links to the player screen |
 | Player vs defense | Header card (circle, 20/800 name, "ATL · RB · Week 7 @ LV · Sun 3:05 PM") → "WEEK 7 Oct 22 – Oct 26" + Season | Last 4 (`WindowToggle`) → card: `MatchupMeter` + bold "LV allows the 3rd-most RB pts" / 22px tier-colored pts/g + "PPR pts/g to RBs · #30 of 32" → why-stats → last-4 bars (**neutral `--subtext` gradient**, max 44px wide, radius 6 6 2 2) → "Next 5 weeks" `WeekCells` → 48px "+ Check a prop line for Bijan ›" |
-| Storage | Props on the device only: `localStorage` `pare:leans-props:v1` (`{ v: 1, props }`), every read/write in try/catch (`lib/leans/propStore.ts`) |
+| Storage | None since 2026-10-23: prop lines come from the book feed (`/api/leans/props`); the old `pare:leans-props:v1` key is removed on the next Leans visit. Typed-line sheets retired to `_to-delete/2026-10-23-typed-props/`. List: PROP LEANS (props that lean, all games) + the measured record line (10.5/600 muted). Game: leans shown, the rest behind "Show all N lines" (44px, gold-bright). Prop card label "Line" (was "Your line") |
 | Radii · targets · motion | 6 / 10 / 14 / 20 only; 44px targets (`.pare-hit44` on 30–32px chips); the only motion is the glass-toggle pill slide and the ▾ rotate. 0 animations at rest |
 

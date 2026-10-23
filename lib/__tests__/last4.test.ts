@@ -14,7 +14,7 @@ function line(team: string, opponent: string, week: number, v: number, td3: [num
     team, opponent, week, eventId: `e${week}`, // both teams in a game share the event id
     points: v, pointsAllowed: 0, totalYards: v, passYds: v, rushYds: v, passTd: v, rushTd: v,
     interceptions: v, sacks: 0, fumblesLost: v, turnovers: v, redZoneAtt: 0, drives: 0,
-    td3Conv: td3[0], td3Att: td3[1], firstDowns: v, passCmp: v, passAtt: v, rushAtt: v, plays: v,
+    td3Conv: td3[0], td3Att: td3[1], firstDowns: v, passCmp: v, passAtt: v, rushAtt: v, plays: v, passFd: v, rushFd: v, penFd: v, penalties: v, penaltyYds: v, td4Conv: 1, td4Att: 2, topSec: 1800,
   };
 }
 
@@ -44,9 +44,24 @@ describe('buildLast4Rows', () => {
   });
   it('defense = the opponents’ lines in that team’s window', () => {
     // Opponent BBB in weeks 3,5,6,7 → 103+105+106+107 = 421; its 3rd downs 8/16 = 50%.
-    expect(def('Alpha')).toEqual({
+    expect(def('Alpha')).toMatchObject({
       team: 'Alpha', g: '4', points: '421', total_yards: '421', pass_yds: '421', rush_yds: '421', third_down_pct: '50',
     });
+  });
+  it('Wave B3 fields: offense + defense allowed, rates from window sums', () => {
+    // Alpha weeks 3,5,6,7: every count = 21; sacks 0; 4th downs 4/8; 30:00 a game.
+    expect(off('Alpha')).toMatchObject({
+      pass_fd: '21', rush_fd: '21', pen_fd: '21', penalties: '21', penalty_yds: '21', sacks_taken: '0',
+      yds_per_play_offense: '1', pass_net_yds_per_att: '1', rush_yds_per_att: '1', pass_cmp_pct: '100',
+      fourth_down_pct: '50', time_of_possession: '120',
+      // takeaways = BBB's turnovers in those games (421); diff = 421 − 21.
+      takeaways: '421', turnover_diff: '400',
+    });
+    const d = def('Alpha');
+    expect(d).toMatchObject({ first_down: '421', pass_td: '421', fourth_down_pct: '50', time_of_possession: '120' });
+    expect(d?.takeaways).toBeUndefined();
+    expect(d?.penalties).toBeUndefined();
+    expect(d?.red_zone_td_pct).toBeUndefined();
   });
   it('fewer than 4 games → all of them', () => {
     const short = buildLast4Rows(lines.filter((l) => l.week <= 2), TEAMS);

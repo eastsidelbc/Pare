@@ -99,7 +99,7 @@ export default function PlayerScreen({ playerId, gameId }: { playerId: string; g
         cells={view.cells}
         weekRange={weekRange}
         bars={view.bars}
-        addHref={`${gameHref(gameId)}?add=1&player=${encodeURIComponent(player.id)}`}
+        propsHref={`${gameHref(gameId)}#props`}
       />
     </LeansShell>
   );

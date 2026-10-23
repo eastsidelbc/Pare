@@ -10,6 +10,7 @@ import { whyStats, type DefenseGame, type OffenseGame } from '@/lib/myteam/defen
 import type { LeagueBundle } from '@/lib/myteam/apiTypes';
 import type { RatingWindow } from '@/lib/myteam/types';
 import type { RosterRow } from '@/lib/myteam/viewModel';
+import type { UsageMap } from '@/lib/myteam/usage';
 import { positionPlural, rankText, scoringLabel, tierColor } from './style';
 
 export interface DetailContext {
@@ -17,6 +18,8 @@ export interface DetailContext {
   format: LeagueBundle['league']['format'];
   defenseLog: readonly DefenseGame[];
   offenseLog: readonly OffenseGame[];
+  /** My players' usage weeks (Wave A2); absent on older bundles. */
+  usage?: UsageMap;
 }
 
 function formatValue(key: string, value: number): string {

@@ -1,0 +1,514 @@
+[
+ {
+  "team": {
+   "abbreviation": "BUF"
+  },
+  "stats": [
+   {
+    "name": "differential",
+    "type": "differential",
+    "value": 26,
+    "displayValue": "+26"
+   },
+   {
+    "name": "gamesBehind",
+    "type": "gamesbehind",
+    "value": 0.5,
+    "displayValue": "0.5"
+   },
+   {
+    "name": "losses",
+    "type": "losses",
+    "value": 1,
+    "displayValue": "1"
+   },
+   {
+    "name": "playoffSeed",
+    "type": "playoffseed",
+    "value": 2,
+    "displayValue": "2"
+   },
+   {
+    "name": "pointDifferential",
+    "type": "pointdifferential",
+    "value": 26,
+    "displayValue": "+26"
+   },
+   {
+    "name": "pointsAgainst",
+    "type": "pointsagainst",
+    "value": 171,
+    "displayValue": "171"
+   },
+   {
+    "name": "pointsFor",
+    "type": "pointsfor",
+    "value": 197,
+    "displayValue": "197"
+   },
+   {
+    "name": "streak",
+    "type": "streak",
+    "value": 2,
+    "displayValue": "W2"
+   },
+   {
+    "name": "ties",
+    "type": "ties",
+    "value": 0,
+    "displayValue": "0"
+   },
+   {
+    "name": "winPercent",
+    "type": "winpercent",
+    "value": 0.8333333,
+    "displayValue": ".833"
+   },
+   {
+    "name": "wins",
+    "type": "wins",
+    "value": 5,
+    "displayValue": "5"
+   },
+   {
+    "name": "divisionLosses",
+    "type": "divisionlosses",
+    "value": 1,
+    "displayValue": "1"
+   },
+   {
+    "name": "divisionRecord",
+    "type": "divisionrecord",
+    "value": 0,
+    "displayValue": "0-1"
+   },
+   {
+    "name": "divisionTies",
+    "type": "divisionties",
+    "value": 0,
+    "displayValue": "0.000"
+   },
+   {
+    "name": "divisionWins",
+    "type": "divisionwins",
+    "value": 0,
+    "displayValue": "0.000"
+   },
+   {
+    "name": "lockedDivRank",
+    "type": "lockeddivrank",
+    "value": 0,
+    "displayValue": "0"
+   },
+   {
+    "name": "overall",
+    "type": "total",
+    "displayValue": "5-1"
+   },
+   {
+    "name": "Home",
+    "type": "home",
+    "displayValue": "2-1"
+   },
+   {
+    "name": "Road",
+    "type": "road",
+    "displayValue": "3-0"
+   },
+   {
+    "name": "vs. Div.",
+    "type": "vsdiv",
+    "displayValue": "0-1"
+   },
+   {
+    "name": "vs. Conf.",
+    "type": "vsconf",
+    "displayValue": "3-1"
+   }
+  ]
+ },
+ {
+  "team": {
+   "abbreviation": "NE"
+  },
+  "stats": [
+   {
+    "name": "differential",
+    "type": "differential",
+    "value": 17,
+    "displayValue": "+17"
+   },
+   {
+    "name": "gamesBehind",
+    "type": "gamesbehind",
+    "value": 2,
+    "displayValue": "2"
+   },
+   {
+    "name": "losses",
+    "type": "losses",
+    "value": 3,
+    "displayValue": "3"
+   },
+   {
+    "name": "playoffSeed",
+    "type": "playoffseed",
+    "value": 9,
+    "displayValue": "9"
+   },
+   {
+    "name": "pointDifferential",
+    "type": "pointdifferential",
+    "value": 17,
+    "displayValue": "+17"
+   },
+   {
+    "name": "pointsAgainst",
+    "type": "pointsagainst",
+    "value": 143,
+    "displayValue": "143"
+   },
+   {
+    "name": "pointsFor",
+    "type": "pointsfor",
+    "value": 160,
+    "displayValue": "160"
+   },
+   {
+    "name": "streak",
+    "type": "streak",
+    "value": -1,
+    "displayValue": "L1"
+   },
+   {
+    "name": "ties",
+    "type": "ties",
+    "value": 0,
+    "displayValue": "0"
+   },
+   {
+    "name": "winPercent",
+    "type": "winpercent",
+    "value": 0.5714286,
+    "displayValue": ".571"
+   },
+   {
+    "name": "wins",
+    "type": "wins",
+    "value": 4,
+    "displayValue": "4"
+   },
+   {
+    "name": "divisionLosses",
+    "type": "divisionlosses",
+    "value": 0,
+    "displayValue": "0"
+   },
+   {
+    "name": "divisionRecord",
+    "type": "divisionrecord",
+    "value": 0,
+    "displayValue": "2-0"
+   },
+   {
+    "name": "divisionTies",
+    "type": "divisionties",
+    "value": 0,
+    "displayValue": "0.000"
+   },
+   {
+    "name": "divisionWins",
+    "type": "divisionwins",
+    "value": 2,
+    "displayValue": "2.000"
+   },
+   {
+    "name": "lockedDivRank",
+    "type": "lockeddivrank",
+    "value": 0,
+    "displayValue": "0"
+   },
+   {
+    "name": "overall",
+    "type": "total",
+    "displayValue": "4-3"
+   },
+   {
+    "name": "Home",
+    "type": "home",
+    "displayValue": "3-0"
+   },
+   {
+    "name": "Road",
+    "type": "road",
+    "displayValue": "1-3"
+   },
+   {
+    "name": "vs. Div.",
+    "type": "vsdiv",
+    "displayValue": "2-0"
+   },
+   {
+    "name": "vs. Conf.",
+    "type": "vsconf",
+    "displayValue": "4-1"
+   }
+  ]
+ },
+ {
+  "team": {
+   "abbreviation": "NYJ"
+  },
+  "stats": [
+   {
+    "name": "differential",
+    "type": "differential",
+    "value": -10,
+    "displayValue": "-10"
+   },
+   {
+    "name": "gamesBehind",
+    "type": "gamesbehind",
+    "value": 3.5,
+    "displayValue": "3.5"
+   },
+   {
+    "name": "losses",
+    "type": "losses",
+    "value": 4,
+    "displayValue": "4"
+   },
+   {
+    "name": "playoffSeed",
+    "type": "playoffseed",
+    "value": 11,
+    "displayValue": "11"
+   },
+   {
+    "name": "pointDifferential",
+    "type": "pointdifferential",
+    "value": -10,
+    "displayValue": "-10"
+   },
+   {
+    "name": "pointsAgainst",
+    "type": "pointsagainst",
+    "value": 122,
+    "displayValue": "122"
+   },
+   {
+    "name": "pointsFor",
+    "type": "pointsfor",
+    "value": 112,
+    "displayValue": "112"
+   },
+   {
+    "name": "streak",
+    "type": "streak",
+    "value": -1,
+    "displayValue": "L1"
+   },
+   {
+    "name": "ties",
+    "type": "ties",
+    "value": 0,
+    "displayValue": "0"
+   },
+   {
+    "name": "winPercent",
+    "type": "winpercent",
+    "value": 0.33333334,
+    "displayValue": ".333"
+   },
+   {
+    "name": "wins",
+    "type": "wins",
+    "value": 2,
+    "displayValue": "2"
+   },
+   {
+    "name": "divisionLosses",
+    "type": "divisionlosses",
+    "value": 1,
+    "displayValue": "1"
+   },
+   {
+    "name": "divisionRecord",
+    "type": "divisionrecord",
+    "value": 0,
+    "displayValue": "0-1"
+   },
+   {
+    "name": "divisionTies",
+    "type": "divisionties",
+    "value": 0,
+    "displayValue": "0.000"
+   },
+   {
+    "name": "divisionWins",
+    "type": "divisionwins",
+    "value": 0,
+    "displayValue": "0.000"
+   },
+   {
+    "name": "lockedDivRank",
+    "type": "lockeddivrank",
+    "value": 0,
+    "displayValue": "0"
+   },
+   {
+    "name": "overall",
+    "type": "total",
+    "displayValue": "2-4"
+   },
+   {
+    "name": "Home",
+    "type": "home",
+    "displayValue": "1-1"
+   },
+   {
+    "name": "Road",
+    "type": "road",
+    "displayValue": "1-3"
+   },
+   {
+    "name": "vs. Div.",
+    "type": "vsdiv",
+    "displayValue": "0-1"
+   },
+   {
+    "name": "vs. Conf.",
+    "type": "vsconf",
+    "displayValue": "2-1"
+   }
+  ]
+ },
+ {
+  "team": {
+   "abbreviation": "MIA"
+  },
+  "stats": [
+   {
+    "name": "differential",
+    "type": "differential",
+    "value": -62,
+    "displayValue": "-62"
+   },
+   {
+    "name": "gamesBehind",
+    "type": "gamesbehind",
+    "value": 5,
+    "displayValue": "5"
+   },
+   {
+    "name": "losses",
+    "type": "losses",
+    "value": 5,
+    "displayValue": "5"
+   },
+   {
+    "name": "playoffSeed",
+    "type": "playoffseed",
+    "value": 15,
+    "displayValue": "15"
+   },
+   {
+    "name": "pointDifferential",
+    "type": "pointdifferential",
+    "value": -62,
+    "displayValue": "-62"
+   },
+   {
+    "name": "pointsAgainst",
+    "type": "pointsagainst",
+    "value": 132,
+    "displayValue": "132"
+   },
+   {
+    "name": "pointsFor",
+    "type": "pointsfor",
+    "value": 70,
+    "displayValue": "70"
+   },
+   {
+    "name": "streak",
+    "type": "streak",
+    "value": -5,
+    "displayValue": "L5"
+   },
+   {
+    "name": "ties",
+    "type": "ties",
+    "value": 0,
+    "displayValue": "0"
+   },
+   {
+    "name": "winPercent",
+    "type": "winpercent",
+    "value": 0,
+    "displayValue": ".000"
+   },
+   {
+    "name": "wins",
+    "type": "wins",
+    "value": 0,
+    "displayValue": "0"
+   },
+   {
+    "name": "divisionLosses",
+    "type": "divisionlosses",
+    "value": 0,
+    "displayValue": "0"
+   },
+   {
+    "name": "divisionRecord",
+    "type": "divisionrecord",
+    "value": 0,
+    "displayValue": "0-0"
+   },
+   {
+    "name": "divisionTies",
+    "type": "divisionties",
+    "value": 0,
+    "displayValue": "0.000"
+   },
+   {
+    "name": "divisionWins",
+    "type": "divisionwins",
+    "value": 0,
+    "displayValue": "0.000"
+   },
+   {
+    "name": "lockedDivRank",
+    "type": "lockeddivrank",
+    "value": 0,
+    "displayValue": "0"
+   },
+   {
+    "name": "overall",
+    "type": "total",
+    "displayValue": "0-5"
+   },
+   {
+    "name": "Home",
+    "type": "home",
+    "displayValue": "0-2"
+   },
+   {
+    "name": "Road",
+    "type": "road",
+    "displayValue": "0-3"
+   },
+   {
+    "name": "vs. Div.",
+    "type": "vsdiv",
+    "displayValue": "0-0"
+   },
+   {
+    "name": "vs. Conf.",
+    "type": "vsconf",
+    "displayValue": "0-3"
+   }
+  ]
+ }
+]

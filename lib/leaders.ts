@@ -111,10 +111,15 @@ export const BOARDS: readonly BoardConfig[] = [
   { key: 'rushingTouchdowns', label: 'Rushing TDs', section: 'offense', category: 'rushing', statKey: 'rushingTouchdowns' },
   { key: 'receivingYards', label: 'Receiving Yards', section: 'offense', category: 'receiving', statKey: 'receivingYards' },
   { key: 'receivingTouchdowns', label: 'Receiving TDs', section: 'offense', category: 'receiving', statKey: 'receivingTouchdowns' },
+  // Added 2026-10-23 (Wave B5), sort keys verified live. Count stats only: the unqualified list would put
+  // 48-attempt QBs atop a passer-rating board (isqualified=true doesn't filter), so rates stay out.
+  { key: 'receptions', label: 'Receptions', section: 'offense', category: 'receiving', statKey: 'receptions' },
   // Defense
   { key: 'sacks', label: 'Sacks', section: 'defense', category: 'defensive', statKey: 'sacks' },
   { key: 'interceptions', label: 'Interceptions', section: 'defense', category: 'defensiveInterceptions', statKey: 'interceptions' },
   { key: 'totalTackles', label: 'Total Tackles', section: 'defense', category: 'defensive', statKey: 'totalTackles' },
+  { key: 'tacklesForLoss', label: 'Tackles for Loss', section: 'defense', category: 'defensive', statKey: 'tacklesForLoss' },
+  { key: 'passesDefended', label: 'Passes Defended', section: 'defense', category: 'defensive', statKey: 'passesDefended' },
   // Special teams
   { key: 'fieldGoalsMade', label: 'Field Goals Made', section: 'special', category: 'kicking', statKey: 'fieldGoalsMade' },
   { key: 'puntAvg', label: 'Punting Avg', section: 'special', category: 'punting', statKey: 'grossAvgPuntYards' },

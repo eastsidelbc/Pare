@@ -1,5 +1,5 @@
 /**
- * PropRow — one saved prop in the Leans list's YOUR PROPS card (A2b-bets-list-saved):
+ * PropRow — one prop in the Leans list's PROP LEANS card (A2b-bets-list-saved):
  * position circle · name + "o85.5 rush yds · ATL @ LV" · lean pill over "3 of last 4" · ›.
  * 62px row (My Team row recipe, §9.4). Tap → the prop detail.
  */
@@ -23,7 +23,7 @@ export function circlePlayer(prop: Pick<SavedProp, 'playerId' | 'playerName' | '
   return { playerId: prop.playerId, name: prop.playerName, position: prop.position, nflTeam: prop.team, group: 'starter', slot: null, injury };
 }
 
-/** "3 of last 4" for the side the user typed. */
+/** "3 of last 4" for the side shown (the lean's side; over when there's no lean). */
 export function lastText(e: EvaluatedProp): string {
   if (!e.lean) return '—';
   const { over, games } = e.lean.last;

@@ -13,6 +13,7 @@
 
 import { getTeamByAbbr, type NflTeam } from './teams';
 import { APP_CONSTANTS } from '@/config/constants';
+import { pregameBook, type EspnCoreOdds } from './espnCoreOdds';
 import {
   mapEspnScoreboard,
   ESPN_SCOREBOARD_URL,
@@ -74,6 +75,18 @@ export interface Matchup {
   network: string | null;
   /** ESPN event id, for the post-game box-score lookup. `null` for fallback games. */
   espnEventId: string | null;
+  /** Live only (Wave C2): down & distance + who has the ball; absent / null otherwise. */
+  situation?: GameSituation | null;
+}
+
+/** The live game state ESPN's scoreboard carries while a game is in progress. */
+export interface GameSituation {
+  /** "2nd & 7" (ESPN `shortDownDistanceText`). */
+  down: string | null;
+  /** Ball spot, "PHI 34" (ESPN `possessionText`). */
+  spot: string | null;
+  possession: 'away' | 'home' | null;
+  redZone: boolean;
 }
 
 /** Raw, source-agnostic matchup shape. This is what a real feed would provide. */
@@ -195,13 +208,6 @@ async function fetchScoreboard(url: string): Promise<EspnScoreboard> {
 // hours (not 30d): a miss right after a game flips final would otherwise stick,
 // so a short revalidate lets an empty lookup self-heal once ESPN publishes it.
 
-interface EspnOddsItem {
-  details?: string;
-  overUnder?: number;
-}
-interface EspnOddsResponse {
-  items?: EspnOddsItem[];
-}
 
 const CLOSING_ODDS_REVALIDATE_SECONDS = 6 * 60 * 60; // 6h — short so a missed lookup self-heals
 
@@ -210,8 +216,8 @@ async function fetchClosingOdds(eventId: string): Promise<MatchupOdds | null> {
   try {
     const res = await fetch(url, { next: { revalidate: CLOSING_ODDS_REVALIDATE_SECONDS } });
     if (!res.ok) throw new Error(`odds HTTP ${res.status}`);
-    const data = (await res.json()) as EspnOddsResponse;
-    const o = data.items?.[0];
+    // Not items[0]: on old finals that can be a total-only book or an in-game "Live" book.
+    const o = pregameBook((await res.json()) as EspnCoreOdds);
     if (!o?.details) return null;
     return { spread: o.details, overUnder: o.overUnder ?? null };
   } catch {

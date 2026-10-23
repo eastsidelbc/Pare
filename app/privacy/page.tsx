@@ -15,7 +15,7 @@ import SiteFooter from '@/components/SiteFooter';
 export const metadata = { title: 'Privacy Policy · Pare' };
 
 /** Bump when the policy text changes (and on first deploy). */
-const EFFECTIVE_DATE = 'October 14, 2026';
+const EFFECTIVE_DATE = 'October 23, 2026';
 const SUPPORT_EMAIL = 'support@pare.gg';
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -88,17 +88,16 @@ export default function PrivacyPage() {
 
             <Section title="On your device">
               <p>
-                Your favorite teams, open comparisons, Fantasy tab choices, the prop lines you type in the Leans tab and settings are saved only in your browser
+                Your favorite teams, open comparisons, Fantasy tab choices and settings are saved only in your browser
                 or app on your device. Clearing your browser data or deleting the app removes them.
               </p>
               <p style={{ color: 'var(--subtext)' }}>
-                Exactly four entries in your browser&apos;s local storage: <code>pare:favorites</code> (your teams and
+                Exactly three entries in your browser&apos;s local storage: <code>pare:favorites</code> (your teams and
                 their display settings), <code>pare:comparisons</code> (your open comparison tabs),{' '}
                 <code>pare:myteam</code> (if you use the Fantasy tab: your Sleeper username, your Sleeper user and
-                league IDs, and your Season / Last 4 choice) and <code>pare:leans-props:v1</code> (if you use the Leans
-                tab: each prop line you type — player, stat, line, over or under). Prop lines are never sent to pare.gg
-                or anyone else; to show the data next to them, your device only asks pare.gg for the two teams&apos;
-                stats. Pare sets no cookies of its own.
+                league IDs, and your Season / Last 4 choice). The Leans tab no longer stores anything: prop lines now come
+                from our server&apos;s sports data, and the old <code>pare:leans-props:v1</code> entry (prop lines you used
+                to type) is deleted from your device the next time you open Leans. Pare sets no cookies of its own.
               </p>
             </Section>
 
@@ -106,8 +105,9 @@ export default function PrivacyPage() {
               <p>
                 When you enter a Sleeper username, your device sends requests to pare.gg that carry your username,
                 and then your Sleeper user ID and league ID. Our server then asks Sleeper&apos;s
-                public API for that username&apos;s public profile, leagues, rosters and, on game days, your
-                players&apos; points. Your device never talks to Sleeper directly, so Sleeper sees our server&apos;s
+                public API for that username&apos;s public profile, leagues, rosters, your league&apos;s public matchup
+                scores, its members&apos; team names and recent adds, drops and trades (for &quot;Your season&quot; and &quot;League
+                moves&quot;) and, on game days, your players&apos; points. Your device never talks to Sleeper directly, so Sleeper sees our server&apos;s
                 request, not your IP address.
               </p>
               <p>
@@ -137,7 +137,7 @@ export default function PrivacyPage() {
                   address to deliver pages and block attacks, and may set strictly necessary security cookies.
                 </li>
                 <li>
-                  <strong>ESPN</strong>. Scores, box scores and stats come from ESPN&apos;s public data. Only our
+                  <strong>ESPN</strong>. Scores, box scores, stats and betting lines (including player prop lines) come from ESPN&apos;s public data. Only our
                   server contacts ESPN; your browser or app does not, and we send ESPN nothing about you.
                 </li>
                 <li>

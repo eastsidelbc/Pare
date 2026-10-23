@@ -1,0 +1,59 @@
+{
+ "items": [
+  {
+   "provider": {
+    "name": "DraftKings"
+   },
+   "details": "DAL -4.5",
+   "overUnder": 44.5,
+   "homeTeamOdds": {
+    "moneyLine": 180,
+    "open": {
+     "pointSpread": {
+      "american": "-3"
+     },
+     "moneyLine": {
+      "american": "-162"
+     }
+    },
+    "current": {
+     "pointSpread": {
+      "american": "+4.5"
+     },
+     "moneyLine": {
+      "american": "+180"
+     }
+    }
+   },
+   "awayTeamOdds": {
+    "moneyLine": -218,
+    "open": {
+     "pointSpread": {
+      "american": "+3"
+     },
+     "moneyLine": {
+      "american": "+136"
+     }
+    },
+    "current": {
+     "pointSpread": {
+      "american": "-4.5"
+     },
+     "moneyLine": {
+      "american": "-218"
+     }
+    }
+   },
+   "open": {
+    "total": {
+     "american": "48.5"
+    }
+   },
+   "current": {
+    "total": {
+     "american": "44.5"
+    }
+   }
+  }
+ ]
+}

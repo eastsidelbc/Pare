@@ -122,6 +122,9 @@ function differsLive(a: Matchup, b: Matchup): boolean {
     a.awayRecord !== b.awayRecord ||
     a.homeRecord !== b.homeRecord ||
     a.network !== b.network ||
+    (a.situation?.down ?? null) !== (b.situation?.down ?? null) ||
+    (a.situation?.possession ?? null) !== (b.situation?.possession ?? null) ||
+    (a.situation?.spot ?? null) !== (b.situation?.spot ?? null) ||
     // Odds only count as a change when the poll HAS a line. A poll with no
     // line (ESPN often drops it once a game is final) must never erase the
     // closing line the server already attached.
@@ -411,6 +414,8 @@ export function ScheduleProvider({
             awayRecord: l.awayRecord,
             homeRecord: l.homeRecord,
             network: l.network,
+            // Live down & distance; gone once the game isn't live.
+            situation: l.state === 'in' ? l.situation ?? null : null,
           };
         });
         next[wk] = entryChanged ? { ...entry, matchups: newMatchups } : entry;

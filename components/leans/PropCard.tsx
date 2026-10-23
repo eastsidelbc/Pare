@@ -63,7 +63,7 @@ export function PropBody({ e, why, children, nameHref }: { e: EvaluatedProp; why
           </div>
         </div>
         <div className="flex-none text-right">
-          <div style={LABEL9}>Your line</div>
+          <div style={LABEL9}>Line</div>
           <div className="tabular-nums" style={{ marginTop: 2, fontSize: 17, fontWeight: 800, color: 'var(--text)' }}>
             {lineShort(prop.side, prop.line, prop.stat)}
           </div>

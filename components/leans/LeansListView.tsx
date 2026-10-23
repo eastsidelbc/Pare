@@ -2,7 +2,7 @@
  * LeansListView — the Leans list body (A2-bets-list / A2b-bets-list-saved), pure:
  * everything arrives as props (LeansScreen fetches). One 8px-gap column, 16px gutter:
  *
- *   YOUR PROPS ───── 2 this week     ← saved prop rows, or the dashed "Track a prop line"
+ *   PROP LEANS ───── 2 this week     ← book-line props that lean (B2, 2026-10-23), or a quiet note
  *   SUNDAY, OCT 25 ───────────────   ← day groups of GameCards
  *   21+ · Info only, not betting advice · Gambling problem? 1-800-GAMBLER
  */
@@ -10,12 +10,13 @@
 import { LIST_CARD } from '@/components/myteam/style';
 import type { EvaluatedProp } from '@/lib/leans/evaluate';
 import type { GameLeans } from '@/lib/leans/gameLean';
+import { LEANS_RECORD, recordText } from '@/lib/leans/record';
 import type { Matchup } from '@/lib/schedule';
 import MatchupCardSkeleton from '@/components/schedule/MatchupCardSkeleton';
 import GameCard from './GameCard';
 import LeansFooter from './LeansFooter';
 import PropRow from './PropRow';
-import { AddCard, LeansLabel } from './ui';
+import { LeansLabel } from './ui';
 import type { WeekGamesStatus } from './useWeekGames';
 
 export interface DayGroup {
@@ -38,15 +39,16 @@ export interface LeansListViewProps {
   week: number;
   status: WeekGamesStatus;
   groups: DayGroup[];
+  /** Props that lean (over / under) across the week's games. */
   props: EvaluatedProp[];
-  onTrackProp: () => void;
+  propsState: 'loading' | 'ready' | 'error';
 }
 
-export default function LeansListView({ week, status, groups, props, onTrackProp }: LeansListViewProps) {
+export default function LeansListView({ week, status, groups, props, propsState }: LeansListViewProps) {
   return (
     <div className="flex flex-col px-4" style={{ paddingTop: 14, gap: 8 }}>
       <LeansLabel style={{ margin: 0 }} note={props.length > 0 ? `${props.length} this week` : undefined}>
-        Your props
+        Prop leans
       </LeansLabel>
       {props.length > 0 ? (
         <div data-props className="overflow-hidden" style={LIST_CARD}>
@@ -55,8 +57,18 @@ export default function LeansListView({ week, status, groups, props, onTrackProp
           ))}
         </div>
       ) : (
-        <AddCard title="Track a prop line" sub="Type the line from your book — Pare checks it against the data" onClick={onTrackProp} />
+        <p data-props-note style={{ ...LIST_CARD, padding: '12px 14px', fontSize: 12, fontWeight: 600, lineHeight: 1.45, color: 'var(--subtext)' }}>
+          {propsState === 'loading'
+            ? 'Checking this week’s prop lines…'
+            : propsState === 'error'
+              ? 'Prop lines didn’t load. Open a game to try again.'
+              : 'No prop leans this week yet. Pare checks every posted line — open a game to see them all.'}
+        </p>
       )}
+
+      <p data-props-record style={{ margin: '0 4px', fontSize: 10.5, fontWeight: 600, lineHeight: 1.4, color: 'var(--muted)' }}>
+        How prop leans did on past seasons (book opening lines): {recordText(LEANS_RECORD.props)}. Treat them as a read of the data, not an edge.
+      </p>
 
       {status === 'loading' &&
         Array.from({ length: 4 }, (_, i) => (

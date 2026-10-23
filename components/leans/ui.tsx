@@ -5,11 +5,9 @@
  *   SignalList  the 3 checks: ✓ `--green` (its "win" meaning), ✕ `--muted`, in the
  *               near-black why box (`--nav-bg`, hairline, radius 10, 36px rows).
  *   LeansLabel  D1 gold-rule section label, optional right note ("2 this week").
- *   AddCard     dashed gold-bright add row + neon "+" ring.
  */
 
 import type { CSSProperties, ReactNode } from 'react';
-import { Plus } from 'lucide-react';
 import { LEAN_CONFIG } from '@/lib/leans/config';
 import type { LeanResult, LeanVerdict } from '@/lib/leans/types';
 
@@ -122,42 +120,6 @@ export function SignalList({ result, title = true }: { result: Pick<LeanResult, 
 }
 
 /** Dashed gold add row (`.add`): "+" ring, title 14/800, sub 11 `--subtext`. */
-export function AddCard({ title, sub, onClick }: { title: string; sub: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex w-full items-center text-left touch-optimized active:opacity-80"
-      style={{
-        gap: 12,
-        minHeight: 56,
-        padding: '0 14px',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px dashed color-mix(in srgb, var(--gold-bright) 50%, transparent)',
-        background: 'color-mix(in srgb, var(--gold-bright) 5%, transparent)',
-      }}
-    >
-      <span
-        aria-hidden
-        className="flex flex-none items-center justify-center rounded-full"
-        style={{
-          width: 26,
-          height: 26,
-          border: '1.5px solid var(--gold-bright)',
-          boxShadow: '0 0 10px color-mix(in srgb, var(--gold-bright) 35%, transparent)',
-          color: 'var(--gold-bright)',
-        }}
-      >
-        <Plus size={14} strokeWidth={2.6} />
-      </span>
-      <span style={{ lineHeight: 'normal' }}>
-        <span className="block" style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>{title}</span>
-        <span className="block" style={{ marginTop: 2, fontSize: 11, color: 'var(--subtext)' }}>{sub}</span>
-      </span>
-    </button>
-  );
-}
-
 export interface WhyListRow {
   /** `**bold**` allowed. */
   label: string;

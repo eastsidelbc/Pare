@@ -12,6 +12,7 @@ import type { LeagueBundle } from './apiTypes';
 import type { DefenseGame, OffenseGame } from './defenseProfile';
 import type { FpaTable } from './fpa';
 import type { ScheduleEntry, TeamSchedule } from './schedule';
+import type { UsageMap } from './usage';
 import { FANTASY_POSITIONS, type FantasyLeague, type InjuryTag, type RosterPlayer } from './types';
 
 const SEASON = 2026;
@@ -103,6 +104,30 @@ function sandboxSchedule(): TeamSchedule {
   return schedule;
 }
 
+/** Deterministic usage weeks for the skill players (Wave A2 tiles) — fake numbers, stable across runs. */
+function sandboxUsage(): UsageMap {
+  const out: UsageMap = {};
+  PLAYERS.forEach((p, n) => {
+    if (p.position === 'K' || p.position === 'DEF') return;
+    const receiver = p.position !== 'QB';
+    out[`sb${n + 1}`] = COMPLETED.map((week) => {
+      const tgt = receiver ? 2 + ((n + week * 3) % 9) : 0;
+      return {
+        week,
+        pts: 6 + ((n * 7 + week * 5) % 19) + (week % 3) * 0.4,
+        snaps: 38 + ((n * 3 + week * 11) % 27),
+        teamSnaps: 66,
+        tgt,
+        teamTgt: 34,
+        air: tgt * (p.position === 'WR' ? 11 : 6),
+        teamAir: 290,
+        posRank: 1 + ((n * 5 + week * 13) % 40),
+      };
+    });
+  });
+  return out;
+}
+
 export const SANDBOX_LEAGUES: FantasyLeague[] = [
   { provider: 'sleeper', leagueId: '900000000000000301', name: 'Sandbox League', season: SEASON, status: 'in_season', totalRosters: 10 },
   { provider: 'sleeper', leagueId: '900000000000000302', name: 'Second Sandbox League', season: SEASON, status: 'in_season', totalRosters: 12 },
@@ -136,6 +161,20 @@ export function buildSandboxBundle(): LeagueBundle {
     },
     schedule: sandboxSchedule(),
     fpa: sandboxFpa(),
+    usage: sandboxUsage(),
+    moves: [
+      { id: 'sbt1', kind: 'trade', at: Date.parse('2026-10-06T18:00:00.000Z'), sides: [
+        { team: 'Sandbox Squad', mine: true, adds: ['Leo Santos'], drops: ['Chris Nolan'] },
+        { team: 'Gridiron Ghosts', mine: false, adds: ['Chris Nolan'], drops: ['Leo Santos'] },
+      ] },
+      { id: 'sbt2', kind: 'free_agent', at: Date.parse('2026-10-05T12:00:00.000Z'), sides: [{ team: 'Blitz Kings', mine: false, adds: ['Wes Kimura'], drops: [] }] },
+    ],
+    waiver: [
+      { playerId: 'sbw1', name: 'Rico Dawson', position: 'WR', team: 'NYJ', adds: 412_300 },
+      { playerId: 'sbw2', name: 'Tate Morrow', position: 'RB', team: 'ARI', adds: 98_750 },
+      { playerId: 'sbw3', name: 'Wes Kimura', position: 'TE', team: 'SEA', adds: 12_400 },
+    ],
+    leagueSeason: { wins: 5, losses: 1, ties: 0, pointsFor: 812.4, pointsRank: 2, teams: 10, benchLeft: 96.3, allPlay: { wins: 38, losses: 16, ties: 0 }, expectedWins: 4.22, luck: 0.78, weeks: 6 },
     defenseLog,
     offenseLog,
     injurySource: 'sleeper',

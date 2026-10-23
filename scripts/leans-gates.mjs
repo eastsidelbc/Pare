@@ -293,31 +293,28 @@ const STATIC = {
       return [r.failed === 0 && missing.length === 0, `${r.passed} passed, ${r.failed} failed${missing.length ? `; missing ${missing.join(', ')}` : ''}`];
     }],
   ],
+  // l6 rewritten 2026-10-23: typed prop lines retired (Wave B2) — props come from the book feed
+  // (lib/leans/propLines.ts + autoProps.ts, /api/leans/props); the old store + sheets are in _to-delete/.
   l6: [
-    ['prop files exist', () => filesExist('lib/leans/propStore.ts', 'components/leans/AddLineSheet.tsx', 'components/leans/PlayerPickerSheet.tsx', 'components/leans/PropCard.tsx', 'app/leans/prop/[propId]/page.tsx')],
-    ['propStore: versioned key + try/catch around storage', () => {
-      const text = read('lib/leans/propStore.ts');
-      const tries = (text.match(/\btry\s*\{/g) ?? []).length;
-      const touches = (text.match(/localStorage\./g) ?? []).length;
-      return [/pare:leans-props:v\d/.test(text) && tries >= 2 && touches <= tries, `${touches} storage calls, ${tries} try blocks`];
+    ['prop files exist', () => filesExist('lib/leans/propLines.ts', 'lib/leans/autoProps.ts', 'lib/leans/propLinesServer.ts', 'app/api/leans/props/route.ts', 'components/leans/PropCard.tsx', 'app/leans/prop/[propId]/page.tsx')],
+    ['typed-line flow is gone (store + sheets retired)', () => {
+      const gone = ['lib/leans/propStore.ts', 'components/leans/AddLineSheet.tsx', 'components/leans/PlayerPickerSheet.tsx', 'components/leans/GamePickSheet.tsx'].filter((p) => existsSync(abs(p)));
+      return [gone.length === 0, gone.join(', ')];
     }],
-    ['vitest propStore.test.ts (save / read / remove / corrupt / throws)', () => {
-      const r = vitestJson(['lib/leans/__tests__/propStore.test.ts']);
-      const need = ['save', 'read', 'remove', 'corrupt JSON', 'storage throws'];
+    ['retired device store is cleared on the Leans tab', () => has('components/leans/LeansScreen.tsx', /pare:leans-props:v1/, /removeItem\(/)],
+    ['vitest autoProps (book lines → props)', () => {
+      const r = vitestJson(['lib/leans/__tests__/autoProps.test.ts']);
+      const need = ['merges the over + under items', 'one unpriced line is the line', 'opening line', 'round-trip'];
       const missing = need.filter((p) => !r.names.some((n) => n.includes(p)));
       return [r.failed === 0 && missing.length === 0, `${r.passed} passed, ${r.failed} failed${missing.length ? `; missing ${missing.join(', ')}` : ''}`];
     }],
     ['vitest leansRender prop cases', () => {
       const r = vitestJson(['lib/leans/__tests__/leansRender.test.ts']);
-      const need = ['prop: footer', 'prop: lean pill', 'prop: No lean', 'prop: not enough', 'sheet: add line'];
+      const need = ['prop: footer', 'prop: lean pill', 'prop: No lean', 'prop: not enough', 'game: leans show'];
       const missing = need.filter((p) => !r.names.some((n) => n.includes(p)));
       return [r.failed === 0 && missing.length === 0, `${r.passed} passed, ${r.failed} failed${missing.length ? `; missing ${missing.join(', ')}` : ''}`];
     }],
-    ['props never sent: no fetch/POST in propStore + sheets', () => {
-      const files = ['lib/leans/propStore.ts', 'components/leans/AddLineSheet.tsx', 'components/leans/PropCard.tsx'];
-      const bad = files.filter((f) => existsSync(abs(f)) && /\bfetch\(|method:\s*'POST'|sendBeacon/.test(read(f)));
-      return [bad.length === 0, bad.join(', ')];
-    }],
+    ['no user data out: /api/leans/props takes a week number only', () => has('app/api/leans/props/route.ts', /searchParams\.get\('week'\)/)],
   ],
   l7: [
     ['player screen files exist', () => filesExist('app/leans/player/[playerId]/page.tsx', 'components/leans/PlayerVsDefenseView.tsx')],

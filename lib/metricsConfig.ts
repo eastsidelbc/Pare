@@ -6,10 +6,13 @@
  *
  * AVAILABILITY CONVENTION (keep in sync with the data layer — lib/espnStats.ts):
  *   `availableInOffense` / `availableInDefense` must be `true` ONLY for metrics the
- *   data layer actually populates for that side. ESPN's `ESPN_FIELD_MAP` fills the
- *   offense fields; the defense route only fills points / total_yards / pass_yds /
- *   rush_yds / third_down_pct (+ g). A metric with no live source stays `false` so
- *   the selector doesn't offer a column that can only ever render "—".
+ *   data layer actually populates for that side. ESPN's `ESPN_FIELD_MAP` (+ derivedFields)
+ *   fills the offense fields; the defense route fills points (standings), total / pass /
+ *   rush yards + third_down_pct (box scores) and, since 2026-10-23, the allowed stats in
+ *   `DEFENSE_OPPONENT_FIELDS` (ESPN opponent split /900). A metric with no live source
+ *   stays `false` so the picker doesn't offer a column that can only ever render "—".
+ *   Last 4 (L4) rows (lib/last4.ts) carry the new fields too, except red_zone_td_pct, passer_rating and
+ *   explosive_plays (no box-score source) — those show "—" in L4.
  *
  *   NOTE (defense bar math): every metric currently available on defense is an
  *   "allowed" stat (lower = better), which is what useBarCalculation's defense
@@ -103,8 +106,8 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     higherIsBetter: true, // Offense: more Y/P = better; Defense: fewer Y/P allowed = better (context-dependent)
     format: 'decimal',
     description: 'Average yards per offensive play (offense) or yards per play allowed (defense)',
-    availableInOffense: false, // no live ESPN source
-    availableInDefense: false,
+    availableInOffense: true,
+    availableInDefense: true, // opponent split (/900), allowed — lower is better
   },
 
   'turnovers': {
@@ -137,7 +140,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     format: 'number',
     description: 'Total first downs gained',
     availableInOffense: true,
-    availableInDefense: false, // no defense source (opponent first downs not aggregated)
+    availableInDefense: true, // opponent split (/900), allowed — lower is better
   },
 
   // === PASSING ===
@@ -182,7 +185,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     format: 'decimal',
     description: 'Passing touchdowns per game (offense: scored, defense: allowed)',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true, // opponent split (/900), allowed — lower is better
   },
 
   'pass_int': {
@@ -203,8 +206,8 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     higherIsBetter: true, // Offense: more net yards per attempt = better; Defense: fewer net yards per attempt allowed = better (context-dependent)
     format: 'decimal',
     description: 'Net passing yards per attempt (offense: gained, defense: allowed)',
-    availableInOffense: false, // no live ESPN source
-    availableInDefense: false,
+    availableInOffense: true,
+    availableInDefense: true, // opponent split (/900), allowed — lower is better
   },
 
   'pass_fd': {
@@ -214,8 +217,8 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     higherIsBetter: true, // Offense: more passing first downs = better; Defense: fewer passing first downs allowed = better (context-dependent)
     format: 'decimal',
     description: 'First downs via passing per game (offense: gained, defense: allowed)',
-    availableInOffense: false, // no live ESPN source
-    availableInDefense: false,
+    availableInOffense: true,
+    availableInDefense: true, // opponent split (/900), allowed — lower is better
   },
 
   // === RUSHING ===
@@ -249,7 +252,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     format: 'decimal',
     description: 'Rushing touchdowns per game (offense: scored, defense: allowed)',
     availableInOffense: true,
-    availableInDefense: false,
+    availableInDefense: true, // opponent split (/900), allowed — lower is better
   },
 
   'rush_yds_per_att': {
@@ -259,19 +262,19 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     higherIsBetter: true, // Offense: more yards per rush = better; Defense: fewer yards per rush allowed = better (context-dependent)
     format: 'decimal',
     description: 'Rushing yards per attempt (offense: gained, defense: allowed)',
-    availableInOffense: false, // no live ESPN source
-    availableInDefense: false,
+    availableInOffense: true,
+    availableInDefense: true, // opponent split (/900), allowed — lower is better
   },
 
   'rush_fd': {
-    name: 'Rush (1st)D',
+    name: 'Rush 1st Downs',
     field: 'rush_fd',
     category: 'rushing', 
     higherIsBetter: true, // Offense: more rushing first downs = better; Defense: fewer rushing first downs allowed = better (context-dependent)
     format: 'decimal',
     description: 'First downs via rushing per game (offense: gained, defense: allowed)',
-    availableInOffense: false, // no live ESPN source
-    availableInDefense: false,
+    availableInOffense: true,
+    availableInDefense: true, // opponent split (/900), allowed — lower is better
   },
 
   // === PENALTIES === (no live ESPN source yet — hidden until wired)
@@ -282,7 +285,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     higherIsBetter: false,
     format: 'decimal',
     description: 'Penalties per game',
-    availableInOffense: false,
+    availableInOffense: true,
     availableInDefense: false,
   },
 
@@ -293,7 +296,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     higherIsBetter: false,
     format: 'decimal',
     description: 'Penalty yards per game',
-    availableInOffense: false,
+    availableInOffense: true,
     availableInDefense: false,
   },
 
@@ -304,7 +307,7 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     higherIsBetter: false,
     format: 'number',
     description: 'First downs gained via penalty',
-    availableInOffense: false,
+    availableInOffense: true,
     availableInDefense: false,
   },
 
@@ -350,6 +353,106 @@ export const AVAILABLE_METRICS: Record<string, MetricDefinition> = {
     format: 'decimal',
     description: 'Expected points total (offense: generated, defense: allowed)',
     availableInOffense: false, // no live ESPN source
+    availableInDefense: false,
+  },
+
+  // ── Wave B3 (2026-10-23): new team stats from ESPN Core (lib/espnStats.ts ESPN_FIELD_MAP + derivedFields) ──
+  'red_zone_td_pct': {
+    name: 'Red Zone TD %',
+    field: 'red_zone_td_pct',
+    category: 'efficiency',
+    higherIsBetter: true,
+    format: 'percentage',
+    description: 'Share of red-zone trips that end in a touchdown (defense: allowed)',
+    availableInOffense: true,
+    availableInDefense: true, // opponent split (/900), allowed — lower is better
+  },
+
+  'fourth_down_pct': {
+    name: '4th Down %',
+    field: 'fourth_down_pct',
+    category: 'efficiency',
+    higherIsBetter: true,
+    format: 'percentage',
+    description: 'Fourth-down conversion rate (defense: allowed)',
+    availableInOffense: true,
+    availableInDefense: true, // opponent split (/900), allowed — lower is better
+  },
+
+  'time_of_possession': {
+    name: 'Possession',
+    field: 'time_of_possession',
+    category: 'efficiency',
+    higherIsBetter: true,
+    format: 'time',
+    description: 'Time of possession (minutes; per game in PG). Defense: opponents’ possession',
+    availableInOffense: true,
+    availableInDefense: true, // opponent split (/900), allowed — lower is better
+  },
+
+  'explosive_plays': {
+    name: 'Explosive Plays',
+    field: 'explosive_plays',
+    category: 'efficiency',
+    higherIsBetter: true,
+    format: 'decimal',
+    description: 'Big plays (ESPN passing + rushing big plays). Defense: allowed',
+    availableInOffense: true,
+    availableInDefense: true, // opponent split (/900), allowed — lower is better
+  },
+
+  'pass_cmp_pct': {
+    name: 'Completion %',
+    field: 'pass_cmp_pct',
+    category: 'passing',
+    higherIsBetter: true,
+    format: 'percentage',
+    description: 'Completion percentage (defense: allowed)',
+    availableInOffense: true,
+    availableInDefense: true, // opponent split (/900), allowed — lower is better
+  },
+
+  'passer_rating': {
+    name: 'Passer Rating',
+    field: 'passer_rating',
+    category: 'passing',
+    higherIsBetter: true,
+    format: 'decimal',
+    description: 'NFL passer rating (defense: allowed)',
+    availableInOffense: true,
+    availableInDefense: true, // opponent split (/900), allowed — lower is better
+  },
+
+  'sacks_taken': {
+    name: 'Sacks Taken',
+    field: 'sacks_taken',
+    category: 'passing',
+    higherIsBetter: false,
+    format: 'decimal',
+    description: 'Times the offense was sacked',
+    availableInOffense: true,
+    availableInDefense: false, // sacks MADE would be higher-is-better for a defense (bar swap)
+  },
+
+  'takeaways': {
+    name: 'Takeaways',
+    field: 'takeaways',
+    category: 'efficiency',
+    higherIsBetter: true,
+    format: 'decimal',
+    description: 'Turnovers the team forced (its defense) — shown on the offense card as a team stat',
+    availableInOffense: true,
+    availableInDefense: false, // forced = higher-is-better for a defense (bar swap)
+  },
+
+  'turnover_diff': {
+    name: 'Turnover Diff',
+    field: 'turnover_diff',
+    category: 'efficiency',
+    higherIsBetter: true,
+    format: 'decimal',
+    description: 'Takeaways minus giveaways',
+    availableInOffense: true,
     availableInDefense: false,
   },
 };

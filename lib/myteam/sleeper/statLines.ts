@@ -17,8 +17,11 @@ import { SLEEPER_STATS_API, sleeperJson } from './http';
 const POSITIONS_QS = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'].map((p) => `position[]=${p}`).join('&');
 const STATS_TIMEOUT_MS = 8_000;
 
-/** Split / snap / rank keys no league scores — dropped so a week stays small in the cache. */
-const NON_SCORING = /^(pos_rank_|tm_|q[1-4]_|h[12]_)|_snp$|^gms_active$|^gs$/;
+/**
+ * Split / snap / rank keys no league scores — dropped so a week stays small in the cache.
+ * Kept for fantasy usage (lib/myteam/usage.ts, 2026-10-23): `off_snp`, `tm_off_snp`, `pos_rank_ppr`.
+ */
+const NON_SCORING = /^(?!(?:tm_)?off_snp$|pos_rank_ppr$)(?:pos_rank_|tm_|q[1-4]_|h[12]_|.*_snp$|gms_active$|gs$)/;
 
 async function fetchWeekLines(season: number, week: number): Promise<PlayerGameLine[]> {
   const raw = await sleeperJson<SleeperComLineRaw[] | null>(
@@ -33,11 +36,11 @@ async function fetchWeekLines(season: number, week: number): Promise<PlayerGameL
   return lines;
 }
 
-const completedWeekLines = unstable_cache(fetchWeekLines, ['myteam-week-lines-final-v1'], {
+const completedWeekLines = unstable_cache(fetchWeekLines, ['myteam-week-lines-final-v2'], {
   revalidate: 24 * 60 * 60,
   tags: ['myteam-week-lines'],
 });
-const currentWeekLines = unstable_cache(fetchWeekLines, ['myteam-week-lines-live-v1'], {
+const currentWeekLines = unstable_cache(fetchWeekLines, ['myteam-week-lines-live-v2'], {
   revalidate: 30 * 60,
   tags: ['myteam-week-lines'],
 });

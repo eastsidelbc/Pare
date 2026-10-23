@@ -88,6 +88,12 @@ Decision pending (Kobe leaning: drop Sc% from the default 5, swap in an ESPN met
 
 ---
 
+### Wave B3 (2026-10-23): more Compare metrics
+
+- **Offense:** `ESPN_FIELD_MAP` (lib/espnStats.ts) adds net yds/att, pass + rush 1st downs, rush yds/att, penalties, penalty yds, penalty 1st downs, red-zone TD %, 4th-down %, takeaways, turnover diff, sacks taken (= first-occurrence `sacks` = passing), completion %, passer rating (`QBRating`); `derivedFields`: yds/play = netTotalYards / totalOffensivePlays, explosive plays = passingBigPlays + rushingBigPlays, possession = possessionTimeSeconds / 60 (total minutes; per-game → M:SS).
+- **Defense:** `fetchDefenseOpponentStats` reads `/statistics/900` for all 32 teams (same 10-min fetch cache) and the defense route merges ONLY `DEFENSE_OPPONENT_FIELDS` (allowed stats whose offense direction is higher-is-better, so the defense bar swap stays right), never overwriting points / yards / 3rd-down. Best-effort: failure → "—".
+- L4 rows don't carry the new fields → "—" in L4. Verified DAL 2026: offense red zone 77.27 %, defense allowed 66.67 %; both routes 32/32 rows.
+
 ## 3. ESPN team ID map (needed for the stats endpoint + lib/teams.ts)
 ```
 1  ATL   2  BUF   3  CHI   4  CIN   5  CLE   6  DAL   7  DEN   8  DET
@@ -149,6 +155,14 @@ hold a username).
 Per-user data (username, user/league ids, rosters, matchups) is **never** put in
 `unstable_cache` (it writes to disk) and never logged.
 
+**Usage tiles (2026-10-23, `lib/myteam/usage.ts`):** the week lines now keep `off_snp`, `tm_off_snp` and `pos_rank_ppr` (every other split/snap/rank key is still dropped; cache keys `myteam-week-lines-*-v2`). `buildUsage` turns them into per-player weeks (league-scored pts, snaps / team snaps, targets / team targets, air yards / team air yards, PPR positional rank) next to the FPA table (same 30-min cache); the bundle sends only my roster's (`LeagueBundle.usage`). The client sums over the Season / Last 4 window (shares = sum ÷ sum).
+
+**Your season (2026-10-23, `lib/myteam/leagueSeason.ts`):** record + points from `/league/{id}/rosters` `settings` (`wins`/`losses`/`ties`, `fpts`+`fpts_decimal`/100, `ppts`+`ppts_decimal`/100); all-play from `/league/{id}/matchups/{week}` for every completed regular-season week (< `playoff_week_start`), cached 1h per league+week (`pastMatchups`). Best-effort: a failure leaves `LeagueBundle.leagueSeason` null, the roster still loads.
+
+**Waiver watch (2026-10-23, `lib/myteam/waiver.ts`):** `/v1/players/nfl/trending/add?lookback_hours=24&limit=50` (one shared copy, 15 min) minus every player on any roster in the league (`players` + `reserve` + `taxi` from the rosters call) → the first 5 at positions the league can start (`startablePositions` from `roster_positions`), names from the 24h player map. Best-effort (`LeagueBundle.waiver` null on failure).
+
+**League moves (2026-10-23, `lib/myteam/leagueMoves.ts`):** `/league/{id}/transactions/{week}` for this week and last (cached 5 min per league+week) + `/league/{id}/users` (1h) for team names (`metadata.team_name`, else `display_name`) + the rosters call for roster → owner. Completed `trade` / `waiver` / `free_agent` only, newest first, 6 shown. Best-effort (`LeagueBundle.moves` null on failure). /privacy names this data.
+
 ### ESPN endpoints added for My Team (server-only, shared)
 | Endpoint | Used for | Cache |
 |---|---|---|
@@ -170,7 +184,7 @@ from ESPN. Since 2026-10-12 they go through our server (`lib/espnLive.ts`, ADR
 | Our route | Validation | ESPN endpoint | Body | Server cache (memory, per process) |
 |---|---|---|---|---|
 | `GET /api/live/scoreboard?week=N` | `^\d{1,2}$`, 1–18 → else 400 `invalid-week` | `site.api.espn.com/.../scoreboard?seasontype=2&week=N` → `mapEspnScoreboard` | `{ week, updatedAt, stale, matchups }` (kickoff ISO) | 10s while any game is in its live window (the phone polls every 5s, `LIVE_POLL_MS`: ≤15 seconds behind ESPN worst case); otherwise ≤5 min, capped at the next live-window start (`scoreboardTtlMs` in `lib/liveWindow.ts`). 0 matchups = failure (last-good wins). Max 18 keys, 6h retention |
-| `GET /api/live/summary?event=ID` | `^\d{6,12}$` → else 400 `invalid-event` | `site.api.espn.com/.../summary?event=ID` → `parseSummary` (`lib/gameSummary.ts`) | `GameSummary` `{ byAbbr, headline }` — Pare points (Sleeper, §5) attached per response, not cached with the summary | 6h once `header.competitions[0].status.type.completed`, else 60s. Max 300 keys, 24h retention |
+| `GET /api/live/summary?event=ID` | `^\d{6,12}$` → else 400 `invalid-event` | `site.api.espn.com/.../summary?event=ID` → `parseSummary` (`lib/gameSummary.ts`) | `GameSummary` `{ byAbbr, headline, extras? }` — `extras` (since 2026-10-23, `lib/gameExtras.ts`): 11 team-stat rows, quarter scores (header linescores), scoring plays, home win % sampled to 60 points, top-2 defenders + kickers per team, venue; omitted when the summary has none of it (pregame). Pare points (Sleeper, §5) attached per response, not cached with the summary | 6h once `header.competitions[0].status.type.completed`, else 60s. Max 300 keys, 24h retention |
 
 - **Single-flight** per key (`createLiveCache`, `lib/apiCache.ts`): ESPN calls don't grow with viewers.
 - **Budgets:** 120 ESPN calls/min overall (`ESPN_LIVE_CALLS_PER_MIN`), of which summaries may use 60 (`SUMMARY_CALLS_PER_MIN`) — random event ids can't starve the scoreboard. Spent → last-good, else 503 `busy`.
@@ -185,12 +199,19 @@ _Last verified: 2026-10-13 UTC (`scripts/live-proxy-smoke.mjs`, live-freshness F
 
 ---
 
+**Live situation (2026-10-23, Wave C2):** `competitions[0].situation` on the scoreboard (live games only) →
+`Matchup.situation` { down (`shortDownDistanceText`, else `downDistanceText` before " at "), spot (`possessionText`),
+possession (`situation.possession` team id vs `competitors[].team.id`), redZone (`isRedZone`) }; emitted only when non-empty
+(live-parity snapshot unchanged). Rides the existing `/api/live/scoreboard` poll; `patchLiveMatchups` merges it and drops it
+once a game isn't live. **Unverified on a live payload** (the captured fixture's situation only has `isRedZone`).
+
 ## 7. Leans (`/api/leans/data`) — lines + data leans (2026-10-14)
 
 No new upstream. Everything Leans shows comes from sources above, reused server-side:
 
 | Piece | Source | Notes |
 |---|---|---|
+| **Market facts** (game screen, since 2026-10-23) | `GET /api/leans/market?event=ID` → `lib/leans/marketServer.ts`: ESPN Core `/odds` (book = `pregameBook`, `lib/espnCoreOdds.ts`: first non-"Live" book with `details`, else total-only) + site `/summary` `gameInfo` (weather pregame only, venue) | Home spread / total / moneyline **open → current**, no-vig win chance (`noVig(impliedProb)`), key numbers (`lib/formulas/config.ts`), weather, venue. One shared copy per game, 5 min, last good on failure; 5s timeouts. Facts only — Pare projections don't beat closing lines (backtest). Home's closing-line fallback (`lib/schedule.ts`) uses the same `pregameBook` since 2026-10-23 (was `items[0]`: total-only or in-game books on old finals) |
 | Spread · total · **moneyline** | ESPN scoreboard `odds[0]` (`lib/espnScoreboard.ts`) | `MatchupOdds` gained optional `spreadLine { team, line }` (parsed from `details`, "SEA -2.5") and `moneyline { away, home }` (`odds[0].moneyline.{away,home}.close.odds`, else `.open.odds`; American strings → numbers, "EVEN" = +100). `odds[0].spread` is **not** used — its sign flips by side. The `spread` string Home renders is unchanged. Verified on the live week-6 scoreboard 2026-10-14: 14/14 games carry moneylines. Fixture: `lib/__fixtures__/espn/scoreboard-odds.json` (provider names + deep links stripped) |
 | Points for / against per team per week | ESPN final box scores → `getTeamGameLog()` (`lib/espnStats.ts`, same log My Team uses) | total / spread / moneyline signals |
 | Player weekly prop stats | Sleeper `api.sleeper.com` week lines → `getWeekLines()` (`lib/myteam/sleeper/statLines.ts`) | `rush_yd`, `rec`, `rec_yd`, `rush_td`, `rec_td` (absent key = 0); `pts_ppr` ranks players + scores the FPA table |
@@ -201,9 +222,17 @@ No new upstream. Everything Leans shows comes from sources above, reused server-
 
 `GET /api/leans/data?teams=ATL,LV` (`lib/leans/bundle.ts`, `server-only`, `force-dynamic`, `private, no-store`): one
 shared in-memory bundle per 10 min (`createKeyedCache`, last good on failure; a missing completed week throws so it
-never skews ranks), then filtered to the asked teams' players + schedule. Carries **team abbreviations only** — the
-user's prop lines stay in `localStorage` (`pare:leans-props:v1`) and never reach the server. ~65 KB for two teams,
-~1.5 s cold. Lean thresholds: `lib/leans/config.ts`.
+never skews ranks), then filtered to the asked teams' players + schedule. Carries **team abbreviations only**. ~65 KB
+for two teams, ~1.5 s cold. Lean thresholds: `lib/leans/config.ts`.
+
+**Prop lines (since 2026-10-23 — typing retired):** `GET /api/leans/props?week=N` → `{ games: Record<MatchupId, GamePropLine[]> }`
+(`lib/leans/propLinesServer.ts`, server-only). Per game: Core `/odds` → first non-"Live" book with a `propBets` link →
+every page (`limit=1000`, 2 pages) → `parseBookLines` (`lib/leans/propLines.ts`): ESPN market types 12 rush yds, 13 rec
+yds, 14 receptions, 20 rush+rec yds, 31 anytime TD; the over + under items are merged by target; priced main line =
+closest to even, unpriced feeds (2026: one line per player) = that line; open + current kept. ESPN athlete id → Sleeper id
+via the player map `espnId`. One shared copy per game for 10 min, last good on failure; a failing game is left out of the
+week. Client (`lib/leans/autoProps.ts`): only bundle players; before kickoff the current line, after kickoff the opener
+(`current` moves in-game). Week 7 2026: 14 games, ~21 KB. TD-scorer markets are often empty → no Anytime TD props then.
 
 ## 8. Compare "L4" (`/api/nfl-2025/last4`) — last-4-games rows (2026-10-23)
 
@@ -215,6 +244,8 @@ pass_td, pass_int, plays_offense, first_down, rush_att, rush_td, fumbles_lost, t
 (attempts-weighted). Defense = the opponents' lines in that window: `points, total_yards, pass_yds, rush_yds,
 third_down_pct`. Route ISR 10 min (`revalidate = 600`) + last-good backup. Verified 2026-10-23 vs ESPN team
 schedules: CHI 91 for / 90 against, NE 124 / 92 (weeks 4–7).
+
+**L4 + Wave B3 (2026-10-23):** box scores now also give pass/rush/penalty 1st downs, penalties + yards, 4th-down conv/att and possession (seconds); `buildLast4Rows` turns them into the new Compare fields for offense and defense-allowed. Per-game cache key `final-boxscore-v5`.
 
 ## 9. Full catalog: everything ESPN + Sleeper expose (probed 2026-10-23)
 
@@ -236,7 +267,7 @@ documented above.
 | core `…/teams/{id}/statistics/900` | every stat, "allowed" side (defense without box-score summing) |
 | web `…/statistics/byteam?season=&seasontype=2` | all 32 teams, own (splitId 0) + opponent (900), with ranks, in **one** call |
 | core team stats fields we skip | `netYardsPerPassAttempt`, `yardsPerRushAttempt`, `passingFirstDowns`, `rushingFirstDowns`, `firstDownsPenalty`, `totalPenalties`, `totalPenaltyYards` (map onto 7 hidden metrics) + `redzoneTouchdownPct`, `redzoneScoringPct`, `fourthDownConvPct`, `possessionTimeSeconds`, `totalTakeaways`, `turnOverDifferential`, `passingBigPlays`, `rushingBigPlays` |
-| site `/summary` sections we skip | player defense/kicking/punting/returns, `drives`, `scoringPlays`, `winprobability`, `gameInfo.officials`/`venue` |
+| site `/summary` sections we skip | player punting/returns, `drives`, `gameInfo.officials` (defense, kicking, `scoringPlays`, `winprobability`, `gameInfo.venue` → Home Game details since 2026-10-23) |
 | core `…/competitions/{id}/predictor`, `/probabilities`; `seasons/{yr}/powerindex` (FPI); `…/groups/9/qbr/{0\|10000}` | win %, projected margin, unit EPA, playoff odds, QBR/EPA |
 | core `…/competitions/{id}/odds` (all fields) | 3 books, open / close / current spread, total, moneyline |
 | web `athletes/{id}/gamelog`, `/splits` | player game logs and splits |

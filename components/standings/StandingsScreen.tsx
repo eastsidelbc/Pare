@@ -1,7 +1,7 @@
 /**
  * StandingsScreen — client shell for the Standings tab (design-system §9.2).
  *
- * Fixed "H1 · Inline" header (Pare + NFL, and a Division / Conf / Playoffs glass
+ * Fixed "H1 · Inline" header (Pare + NFL, and a Division / Conf / Playoffs / Splits glass
  * toggle) + the single scroll region. The page (server component) fetches once and
  * hands the data down; switching views is pure client state over the same data — no
  * refetch. The T column follows the league-wide rule (`leagueHasTies`).
@@ -25,9 +25,10 @@ import { GlassLabel, glassCapsule } from '@/components/ui/glassControl';
 import DivisionTable from './DivisionTable';
 import ConferenceTable from './ConferenceTable';
 import PlayoffPicture from './PlayoffPicture';
+import SplitsTable from './SplitsTable';
 import { SectionLabel } from './StandingsRow';
 
-type View = 'division' | 'conference' | 'playoffs';
+type View = 'division' | 'conference' | 'playoffs' | 'splits';
 
 /** Refresh on return if the standings on screen are at least this old. */
 const REFRESH_ON_RETURN_AFTER_MS = 60_000;
@@ -36,6 +37,7 @@ const VIEWS: ReadonlyArray<{ id: View; label: string }> = [
   { id: 'division', label: 'Division' },
   { id: 'conference', label: 'Conf' },
   { id: 'playoffs', label: 'Playoffs' },
+  { id: 'splits', label: 'Splits' },
 ];
 
 function ViewToggle({ view, onChange }: { view: View; onChange: (v: View) => void }) {
@@ -124,6 +126,25 @@ export default function StandingsScreen({ conferences }: { conferences: Conferen
                 </CardGrid>
               </section>
             ))}
+
+          {view === 'splits' &&
+            conferences.map((conf) => (
+              <section key={conf.conference} className="mb-4">
+                <SectionLabel>{conf.conference}</SectionLabel>
+                <CardGrid minCard={300} maxCard={420} maxCols={4}>
+                  {conf.divisions.map((division) => (
+                    <SplitsTable key={division.label} division={division} />
+                  ))}
+                </CardGrid>
+              </section>
+            ))}
+
+          {view === 'splits' && (
+            <p className="mb-4" style={{ fontSize: '11px', fontWeight: 600, lineHeight: 1.45, color: 'var(--muted)' }}>
+              GB = games behind the division leader. LUCK = actual wins minus the wins a team&apos;s points for and against
+              usually produce (Pythagorean). Plus means it won more than its scoring says — often close games.
+            </p>
+          )}
 
           {view === 'conference' && (
             <section className="mb-4">

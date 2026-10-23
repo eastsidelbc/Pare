@@ -7,8 +7,8 @@
  * - shared (all users): week info + season schedule + ESPN team game logs,
  *   10-min window (same as Compare stats); the pieces underneath keep their
  *   own unstable_cache / per-game caches.
- * - FPA table: 30 min per scoring hash + last completed week (leagues with the
- *   same scoring share it).
+ * - FPA table + usage weeks: 30 min per scoring hash + last completed week
+ *   (leagues with the same scoring share it).
  * - league / roster: provider caches (lib/myteam/sleeper/adapter.ts).
  */
 import 'server-only';
@@ -23,6 +23,7 @@ import { getSeasonSchedule } from './seasonSchedule';
 import { sleeperProvider } from './sleeper/adapter';
 import { receptionFormat } from './sleeper/scoring';
 import { getWeekLines } from './sleeper/statLines';
+import { buildUsage, pickUsage, type UsageMap } from './usage';
 import type { LeagueBundle } from './apiTypes';
 import type { ScoringRules } from './types';
 
@@ -38,7 +39,13 @@ interface SharedData {
 }
 
 const shared = createKeyedCache<SharedData>({ ttlMs: 10 * MIN, max: 2 });
-const fpaTables = createKeyedCache<FpaTable>({ ttlMs: 30 * MIN, max: 50 });
+/** FPA table + every skill player's usage weeks, from the same lines and scoring. */
+interface SeasonTables {
+  fpa: FpaTable;
+  usage: UsageMap;
+}
+
+const fpaTables = createKeyedCache<SeasonTables>({ ttlMs: 30 * MIN, max: 50 });
 
 function getShared(): Promise<SharedData> {
   return shared.get(
@@ -55,7 +62,7 @@ function getShared(): Promise<SharedData> {
   );
 }
 
-function getFpa(season: number, completedWeeks: readonly number[], rules: ScoringRules, hash: string): Promise<FpaTable> {
+function getSeasonTables(season: number, completedWeeks: readonly number[], rules: ScoringRules, hash: string): Promise<SeasonTables> {
   const last = completedWeeks[completedWeeks.length - 1] ?? 0;
   return fpaTables.get(
     `${season}|${last}|${hash}`,
@@ -64,7 +71,8 @@ function getFpa(season: number, completedWeeks: readonly number[], rules: Scorin
       // A missing week would silently skew every rank — fail instead (last good table is served).
       const missing = completedWeeks.filter((_, i) => weeks[i].length === 0);
       if (missing.length > 0) throw new Error(`stat lines missing for week(s) ${missing.join(', ')}`);
-      return buildFpaTable(weeks.flat(), rules);
+      const lines = weeks.flat();
+      return { fpa: buildFpaTable(lines, rules), usage: buildUsage(lines, rules) };
     },
     'myteam:fpa',
   );
@@ -80,7 +88,16 @@ export async function buildLeagueBundle(leagueId: string, userId: string): Promi
     sleeperProvider.getRoster(leagueId, userId),
   ]);
   if (!roster) return null;
-  const fpa = await getFpa(data.season, data.completedWeeks, league.scoring, league.scoringHash);
+  const regularWeeks = data.completedWeeks.filter((w) => !league.playoffWeekStart || w < league.playoffWeekStart);
+  // This week + last week's moves (Sleeper keys transactions by fantasy week = NFL week).
+  const moveWeeks = [data.week, data.week - 1].filter((w) => w >= 1);
+  const [{ fpa, usage }, leagueSeason, waiver, moves] = await Promise.all([
+    getSeasonTables(data.season, data.completedWeeks, league.scoring, league.scoringHash),
+    // Best-effort: a Sleeper hiccup here must never cost the user their roster.
+    sleeperProvider.getLeagueSeason(leagueId, userId, regularWeeks).catch(() => null),
+    sleeperProvider.getWaiverWatch(leagueId).catch(() => null),
+    sleeperProvider.getLeagueMoves(leagueId, userId, moveWeeks).catch(() => null),
+  ]);
   const teams = new Set(roster.players.map((p) => p.nflTeam).filter((t): t is string => !!t));
   const { scoring, ...leagueInfo } = league;
   return {
@@ -91,6 +108,10 @@ export async function buildLeagueBundle(leagueId: string, userId: string): Promi
     roster,
     schedule: pickTeams(data.schedule, teams),
     fpa,
+    usage: pickUsage(usage, roster.players.map((p) => p.playerId)),
+    leagueSeason,
+    waiver,
+    moves,
     defenseLog: data.defenseLog,
     offenseLog: data.offenseLog,
     injurySource: 'sleeper',

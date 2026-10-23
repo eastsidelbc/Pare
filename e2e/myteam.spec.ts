@@ -86,7 +86,7 @@ async function noHorizontalScroll(page: Page) {
   expect(overflow).toEqual({ doc: 0, main: 0 });
 }
 
-const NAV_TABS = ['Home', 'Compare', 'Standings', 'Leaders', 'Fantasy'];
+const NAV_TABS = ['Home', 'Compare', 'Leans', 'Leaders', 'Fantasy'];
 
 async function checkNav(page: Page) {
   const nav = page.locator('nav[aria-label="Primary"]');
@@ -183,6 +183,59 @@ test.describe('My Team', () => {
     await expect(page.getByRole('button', { name: /^(Expand|Collapse) all$/ })).toHaveCount(0);
     await noHorizontalScroll(page);
     expect(await smallTargets(page)).toEqual([]);
+  });
+
+  test('usage tiles (Wave A2): WR shows target share + WOPR, QB doesn’t, K shows none; Last 4 changes them', async ({ page }) => {
+    await openRoster(page);
+    await rowButton(page, 'Tyler Brooks').click();
+    const wr = row(page, 'Tyler Brooks').locator('[data-usage]');
+    await expect(wr).toBeVisible();
+    for (const label of ['Pts / game', 'Snap share', 'Target share', 'WOPR']) await expect(wr.getByText(label, { exact: true })).toBeVisible();
+    const season = await wr.textContent();
+    await page.getByRole('button', { name: 'Last 4', exact: true }).click();
+    await expect.poll(async () => wr.textContent()).not.toBe(season);
+
+    await rowButton(page, 'Jordan Hale').click();
+    const qb = row(page, 'Jordan Hale').locator('[data-usage]');
+    await expect(qb.getByText('Pts / game', { exact: true })).toBeVisible();
+    await expect(qb.getByText('Target share', { exact: true })).toHaveCount(0);
+
+    await rowButton(page, 'Eli Grant').click();
+    await expect(row(page, 'Eli Grant').locator('[data-usage]')).toHaveCount(0);
+    await noHorizontalScroll(page);
+  });
+
+  test('your season line (Wave A3): record, points rank, luck, bench left', async ({ page }) => {
+    await openRoster(page);
+    const line = page.locator('[data-season]');
+    await expect(line).toBeVisible();
+    await expect(line).toContainText('5-1');
+    await expect(line).toContainText('#2 of 10 in points');
+    await expect(line).toContainText('Luck +0.8 W');
+    await expect(line).toContainText('96.3 pts left on bench');
+    await expect(line.locator('.sr-only')).toContainText('all-play 38-16');
+    await noHorizontalScroll(page);
+  });
+
+  test('waiver watch (Wave B5): trending adds free in the league, under the roster', async ({ page }) => {
+    await openRoster(page);
+    const card = page.locator('[data-waiver]');
+    await expect(card).toBeVisible();
+    await expect(card.locator('li')).toHaveCount(3);
+    await expect(card).toContainText('Rico Dawson');
+    await expect(card).toContainText('412K');
+    await noHorizontalScroll(page);
+  });
+
+  test('league moves (Wave C3): trade with both sides, my team highlighted, time ago', async ({ page }) => {
+    await openRoster(page);
+    const card = page.locator('[data-moves]');
+    await expect(card).toBeVisible();
+    await expect(card.locator('li')).toHaveCount(2);
+    await expect(card).toContainText('TRADE');
+    await expect(card).toContainText('Sandbox Squad · adds Leo Santos · drops Chris Nolan');
+    await expect(card).toContainText('6h ago');
+    await noHorizontalScroll(page);
   });
 
   test('Season ⇄ Last 4 changes meter text; ⓘ opens its note', async ({ page }) => {

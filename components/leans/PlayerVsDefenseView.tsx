@@ -8,11 +8,12 @@
  *     why-stats ("Rush yds / game  132.1  #29")
  *     BIJAN · RUSH YDS, LAST 4   neutral --subtext bars (team color = identity, tier = matchup)
  *     NEXT 5 WEEKS               My Team week cells ]
- *   [ + Check a prop line for Bijan › ]
+ *   SEASON GAME LOG            W · OPP · RUSH · REC · REC YD · TD, newest first (Wave C1)
+ *   [ See prop lines for Bijan › ]
  */
 
 import Link from 'next/link';
-import { ChevronRight, Plus } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { MatchupMeter, WeekCells } from '@/components/myteam/MatchupMeter';
 import PositionCircle from '@/components/myteam/PositionCircle';
 import { kickoffText, LIST_CARD, positionPlural, tierColor } from '@/components/myteam/style';
@@ -44,7 +45,43 @@ export interface PlayerVsDefenseViewProps {
   weekRange: string | null;
   /** Last-4 bars: the position's main stat. */
   bars: { label: string; games: ReadonlyArray<{ week: number; value: number }> };
-  addHref: string;
+  /** The game screen's Props section (book lines for this game). */
+  propsHref: string;
+}
+
+const LOG_COLS = '34px minmax(0,1fr) repeat(4, minmax(0,.9fr))';
+
+/** Every game this season, newest first (Wave C1 — from the bundle, no extra request). */
+export function GameLog({ games }: { games: LeansPlayer['games'] }) {
+  if (games.length === 0) return null;
+  const rows = [...games].sort((a, b) => b.week - a.week);
+  const cell = { fontSize: 12, fontWeight: 700, color: 'var(--text)', textAlign: 'center' as const };
+  return (
+    <section data-gamelog aria-label="Season game log" className="flex flex-col" style={{ ...LIST_CARD, padding: '10px 12px', gap: 6 }}>
+      <div style={LABEL9}>Season game log</div>
+      <div role="table" aria-label="Season game log">
+        <div role="row" className="grid items-center" style={{ gridTemplateColumns: LOG_COLS, height: 22, borderBottom: '1px solid var(--hairline)', ...LABEL9 }}>
+          {['W', 'Opp', 'Rush', 'Rec', 'Rec yd', 'TD'].map((h, i) => (
+            <span key={h} role="columnheader" style={{ textAlign: i < 2 ? 'left' : 'center' }}>
+              {h}
+            </span>
+          ))}
+        </div>
+        {rows.map((g, i) => (
+          <div key={g.week} role="row" className="grid items-center tabular-nums" style={{ gridTemplateColumns: LOG_COLS, height: 32, borderTop: i > 0 ? '1px solid var(--hairline)' : 'none' }}>
+            <span role="cell" style={{ ...cell, textAlign: 'left', color: 'var(--subtext)' }}>{g.week}</span>
+            <span role="cell" style={{ textAlign: 'left' }}>
+              <TeamAbbr abbr={g.opp} size={12} />
+            </span>
+            <span role="cell" style={cell}>{g.rush_yd}</span>
+            <span role="cell" style={cell}>{g.rec}</span>
+            <span role="cell" style={cell}>{g.rec_yd}</span>
+            <span role="cell" style={{ ...cell, color: g.rush_td + g.rec_td > 0 ? 'var(--text)' : 'var(--muted)' }}>{g.rush_td + g.rec_td}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 const statValue = (s: WhyStat) => (Number.isFinite(s.value) ? s.value.toFixed(1) : '—');
@@ -75,7 +112,7 @@ function LastBars({ games }: { games: PlayerVsDefenseViewProps['bars']['games'] 
   );
 }
 
-export default function PlayerVsDefenseView({ player, matchup, window, onWindow, rating, of, why, cells, weekRange, bars, addHref }: PlayerVsDefenseViewProps) {
+export default function PlayerVsDefenseView({ player, matchup, window, onWindow, rating, of, why, cells, weekRange, bars, propsHref }: PlayerVsDefenseViewProps) {
   const home = player.team === matchup.home.abbr;
   const opp = home ? matchup.away.abbr : matchup.home.abbr;
   const first = player.name.split(/\s+/)[0];
@@ -139,8 +176,10 @@ export default function PlayerVsDefenseView({ player, matchup, window, onWindow,
         )}
       </div>
 
+      <GameLog games={player.games} />
+
       <Link
-        href={addHref}
+        href={propsHref}
         className="flex items-center touch-optimized active:opacity-80"
         style={{
           gap: 8,
@@ -154,8 +193,7 @@ export default function PlayerVsDefenseView({ player, matchup, window, onWindow,
           fontWeight: 800,
         }}
       >
-        <Plus size={16} strokeWidth={2.6} aria-hidden style={{ color: 'var(--gold-bright)' }} />
-        <span>Check a prop line for {first}</span>
+        <span>See prop lines for {first}</span>
         <ChevronRight size={16} strokeWidth={2.4} aria-hidden style={{ marginLeft: 'auto', color: 'var(--gold-bright)' }} />
       </Link>
       <LeansFooter />

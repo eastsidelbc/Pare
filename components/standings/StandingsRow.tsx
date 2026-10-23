@@ -45,7 +45,7 @@ export function rowColumns(showTies: boolean): string {
   ].join(' ');
 }
 
-const ROW_BASE: CSSProperties = { paddingLeft: 8, paddingRight: 8, columnGap: 4 };
+export const ROW_BASE: CSSProperties = { paddingLeft: 8, paddingRight: 8, columnGap: 4 };
 
 /** Seed chip: filled = division winner (1–4), outlined = wild card (5–7). Others: blank, or a quiet number when `showOutSeed`. */
 export function SeedChip({ seed, showOutSeed = false }: { seed: number | null; showOutSeed?: boolean }) {
@@ -82,7 +82,7 @@ export function HeaderRow({ showTies }: { showTies: boolean }) {
   );
 }
 
-function Num({ children, secondary }: { children: React.ReactNode; secondary?: boolean }) {
+export function Num({ children, secondary }: { children: React.ReactNode; secondary?: boolean }) {
   return (
     <span
       className="overflow-hidden whitespace-nowrap text-center tabular-nums"
@@ -124,7 +124,7 @@ export function TeamRow({ team: t, showTies, leader = false, showOutSeed = false
       type="button"
       onClick={() => openQuickMenu(t.abbr)}
       className="grid w-full items-center text-left touch-optimized active:opacity-60"
-      aria-label={`${t.name}${fav ? ', in Your teams' : ''}${seedLabel}: ${t.wins} wins, ${t.losses} losses${t.ties ? `, ${t.ties} ties` : ''}. Open team menu`}
+      aria-label={`${t.name}${fav ? ', in Your teams' : ''}${t.clincher ? `, clinch mark ${t.clincher}` : ''}${seedLabel}: ${t.wins} wins, ${t.losses} losses${t.ties ? `, ${t.ties} ties` : ''}. Open team menu`}
       style={{
         ...ROW_BASE, gridTemplateColumns: rowColumns(showTies), height: ROW_H,
         background: leader ? 'var(--leader-tint)' : 'transparent',
@@ -139,6 +139,7 @@ export function TeamRow({ team: t, showTies, leader = false, showOutSeed = false
         {fav && (
           <Star size={10} fill="currentColor" strokeWidth={0} aria-hidden style={{ flex: 'none', marginLeft: -3, color: getListTeamColor(t.abbr) ?? 'var(--text)' }} />
         )}
+        <ClinchMark mark={t.clincher} />
       </div>
       <Num>{t.wins}</Num>
       <Num>{t.losses}</Num>
@@ -148,6 +149,16 @@ export function TeamRow({ team: t, showTies, leader = false, showOutSeed = false
       <Num secondary>{t.pointsAgainst}</Num>
       <Num secondary={t.streak.startsWith('L')}>{t.streak}</Num>
     </button>
+  );
+}
+
+/** ESPN clinch letter (x playoff spot, y division, z bye, * home field, e eliminated) — late season only. */
+export function ClinchMark({ mark }: { mark: string | null }) {
+  if (!mark) return null;
+  return (
+    <span style={{ flex: 'none', marginLeft: -2, fontSize: '10px', fontWeight: 800, color: mark === 'e' ? 'var(--muted)' : 'var(--subtext)' }} title="Clinch status">
+      {mark}
+    </span>
   );
 }
 

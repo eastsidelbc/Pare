@@ -88,8 +88,8 @@
 
 | Provider | Endpoints that work | Pare uses | Fields listed | Fields used | Empty / wrong |
 |---|---|---|---|---|---|
-| ESPN | ~65 | 7 | 1294 | 92 (7%) | 83 |
-| Sleeper | ~29 | 8 | 493 | 48 (10%) | 3 |
+| ESPN | ~65 | 11 | 1294 | 180 (14%) | 83 |
+| Sleeper | ~29 | 11 | 493 | 70 (14%) | 3 |
 
 Counts are field slots in this catalog. A few names repeat across categories (e.g. `totalPoints` in several ESPN categories). Endpoint counts treat a card that groups several URLs (e.g. My Team's 5 Sleeper calls) as that many endpoints.
 
@@ -104,7 +104,7 @@ Ranked by value to an everyday fan for the effort. **Small** = a few lines in th
 | 3 | **New team stats fans know** — Red-zone TD % and scoring %, 4th-down %, time of possession, takeaways, turnover differential, sacks taken, completion %, passer rating, explosive plays (20+ yard runs and passes), yards after catch. | Small | Core team stats | Each new metric needs its higher/lower-is-better direction checked. |
 | 4 | **Fuller box score with no extra requests** — The summary we already download has defense (tackles, sacks, TFL, QB hits), kicking, punting and returns per player, plus drives, scoring plays, a win-probability line, officials and venue. | Medium | Site /summary | UI only; the data is already fetched. |
 | 5 | **Matchup preview odds** — ESPN's predictor and FPI give a win % and projected margin for every game, plus EPA by offense, defense and special teams. Good for the Home accordion and Leans. | Medium | Core predictor<br>Core powerindex |  |
-| 6 | **Line movement + prop lines for Leans** — Core odds already returns open, close and current spreads, totals and moneylines. We read only the first book's closing line. propBets adds ~1,000 player and game prop lines per game (open + current), so Leans can fill prop lines in instead of the user typing them, and 2025 lines still exist for a backtest. | Medium | Core odds<br>Core propBets | Decided 2026-10-23: prop lines auto-fill only. |
+| 6 | **Line movement + prop lines for Leans** — Core odds already returns open, close and current spreads, totals and moneylines. We read only the first book's closing line. propBets adds ~1,000 player and game prop lines per game (open + current), so Leans can fill prop lines in instead of the user typing them, and 2025 lines still exist for a backtest. | Medium | Core odds<br>Core propBets | **Built 2026-10-23**: Leans Market card + auto-filled prop lines. |
 | 7 | **Fantasy usage stats** — Snap %, target share, air yards, red-zone targets and carries, drops, broken tackles, and fantasy points allowed by position, for My Team start/sit and Leans. | Medium | Sleeper stat keys | Already in the weekly rows we fetch; just not read. |
 | 8 | **Projections, trending and roster %** — RotoWire projections per week, the most added and dropped players in the last 24h, and how often each player is rostered and started. | Medium | Sleeper projections<br>Sleeper trending<br>Sleeper research |  |
 | 9 | **Player pages** — Game logs, home/away/opponent/quarter splits, career stats, QBR and EPA, contracts, depth-chart slot and practice status. That's a full player screen for Leaders and Leans. | Big | Web gamelog + splits<br>Core QBR<br>Sleeper player map |  |
@@ -343,7 +343,7 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 | `leaders.passingYards` | ⬜ Not used |
 | `leaders.rushingYards` | ⬜ Not used |
 | `leaders.receivingYards` | ⬜ Not used |
-| `situation` | ⬜ Not used |
+| `situation` | ✅ Used |
 | `highlights` | ⬜ Not used |
 | `headlines` | ⬜ Not used |
 | `format` | ⬜ Not used |
@@ -354,7 +354,7 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 ✅ **Used by Pare**
 
 - **URL:** `https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event={eventId}`
-- **Pare uses it for:** Home post-game box score, Compare defense yards allowed, L4, My Team game log, Leans team log
+- **Pare uses it for:** Home post-game box score + Game details (team stats, quarters, scoring plays, win-prob line, defense, kicking, venue — `lib/gameExtras.ts`), Compare defense yards allowed, L4, My Team game log, Leans team log
 - **Code:** `lib/espnBoxscore.ts`, `lib/gameSummary.ts`, `lib/espnStats.ts`, `lib/last4.ts`, `lib/myteam/gameLog.ts`
 - **Cache:** 24h per final (team box) · 6h final / 60s otherwise (player box)
 - **Notes:** One request returns everything below. Most of it is unused even though we already download it.
@@ -368,10 +368,10 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 | `firstDownsRushing` | ⬜ Not used |
 | `firstDownsPenalty` | ⬜ Not used |
 | `thirdDownEff` | ✅ Used |
-| `fourthDownEff` | ⬜ Not used |
+| `fourthDownEff` | ✅ Used |
 | `totalOffensivePlays` | ✅ Used |
 | `totalYards` | ✅ Used |
-| `yardsPerPlay` | ⬜ Not used |
+| `yardsPerPlay` | ✅ Used |
 | `totalDrives` | ✅ Used |
 | `netPassingYards` | ✅ Used |
 | `completionAttempts` | ✅ Used |
@@ -382,11 +382,11 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 | `rushingAttempts` | ✅ Used |
 | `yardsPerRushAttempt` | ⬜ Not used |
 | `redZoneAttempts` | ✅ Used |
-| `totalPenaltiesYards` | ⬜ Not used |
+| `totalPenaltiesYards` | ✅ Used |
 | `turnovers` | ✅ Used |
 | `fumblesLost` | ✅ Used |
 | `defensiveTouchdowns` | ⬜ Not used |
-| `possessionTime` | ⬜ Not used |
+| `possessionTime` | ✅ Used |
 
 #### players · passing — 8 fields, 4 used
 
@@ -436,9 +436,9 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 
 | Field | Status |
 |---|---|
-| `totalTackles` | ⬜ Not used |
+| `totalTackles` | ✅ Used |
 | `soloTackles` | ⬜ Not used |
-| `sacks` | ⬜ Not used |
+| `sacks` | ✅ Used |
 | `tacklesForLoss` | ⬜ Not used |
 | `passesDefended` | ⬜ Not used |
 | `QBHits` | ⬜ Not used |
@@ -448,7 +448,7 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 
 | Field | Status |
 |---|---|
-| `interceptions` | ⬜ Not used |
+| `interceptions` | ✅ Used |
 | `interceptionYards` | ⬜ Not used |
 | `interceptionTouchdowns` | ⬜ Not used |
 
@@ -471,10 +471,10 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 
 | Field | Status |
 |---|---|
-| `fieldGoalsMade/fieldGoalAttempts` | ⬜ Not used |
+| `fieldGoalsMade/fieldGoalAttempts` | ✅ Used |
 | `fieldGoalPct` | ⬜ Not used |
-| `longFieldGoalMade` | ⬜ Not used |
-| `extraPointsMade/extraPointAttempts` | ⬜ Not used |
+| `longFieldGoalMade` | ✅ Used |
+| `extraPointsMade/extraPointAttempts` | ✅ Used |
 | `totalKickingPoints` | ⬜ Not used |
 | `punts` | ⬜ Not used |
 | `puntYards` | ⬜ Not used |
@@ -536,15 +536,15 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 
 | Field | Status |
 |---|---|
-| `scoringPlay.type` | ⬜ Not used |
-| `scoringPlay.text` | ⬜ Not used |
-| `scoringPlay.awayScore` | ⬜ Not used |
-| `scoringPlay.homeScore` | ⬜ Not used |
-| `scoringPlay.period` | ⬜ Not used |
-| `scoringPlay.clock` | ⬜ Not used |
-| `scoringPlay.team` | ⬜ Not used |
+| `scoringPlay.type` | ✅ Used |
+| `scoringPlay.text` | ✅ Used |
+| `scoringPlay.awayScore` | ✅ Used |
+| `scoringPlay.homeScore` | ✅ Used |
+| `scoringPlay.period` | ✅ Used |
+| `scoringPlay.clock` | ✅ Used |
+| `scoringPlay.team` | ✅ Used |
 | `scoringPlay.scoringType` | ⬜ Not used |
-| `wp.homeWinPercentage` | ⬜ Not used |
+| `wp.homeWinPercentage` | ✅ Used |
 | `wp.tiePercentage` | ⬜ Not used |
 | `wp.playId` | ⬜ Not used |
 
@@ -575,19 +575,19 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 
 | Field | Status |
 |---|---|
-| `gameInfo.venue.fullName` | ⬜ Not used |
-| `gameInfo.venue.address` | ⬜ Not used |
-| `gameInfo.venue.grass` | ⬜ Not used |
+| `gameInfo.venue.fullName` | ✅ Used |
+| `gameInfo.venue.address` | ✅ Used |
+| `gameInfo.venue.grass` | ✅ Used |
 | `gameInfo.attendance` | ⬜ Not used |
 | `gameInfo.officials.fullName` | ⬜ Not used |
 | `gameInfo.officials.position` | ⬜ Not used |
 | `gameInfo.officials.order` | ⬜ Not used |
-| `gameInfo.weather.temperature` | ⬜ Not used |
+| `gameInfo.weather.temperature` | ✅ Used |
 | `gameInfo.weather.highTemperature` | ⬜ Not used |
 | `gameInfo.weather.lowTemperature` | ⬜ Not used |
 | `gameInfo.weather.conditionId` | ⬜ Not used |
-| `gameInfo.weather.gust` | ⬜ Not used |
-| `gameInfo.weather.precipitation` | ⬜ Not used |
+| `gameInfo.weather.gust` | ✅ Used |
+| `gameInfo.weather.precipitation` | ✅ Used |
 | `header.week` | ✅ Used |
 | `header.season.year` | ✅ Used |
 | `header.competitions.competitors.score` | ✅ Used |
@@ -621,14 +621,14 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 
 | Field | Status |
 |---|---|
-| `scoringPlays` | ⬜ Not used |
-| `winprobability` | ⬜ Not used |
+| `scoringPlays` | ✅ Used |
+| `winprobability` | ✅ Used |
 | `leaders(sacks,totalTackles…)` | ⬜ Not used |
 | `pickcenter` | ⬜ Not used |
-| `gameInfo.venue` | ⬜ Not used |
+| `gameInfo.venue` | ✅ Used |
 | `gameInfo.attendance` | ⬜ Not used |
 | `gameInfo.officials` | ⬜ Not used |
-| `gameInfo.weather` | ⬜ Not used |
+| `gameInfo.weather` | ✅ Used |
 | `predictor` | ⬜ Not used |
 | `lastFiveGames` | ⬜ Not used |
 | `injuries` | ⬜ Not used |
@@ -990,17 +990,17 @@ Base: `https://site.api.espn.com/apis/v2/sports/football/nfl`
 | `streak` | ✅ Used |
 | `divisionRecord` | ✅ Used |
 | `playoffSeed` | ✅ Used |
-| `clincher` | ⬜ Not used |
+| `clincher` | ✅ Used |
 | `gamesBehind` | ⬜ Not used |
 | `divisionWins` | ⬜ Not used |
 | `divisionLosses` | ⬜ Not used |
 | `divisionTies` | ⬜ Not used |
 | `lockedDivRank` | ⬜ Not used |
 | `overall` | ⬜ Not used |
-| `Home` | ⬜ Not used |
-| `Road` | ⬜ Not used |
+| `Home` | ✅ Used |
+| `Road` | ✅ Used |
 | `vs.Div.` | ⬜ Not used |
-| `vs.Conf.` | ⬜ Not used |
+| `vs.Conf.` | ✅ Used |
 
 ---
 
@@ -1013,7 +1013,7 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 ✅ **Used by Pare**
 
 - **URL:** `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/{yr}/types/2/teams/{id}/statistics`
-- **Pare uses it for:** Compare offense (season mode): 16 stats via ESPN_FIELD_MAP
+- **Pare uses it for:** Compare offense (season mode): 30 fields via ESPN_FIELD_MAP + 3 derived (yds/play, explosive plays, possession minutes) since 2026-10-23
 - **Code:** `lib/espnStats.ts:52-72`
 - **Cache:** 10 min (fetch + route ISR)
 - **Notes:** Each stat carries value, displayValue, perGameValue, rank and rankDisplayValue. Pare computes ranks itself (useRanking). Gold marks the exact category Pare reads each stat from, so interceptions under defensiveInterceptions (INTs made) stay unused.
@@ -1034,15 +1034,15 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 | `offensiveTwoPtReturns` | ❌ Empty / wrong |
 | `offensiveFumblesTouchdowns` | ❌ Empty / wrong |
 | `defensiveFumblesTouchdowns` | ❌ Empty / wrong |
-| `totalPenalties` | ⬜ Not used |
-| `totalPenaltyYards` | ⬜ Not used |
+| `totalPenalties` | ✅ Used |
+| `totalPenaltyYards` | ✅ Used |
 
 #### passing — 47 fields, 9 used, 7 empty/wrong
 
 | Field | Status |
 |---|---|
 | `avgGain` | ❌ Empty / wrong |
-| `completionPct` | ⬜ Not used |
+| `completionPct` | ✅ Used |
 | `completions` | ✅ Used |
 | `ESPNQBRating` | ❌ Empty / wrong |
 | `interceptionPct` | ⬜ Not used |
@@ -1054,8 +1054,8 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 | `netTotalYards` | ✅ Used |
 | `netYardsPerGame` | ⬜ Not used |
 | `passingAttempts` | ✅ Used |
-| `passingBigPlays` | ⬜ Not used |
-| `passingFirstDowns` | ⬜ Not used |
+| `passingBigPlays` | ✅ Used |
+| `passingFirstDowns` | ✅ Used |
 | `passingFumbles` | ⬜ Not used |
 | `passingFumblesLost` | ⬜ Not used |
 | `passingTouchdownPct` | ⬜ Not used |
@@ -1064,8 +1064,8 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 | `passingYardsAfterCatch` | ⬜ Not used |
 | `passingYardsAtCatch` | ⬜ Not used |
 | `passingYardsPerGame` | ⬜ Not used |
-| `QBRating` | ⬜ Not used |
-| `sacks` | ⬜ Not used |
+| `QBRating` | ✅ Used |
+| `sacks` | ✅ Used |
 | `sackYardsLost` | ⬜ Not used |
 | `netPassingAttempts` | ⬜ Not used |
 | `teamGamesPlayed` | ✅ Used |
@@ -1082,7 +1082,7 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 | `yardsPerCompletion` | ⬜ Not used |
 | `yardsPerGame` | ⬜ Not used |
 | `yardsPerPassAttempt` | ⬜ Not used |
-| `netYardsPerPassAttempt` | ⬜ Not used |
+| `netYardsPerPassAttempt` | ✅ Used |
 | `quarterbackRating` | ⬜ Not used |
 | `offensiveSnapPct` | ❌ Empty / wrong |
 | `targetSharePct` | ❌ Empty / wrong |
@@ -1100,8 +1100,8 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 | `netTotalYards` | ⬜ Not used |
 | `netYardsPerGame` | ⬜ Not used |
 | `rushingAttempts` | ✅ Used |
-| `rushingBigPlays` | ⬜ Not used |
-| `rushingFirstDowns` | ⬜ Not used |
+| `rushingBigPlays` | ✅ Used |
+| `rushingFirstDowns` | ✅ Used |
 | `rushingFumbles` | ⬜ Not used |
 | `rushingFumblesLost` | ⬜ Not used |
 | `rushingTouchdowns` | ✅ Used |
@@ -1121,7 +1121,7 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 | `twoPtRushAttempts` | ⬜ Not used |
 | `yardsFromScrimmagePerGame` | ⬜ Not used |
 | `yardsPerGame` | ⬜ Not used |
-| `yardsPerRushAttempt` | ⬜ Not used |
+| `yardsPerRushAttempt` | ✅ Used |
 
 #### receiving — 30 fields, 4 empty/wrong
 
@@ -1341,31 +1341,31 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 |---|---|
 | `firstDowns` | ✅ Used |
 | `firstDownsPassing` | ⬜ Not used |
-| `firstDownsPenalty` | ⬜ Not used |
+| `firstDownsPenalty` | ✅ Used |
 | `firstDownsPerGame` | ⬜ Not used |
 | `firstDownsRushing` | ⬜ Not used |
 | `fourthDownAttempts` | ⬜ Not used |
-| `fourthDownConvPct` | ⬜ Not used |
+| `fourthDownConvPct` | ✅ Used |
 | `fourthDownConvs` | ⬜ Not used |
 | `fumblesLost` | ⬜ Not used |
-| `possessionTimeSeconds` | ⬜ Not used |
+| `possessionTimeSeconds` | ✅ Used |
 | `redzoneEfficiencyPct` | ⬜ Not used |
 | `redzoneFieldGoalPct` | ⬜ Not used |
 | `redzoneScoringPct` | ⬜ Not used |
-| `redzoneTouchdownPct` | ⬜ Not used |
+| `redzoneTouchdownPct` | ✅ Used |
 | `thirdDownAttempts` | ⬜ Not used |
 | `thirdDownConvPct` | ✅ Used |
 | `thirdDownConvs` | ⬜ Not used |
 | `totalGiveaways` | ✅ Used |
-| `totalPenalties` | ⬜ Not used |
-| `totalPenaltyYards` | ⬜ Not used |
-| `totalTakeaways` | ⬜ Not used |
+| `totalPenalties` | ✅ Used |
+| `totalPenaltyYards` | ✅ Used |
+| `totalTakeaways` | ✅ Used |
 | `totalDrives` | ❌ Empty / wrong |
-| `turnOverDifferential` | ⬜ Not used |
+| `turnOverDifferential` | ✅ Used |
 
 ### Opponent split · the "allowed" side
 
-⬜ **Available, not used**
+✅ **Used by Pare** (since 2026-10-23: `fetchDefenseOpponentStats`, the allowed-only `DEFENSE_OPPONENT_FIELDS` merged into the defense route)
 
 - **URL:** `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/{yr}/types/2/teams/{id}/statistics/900`
 - **Notes:** Same 288 stat names as above, counted for this team's opponents. Checked live: DAL 2025 allowed 511 points; opponents' passing sacks = 35, which matches the sacks DAL made. One request per team would give every defense metric directly instead of standings plus summed box scores. /statistics/0 and ?opponent=true do NOT do this (they return the team's own stats).
@@ -1377,28 +1377,28 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 | Field | Status |
 |---|---|
 | `totalPoints` | ⬜ Not used |
-| `netTotalYards` | ⬜ Not used |
+| `netTotalYards` | ✅ Used |
 | `netPassingYards` | ⬜ Not used |
 | `rushingYards` | ⬜ Not used |
-| `totalOffensivePlays` | ⬜ Not used |
-| `firstDowns` | ⬜ Not used |
-| `passingFirstDowns` | ⬜ Not used |
-| `rushingFirstDowns` | ⬜ Not used |
+| `totalOffensivePlays` | ✅ Used |
+| `firstDowns` | ✅ Used |
+| `passingFirstDowns` | ✅ Used |
+| `rushingFirstDowns` | ✅ Used |
 | `thirdDownConvPct` | ⬜ Not used |
-| `fourthDownConvPct` | ⬜ Not used |
+| `fourthDownConvPct` | ✅ Used |
 | `redzoneScoringPct` | ⬜ Not used |
-| `redzoneTouchdownPct` | ⬜ Not used |
-| `netYardsPerPassAttempt` | ⬜ Not used |
-| `yardsPerRushAttempt` | ⬜ Not used |
-| `passingTouchdowns` | ⬜ Not used |
-| `rushingTouchdowns` | ⬜ Not used |
-| `completionPct` | ⬜ Not used |
+| `redzoneTouchdownPct` | ✅ Used |
+| `netYardsPerPassAttempt` | ✅ Used |
+| `yardsPerRushAttempt` | ✅ Used |
+| `passingTouchdowns` | ✅ Used |
+| `rushingTouchdowns` | ✅ Used |
+| `completionPct` | ✅ Used |
 | `passing.sacks` | ⬜ Not used |
 | `passing.interceptions` | ⬜ Not used |
 | `totalGiveaways` | ⬜ Not used |
-| `passingBigPlays` | ⬜ Not used |
-| `rushingBigPlays` | ⬜ Not used |
-| `possessionTimeSeconds` | ⬜ Not used |
+| `passingBigPlays` | ✅ Used |
+| `rushingBigPlays` | ✅ Used |
+| `possessionTimeSeconds` | ✅ Used |
 
 ### Per-game team stats (310)
 
@@ -1452,7 +1452,7 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 
 | Field | Status |
 |---|---|
-| `provider` | ⬜ Not used |
+| `provider` | ✅ Used |
 | `details` | ✅ Used |
 | `overUnder` | ✅ Used |
 | `spread` | ⬜ Not used |
@@ -1468,28 +1468,31 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 
 | Field | Status |
 |---|---|
-| `open.total` | ⬜ Not used |
+| `open.total` | ✅ Used |
 | `close.total` | ⬜ Not used |
-| `current.total` | ⬜ Not used |
+| `current.total` | ✅ Used |
 | `open.over` | ⬜ Not used |
 | `open.under` | ⬜ Not used |
 | `close.over` | ⬜ Not used |
 | `close.under` | ⬜ Not used |
-| `homeTeamOdds.moneyLine` | ⬜ Not used |
-| `awayTeamOdds.moneyLine` | ⬜ Not used |
+| `homeTeamOdds.moneyLine` | ✅ Used |
+| `awayTeamOdds.moneyLine` | ✅ Used |
 | `homeTeamOdds.spreadOdds` | ⬜ Not used |
 | `awayTeamOdds.spreadOdds` | ⬜ Not used |
-| `homeTeamOdds.open.pointSpread` | ⬜ Not used |
+| `homeTeamOdds.open.pointSpread` | ✅ Used |
 | `homeTeamOdds.close.pointSpread` | ⬜ Not used |
-| `homeTeamOdds.current.pointSpread` | ⬜ Not used |
+| `homeTeamOdds.current.pointSpread` | ✅ Used |
 | `favorite` | ⬜ Not used |
 | `underdog` | ⬜ Not used |
 
 ### Player + game props (propBets)
 
-⬜ **Available, not used**
+✅ **Used by Pare**
 
 - **URL:** `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/events/{id}/competitions/{id}/odds/{providerId}/propBets?limit=1000&page={n}`
+- **Pare uses it for:** Leans props, auto-filled (types 12/13/14/20/31) — list PROP LEANS, game Props, prop screen
+- **Code:** `lib/leans/propLines.ts`, `lib/leans/propLinesServer.ts`, `lib/leans/autoProps.ts`, `app/api/leans/props/route.ts`; backtest `scripts/leans-backtest.ts`
+- **Cache:** 10 min per game (shared)
 - **Notes:** Player, team and game prop lines from one book. ~1,044 items (upcoming 2026 game, DraftKings 100) and ~1,105 (2025 final, ESPN BET 58), 2 pages each. Still served for finished 2025 games, with the last pregame line in `current` — enough history for a backtest. Player name/position = follow the `athlete` `$ref`. Traps: see [Traps](#traps-found-while-probing) (provider per game, paging, alternate lines, partial prices).
 
 #### item — 10 fields
@@ -1498,15 +1501,15 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 
 | Field | Status |
 |---|---|
-| `athlete` | ⬜ Not used |
+| `athlete` | ✅ Used |
 | `team` | ⬜ Not used |
-| `type.id` | ⬜ Not used |
+| `type.id` | ✅ Used |
 | `type.name` | ⬜ Not used |
-| `open.target` | ⬜ Not used |
-| `current.target` | ⬜ Not used |
-| `open.over` / `open.under` | ⬜ Not used |
-| `current.over` / `current.under` | ⬜ Not used |
-| `lastUpdated` | ⬜ Not used |
+| `open.target` | ✅ Used |
+| `current.target` | ✅ Used |
+| `open.over` / `open.under` | ✅ Used |
+| `current.over` / `current.under` | ✅ Used |
+| `lastUpdated` | ✅ Used |
 | `provider` | ⬜ Not used |
 
 #### markets (by `type.id`) — 8 fields
@@ -1515,9 +1518,9 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 
 | Field | Status |
 |---|---|
-| `8–24` player totals: pass yds/cmp/att/TD/INT, carries, rush yds, rec yds, receptions, longest pass/rush/rec, pass+rush, rush+rec, kicking pts, XP, FG | ⬜ Not used |
+| `8–24` player totals: pass yds/cmp/att/TD/INT, carries, rush yds, rec yds, receptions, longest pass/rush/rec, pass+rush, rush+rec, kicking pts, XP, FG | ✅ Used (12, 13, 14, 20 → Leans props) |
 | `26–28`, `71` defensive player: tackles, tackles+assists, sacks, INTs (2025 only) | ⬜ Not used |
-| `29–33`, `66`, `67`, `181` TD scorer: first, last, anytime, 2+, 3+, 1st half, 1st quarter, first team TD | ⬜ Not used |
+| `29–33`, `66`, `67`, `181` TD scorer: first, last, anytime, 2+, 3+, 1st half, 1st quarter, first team TD | ✅ Used (31 anytime TD, when posted) |
 | `72–86` halves + quarters: total, moneyline, spread | ⬜ Not used |
 | `98`, `99`, `104` team: total points, 1st-half points, total TDs | ⬜ Not used |
 | `153` overtime yes/no | ⬜ Not used |
@@ -1556,9 +1559,9 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 
 | Field | Status |
 |---|---|
-| `gameProjection` | ⬜ Not used |
+| `gameProjection` | ✅ Used |
 | `matchupQuality` | ⬜ Not used |
-| `teamPredPtDiff` | ⬜ Not used |
+| `teamPredPtDiff` | ✅ Used |
 | `teamChanceLoss` | ⬜ Not used |
 | `teamChanceTie` | ⬜ Not used |
 | `teamAvgWp` | ⬜ Not used |
@@ -1911,7 +1914,7 @@ Base: `https://site.web.api.espn.com/apis/common/v3/sports/football/nfl`
 
 | Field | Status |
 |---|---|
-| `receptions` | ⬜ Not used |
+| `receptions` | ✅ Used |
 | `receivingTargets` | ⬜ Not used |
 | `receivingYards` | ✅ Used |
 | `yardsPerReception` | ⬜ Not used |
@@ -1933,8 +1936,8 @@ Base: `https://site.web.api.espn.com/apis/common/v3/sports/football/nfl`
 | `totalTackles` | ✅ Used |
 | `sacks` | ✅ Used |
 | `sackYards` | ⬜ Not used |
-| `tacklesForLoss` | ⬜ Not used |
-| `passesDefended` | ⬜ Not used |
+| `tacklesForLoss` | ✅ Used |
+| `passesDefended` | ✅ Used |
 | `longInterception` | ⬜ Not used |
 | `interceptions` | ✅ Used |
 | `interceptionYards` | ⬜ Not used |
@@ -2393,7 +2396,7 @@ Base: `https://api.sleeper.app/v1`
 | `pts_half_ppr` | ⬜ Not used |
 | `pts_std` | ✅ Used |
 | `pts_idp` | ⬜ Not used |
-| `pos_rank_ppr` | ⬜ Not used |
+| `pos_rank_ppr` | ✅ Used |
 | `pos_rank_half_ppr` | ⬜ Not used |
 | `pos_rank_std` | ⬜ Not used |
 | `rank_ppr` | ⬜ Not used |
@@ -2404,10 +2407,10 @@ Base: `https://api.sleeper.app/v1`
 
 | Field | Status |
 |---|---|
-| `off_snp` | ⬜ Not used |
+| `off_snp` | ✅ Used |
 | `def_snp` | ⬜ Not used |
 | `st_snp` | ⬜ Not used |
-| `tm_off_snp` | ⬜ Not used |
+| `tm_off_snp` | ✅ Used |
 | `tm_def_snp` | ⬜ Not used |
 | `tm_st_snp` | ⬜ Not used |
 | `gp` | ✅ Used |
@@ -2479,7 +2482,7 @@ Base: `https://api.sleeper.app/v1`
 | Field | Status |
 |---|---|
 | `rec` | ✅ Used |
-| `rec_tgt` | ⬜ Not used |
+| `rec_tgt` | ✅ Used |
 | `rec_yd` | ✅ Used |
 | `rec_td` | ✅ Used |
 | `rec_2pt` | ⬜ Not used |
@@ -2488,7 +2491,7 @@ Base: `https://api.sleeper.app/v1`
 | `rec_td_lng` | ⬜ Not used |
 | `rec_ypr` | ⬜ Not used |
 | `rec_ypt` | ⬜ Not used |
-| `rec_air_yd` | ⬜ Not used |
+| `rec_air_yd` | ✅ Used |
 | `rec_yar` | ⬜ Not used |
 | `rec_drop` | ⬜ Not used |
 | `rec_rz_tgt` | ⬜ Not used |
@@ -2755,8 +2758,8 @@ Base: `https://api.sleeper.app/v1`
 
 | Field | Status |
 |---|---|
-| `player_id` | ⬜ Not used |
-| `count` | ⬜ Not used |
+| `player_id` | ✅ Used |
+| `count` | ✅ Used |
 
 #### state — 10 fields
 
@@ -2845,12 +2848,12 @@ Base: `https://api.sleeper.app/v1`
 | `taxi` | ✅ Used |
 | `keepers` | ⬜ Not used |
 | `player_map` | ⬜ Not used |
-| `settings.wins` | ⬜ Not used |
-| `settings.losses` | ⬜ Not used |
-| `settings.ties` | ⬜ Not used |
-| `settings.fpts` | ⬜ Not used |
+| `settings.wins` | ✅ Used |
+| `settings.losses` | ✅ Used |
+| `settings.ties` | ✅ Used |
+| `settings.fpts` | ✅ Used |
 | `settings.fpts_against` | ⬜ Not used |
-| `settings.ppts` | ⬜ Not used |
+| `settings.ppts` | ✅ Used |
 | `settings.waiver_position` | ⬜ Not used |
 | `settings.waiver_budget_used` | ⬜ Not used |
 | `settings.total_moves` | ⬜ Not used |
@@ -2880,26 +2883,26 @@ Base: `https://api.sleeper.app/v1`
 
 | Field | Status |
 |---|---|
-| `user_id` | ⬜ Not used |
-| `display_name` | ⬜ Not used |
+| `user_id` | ✅ Used |
+| `display_name` | ✅ Used |
 | `avatar` | ⬜ Not used |
 | `is_owner` | ⬜ Not used |
-| `metadata.team_name` | ⬜ Not used |
+| `metadata.team_name` | ✅ Used |
 
 #### transactions — 10 fields
 
 | Field | Status |
 |---|---|
-| `transaction_id` | ⬜ Not used |
-| `type` | ⬜ Not used |
-| `status` | ⬜ Not used |
-| `created` | ⬜ Not used |
-| `adds` | ⬜ Not used |
-| `drops` | ⬜ Not used |
+| `transaction_id` | ✅ Used |
+| `type` | ✅ Used |
+| `status` | ✅ Used |
+| `created` | ✅ Used |
+| `adds` | ✅ Used |
+| `drops` | ✅ Used |
 | `draft_picks` | ⬜ Not used |
 | `waiver_budget` | ⬜ Not used |
 | `settings.waiver_bid` | ⬜ Not used |
-| `roster_ids` | ⬜ Not used |
+| `roster_ids` | ✅ Used |
 
 #### drafts — 14 fields
 

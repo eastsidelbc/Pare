@@ -11,6 +11,7 @@
  * lib/fantasyPoints.ts) at response time, then keeps the passer + top 3 skill.
  */
 
+import { parseExtras, type EspnExtrasSource, type GameExtras } from '@/lib/gameExtras';
 import { normalizeTeamAbbr } from '@/lib/teams';
 
 export interface PlayerLine {
@@ -45,6 +46,8 @@ export interface TeamBox<L extends PlayerLine = PlayerLine> {
 export interface GameSummary<L extends PlayerLine = PlayerLine> {
   byAbbr: Record<string, TeamBox<L>>;
   headline: string | null;
+  /** Team stats, quarters, scoring, win-prob line, defense, kicking, venue (lib/gameExtras.ts). Absent on older copies. */
+  extras?: GameExtras | null;
 }
 
 /** Parser output: the passer + every skill candidate, with join fields, `ppr: null`. */
@@ -69,10 +72,10 @@ interface EspnBoxTeam {
   team?: { abbreviation?: string };
   statistics?: EspnStatCategory[];
 }
-export interface EspnSummary {
-  boxscore?: { players?: EspnBoxTeam[] };
+export interface EspnSummary extends Omit<EspnExtrasSource, 'boxscore' | 'header'> {
+  boxscore?: { players?: EspnBoxTeam[]; teams?: NonNullable<EspnExtrasSource['boxscore']>['teams'] };
   article?: { headline?: string };
-  header?: { week?: number; season?: { year?: number } };
+  header?: { week?: number; season?: { year?: number } } & EspnExtrasSource['header'];
 }
 
 /** Aggregated per-player stats within one game. */
@@ -245,7 +248,8 @@ export function parseSummary(data: EspnSummary): ParsedSummary {
     const box = parseTeam(t);
     if (box.abbr) byAbbr[box.abbr] = box;
   }
-  return { byAbbr, headline: data.article?.headline ?? null };
+  const extras = parseExtras(data);
+  return { byAbbr, headline: data.article?.headline ?? null, ...(extras ? { extras } : {}) };
 }
 
 /** Drop the server-only join fields (they'd grow the response ~75%). */
@@ -254,7 +258,7 @@ export function toWireSummary(summary: GameSummary<PlayerLine>): GameSummary {
   for (const [key, box] of Object.entries(summary.byAbbr)) {
     byAbbr[key] = { abbr: box.abbr, lines: box.lines.map(({ role, name, stat, ppr }) => ({ role, name, stat, ppr })) };
   }
-  return { byAbbr, headline: summary.headline };
+  return { byAbbr, headline: summary.headline, ...(summary.extras ? { extras: summary.extras } : {}) };
 }
 
 /** Season + week of the game (ESPN summary `header`), or null when ESPN omits them. */

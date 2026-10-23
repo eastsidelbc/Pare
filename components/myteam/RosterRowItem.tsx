@@ -23,6 +23,7 @@ import MatchupDetails, { type DetailContext } from './MatchupDetails';
 import { MatchupMeter, NextFiveBar, WeekCells } from './MatchupMeter';
 import PositionCircle from './PositionCircle';
 import StartSitPanel from './StartSitPanel';
+import UsageStats from './UsageStats';
 import { ACTION_BUTTON, kickoffText, startSitHint } from './style';
 
 const SLIDE_MS = 340;
@@ -162,6 +163,7 @@ export default function RosterRowItem({ row, allRows, expanded, onToggle, ctx, a
           style={{ gap: 12, margin: '0 12px 14px', padding: 12, borderRadius: 'var(--radius-md)', border: '1px solid var(--hairline)' }}
         >
           <MatchupDetails row={row} ctx={ctx} />
+          <UsageStats playerId={player.playerId} position={player.position} window={ctx.window} usage={ctx.usage} />
           <WeekCells cells={row.strip.slice(0, 5)} />
 
           {/* Phone: Start / Sit + Open in Compare, sliding to the Start / Sit panel. */}

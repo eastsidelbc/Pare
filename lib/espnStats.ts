@@ -37,7 +37,7 @@ interface EspnCategory {
   name: string;
   stats?: EspnStat[];
 }
-interface EspnStatsResponse {
+export interface EspnStatsResponse {
   splits?: {
     categories?: EspnCategory[];
   };
@@ -46,10 +46,12 @@ interface EspnStatsResponse {
 /**
  * Map of app `TeamStats` field → ESPN stat name.
  * Only clean 1:1 season-total mappings. Metrics with no clean ESPN source
- * (e.g. score_pct, penalties, exp_pts_tot) are intentionally omitted and will
- * render as an empty/"—" cell rather than a wrong number.
+ * (e.g. score_pct, exp_pts_tot) are intentionally omitted and will render as an
+ * empty/"—" cell rather than a wrong number. Duplicate names resolve to the FIRST
+ * category (flattenStats): `sacks` = passing.sacks = sacks TAKEN, `interceptions` =
+ * thrown. Values verified on DAL 2026 (docs/devnotes/2026-10-23-compare-metrics.md).
  */
-const ESPN_FIELD_MAP: Record<string, string> = {
+export const ESPN_FIELD_MAP: Record<string, string> = {
   g: 'gamesPlayed',
   points: 'totalPoints',
   // NET yards (sack yardage removed) to match the official / box-score /
@@ -69,7 +71,58 @@ const ESPN_FIELD_MAP: Record<string, string> = {
   fumbles_lost: 'fumblesLost',
   turnovers: 'totalGiveaways',
   third_down_pct: 'thirdDownConvPct',
+  // Wave B3 (2026-10-23): the 8 metrics that were defined but hidden + new team stats.
+  pass_net_yds_per_att: 'netYardsPerPassAttempt',
+  pass_fd: 'passingFirstDowns',
+  rush_yds_per_att: 'yardsPerRushAttempt',
+  rush_fd: 'rushingFirstDowns',
+  penalties: 'totalPenalties',
+  penalty_yds: 'totalPenaltyYards',
+  pen_fd: 'firstDownsPenalty',
+  red_zone_td_pct: 'redzoneTouchdownPct',
+  fourth_down_pct: 'fourthDownConvPct',
+  takeaways: 'totalTakeaways',
+  turnover_diff: 'turnOverDifferential',
+  sacks_taken: 'sacks',
+  pass_cmp_pct: 'completionPct',
+  passer_rating: 'QBRating',
 };
+
+/**
+ * Fields ESPN doesn't carry 1:1 — computed from season totals.
+ *   yds_per_play_offense = netTotalYards / totalOffensivePlays
+ *   explosive_plays      = passingBigPlays + rushingBigPlays (ESPN "big plays")
+ *   time_of_possession   = possessionTimeSeconds / 60 → total MINUTES, so the per-game
+ *                          transform gives minutes per game ('time' format shows M:SS)
+ */
+function derivedFields(lookup: Map<string, number>): Record<string, number> {
+  const out: Record<string, number> = {};
+  const yards = lookup.get('netTotalYards');
+  const plays = lookup.get('totalOffensivePlays');
+  if (yards !== undefined && plays) out.yds_per_play_offense = yards / plays;
+  const bigPass = lookup.get('passingBigPlays');
+  const bigRush = lookup.get('rushingBigPlays');
+  if (bigPass !== undefined && bigRush !== undefined) out.explosive_plays = bigPass + bigRush;
+  const top = lookup.get('possessionTimeSeconds');
+  if (top !== undefined) out.time_of_possession = top / 60;
+  return out;
+}
+
+/** One team's Core stats lookup → TeamStats fields (strings), limited to `fields` when given. */
+export function mapCoreStats(lookup: Map<string, number>, fields?: readonly string[]): Record<string, string> {
+  const want = fields ? new Set(fields) : null;
+  const row: Record<string, string> = {};
+  for (const [field, espnName] of Object.entries(ESPN_FIELD_MAP)) {
+    if (want && !want.has(field)) continue;
+    const val = lookup.get(espnName);
+    if (typeof val === 'number' && Number.isFinite(val)) row[field] = String(val);
+  }
+  for (const [field, val] of Object.entries(derivedFields(lookup))) {
+    if (want && !want.has(field)) continue;
+    if (Number.isFinite(val)) row[field] = String(val);
+  }
+  return row;
+}
 
 const ESPN_STATS_BASE =
   'https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons';
@@ -82,7 +135,7 @@ const FETCH_TIMEOUT_MS = 8000;
  * A few stats (e.g. totalPoints) appear in multiple categories with the same
  * value; first occurrence wins.
  */
-function flattenStats(data: EspnStatsResponse): Map<string, number> {
+export function flattenStats(data: EspnStatsResponse): Map<string, number> {
   const out = new Map<string, number>();
   const categories = data.splits?.categories ?? [];
   for (const cat of categories) {
@@ -122,13 +175,8 @@ async function fetchOneTeam(
       lookup.set('gamesPlayed', lookup.get('teamGamesPlayed')!);
     }
 
-    for (const [field, espnName] of Object.entries(ESPN_FIELD_MAP)) {
-      const val = lookup.get(espnName);
-      if (typeof val === 'number' && Number.isFinite(val)) {
-        // TeamStats values are strings (matches the CSV parser output).
-        row[field] = String(val);
-      }
-    }
+    // TeamStats values are strings (matches the CSV parser output).
+    Object.assign(row, mapCoreStats(lookup));
 
     // Require at least the core identity + a couple stats to count as valid.
     if (row.g === undefined || row.points === undefined) {
@@ -172,6 +220,50 @@ export async function fetchOffenseStatsFromESPN(): Promise<ParseResult> {
   }
 
   return { updatedAt: new Date().toISOString(), rows };
+}
+
+// ==========================================================================
+//  DEFENSE extras — ESPN Core opponent split (/statistics/900), Wave B3
+// ==========================================================================
+
+/**
+ * Defense fields read from the opponent split — ONLY "allowed" stats whose offense
+ * direction is higher-is-better, so for defense lower is better and useBarCalculation's
+ * defense swap stays correct. Turnovers forced / sacks made / opponent penalties are
+ * deliberately left out (higher is better for a defense → would invert the bar).
+ * Points, total/pass/rush yards and 3rd-down % keep their existing sources.
+ */
+export const DEFENSE_OPPONENT_FIELDS: readonly string[] = [
+  'yds_per_play_offense', 'pass_net_yds_per_att', 'pass_fd', 'rush_yds_per_att', 'rush_fd', 'first_down',
+  'pass_td', 'rush_td', 'red_zone_td_pct', 'fourth_down_pct', 'pass_cmp_pct', 'passer_rating', 'explosive_plays',
+  'time_of_possession',
+];
+
+async function fetchOneOpponentSplit(espnId: number, season: number): Promise<Record<string, string> | null> {
+  const url = `${ESPN_STATS_BASE}/${season}/types/2/teams/${espnId}/statistics/900`;
+  try {
+    const res = await fetch(url, {
+      next: { revalidate: APP_CONSTANTS.CACHE.REVALIDATE_SECONDS },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return mapCoreStats(flattenStats((await res.json()) as EspnStatsResponse), DEFENSE_OPPONENT_FIELDS);
+  } catch (err) {
+    logger.error({ context: 'ESPN-DEFENSE-900' }, `opponent split ${espnId}: ${err instanceof Error ? err.message : String(err)}`);
+    return null;
+  }
+}
+
+/** team name → allowed-stat fields. Best-effort: teams that fail are just missing ("—"). */
+export async function fetchDefenseOpponentStats(): Promise<Map<string, Record<string, string>>> {
+  const season = APP_CONSTANTS.SEASON;
+  const results = await Promise.all(NFL_TEAMS.map((t) => fetchOneOpponentSplit(t.espnId, season)));
+  const out = new Map<string, Record<string, string>>();
+  NFL_TEAMS.forEach((t, i) => {
+    const r = results[i];
+    if (r && Object.keys(r).length > 0) out.set(t.name, r);
+  });
+  return out;
 }
 
 // ==========================================================================
@@ -394,7 +486,7 @@ function getGameBox(eventId: string): Promise<GameTeamBox[]> {
       if (!box) throw new Error(`incomplete box score for event ${eventId}`);
       return box;
     },
-    ['final-boxscore-v3', eventId],
+    ['final-boxscore-v5', eventId],
     {
       revalidate: APP_CONSTANTS.CACHE.FINAL_BOXSCORE_REVALIDATE_SECONDS,
       tags: ['final-boxscore-yards'],
