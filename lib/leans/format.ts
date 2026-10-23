@@ -49,7 +49,7 @@ export const PROP_STAT_LABEL: Readonly<Record<PropStat, string>> = {
   anytime_td: 'Anytime TD',
 };
 
-/** Lowercase stat words for the compact line: "o85.5 rush yds". */
+/** Lowercase stat words for the compact line: "▲85.5 rush yds". */
 export const PROP_STAT_SHORT: Readonly<Record<PropStat, string>> = {
   rush_yd: 'rush yds',
   rec_yd: 'rec yds',
@@ -58,8 +58,15 @@ export const PROP_STAT_SHORT: Readonly<Record<PropStat, string>> = {
   anytime_td: 'anytime TD',
 };
 
-/** "o85.5" / "u6.5"; anytime TD reads "Yes" / "No". */
-export function lineShort(side: PropSide, line: number, stat: PropStat): string {
-  if (stat === 'anytime_td') return side === 'over' ? 'TD yes' : 'TD no';
-  return `${side === 'over' ? 'o' : 'u'}${line}`;
+export interface PropLineParts {
+  /** Arrow direction; null = no arrow (anytime TD reads "TD yes" / "TD no"). */
+  dir: PropSide | null;
+  /** The visible text after the arrow: "85.5", or "TD yes". */
+  text: string;
+}
+
+/** A prop line as arrow + number (▲85.5 / ▼6.5); anytime TD reads "TD yes" / "TD no". */
+export function propLineParts(side: PropSide, line: number, stat: PropStat): PropLineParts {
+  if (stat === 'anytime_td') return { dir: null, text: side === 'over' ? 'TD yes' : 'TD no' };
+  return { dir: side, text: String(line) };
 }

@@ -4,7 +4,7 @@
  * padding, 12px gaps:
  *
  *   (RB) Bijan Robinson              YOUR LINE
- *        ATL · @ LV · Rush yds          o85.5
+ *        ATL · @ LV · Rush yds          ▲85.5
  *   [↑ Data leans OVER]  Over in 3 of last 4 · 4 of 6 this season
  *   ● ● ● ○ ● ●   values + weeks
  *   ▂▄▆█ Great #30  LV allows the 3rd-most RB pts
@@ -21,9 +21,10 @@ import { LIST_CARD } from '@/components/myteam/style';
 import { TeamAbbr } from '@/components/standings/StandingsRow';
 import { allowsText } from '@/lib/leans/copy';
 import type { EvaluatedProp, WhyRow } from '@/lib/leans/evaluate';
-import { lineShort, PROP_STAT_LABEL } from '@/lib/leans/format';
+import { PROP_STAT_LABEL } from '@/lib/leans/format';
 import HitDots from './HitDots';
 import LeanPill from './LeanPill';
+import PropLine from './PropLine';
 import { circlePlayer, propHref } from './PropRow';
 import TierBars from './TierBars';
 import { Bolded, LABEL9, WhyList } from './ui';
@@ -65,7 +66,7 @@ export function PropBody({ e, why, children, nameHref }: { e: EvaluatedProp; why
         <div className="flex-none text-right">
           <div style={LABEL9}>Line</div>
           <div className="tabular-nums" style={{ marginTop: 2, fontSize: 17, fontWeight: 800, color: 'var(--text)' }}>
-            {lineShort(prop.side, prop.line, prop.stat)}
+            <PropLine side={prop.side} line={prop.line} stat={prop.stat} />
           </div>
         </div>
     </>

@@ -135,6 +135,13 @@ describe('Leans prop detail (/leans/prop/[propId])', () => {
     expect(none).toContain('Pare only shows a lean when all three signals point the same way');
     expect(none).toContain('data-injury="Q"');
   });
+  it('prop: line arrow (green ▲ over / red ▼ under, spoken "over 85.5")', () => {
+    expect(over).toMatch(/role="img" aria-label="over" data-line-dir="over"[^>]*><svg[^>]*color:var\(--green\)[^>]*>.*?<\/svg><\/span>85\.5/);
+    expect(over).not.toContain('o85.5');
+    const under = view(savedProp({ id: 'p4', side: 'under', line: 6.5 }));
+    expect(under).toMatch(/aria-label="under" data-line-dir="under"[^>]*><svg[^>]*color:var\(--red\);transform:rotate\(180deg\)/);
+    expect(under).not.toContain('u6.5');
+  });
   it('prop: not enough games (2 played)', () => {
     expect(thin).toContain('Not enough games yet');
     expect(thin).toContain('has played 2 games so far');

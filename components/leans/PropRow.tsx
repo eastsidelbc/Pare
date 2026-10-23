@@ -1,6 +1,6 @@
 /**
  * PropRow — one prop in the Leans list's PROP LEANS card (A2b-bets-list-saved):
- * position circle · name + "o85.5 rush yds · ATL @ LV" · lean pill over "3 of last 4" · ›.
+ * position circle · name + "▲85.5 rush yds · ATL @ LV" · lean pill over "3 of last 4" · ›.
  * 62px row (My Team row recipe, §9.4). Tap → the prop detail.
  */
 
@@ -10,11 +10,12 @@ import PositionCircle from '@/components/myteam/PositionCircle';
 import { TeamAbbr } from '@/components/standings/StandingsRow';
 import { shortPlayerName } from '@/lib/playerName';
 import type { EvaluatedProp } from '@/lib/leans/evaluate';
-import { lineShort, PROP_STAT_SHORT } from '@/lib/leans/format';
+import { PROP_STAT_SHORT } from '@/lib/leans/format';
 import { LEAN_CONFIG } from '@/lib/leans/config';
 import type { SavedProp } from '@/lib/leans/types';
 import type { InjuryTag, RosterPlayer } from '@/lib/myteam/types';
 import LeanPill from './LeanPill';
+import PropLine from './PropLine';
 
 export const propHref = (id: string) => `/leans/prop/${encodeURIComponent(id)}`;
 
@@ -53,8 +54,9 @@ export default function PropRow({ e, first }: { e: EvaluatedProp; first: boolean
           {prop.playerName.length > 15 ? shortPlayerName(prop.playerName) : prop.playerName}
         </div>
         <div className="flex items-center whitespace-nowrap" style={{ marginTop: 3, gap: 4, fontSize: 11, fontWeight: 600, color: 'var(--subtext)' }}>
-          <b style={{ color: 'var(--text)', fontWeight: 800 }}>
-            {lineShort(prop.side, prop.line, prop.stat)} {prop.stat === 'anytime_td' ? '' : PROP_STAT_SHORT[prop.stat]}
+          <b className="inline-flex items-center" style={{ gap: 4, color: 'var(--text)', fontWeight: 800 }}>
+            <PropLine side={prop.side} line={prop.line} stat={prop.stat} />
+            {prop.stat === 'anytime_td' ? null : <span>{PROP_STAT_SHORT[prop.stat]}</span>}
           </b>
           <span>·</span>
           <TeamAbbr abbr={prop.team} size={11} />
