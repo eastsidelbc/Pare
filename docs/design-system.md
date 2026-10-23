@@ -332,7 +332,8 @@ pre-rendered sprite. Reduced motion → still glow.
 > **Compare metric picker (2026-10-23, Wave B3):** STATS button in the 28px panel header (10/800 .14em `--subtext`,
 > sliders icon, `pare-hit44`) → `BottomSheet` "Offense stats" / "Defense stats (allowed)": category labels 10/800
 > uppercase `--muted`, rows in a `--nav-bg` box with hairlines, 44px, 20px checkbox (gold-bright ring + 18% fill when on),
-> name 13/700 + description 10.5/600 subtext; max 8 per card (extra rows dim to 45%). `components/compare/MetricPickerSheet.tsx`.
+> name 13/700 + description 10.5/600 subtext; no max (limit of 8 removed same day) — a "Select all" checkbox row (13/800) sits above
+> the first category; unticking it resets to the defaults; at least 1 always stays picked. `components/compare/MetricPickerSheet.tsx`.
 
 ## 9. Global rules — Neon Frame app-wide (written 2026-10-03, Compare finished)
 

@@ -6,6 +6,10 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ## [Unreleased]
 
+### Changed
+- **Compare: pick as many stats as you want** (2026-10-23, branch `feat/prop-engine-v2`) — the Stats sheet has no 8-stat limit anymore, and a **Select all** row at the top picks every stat for that side (untick it to go back to the defaults).
+  - See: `docs/devnotes/2026-10-23-compare-select-all-stats.md`.
+
 ### Added
 - **Fantasy: League moves** (2026-10-23, branch `feat/data-rollout`) — under the waiver card: your league's latest adds, drops and trades (this week + last), each team by its team name, yours in gold, with how long ago. `/privacy` updated first (the server now also reads your league's public matchup scores, member team names and transactions).
   - See: `docs/devnotes/2026-10-23-fantasy-league-moves.md`. `lib/myteam/leagueMoves.ts`, provider `getLeagueMoves` (transactions 5 min, users 1h), `components/myteam/LeagueMoves.tsx`, `LeagueBundle.moves` (best-effort).
