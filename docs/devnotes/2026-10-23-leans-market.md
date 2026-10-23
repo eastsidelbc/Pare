@@ -39,3 +39,9 @@ shows **what the market says** (true by construction) rather than a Pare "edge".
 - 2 ESPN calls per game opened (cached 5 min, shared by all users).
 - Weather is pregame only and absent for domes/international some weeks — the row just hides.
 - The spread label reads the home team's line; "toward X" names the side the market moved to.
+
+## Addendum (same day) — ESPN model row
+
+- `parseModel`: Core `/predictor` → `gameProjection` (win %, home + away) and home `teamPredPtDiff`; third, optional
+  call in `getGameMarket` (failure → no row). Market row "ESPN model" — ESPN's number, named as ESPN's, never as a lean.
+- Verified live: PIT @ NO `{ away 0.599, home 0.398, homeMargin −2.57 }`; tests in `market.test.ts` (copy + parse).

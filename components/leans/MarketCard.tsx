@@ -75,6 +75,15 @@ export function marketRows(m: GameMarket, away: string, home: string): Row[] {
     if (m.weather.precipPct !== null) parts.push(`${m.weather.precipPct}% rain`);
     rows.push({ key: 'weather', label: 'Weather', value: parts.join(' · '), sub: 'Forecast at kickoff' });
   }
+  if (m.model) {
+    const fav = m.model.homeMargin === null ? null : m.model.homeMargin >= 0 ? home : away;
+    rows.push({
+      key: 'model',
+      label: 'ESPN model',
+      value: `${away} ${pct(m.model.away)} · ${home} ${pct(m.model.home)}`,
+      sub: fav && m.model.homeMargin !== null ? `ESPN’s power rating projects ${fav} by ${Math.abs(m.model.homeMargin).toFixed(1)}` : 'ESPN’s power rating (FPI)',
+    });
+  }
   if (m.venue) rows.push({ key: 'venue', label: 'Venue', value: m.venue.name, sub: m.venue.turf === null ? null : m.venue.turf ? 'Turf' : 'Grass' });
   return rows;
 }

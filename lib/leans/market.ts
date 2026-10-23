@@ -31,9 +31,29 @@ export interface GameMarket {
   keyTotal: KeyNumberHit;
   weather: { tempF: number | null; gustMph: number | null; precipPct: number | null } | null;
   venue: { name: string; turf: boolean | null } | null;
+  /** ESPN's own model (matchup predictor / FPI): win chance 0–1 + projected home margin. ESPN's, not Pare's. */
+  model?: { away: number; home: number; homeMargin: number | null } | null;
 }
 
 // ── ESPN shapes: odds in lib/espnCoreOdds.ts ──
+interface EspnPredictorSide {
+  statistics?: Array<{ name?: string; value?: number }>;
+}
+export interface EspnPredictor {
+  homeTeam?: EspnPredictorSide;
+  awayTeam?: EspnPredictorSide;
+}
+
+/** ESPN predictor → win chances (gameProjection, %) + projected home margin (teamPredPtDiff). */
+export function parseModel(p: EspnPredictor | null | undefined): GameMarket['model'] {
+  const stat = (side: EspnPredictorSide | undefined, name: string) => side?.statistics?.find((s) => s.name === name)?.value;
+  const home = stat(p?.homeTeam, 'gameProjection');
+  const away = stat(p?.awayTeam, 'gameProjection');
+  if (typeof home !== 'number' || typeof away !== 'number') return null;
+  const margin = stat(p?.homeTeam, 'teamPredPtDiff');
+  return { away: away / 100, home: home / 100, homeMargin: typeof margin === 'number' ? margin : null };
+}
+
 export interface EspnGameInfo {
   gameInfo?: {
     venue?: { fullName?: string; grass?: boolean };

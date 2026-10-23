@@ -1559,9 +1559,9 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 
 | Field | Status |
 |---|---|
-| `gameProjection` | ⬜ Not used |
+| `gameProjection` | ✅ Used |
 | `matchupQuality` | ⬜ Not used |
-| `teamPredPtDiff` | ⬜ Not used |
+| `teamPredPtDiff` | ✅ Used |
 | `teamChanceLoss` | ⬜ Not used |
 | `teamChanceTie` | ⬜ Not used |
 | `teamAvgWp` | ⬜ Not used |

@@ -7,6 +7,8 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Added
+- **Leans Market card: ESPN model row** (2026-10-23, branch `feat/data-rollout`) — ESPN's own win chance + projected margin (matchup predictor / FPI), labelled as ESPN's, next to the market's no-vig win chance. PIT @ NO: ESPN 60% / 40%, PIT by 2.6.
+  - See: `docs/devnotes/2026-10-23-leans-market.md` (addendum). `parseModel` (`lib/leans/market.ts`), third optional call in `marketServer.ts`.
 - **Home: live down & distance** (2026-10-23, branch `feat/data-rollout`) — under the red live clock: "2nd & 7" and who has the ball ("KC ball"), gold-bright with "· RZ" in the red zone. Comes with the 5-second live poll we already run; nothing shows when ESPN sends no situation.
   - See: `docs/devnotes/2026-10-23-live-situation.md`. `Matchup.situation` (`mapSituation`, `lib/espnScoreboard.ts`), live merge in `ScheduleProvider`, `MatchupCard` center.
 - **Standings: Splits view** (2026-10-23, branch `feat/data-rollout`) — fourth toggle next to Division / Conf / Playoffs: each division with Home, Road, Division and Conference records, games behind the division leader, and point differential. Clinch marks (x / y / z / * / e) appear next to team names in every view once ESPN sends them late in the season.

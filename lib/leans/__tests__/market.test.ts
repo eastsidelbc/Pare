@@ -75,3 +75,24 @@ describe('MarketCard rows (copy)', async () => {
     expect(byKey('venue')).toMatchObject({ value: 'Lincoln Financial Field', sub: 'Grass' });
   });
 });
+
+describe('ESPN model (predictor)', async () => {
+  const { parseModel } = await import('@/lib/leans/market');
+  const { marketRows } = await import('@/components/leans/MarketCard');
+  // PIT @ NO 2026 W7, live predictor 2026-10-23.
+  const p = {
+    homeTeam: { statistics: [{ name: 'gameProjection', value: 39.823 }, { name: 'teamPredPtDiff', value: -2.57 }] },
+    awayTeam: { statistics: [{ name: 'gameProjection', value: 59.857 }, { name: 'teamPredPtDiff', value: 2.57 }] },
+  };
+  it('win chances + projected home margin', () => {
+    const m = parseModel(p);
+    expect(m?.away).toBeCloseTo(0.59857, 5);
+    expect(m?.homeMargin).toBe(-2.57);
+    expect(parseModel({})).toBeNull();
+  });
+  it('row copy names it as ESPN\'s', () => {
+    const base = parseMarket(upcoming, null);
+    const rows = base ? marketRows({ ...base, model: parseModel(p) }, 'PIT', 'NO') : [];
+    expect(rows.find((r) => r.key === 'model')).toMatchObject({ label: 'ESPN model', value: 'PIT 60% · NO 40%', sub: 'ESPN’s power rating projects PIT by 2.6' });
+  });
+});

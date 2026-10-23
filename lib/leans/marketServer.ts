@@ -1,13 +1,13 @@
 /**
  * Leans market facts — server side (Wave B1). One shared copy per game for
  * `MARKET_TTL_MS` (lines move slowly pregame; the list page reads many games at once),
- * last good copy on an ESPN failure (`createKeyedCache`). Two ESPN calls per game:
- * Core odds + site summary (for `gameInfo` weather / venue). Never nested in
+ * last good copy on an ESPN failure (`createKeyedCache`). Three ESPN calls per game:
+ * Core odds + site summary (`gameInfo` weather / venue) + Core predictor (ESPN's model). Never nested in
  * another cache.
  */
 import 'server-only';
 import { createKeyedCache } from '@/lib/apiCache';
-import { parseMarket, type EspnCoreOdds, type EspnGameInfo, type GameMarket } from './market';
+import { parseMarket, parseModel, type EspnCoreOdds, type EspnGameInfo, type EspnPredictor, type GameMarket } from './market';
 
 const CORE = 'https://sports.core.api.espn.com/v2/sports/football/leagues/nfl';
 const SITE = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl';
@@ -27,12 +27,15 @@ export function getGameMarket(eventId: string): Promise<GameMarket | null> {
   return markets.get(
     eventId,
     async () => {
-      const [odds, info] = await Promise.all([
+      const [odds, info, predictor] = await Promise.all([
         json<EspnCoreOdds>(`${CORE}/events/${eventId}/competitions/${eventId}/odds`),
-        // Weather/venue are nice-to-have: a summary failure must not lose the lines.
+        // Weather/venue + ESPN's model are nice-to-have: their failure must not lose the lines.
         json<EspnGameInfo>(`${SITE}/summary?event=${eventId}`).catch(() => null),
+        json<EspnPredictor>(`${CORE}/events/${eventId}/competitions/${eventId}/predictor`).catch(() => null),
       ]);
-      return parseMarket(odds, info);
+      const market = parseMarket(odds, info);
+      const model = parseModel(predictor);
+      return market && model ? { ...market, model } : market;
     },
     'leans:market',
   );
