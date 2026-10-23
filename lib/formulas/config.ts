@@ -7,10 +7,10 @@
 export const FORMULA_CONFIG = {
   /** Pythagorean expectation exponent for the NFL (Football Outsiders' 2.37). */
   pythagExponent: 2.37,
-  /** Standard deviation of an NFL final margin vs the spread (points). */
-  marginSd: 13.5,
-  /** Standard deviation of an NFL game total vs the posted total (points). */
-  totalSd: 10,
+  /** SD of the final margin vs the closing spread (points). Leans backtest: 2025 12.23, 2024 12.62. */
+  marginSd: 12.5,
+  /** SD of the final total vs the closing total (points). Leans backtest: 2025 13.18, 2024 12.43. */
+  totalSd: 12.8,
   /** Home-field advantage in points (post-2020 NFL average). */
   homeField: 1.5,
   /** Shrinkage strength: how many "league-average games" a small sample is blended with. */

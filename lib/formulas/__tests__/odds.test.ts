@@ -45,8 +45,8 @@ describe('odds — prices', () => {
 });
 
 describe('odds — lines', () => {
-  it('spread → win %: +3 projected ≈ 58.8%', () => {
-    expect(spreadWinProb(3)).toBeCloseTo(0.5879, 3);
+  it('spread → win %: +3 projected ≈ 59.5% (SD 12.5)', () => {
+    expect(spreadWinProb(3)).toBeCloseTo(0.5948, 3);
     expect(spreadWinProb(0)).toBeCloseTo(0.5, 7);
   });
   it('cover %: projected +3 laying -3 is a coin flip', () => {
@@ -54,7 +54,8 @@ describe('odds — lines', () => {
     expect(coverProb(7, -3)).toBeGreaterThan(0.6);
   });
   it('total over %', () => {
-    expect(totalOverProb(47, 44)).toBeCloseTo(0.6179, 3);
+    // Φ(3 / 12.8)
+    expect(totalOverProb(47, 44)).toBeCloseTo(0.5927, 3);
   });
   it('key numbers: on / near / none', () => {
     expect(nearKeyNumber(-3, 'spread')).toBe('on');

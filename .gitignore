@@ -67,3 +67,6 @@ Claude outputs/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Leans backtest cache (scripts/leans-backtest.ts)
+/.cache/
