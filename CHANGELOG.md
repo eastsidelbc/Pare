@@ -7,6 +7,9 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Added
+- **Last 4 games ("L4") in every Compare panel** (2026-10-23, branch `feat/last4-compare`) — the Offense/Defense header switch is now `PG | L4 | TOT` on Compare, the Home mini-compare and the Leans game screen. L4 = each team's average over its last 4 games played (byes skipped); bars, ranks, gold/red badges and Power Surge are among all 32 teams' last 4, so you can see who is finding their groove (new QB, hot streak) or fading.
+  - See: `docs/devnotes/2026-10-23-last4-compare.md`, plan `docs/plans/wanting-to-add-the-starry-volcano.md`, `DATA_SOURCES.md` §8.
+  - New `GET /api/nfl-2025/last4` (`lib/last4.ts`, ISR 10 min) built from the existing final box scores; the box-score parser now also reads first downs, completions/attempts, rush attempts and plays (cache key `final-boxscore-v3` → one cold re-download of this season's finals after deploy). Prefetched on idle by `components/Last4StatsProvider.tsx`, so tapping L4 is instant.
 - **Leans tab — lines + data leans for every game, and your own prop lines** (2026-10-14, branch `feat/leans-tab`) — new third tab **Leans** (lucide Scale): Home · Compare · Leans · Leaders · Fantasy.
   - See: `docs/devnotes/2026-10-14-leans-tab.md`, plan `docs/plans/2026-10-14-leans-tab.md` (incl. "Mockup differences"), decisions `docs/plans/2026-10-14-leans-tab/DECISIONS.md`, design-system §9.5.
   - `/leans`: this week's games as Home's Frame Row card + a Spread · Total · Moneyline row + a lean row; "Your props" on top. `/leans/[gameId]`: team wordmarks, "Compare these teams ▾" (today's Offense + Defense panels in place), Game lines card (rows open to the last-4 numbers + the 3 checks), Props. `/leans/prop/[id]` prop detail, `/leans/player/[id]` player vs defense (Season / Last 4).

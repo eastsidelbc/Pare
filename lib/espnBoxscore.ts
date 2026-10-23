@@ -59,6 +59,12 @@ export interface GameTeamBox extends GameTeamYards {
   /** Red-zone trips (the "att" in "TD-att"). */
   redZoneAtt: number;
   drives: number;
+  /** Last-4 Compare fields (best-effort, 0 when absent). */
+  firstDowns: number;
+  passCmp: number;
+  passAtt: number;
+  rushAtt: number;
+  plays: number;
 }
 
 const num = (s: string | undefined | null): number | null => {
@@ -66,9 +72,9 @@ const num = (s: string | undefined | null): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 
-/** "a-b" → [a, b]; anything else → null. */
+/** "a-b" or "a/b" (completionAttempts) → [a, b]; anything else → null. */
 const pair = (s: string | undefined): [number, number] | null => {
-  const m = String(s ?? '').match(/^\s*(\d+)\s*-\s*(\d+)\s*$/);
+  const m = String(s ?? '').match(/^\s*(\d+)\s*[-/]\s*(\d+)\s*$/);
   return m ? [parseInt(m[1], 10), parseInt(m[2], 10)] : null;
 };
 
@@ -107,6 +113,7 @@ export function parseGameBox(data: EspnSummaryResponse): { teams: GameTeamBox[] 
     if (!id || total === null || pass === null || rush === null) return { teams: null, missingTeam: id ?? '?' };
     // Best-effort: a missing/odd value contributes 0/0 (doesn't skew the % denominator).
     const td3 = pair(statDisplay(t, 'thirdDownEff')) ?? [0, 0];
+    const cmpAtt = pair(statDisplay(t, 'completionAttempts')) ?? [0, 0];
     const players = data.boxscore?.players?.find((p) => p.team?.id === id);
     out.push({
       teamId: id,
@@ -124,6 +131,11 @@ export function parseGameBox(data: EspnSummaryResponse): { teams: GameTeamBox[] 
       turnovers: statVal(t, 'turnovers') ?? 0,
       redZoneAtt: pair(statDisplay(t, 'redZoneAttempts'))?.[1] ?? 0,
       drives: statVal(t, 'totalDrives') ?? 0,
+      firstDowns: statVal(t, 'firstDowns') ?? 0,
+      passCmp: cmpAtt[0],
+      passAtt: cmpAtt[1],
+      rushAtt: statVal(t, 'rushingAttempts') ?? 0,
+      plays: statVal(t, 'totalOffensivePlays') ?? 0,
     });
   }
   return { teams: out };
@@ -242,6 +254,13 @@ export interface TeamGameLine {
   turnovers: number;
   redZoneAtt: number;
   drives: number;
+  td3Conv: number;
+  td3Att: number;
+  firstDowns: number;
+  passCmp: number;
+  passAtt: number;
+  rushAtt: number;
+  plays: number;
 }
 
 /** Final games (with week) → two lines each (one per team). Unknown teams / bad games skipped. */
@@ -278,6 +297,13 @@ export function toTeamGameLines(
         turnovers: me.turnovers,
         redZoneAtt: me.redZoneAtt,
         drives: me.drives,
+        td3Conv: me.td3Conv,
+        td3Att: me.td3Att,
+        firstDowns: me.firstDowns,
+        passCmp: me.passCmp,
+        passAtt: me.passAtt,
+        rushAtt: me.rushAtt,
+        plays: me.plays,
       });
     }
   }

@@ -35,6 +35,7 @@ export const APP_CONSTANTS = {
     ENDPOINTS: {
       OFFENSE: '/api/nfl-2025/offense',
       DEFENSE: '/api/nfl-2025/defense',
+      LAST4: '/api/nfl-2025/last4',
       HEALTH: '/api/health',
     },
     PORT: 4000, // iOS development port

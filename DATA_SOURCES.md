@@ -148,7 +148,7 @@ Per-user data (username, user/league ids, rosters, matchups) is **never** put in
 | Endpoint | Used for | Cache |
 |---|---|---|
 | `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?seasontype=2&week={N}&dates={season}` | weeks 1–18 opponents + byes (`lib/myteam/seasonSchedule.ts`; no odds calls; a week with 0 games throws, never a bye) | `unstable_cache` 6h per week over no-store, 5s timeout |
-| `https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event={id}` | existing final-game box score, now week-aware (`getTeamGameLog()`) with sacks, INT, fumbles lost, TDs by type, `totalDrives`, `redZoneAttempts` for the "why" stats | existing per-game 24h (`final-boxscore-v2`) |
+| `https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event={id}` | existing final-game box score, now week-aware (`getTeamGameLog()`) with sacks, INT, fumbles lost, TDs by type, `totalDrives`, `redZoneAttempts` for the "why" stats; since 2026-10-23 also `firstDowns`, `completionAttempts` (**"a/b"**, slash not dash), `rushingAttempts`, `totalOffensivePlays` for Compare L4 (§8) | existing per-game 24h (`final-boxscore-v3`) |
 
 ESPN injuries were evaluated and **not** used (resolved 75% of rostered injured
 players, rule needed ≥95%) — injury tags come from the Sleeper player map (≤24h stale).
@@ -192,13 +192,26 @@ No new upstream. Everything Leans shows comes from sources above, reused server-
 | Matchup tier + rank | `buildFpaTable(lines, { pts_ppr: 1 })` → `rankFpa` / `rateMatchup` (`lib/myteam/fpa.ts`, `rating.ts`) | plain Sleeper PPR (Leans has no league), QB/RB/WR/TE only, ranked client-side |
 | Names + injury tags | Sleeper player map `getPlayerMap()` (`lib/fantasy.ts`, 24h) | a player without a name is left out |
 | Next weeks | `getSeasonSchedule()` (`lib/myteam/seasonSchedule.ts`) | week cells |
-| Not available | — | defense **yards per carry** (box scores carry no rush attempts) → that why-row isn't shown |
+| Not shown yet | — | defense **yards per carry** — box scores carry `rushingAttempts` since 2026-10-23 (parsed for Compare L4, §8), but the Leans why-row isn't built |
 
 `GET /api/leans/data?teams=ATL,LV` (`lib/leans/bundle.ts`, `server-only`, `force-dynamic`, `private, no-store`): one
 shared in-memory bundle per 10 min (`createKeyedCache`, last good on failure; a missing completed week throws so it
 never skews ranks), then filtered to the asked teams' players + schedule. Carries **team abbreviations only** — the
 user's prop lines stay in `localStorage` (`pare:leans-props:v1`) and never reach the server. ~65 KB for two teams,
 ~1.5 s cold. Lean thresholds: `lib/leans/config.ts`.
+
+## 8. Compare "L4" (`/api/nfl-2025/last4`) — last-4-games rows (2026-10-23)
+
+No new upstream: the same final box scores (`getTeamGameLog()`, per-game 24h `final-boxscore-v3`) summed per team
+over its **last 4 games played** (byes skipped, `windowWeeks` in `lib/myteam/rating.ts`) by `buildLast4Rows`
+(`lib/last4.ts`). Rows have the offense/defense routes' shape with `g` = games in the window, so the client's
+per-game transform gives L4 averages. Offense: `points, total_yards, pass_yds (net), rush_yds, pass_cmp, pass_att,
+pass_td, pass_int, plays_offense, first_down, rush_att, rush_td, fumbles_lost, turnovers, third_down_pct`
+(attempts-weighted). Defense = the opponents' lines in that window: `points, total_yards, pass_yds, rush_yds,
+third_down_pct`. Route ISR 10 min (`revalidate = 600`) + last-good backup. Verified 2026-10-23 vs ESPN team
+schedules: CHI 91 for / 90 against, NE 124 / 92 (weeks 4–7).
+
+---
 
 # Appendix: FULL field chart — team statistics endpoint
 

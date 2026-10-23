@@ -14,6 +14,7 @@ import { AVAILABLE_METRICS } from '@/lib/metricsConfig';
 import { useRanking } from '@/lib/useRanking';
 import { useBarCalculation } from '@/lib/useBarCalculation';
 import type { TeamData } from '@/lib/useNflStats';
+import type { DisplayMode } from '@/lib/useDisplayMode';
 import CompactRankingDropdown from './CompactRankingDropdown';
 import SplitCapsuleBar from '@/components/ui/SplitCapsuleBar';
 import { getRankTier } from '@/lib/rankTier';
@@ -58,7 +59,7 @@ interface CompactComparisonRowProps {
   teamBData: TeamData | null;
   allData: TeamData[];
   panelType: 'offense' | 'defense';
-  displayMode: 'per-game' | 'total';
+  displayMode: DisplayMode;
   activeDropdownTeam?: 'A' | 'B' | null;  // Which dropdown is open
   onTeamAChange?: (team: string) => void;  // Team change handler
   onTeamBChange?: (team: string) => void;  // Team change handler
