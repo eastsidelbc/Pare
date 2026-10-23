@@ -65,12 +65,28 @@ export interface GameTeamBox extends GameTeamYards {
   passAtt: number;
   rushAtt: number;
   plays: number;
+  /** Wave B3 L4 fields (best-effort, 0 when absent). */
+  passFd: number;
+  rushFd: number;
+  penFd: number;
+  penalties: number;
+  penaltyYds: number;
+  td4Conv: number;
+  td4Att: number;
+  /** Time of possession, seconds. */
+  topSec: number;
 }
 
 const num = (s: string | undefined | null): number | null => {
   const n = parseFloat(String(s ?? '').replace(/,/g, ''));
   return Number.isFinite(n) ? n : null;
 };
+
+/** "29:06" → 1746 seconds; anything else → 0. */
+export function clockSeconds(s: string | undefined): number {
+  const m = String(s ?? '').match(/^\s*(\d+):(\d{2})\s*$/);
+  return m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : 0;
+}
 
 /** "a-b" or "a/b" (completionAttempts) → [a, b]; anything else → null. */
 const pair = (s: string | undefined): [number, number] | null => {
@@ -114,6 +130,8 @@ export function parseGameBox(data: EspnSummaryResponse): { teams: GameTeamBox[] 
     // Best-effort: a missing/odd value contributes 0/0 (doesn't skew the % denominator).
     const td3 = pair(statDisplay(t, 'thirdDownEff')) ?? [0, 0];
     const cmpAtt = pair(statDisplay(t, 'completionAttempts')) ?? [0, 0];
+    const td4 = pair(statDisplay(t, 'fourthDownEff')) ?? [0, 0];
+    const pen = pair(statDisplay(t, 'totalPenaltiesYards')) ?? [0, 0];
     const players = data.boxscore?.players?.find((p) => p.team?.id === id);
     out.push({
       teamId: id,
@@ -136,6 +154,14 @@ export function parseGameBox(data: EspnSummaryResponse): { teams: GameTeamBox[] 
       passAtt: cmpAtt[1],
       rushAtt: statVal(t, 'rushingAttempts') ?? 0,
       plays: statVal(t, 'totalOffensivePlays') ?? 0,
+      passFd: statVal(t, 'firstDownsPassing') ?? 0,
+      rushFd: statVal(t, 'firstDownsRushing') ?? 0,
+      penFd: statVal(t, 'firstDownsPenalty') ?? 0,
+      penalties: pen[0],
+      penaltyYds: pen[1],
+      td4Conv: td4[0],
+      td4Att: td4[1],
+      topSec: clockSeconds(statDisplay(t, 'possessionTime')),
     });
   }
   return { teams: out };
@@ -261,6 +287,16 @@ export interface TeamGameLine {
   passAtt: number;
   rushAtt: number;
   plays: number;
+  /** Wave B3 L4 fields (best-effort, 0 when absent). */
+  passFd: number;
+  rushFd: number;
+  penFd: number;
+  penalties: number;
+  penaltyYds: number;
+  td4Conv: number;
+  td4Att: number;
+  /** Time of possession, seconds. */
+  topSec: number;
 }
 
 /** Final games (with week) → two lines each (one per team). Unknown teams / bad games skipped. */
@@ -304,6 +340,14 @@ export function toTeamGameLines(
         passAtt: me.passAtt,
         rushAtt: me.rushAtt,
         plays: me.plays,
+        passFd: me.passFd,
+        rushFd: me.rushFd,
+        penFd: me.penFd,
+        penalties: me.penalties,
+        penaltyYds: me.penaltyYds,
+        td4Conv: me.td4Conv,
+        td4Att: me.td4Att,
+        topSec: me.topSec,
       });
     }
   }

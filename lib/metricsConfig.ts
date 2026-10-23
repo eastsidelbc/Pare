@@ -11,7 +11,8 @@
  *   rush yards + third_down_pct (box scores) and, since 2026-10-23, the allowed stats in
  *   `DEFENSE_OPPONENT_FIELDS` (ESPN opponent split /900). A metric with no live source
  *   stays `false` so the picker doesn't offer a column that can only ever render "—".
- *   Last 4 (L4) rows carry only the original fields — newer metrics show "—" in L4.
+ *   Last 4 (L4) rows (lib/last4.ts) carry the new fields too, except red_zone_td_pct, passer_rating and
+ *   explosive_plays (no box-score source) — those show "—" in L4.
  *
  *   NOTE (defense bar math): every metric currently available on defense is an
  *   "allowed" stat (lower = better), which is what useBarCalculation's defense

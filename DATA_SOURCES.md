@@ -243,6 +243,8 @@ pass_td, pass_int, plays_offense, first_down, rush_att, rush_td, fumbles_lost, t
 third_down_pct`. Route ISR 10 min (`revalidate = 600`) + last-good backup. Verified 2026-10-23 vs ESPN team
 schedules: CHI 91 for / 90 against, NE 124 / 92 (weeks 4–7).
 
+**L4 + Wave B3 (2026-10-23):** box scores now also give pass/rush/penalty 1st downs, penalties + yards, 4th-down conv/att and possession (seconds); `buildLast4Rows` turns them into the new Compare fields for offense and defense-allowed. Per-game cache key `final-boxscore-v5`.
+
 ## 9. Full catalog: everything ESPN + Sleeper expose (probed 2026-10-23)
 
 **Full inventory (every endpoint and every field, used vs unused): [`docs/data-catalog.md`](docs/data-catalog.md)**,

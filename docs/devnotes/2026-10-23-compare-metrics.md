@@ -52,4 +52,15 @@ way to choose metrics, so availability alone never reached the screen.
 ## Risks / open
 
 - 32 more ESPN calls per 10-min window for the opponent split (cached fetches, like offense).
-- L4 rows don't have the new fields → "—" in L4 until `lib/last4.ts` sums them from box scores.
+- ~~L4 rows don't have the new fields~~ — done, see the L4 addendum. Red-zone TD %, passer rating, explosive plays remain "—" in L4.
+
+## Addendum (same day) — L4 for the new metrics
+
+- `parseGameBox` reads `firstDownsPassing/Rushing/Penalty`, `totalPenaltiesYards` ("6-45"), `fourthDownEff`, `possessionTime`
+  ("29:06" → `clockSeconds`); `TeamGameLine` carries them. `buildLast4Rows` adds `sharedB3` (offense = own lines, defense =
+  opponents' lines): 1st downs, TDs, yds/play, NY/A (sacks count as attempts), rush Y/A, completion %, 4th-down %, possession
+  minutes; offense also penalties, penalty yds, penalty 1st downs, sacks taken, takeaways (= opponents' turnovers), diff.
+- Cache key `final-boxscore-v3` → `v5` (v4 briefly cached a broken possession regex in dev; never shipped).
+- Self-check: a regex lost its escapes when written through a shell string (possession = 0 for all) — caught by the live
+  check, fixed, `clockSeconds` unit test added. Live :4000 L4: 32/32 rows for every new field; DAL possession 28.5 min/game,
+  own + allowed = 240.0 min over 4 games (= 4 × 60, sanity check).

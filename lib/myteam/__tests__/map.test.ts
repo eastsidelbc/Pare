@@ -41,6 +41,7 @@ describe('ESPN team game lines → defense / offense logs', () => {
     team: 'PIT', opponent: 'CLE', week: 4, eventId: 'e', points: 24, pointsAllowed: 27, totalYards: 361, passYds: 269, rushYds: 92,
     passTd: 3, rushTd: 0, interceptions: 2, sacks: 5, fumblesLost: 0, turnovers: 2, redZoneAtt: 3, drives: 12,
     td3Conv: 4, td3Att: 13, firstDowns: 24, passCmp: 22, passAtt: 40, rushAtt: 19, plays: 64,
+    passFd: 14, rushFd: 7, penFd: 3, penalties: 6, penaltyYds: 45, td4Conv: 1, td4Att: 2, topSec: 1800,
   };
   it("a team's offense line is its OPPONENT's defense game", () => {
     expect(toDefenseLog([line])).toEqual([

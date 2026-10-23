@@ -486,7 +486,7 @@ function getGameBox(eventId: string): Promise<GameTeamBox[]> {
       if (!box) throw new Error(`incomplete box score for event ${eventId}`);
       return box;
     },
-    ['final-boxscore-v3', eventId],
+    ['final-boxscore-v5', eventId],
     {
       revalidate: APP_CONSTANTS.CACHE.FINAL_BOXSCORE_REVALIDATE_SECONDS,
       tags: ['final-boxscore-yards'],
