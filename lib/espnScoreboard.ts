@@ -10,7 +10,7 @@
  */
 
 import { normalizeTeamAbbr, resolveTeamByAbbr, type NflTeam } from './teams';
-import type { Matchup, GameState, MatchupOdds } from './schedule';
+import type { Matchup, GameState, GameSituation, MatchupOdds } from './schedule';
 
 /** Public ESPN scoreboard endpoint (free, no key). Server-side only. */
 export const ESPN_SCOREBOARD_URL =
@@ -19,6 +19,8 @@ export const ESPN_SCOREBOARD_URL =
 // ── Minimal shape of the ESPN scoreboard response (only the fields we read) ──
 interface EspnTeamRef {
   abbreviation?: string;
+  /** ESPN team id (matches `situation.possession`). */
+  id?: string;
 }
 interface EspnRecord {
   name?: string;
@@ -54,8 +56,18 @@ interface EspnBroadcast {
   market?: string;
   names?: string[];
 }
+interface EspnSituation {
+  shortDownDistanceText?: string;
+  downDistanceText?: string;
+  possessionText?: string;
+  /** ESPN team id of the side with the ball. */
+  possession?: string;
+  isRedZone?: boolean;
+}
 interface EspnCompetition {
   competitors?: EspnCompetitor[];
+  /** Live games only. */
+  situation?: EspnSituation;
   status?: { type?: EspnStatusType };
   odds?: EspnOdds[];
   broadcasts?: EspnBroadcast[];
@@ -94,6 +106,16 @@ export function parseAmericanOdds(raw: string | undefined): number | null {
   if (!/^[+-]?\d{3,5}$/.test(s)) return null;
   const n = Number(s);
   return Number.isFinite(n) && n !== 0 ? n : null;
+}
+
+/** Live situation (Wave C2) → down & distance, ball spot, possession side; null when ESPN sends none. */
+export function mapSituation(s: EspnSituation | undefined, away: EspnCompetitor | undefined, home: EspnCompetitor | undefined): GameSituation | null {
+  if (!s) return null;
+  const down = s.shortDownDistanceText?.trim() || s.downDistanceText?.split(' at ')[0]?.trim() || null;
+  const spot = s.possessionText?.trim() || null;
+  const possession = s.possession && s.possession === away?.team?.id ? 'away' : s.possession && s.possession === home?.team?.id ? 'home' : null;
+  if (!down && !spot && !possession) return null;
+  return { down, spot, possession, redZone: s.isRedZone === true };
 }
 
 /** Spread details "KC -2.5" → { team: 'KC', line: -2.5 }; "EVEN" / "PK" / unreadable → null. */
@@ -211,6 +233,11 @@ export function mapEspnScoreboard(data: EspnScoreboard, fallbackWeek = 1): Match
       homeRecord: recordOf(homeComp),
       network,
       espnEventId: event.id ?? null,
+      // Only when there's something to show (keeps the live-parity snapshot byte-identical otherwise).
+      ...(() => {
+        const situation = state === 'in' ? mapSituation(competition?.situation, awayComp, homeComp) : null;
+        return situation ? { situation } : {};
+      })(),
     });
   }
 

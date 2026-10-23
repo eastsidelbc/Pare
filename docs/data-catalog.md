@@ -343,7 +343,7 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 | `leaders.passingYards` | ⬜ Not used |
 | `leaders.rushingYards` | ⬜ Not used |
 | `leaders.receivingYards` | ⬜ Not used |
-| `situation` | ⬜ Not used |
+| `situation` | ✅ Used |
 | `highlights` | ⬜ Not used |
 | `headlines` | ⬜ Not used |
 | `format` | ⬜ Not used |

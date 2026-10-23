@@ -195,6 +195,12 @@ _Last verified: 2026-10-13 UTC (`scripts/live-proxy-smoke.mjs`, live-freshness F
 
 ---
 
+**Live situation (2026-10-23, Wave C2):** `competitions[0].situation` on the scoreboard (live games only) →
+`Matchup.situation` { down (`shortDownDistanceText`, else `downDistanceText` before " at "), spot (`possessionText`),
+possession (`situation.possession` team id vs `competitors[].team.id`), redZone (`isRedZone`) }; emitted only when non-empty
+(live-parity snapshot unchanged). Rides the existing `/api/live/scoreboard` poll; `patchLiveMatchups` merges it and drops it
+once a game isn't live. **Unverified on a live payload** (the captured fixture's situation only has `isRedZone`).
+
 ## 7. Leans (`/api/leans/data`) — lines + data leans (2026-10-14)
 
 No new upstream. Everything Leans shows comes from sources above, reused server-side:

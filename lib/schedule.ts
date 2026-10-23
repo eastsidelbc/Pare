@@ -75,6 +75,18 @@ export interface Matchup {
   network: string | null;
   /** ESPN event id, for the post-game box-score lookup. `null` for fallback games. */
   espnEventId: string | null;
+  /** Live only (Wave C2): down & distance + who has the ball; absent / null otherwise. */
+  situation?: GameSituation | null;
+}
+
+/** The live game state ESPN's scoreboard carries while a game is in progress. */
+export interface GameSituation {
+  /** "2nd & 7" (ESPN `shortDownDistanceText`). */
+  down: string | null;
+  /** Ball spot, "PHI 34" (ESPN `possessionText`). */
+  spot: string | null;
+  possession: 'away' | 'home' | null;
+  redZone: boolean;
 }
 
 /** Raw, source-agnostic matchup shape. This is what a real feed would provide. */

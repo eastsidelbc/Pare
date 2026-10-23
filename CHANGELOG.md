@@ -7,6 +7,8 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Added
+- **Home: live down & distance** (2026-10-23, branch `feat/data-rollout`) — under the red live clock: "2nd & 7" and who has the ball ("KC ball"), gold-bright with "· RZ" in the red zone. Comes with the 5-second live poll we already run; nothing shows when ESPN sends no situation.
+  - See: `docs/devnotes/2026-10-23-live-situation.md`. `Matchup.situation` (`mapSituation`, `lib/espnScoreboard.ts`), live merge in `ScheduleProvider`, `MatchupCard` center.
 - **Standings: Splits view** (2026-10-23, branch `feat/data-rollout`) — fourth toggle next to Division / Conf / Playoffs: each division with Home, Road, Division and Conference records, games behind the division leader, and point differential. Clinch marks (x / y / z / * / e) appear next to team names in every view once ESPN sends them late in the season.
   - See: `docs/devnotes/2026-10-23-standings-splits.md`. `lib/standings.ts` (`homeRecord`, `roadRecord`, `confRecord`, `gamesBehind`, `clincher`, `withDivisionGamesBehind`), `components/standings/SplitsTable.tsx`, `ClinchMark`.
 - **Compare: pick your stats** (2026-10-23, branch `feat/data-rollout`) — a **STATS** button in each Offense / Defense header opens a sheet of every stat that side has data for (grouped: Scoring, Passing, Rushing, Efficiency, Special teams), up to 8 per card, Reset to the default 5. Compare tabs remember the picks; the Home peek and the Leans game screen keep them for the view.
