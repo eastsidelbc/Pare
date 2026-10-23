@@ -7,6 +7,8 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Added
+- **Leans player screen: season game log** (2026-10-23, branch `feat/data-rollout`) — every game this season, newest first: week, opponent, rush yds, receptions, rec yds, TDs. From the bundle already loaded (no extra request).
+  - See: `docs/devnotes/2026-10-23-player-game-log.md`. `GameLog` in `components/leans/PlayerVsDefenseView.tsx`.
 - **Fantasy: "Trending · free in your league"** (2026-10-23, branch `feat/data-rollout`) — under your roster: Sleeper's most-added players of the last 24 hours that nobody in your league has, only positions your league can start, with the add count ("412K adds").
   - See: `docs/devnotes/2026-10-23-fantasy-waiver-watch.md`. `lib/myteam/waiver.ts`, provider `getWaiverWatch` (trending cached 15 min, shared), `components/myteam/WaiverWatch.tsx`, `LeagueBundle.waiver` (best-effort).
 - **Leans Market card: ESPN model row** (2026-10-23, branch `feat/data-rollout`) — ESPN's own win chance + projected margin (matchup predictor / FPI), labelled as ESPN's, next to the market's no-vig win chance. PIT @ NO: ESPN 60% / 40%, PIT by 2.6.

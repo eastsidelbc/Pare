@@ -182,3 +182,14 @@ describe('Leans track record (honesty note)', () => {
     expect(html).toContain('not an edge');
   });
 });
+
+describe('Leans player game log (Wave C1)', () => {
+  it('player: every game, newest first, TD column', async () => {
+    const { GameLog } = await import('@/components/leans/PlayerVsDefenseView');
+    const html = render(createElement(GameLog, { games: BIJAN.games }));
+    expect(html).toContain('Season game log');
+    expect((html.match(/role="row"/g) ?? []).length).toBe(BIJAN.games.length + 1);
+    const weeks = [...html.matchAll(/role="cell" style="[^"]*">(\d+)<\/span>/g)].map((m) => Number(m[1]));
+    expect(weeks[0]).toBe(Math.max(...BIJAN.games.map((g) => g.week)));
+  });
+});
