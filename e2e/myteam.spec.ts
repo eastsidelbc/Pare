@@ -86,7 +86,7 @@ async function noHorizontalScroll(page: Page) {
   expect(overflow).toEqual({ doc: 0, main: 0 });
 }
 
-const NAV_TABS = ['Home', 'Compare', 'Standings', 'Leaders', 'Fantasy'];
+const NAV_TABS = ['Home', 'Compare', 'Leans', 'Leaders', 'Fantasy'];
 
 async function checkNav(page: Page) {
   const nav = page.locator('nav[aria-label="Primary"]');
