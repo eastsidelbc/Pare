@@ -79,7 +79,7 @@ export default function MyTeamApp() {
         />
       ) : (
         <>
-          <WeekBar week={currentNflWeek || null} dateRange={null} window={t.prefs.window} onWindowChange={t.setWindow} />
+          <WeekBar week={currentNflWeek || null} dateRange={null} />
           {onboarding && (
             <Onboarding
               key={onboarding === 'notfound' ? `notfound-${t.lookedUp ?? ''}` : onboarding}

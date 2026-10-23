@@ -52,6 +52,8 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Performance audit (sandbox, 4× CPU, median of 3): LCP 0.56s, view switch 83–131ms tap→paint, scroll 60 fps / 0 dropped, ~1% idle CPU, 0 running animations on iPhone 14 Pro + iPad portrait/landscape → no perf fixes needed. Table in the dev note.
 
 ### Changed
+- **Fantasy: Season | Last 4 stays in reach while you scroll** (2026-10-23, branch `feat/last4-compare`) — the toggle + ⓘ moved from the WEEK bar into the sticky position-pill row (pinned right), replacing "Expand all / Collapse all", which is gone (rows open one at a time). With less room, the pills scroll sideways with the edge fade sooner (All · QB · RB visible at 393px).
+  - See: `docs/devnotes/2026-10-23-fantasy-sticky-window-toggle.md`.
 - **Fantasy week cells are filled with the matchup color** (2026-10-23, branch `feat/last4-compare`) — the "@SEA #11" boxes are now solid tier color (Great green … Avoid red) with dark text instead of a black box with a colored top edge — on expanded rows, Start / Sit, pinned cards (iPad) and Leans player vs defense. Byes stay dashed, unrated weeks stay dark.
   - See: `docs/devnotes/2026-10-23-fantasy-startsit-cells-flash.md`.
 - **Compare: the #1 gold bar and Power Surge electricity keep going** (2026-10-23, branch `perf/ambient-loops`) — they no longer freeze after a few seconds. To pay for it: they pause while the card is off screen or you're swiping/scrolling, the electricity draws at 20 fps with a much cheaper glow, and the header tips ticker now stops after 3 passes (~9s) instead of scrolling forever.
