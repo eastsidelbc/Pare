@@ -7,6 +7,8 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Changed
+- **Leans: prop engine v2 built and graded — not live yet** (2026-10-23, branch `feat/prop-engine-v2`) — 14 stat- and position-specific signals (what a defense allows to RBs / WRs / TEs, what it allowed to your player's role — WR1, RB1 … — usage and snap trends, projected volume, implied team total, game script), two ways to combine them, a 2024-only tune and a one-time held-out 2025 grade. Result: 5 of 36 rule tests passed, about what luck alone would give; 3 receptions / rec-yds unders clear the pre-registered gate. The app still uses the 3-signal rule until Kobe decides what ships.
+  - See: `docs/devnotes/2026-10-23-prop-engine-v2.md`, report `docs/devnotes/2026-10-23-prop-engine-v2/report-2025.md`, pre-registration `docs/plans/2026-10-23-prop-engine-v2/preregistration.md`.
 - **Compare: pick as many stats as you want** (2026-10-23, branch `feat/prop-engine-v2`) — the Stats sheet has no 8-stat limit anymore, and a **Select all** row at the top picks every stat for that side (untick it to go back to the defaults).
   - See: `docs/devnotes/2026-10-23-compare-select-all-stats.md`.
 

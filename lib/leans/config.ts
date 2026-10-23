@@ -799,5 +799,30 @@ export const PROP_V2_FROZEN: FrozenParams = {
  * walk-forward ROI ≥ 0). A unit not listed is "off" (data rows only, no lean).
  */
 // <prop-v2-ship>
-export const PROP_V2_SHIP: ShipTable = {};
+export const PROP_V2_SHIP: ShipTable = {
+  "rec:WR:under": {
+    "method": "logit",
+    "season": 2025,
+    "wins": 170,
+    "losses": 115,
+    "roi": 0.0629,
+    "beatsBlanket": true
+  },
+  "rec:TE:under": {
+    "method": "logit",
+    "season": 2025,
+    "wins": 40,
+    "losses": 23,
+    "roi": 0.1019,
+    "beatsBlanket": true
+  },
+  "rec_yd:WR:under": {
+    "method": "logit",
+    "season": 2025,
+    "wins": 41,
+    "losses": 30,
+    "roi": 0.0443,
+    "beatsBlanket": true
+  }
+};
 // </prop-v2-ship>
