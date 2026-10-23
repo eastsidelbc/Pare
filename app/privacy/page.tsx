@@ -105,8 +105,9 @@ export default function PrivacyPage() {
               <p>
                 When you enter a Sleeper username, your device sends requests to pare.gg that carry your username,
                 and then your Sleeper user ID and league ID. Our server then asks Sleeper&apos;s
-                public API for that username&apos;s public profile, leagues, rosters and, on game days, your
-                players&apos; points. Your device never talks to Sleeper directly, so Sleeper sees our server&apos;s
+                public API for that username&apos;s public profile, leagues, rosters, your league&apos;s public matchup
+                scores, its members&apos; team names and recent adds, drops and trades (for &quot;Your season&quot; and &quot;League
+                moves&quot;) and, on game days, your players&apos; points. Your device never talks to Sleeper directly, so Sleeper sees our server&apos;s
                 request, not your IP address.
               </p>
               <p>

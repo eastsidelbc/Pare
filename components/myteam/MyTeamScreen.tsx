@@ -24,6 +24,7 @@ import { dateRangeText } from './style';
 import WeekBar from './WeekBar';
 import SeasonSummary from './SeasonSummary';
 import WaiverWatch from './WaiverWatch';
+import LeagueMoves from './LeagueMoves';
 
 interface Props {
   bundle: LeagueBundle;
@@ -184,6 +185,7 @@ export default function MyTeamScreen({
             }}
           />
           <WaiverWatch players={bundle.waiver} />
+          <LeagueMoves moves={bundle.moves} now={Date.parse(bundle.generatedAt)} />
         </div>
         <PinnedPanel
           rows={pinnedRows}

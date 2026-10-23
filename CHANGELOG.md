@@ -7,6 +7,8 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Added
+- **Fantasy: League moves** (2026-10-23, branch `feat/data-rollout`) — under the waiver card: your league's latest adds, drops and trades (this week + last), each team by its team name, yours in gold, with how long ago. `/privacy` updated first (the server now also reads your league's public matchup scores, member team names and transactions).
+  - See: `docs/devnotes/2026-10-23-fantasy-league-moves.md`. `lib/myteam/leagueMoves.ts`, provider `getLeagueMoves` (transactions 5 min, users 1h), `components/myteam/LeagueMoves.tsx`, `LeagueBundle.moves` (best-effort).
 - **Leaders: Receptions, Tackles for Loss, Passes Defended boards** (2026-10-23, branch `feat/data-rollout`) — plus their rookie versions. Sort keys verified live. A passer-rating board was left out on purpose: ESPN's list isn't attempts-qualified (a 48-attempt QB would lead it).
   - See: `docs/devnotes/2026-10-23-leaders-boards.md`. `BOARDS` in `lib/leaders.ts`.
 - **Standings Splits: LUCK column** (2026-10-23, branch `feat/data-rollout`) — actual wins minus the wins a team's points for / against usually produce (Pythagorean, exponent 2.37), with a one-line explanation under the view. First screen to use the formula library.

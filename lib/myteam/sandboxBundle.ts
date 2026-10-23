@@ -162,6 +162,13 @@ export function buildSandboxBundle(): LeagueBundle {
     schedule: sandboxSchedule(),
     fpa: sandboxFpa(),
     usage: sandboxUsage(),
+    moves: [
+      { id: 'sbt1', kind: 'trade', at: Date.parse('2026-10-06T18:00:00.000Z'), sides: [
+        { team: 'Sandbox Squad', mine: true, adds: ['Leo Santos'], drops: ['Chris Nolan'] },
+        { team: 'Gridiron Ghosts', mine: false, adds: ['Chris Nolan'], drops: ['Leo Santos'] },
+      ] },
+      { id: 'sbt2', kind: 'free_agent', at: Date.parse('2026-10-05T12:00:00.000Z'), sides: [{ team: 'Blitz Kings', mine: false, adds: ['Wes Kimura'], drops: [] }] },
+    ],
     waiver: [
       { playerId: 'sbw1', name: 'Rico Dawson', position: 'WR', team: 'NYJ', adds: 412_300 },
       { playerId: 'sbw2', name: 'Tate Morrow', position: 'RB', team: 'ARI', adds: 98_750 },

@@ -161,6 +161,8 @@ Per-user data (username, user/league ids, rosters, matchups) is **never** put in
 
 **Waiver watch (2026-10-23, `lib/myteam/waiver.ts`):** `/v1/players/nfl/trending/add?lookback_hours=24&limit=50` (one shared copy, 15 min) minus every player on any roster in the league (`players` + `reserve` + `taxi` from the rosters call) → the first 5 at positions the league can start (`startablePositions` from `roster_positions`), names from the 24h player map. Best-effort (`LeagueBundle.waiver` null on failure).
 
+**League moves (2026-10-23, `lib/myteam/leagueMoves.ts`):** `/league/{id}/transactions/{week}` for this week and last (cached 5 min per league+week) + `/league/{id}/users` (1h) for team names (`metadata.team_name`, else `display_name`) + the rosters call for roster → owner. Completed `trade` / `waiver` / `free_agent` only, newest first, 6 shown. Best-effort (`LeagueBundle.moves` null on failure). /privacy names this data.
+
 ### ESPN endpoints added for My Team (server-only, shared)
 | Endpoint | Used for | Cache |
 |---|---|---|

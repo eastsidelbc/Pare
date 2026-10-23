@@ -10,6 +10,7 @@
 
 import type { LeagueSeason } from './leagueSeason';
 import type { WaiverPlayer } from './waiver';
+import type { LeagueMove } from './leagueMoves';
 import type {
   FantasyLeague,
   FantasyRoster,
@@ -33,6 +34,8 @@ export interface FantasyProvider {
   getLeagueSeason(leagueId: string, userId: string, weeks: readonly number[]): Promise<LeagueSeason | null>;
   /** The platform's most-added players (24h) nobody in this league rosters. */
   getWaiverWatch(leagueId: string): Promise<WaiverPlayer[]>;
+  /** Recent completed adds / drops / trades in the league (the given weeks), newest first. */
+  getLeagueMoves(leagueId: string, userId: string, weeks: readonly number[]): Promise<LeagueMove[]>;
 }
 
 export interface StatLineSource {

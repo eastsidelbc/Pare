@@ -16,6 +16,7 @@ import { findMyRoster, normalizeRoster, type SleeperPlayerInfo, type SleeperRost
 import { SLEEPER_API, sleeperJson } from './http';
 import { buildLeagueSeason, type LeagueSeason } from '../leagueSeason';
 import { pickAvailable, startablePositions, type TrendingRaw, type WaiverPlayer } from '../waiver';
+import { buildLeagueMoves, type LeagueMove, type LeagueUserRaw, type TransactionRaw } from '../leagueMoves';
 
 const MIN = 60_000;
 const HOUR = 60 * MIN;
@@ -42,6 +43,9 @@ const matchups = createKeyedCache<SleeperMatchupRaw[]>({ ttlMs: MIN, max: 500 })
 const pastMatchups = createKeyedCache<SleeperMatchupRaw[]>({ ttlMs: HOUR, max: 5_000 });
 /** Sleeper-wide trending adds (24h) — one shared copy, 15 min. */
 const trending = createKeyedCache<TrendingRaw[]>({ ttlMs: 15 * MIN, max: 2 });
+/** League transactions per week (5 min, like rosters) + league members (1h). */
+const transactions = createKeyedCache<TransactionRaw[]>({ ttlMs: 5 * MIN, max: 2_000 });
+const leagueUsers = createKeyedCache<LeagueUserRaw[]>({ ttlMs: HOUR, max: 500 });
 /** How deep into the trending list to look for players still available in a league. */
 const TRENDING_DEPTH = 50;
 
@@ -174,6 +178,37 @@ export const sleeperProvider: FantasyProvider = {
     ]);
     const owned = new Set(list.flatMap((r) => [...(r.players ?? []), ...(r.reserve ?? []), ...(r.taxi ?? [])]));
     return pickAvailable(adds, owned, map, startablePositions(league.rosterPositions));
+  },
+
+  async getLeagueMoves(leagueId, userId, weeks): Promise<LeagueMove[]> {
+    const [list, users, map, perWeek] = await Promise.all([
+      loadRosterList(leagueId),
+      leagueUsers.get(
+        leagueId,
+        async () => {
+          const raw = await sleeperJson<LeagueUserRaw[] | null>(`${SLEEPER_API}/league/${leagueId}/users`);
+          if (!Array.isArray(raw)) throw new Error('league users missing');
+          return raw;
+        },
+        'myteam:league-users',
+      ),
+      getPlayerMap(),
+      Promise.all(
+        weeks.map((w) =>
+          transactions.get(
+            `${leagueId}|${w}`,
+            async () => {
+              const raw = await sleeperJson<TransactionRaw[] | null>(`${SLEEPER_API}/league/${leagueId}/transactions/${w}`);
+              if (!Array.isArray(raw)) throw new Error('transactions missing');
+              return raw;
+            },
+            'myteam:transactions',
+          ),
+        ),
+      ),
+    ]);
+    const mine = findMyRoster(list, userId);
+    return buildLeagueMoves(perWeek.flat(), list, users, (id) => map[id]?.name ?? null, mine?.roster_id ?? null);
   },
 };
 

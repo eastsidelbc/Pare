@@ -10,6 +10,7 @@ import type { TeamSchedule } from './schedule';
 import type { UsageMap } from './usage';
 import type { LeagueSeason } from './leagueSeason';
 import type { WaiverPlayer } from './waiver';
+import type { LeagueMove } from './leagueMoves';
 import type { FantasyLeague, FantasyRoster, FantasyUser, LeagueDetail } from './types';
 
 /** GET /api/myteam/user */
@@ -36,6 +37,8 @@ export interface LeagueBundle {
   leagueSeason?: LeagueSeason | null;
   /** Trending adds still available in this league (best-effort; null on failure). */
   waiver?: WaiverPlayer[] | null;
+  /** Recent league adds / drops / trades (best-effort; null on failure). */
+  moves?: LeagueMove[] | null;
   defenseLog: DefenseGame[];
   offenseLog: OffenseGame[];
   /** Where injury tags come from (decided by rule in P0a). */

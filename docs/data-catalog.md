@@ -2883,26 +2883,26 @@ Base: `https://api.sleeper.app/v1`
 
 | Field | Status |
 |---|---|
-| `user_id` | ⬜ Not used |
-| `display_name` | ⬜ Not used |
+| `user_id` | ✅ Used |
+| `display_name` | ✅ Used |
 | `avatar` | ⬜ Not used |
 | `is_owner` | ⬜ Not used |
-| `metadata.team_name` | ⬜ Not used |
+| `metadata.team_name` | ✅ Used |
 
 #### transactions — 10 fields
 
 | Field | Status |
 |---|---|
-| `transaction_id` | ⬜ Not used |
-| `type` | ⬜ Not used |
-| `status` | ⬜ Not used |
-| `created` | ⬜ Not used |
-| `adds` | ⬜ Not used |
-| `drops` | ⬜ Not used |
+| `transaction_id` | ✅ Used |
+| `type` | ✅ Used |
+| `status` | ✅ Used |
+| `created` | ✅ Used |
+| `adds` | ✅ Used |
+| `drops` | ✅ Used |
 | `draft_picks` | ⬜ Not used |
 | `waiver_budget` | ⬜ Not used |
 | `settings.waiver_bid` | ⬜ Not used |
-| `roster_ids` | ⬜ Not used |
+| `roster_ids` | ✅ Used |
 
 #### drafts — 14 fields
 
@@ -2910,8 +2910,8 @@ Base: `https://api.sleeper.app/v1`
 |---|---|
 | `draft_id` | ⬜ Not used |
 | `league_id` | ⬜ Not used |
-| `type` | ⬜ Not used |
-| `status` | ⬜ Not used |
+| `type` | ✅ Used |
+| `status` | ✅ Used |
 | `season` | ⬜ Not used |
 | `start_time` | ⬜ Not used |
 | `draft_order` | ⬜ Not used |

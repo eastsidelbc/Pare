@@ -227,6 +227,17 @@ test.describe('My Team', () => {
     await noHorizontalScroll(page);
   });
 
+  test('league moves (Wave C3): trade with both sides, my team highlighted, time ago', async ({ page }) => {
+    await openRoster(page);
+    const card = page.locator('[data-moves]');
+    await expect(card).toBeVisible();
+    await expect(card.locator('li')).toHaveCount(2);
+    await expect(card).toContainText('TRADE');
+    await expect(card).toContainText('Sandbox Squad · adds Leo Santos · drops Chris Nolan');
+    await expect(card).toContainText('6h ago');
+    await noHorizontalScroll(page);
+  });
+
   test('Season ⇄ Last 4 changes meter text; ⓘ opens its note', async ({ page }) => {
     await openRoster(page);
     const meters = page.locator('section[data-section="starters"] button[aria-expanded] [data-tier]');

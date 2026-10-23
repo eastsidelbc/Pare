@@ -89,11 +89,14 @@ export async function buildLeagueBundle(leagueId: string, userId: string): Promi
   ]);
   if (!roster) return null;
   const regularWeeks = data.completedWeeks.filter((w) => !league.playoffWeekStart || w < league.playoffWeekStart);
-  const [{ fpa, usage }, leagueSeason, waiver] = await Promise.all([
+  // This week + last week's moves (Sleeper keys transactions by fantasy week = NFL week).
+  const moveWeeks = [data.week, data.week - 1].filter((w) => w >= 1);
+  const [{ fpa, usage }, leagueSeason, waiver, moves] = await Promise.all([
     getSeasonTables(data.season, data.completedWeeks, league.scoring, league.scoringHash),
     // Best-effort: a Sleeper hiccup here must never cost the user their roster.
     sleeperProvider.getLeagueSeason(leagueId, userId, regularWeeks).catch(() => null),
     sleeperProvider.getWaiverWatch(leagueId).catch(() => null),
+    sleeperProvider.getLeagueMoves(leagueId, userId, moveWeeks).catch(() => null),
   ]);
   const teams = new Set(roster.players.map((p) => p.nflTeam).filter((t): t is string => !!t));
   const { scoring, ...leagueInfo } = league;
@@ -108,6 +111,7 @@ export async function buildLeagueBundle(leagueId: string, userId: string): Promi
     usage: pickUsage(usage, roster.players.map((p) => p.playerId)),
     leagueSeason,
     waiver,
+    moves,
     defenseLog: data.defenseLog,
     offenseLog: data.offenseLog,
     injurySource: 'sleeper',
