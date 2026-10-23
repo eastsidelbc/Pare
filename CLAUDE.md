@@ -6,7 +6,8 @@
 > 2026-10-02, synced with every dev note from 2026-10-01 → 2026-10-02.
 >
 > **Current state authority:** `CHANGELOG.md` (not this file). Deep references stay separate:
-> `docs/design-system.md` (UI rules), `DATA_SOURCES.md` (ESPN/Sleeper endpoints),
+> `docs/design-system.md` (UI rules), `DATA_SOURCES.md` (ESPN/Sleeper endpoints — how we use them),
+> `docs/data-catalog.md` (every ESPN/Sleeper endpoint + field, used vs unused — check here before adding a stat),
 > `VISION.md` (product), `ios/README.md` (iOS runbook).
 
 ---
@@ -162,6 +163,7 @@ pm2 logs pare                   # watch for ESPN 429/403
 ## Environment gotchas
 
 - **PowerShell 5.x rejects `&&`** — one command per line.
+- **Git commands for Kobe must never open an editor (vim) or pager** — he copy-pastes and expects them to finish. Merge: `git merge --no-ff --no-edit <branch>` (add `-m "..."` only for a custom message; `-m` alone still opens vim). Commit: always `-m`. Amend/revert: `--no-edit`. Pull: `git pull --no-edit`. After resolving a merge conflict: `git commit --no-edit` (not `git merge --continue`). Never `git rebase -i` or `git add -p`. Logs/diffs: `git --no-pager log --oneline -10`.
 - **`git grep` exclude pathspec unsupported** — scope instead: `git grep -n "x" -- app components lib utils`.
 - **Windows `.next` ENOENT (`_buildManifest.js.tmp.*`)** — OneDrive syncing `Documents\`. `npm run dev:clean`; durable fix = move the repo out of OneDrive.
 - **Pushing `.github/workflows/*`** needs a GitHub PAT with the `workflow` scope.

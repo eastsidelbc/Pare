@@ -73,6 +73,12 @@ standings. Remaining options:
 2. A source that exposes "allowed" directly (nflverse, or keep PFR for defense yards).
 Decision pending.
 
+> **Update 2026-10-23:** yards allowed shipped via option 1 (opponent lines summed from final box scores,
+> `lib/espnStats.ts` / `lib/espnBoxscore.ts`). A direct source also exists and is **not used yet**:
+> `…/teams/{id}/statistics/900` = the "Opponent Team Statistics" split, i.e. all ~288 stats counted for the
+> team's opponents (verified: DAL 2025 = 511 points allowed). `/statistics/0` and `?opponent=true` return the
+> team's **own** stats instead, so don't use them. See §9.
+
 ### B. score_pct (Sc%) — no exact match
 PFR's Sc% = % of drives ending in a score. ESPN doesn't expose drive-scoring %
 (`totalDrives` = 0 here). Available cousins in the `miscellaneous` category:
@@ -93,16 +99,15 @@ Decision pending (Kobe leaning: drop Sc% from the default 5, swap in an ESPN met
 
 ---
 
-## 4. How this plugs into Pare (seams already in place)
-- **Schedule:** `lib/schedule.ts` → `getCurrentWeekMatchups()` currently returns a
-  mock. Replace its body with a fetch of the scoreboard endpoint, mapped to the
-  existing `Matchup` shape. UI never changes.
-- **Stats:** `lib/pfrCsv.ts` → `fetchAndParseCSV()` currently reads local CSV.
-  Add an ESPN fetch that maps into the same `TeamStats` shape the parser outputs,
-  so ranking/display/bar hooks are untouched.
-- Keep a caching layer (the API routes already cache 6h) so we don't hammer ESPN.
+## 4. How this plugs into Pare (rewritten 2026-10-23)
+- **Schedule:** `lib/schedule.ts` fetches the scoreboard and maps it with `mapEspnScoreboard`
+  (`lib/espnScoreboard.ts`) into the `Matchup` shape. Live scores go through `/api/live/*` (§6).
+- **Offense stats:** `lib/espnStats.ts` → `ESPN_FIELD_MAP` maps 16 core team stats into `TeamStats`.
+- **Defense stats:** standings (points allowed, W-L) + opponent lines summed from final box scores
+  (yards, 3rd-down %). The PFR/CSV layer was removed 2026-10-01 (`lib/pfrCsv.ts` no longer exists).
+- Caching per data type: CLAUDE.md "Freshness" table.
 
-_Last verified: 2026-09-14._
+_Last verified: 2026-10-23._
 
 ---
 
@@ -210,6 +215,44 @@ pass_td, pass_int, plays_offense, first_down, rush_att, rush_td, fumbles_lost, t
 (attempts-weighted). Defense = the opponents' lines in that window: `points, total_yards, pass_yds, rush_yds,
 third_down_pct`. Route ISR 10 min (`revalidate = 600`) + last-good backup. Verified 2026-10-23 vs ESPN team
 schedules: CHI 91 for / 90 against, NE 124 / 92 (weeks 4–7).
+
+## 9. Full catalog: everything ESPN + Sleeper expose (probed 2026-10-23)
+
+**Full inventory (every endpoint and every field, used vs unused): [`docs/data-catalog.md`](docs/data-catalog.md)**,
+the source of truth for "what exists". Browsable view of the same data (search + filters, private to Kobe):
+https://claude.ai/artifact/5erzWkCE7oSd4mdXX65Yfu. This section is the short version; it lists only what isn't
+documented above.
+
+**In use but missing from §1–8 until now:**
+- **Leaders:** `https://site.web.api.espn.com/apis/common/v3/sports/football/nfl/statistics/byathlete?isqualified=false&limit={25|300}&sort={category}.{stat}:desc`
+  (`lib/leaders.ts`, 12 boards, `unstable_cache` 30 min).
+- **Closing line on finals:** `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/events/{id}/competitions/{id}/odds`
+  (`lib/schedule.ts`, `items[0].details` + `.overUnder`, 6h), used when the scoreboard has dropped odds.
+
+**Best unused sources:**
+
+| Source | What it adds |
+|---|---|
+| core `…/teams/{id}/statistics/900` | every stat, "allowed" side (defense without box-score summing) |
+| web `…/statistics/byteam?season=&seasontype=2` | all 32 teams, own (splitId 0) + opponent (900), with ranks, in **one** call |
+| core team stats fields we skip | `netYardsPerPassAttempt`, `yardsPerRushAttempt`, `passingFirstDowns`, `rushingFirstDowns`, `firstDownsPenalty`, `totalPenalties`, `totalPenaltyYards` (map onto 7 hidden metrics) + `redzoneTouchdownPct`, `redzoneScoringPct`, `fourthDownConvPct`, `possessionTimeSeconds`, `totalTakeaways`, `turnOverDifferential`, `passingBigPlays`, `rushingBigPlays` |
+| site `/summary` sections we skip | player defense/kicking/punting/returns, `drives`, `scoringPlays`, `winprobability`, `gameInfo.officials`/`venue` |
+| core `…/competitions/{id}/predictor`, `/probabilities`; `seasons/{yr}/powerindex` (FPI); `…/groups/9/qbr/{0\|10000}` | win %, projected margin, unit EPA, playoff odds, QBR/EPA |
+| core `…/competitions/{id}/odds` (all fields) | 3 books, open / close / current spread, total, moneyline |
+| web `athletes/{id}/gamelog`, `/splits` | player game logs and splits |
+| Sleeper stat keys we skip | `off_snp`/`tm_off_snp` (snap %), `rec_tgt`, `rec_air_yd`, `rec_rz_tgt`, `rush_rz_att`, `rec_drop`, `fan_pts_allow_{qb,rb,wr,te,k}`, `TEAM_xxx` efficiency (`rz_pct`, `down_3_pct`, `off_yd_per_play`) |
+| Sleeper `/v1/projections/nfl/regular/{yr}/{wk}`, `/v1/players/nfl/trending/{add\|drop}`, `api.sleeper.app/players/nfl/research/regular/{yr}/{wk}` | RotoWire projections, trending adds/drops, owned/started % |
+
+**Traps (verified):**
+- Always 0 for NFL: `yardsAllowed`, `pointsAllowed`, season `totalDrives`, `offensiveSnapPct`, `targetSharePct`,
+  `yardsPerRouteRun`, `avgDepthOfTarget`, `hurries`, `passesBattedDown`; scoreboard `competitors[].statistics`
+  and `weather`.
+- Wrong values: `avgGain`, `ESPNQBRating`/`ESPNRBRating`/`ESPNWRRating` (raw sums), receiving `twoPointRecConvs`.
+- Junk: core `teams/{id}/ats` (empty), `odds-records` (404 for 2025, impossible records for 2026).
+- Both APIs default to the **2026** season; always pass the season.
+- Sleeper season totals add weekly values, including `*_lng` and rates; compute those from weekly rows.
+  Sleeper `/stats` + `/projections` and everything on `api.sleeper.com` are undocumented.
+- `summary.injuries` is today's list, not historical. `summary.predictor`/`gameInfo.weather` appear pregame only.
 
 ---
 
@@ -413,5 +456,5 @@ Every stat the endpoint returns, by category. Each stat object carries
 | ...venue.{fullName,address.city,indoor} | stadium |
 | ...broadcast / geoBroadcasts | TV network |
 | ...odds[] | spread, moneyline, over/under |
-| ...weather | forecast, temp |
+| ...weather ⚠️ | never present on the scoreboard (2026-10-23); use `summary.gameInfo.weather`, pregame only |
 | ...leaders[] | per-game pass/rush/rec leaders |
