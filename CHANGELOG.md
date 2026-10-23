@@ -54,6 +54,8 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ### Changed
 - **Fantasy week cells are filled with the matchup color** (2026-10-23, branch `feat/last4-compare`) — the "@SEA #11" boxes are now solid tier color (Great green … Avoid red) with dark text instead of a black box with a colored top edge — on expanded rows, Start / Sit, pinned cards (iPad) and Leans player vs defense. Byes stay dashed, unrated weeks stay dark.
   - See: `docs/devnotes/2026-10-23-fantasy-startsit-cells-flash.md`.
+- **Compare: the #1 gold bar and Power Surge electricity keep going** (2026-10-23, branch `perf/ambient-loops`) — they no longer freeze after a few seconds. To pay for it: they pause while the card is off screen or you're swiping/scrolling, the electricity draws at 20 fps with a much cheaper glow, and the header tips ticker now stops after 3 passes (~9s) instead of scrolling forever.
+  - See: `docs/devnotes/2026-10-23-ambient-loops.md`, plan `docs/plans/performance-audit-i-dont-wise-clarke.md`, design-system §8 + §9.8 (exception recorded).
 - **Live scores are now at most 15 seconds behind ESPN (was ~30s)** (2026-10-12, branch `feat/live-freshness`) — ~7.5s behind on average (was ~15s).
   - See: `docs/devnotes/2026-10-12-live-freshness.md`, ADR amendment in `docs/adr/2026-10-12-live-scores-proxy.md`, plan `docs/plans/2026-10-12-live-freshness.md`.
   - Phone polls every **5s** while a game is live (was 15s, `LIVE_POLL_MS`), never two requests at once; server keeps one shared copy for **10s** (was 15s, `LIVE_TTL_MS`). Idle behavior unchanged. A test holds poll + TTL ≤ 15s.

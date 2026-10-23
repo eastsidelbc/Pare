@@ -9,7 +9,7 @@
 
 'use client';
 
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { TeamData } from '@/lib/useNflStats';
 import { useDisplayMode } from '@/lib/useDisplayMode';
 import { useSharedLast4Stats } from '@/components/Last4StatsProvider';
@@ -117,6 +117,21 @@ function CompactPanel({
   // Team bar colors for this matchup (lift / clash / fallback rules in lib/teamColors).
   const palettes = useMemo(() => getMatchupPalettes(teamA, teamB), [teamA, teamB]);
 
+  // Looping #1 bar effects pause while this card is off screen (neighbor panes,
+  // scrolled away): the observer flips `data-fx-off`, CSS pauses `.pare-fx-loop`.
+  // Set on the DOM directly — no re-render.
+  const cardRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) el.removeAttribute('data-fx-off');
+      else el.setAttribute('data-fx-off', '');
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   // Neon frame (Round 5 "R"): 2px border that fades from team A's color →
   // neutral → team B's color, with each team's glow spilling off its side.
   // Glow strength matches Round 5 "S" (brighter than R): 2px frame, 34px / 34% side glows.
@@ -128,7 +143,7 @@ function CompactPanel({
   };
 
   return (
-    <div style={frameStyle}>
+    <div ref={cardRef} style={frameStyle}>
       <div
         className="relative isolate overflow-hidden"
         style={{

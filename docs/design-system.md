@@ -259,7 +259,7 @@ brighter. Numbers are all white (`--text`) — the trailing team is never greyed
 
 | Rank | Bar | Badge |
 |---|---|---|
-| #1 | gold ring + gold sparks + fast team-color breathe | filled gold |
+| #1 | gold ring + gold sparks + fast team-color breathe — **loops** (see below) | filled gold |
 | #2–5 | soft team-color breathe only (gold is #1's alone) | gold tint |
 | #6–27 | plain | slate |
 | #28–31 | plain | red outline (static) |
@@ -271,7 +271,12 @@ brighter. Numbers are all white (`--text`) — the trailing team is never greyed
 **Play on change, then settle** (perf Pass 2, 2026-10-03): every tier effect runs a short, finite
 burst when it mounts — first load, team swap, PG/TOT (`SplitCapsuleBar` `effectKey`, `RankBadge`
 keyed by team) — then holds a still state. The aura stays invisible while the bar slides (0.5s
-delay) so its blur isn't redrawn every spring frame. Nothing on Compare loops forever.
+delay) so its blur isn't redrawn every spring frame.
+**Exception — #1 bar + Power Surge loop (Kobe's call, 2026-10-23):** the #1 aura keeps breathing
+and its sparks keep rising after the intro; they carry `.pare-fx-loop`, which pauses them while the
+card is off screen (`data-fx-off`, CompactPanel's observer) and while the user swipes/scrolls
+(`<html data-fx="paused">`, `lib/ambientFx.ts`). Every other tier effect still settles. New
+looping effects must use the same gate — never an ungated `infinite`.
 **GPU layers (perf Pass 4, from the iPhone Web Inspector recording):** every animated effect
 class carries `will-change` (aura/ember → opacity, sparks → transform + opacity) so a fading glow
 redraws only itself — un-layered, Safari repainted the whole card area ~7×/s for the whole effect
@@ -318,9 +323,11 @@ live clock in red, or "Final"; 44px tall) — one tap fills both teams.
 (Offense and Defense judged separately; ranks = the row badges, same per-game/total data).
 Chosen option "B·9": faint plasma web always on + edge arcs flaring at random (0.5–1.1 s on,
 1.5–3.5 s off), Subtle intensity, team color, CSS mask fading to the middle. One canvas per
-powered half, 30 fps, paused off-screen/hidden tab; reduced motion → still glow. Plays for
-4 s when it mounts (card appears / team swap), fades, then leaves the still glow and stops its
-frame loop (perf Pass 2).
+powered half; **loops while seen** (Kobe, 2026-10-23 — replaced Pass 2's 4 s play-then-stop).
+Cost control: one shared rAF for all storms, joined only while the canvas is on screen; 30 fps
+for the first 4 s, then 20 fps; skips frames on a hidden tab or mid-swipe/scroll
+(`lib/ambientFx.ts`); glow faked with wide faint strokes (no `shadowBlur`), node glows from one
+pre-rendered sprite. Reduced motion → still glow.
 
 ## 9. Global rules — Neon Frame app-wide (written 2026-10-03, Compare finished)
 
@@ -412,7 +419,9 @@ white 13px/900.
 animation. Opacity/transform only, ~30 fps canvases paused off-screen, everything has a
 `prefers-reduced-motion` still state. Effects are opt-in props so dense screens stay calm.
 **Effects play on change, then settle** — a short finite burst, then a still state; never an
-infinite loop on a resting screen (small status signals like the live-game dot are the exception).
+infinite loop on a resting screen (small status signals like the live-game dot are the exception,
+and so are the Compare #1 bar + Power Surge — Kobe's call 2026-10-23 — which pause off screen and
+mid-gesture via `.pare-fx-loop` / `lib/ambientFx.ts`).
 No full-screen `backdrop-filter` blur over content that animates (use a plain dim), and no blur
 behind a surface that's nearly opaque anyway. Animated elements get `will-change` for the property
 they animate; never animate `box-shadow`, `filter` or size on a glow — fade an extra layer instead.

@@ -6,6 +6,8 @@
  * Seamless loop: the text is rendered twice and the track slides by exactly one
  * copy (-50%) on repeat. Respects prefers-reduced-motion (static line, no
  * scroll). Soft edge fade so text enters/exits cleanly at the column edges.
+ * PERF (2026-10-23): scrolls LOOPS times per Compare visit (~9 s — enough to
+ * catch the eye), then rests as the static line. Before, it never stopped.
  */
 
 'use client';
@@ -16,12 +18,15 @@ const TIPS = ['Tap a team name to change teams', 'Tap a rank badge for more info
 const SEP = ' • '; // em-space · bullet · em-space
 const TEXT = TIPS.join(SEP) + SEP; // trailing sep = spacing between loop copies
 const DURATION_S = 3;
+/** Scroll passes per mount before settling on the static line. */
+const LOOPS = 3;
 
 const EDGE_FADE =
   'linear-gradient(90deg, transparent 0, black 10px, black calc(100% - 10px), transparent 100%)';
 
 export default function CompareTicker() {
   const [reduced, setReduced] = useState(false);
+  const [done, setDone] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -31,7 +36,7 @@ export default function CompareTicker() {
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
-  if (reduced) {
+  if (reduced || done) {
     return (
       <div className="truncate px-1 text-center" style={{ fontSize: '10px', fontWeight: 600, color: 'var(--gold)' }}>
         Tap team names to change teams · rank badges for info
@@ -51,11 +56,12 @@ export default function CompareTicker() {
           // copy → seamless loop. Without this the track clamps to the column
           // width and the shift no longer equals a copy, causing a jump.
           width: 'max-content',
-          animation: `ticker-marquee ${DURATION_S}s linear infinite`,
+          animation: `ticker-marquee ${DURATION_S}s linear ${LOOPS}`,
           fontSize: '10px',
           fontWeight: 600,
           color: 'var(--gold)',
         }}
+        onAnimationEnd={() => setDone(true)}
       >
         <span>{TEXT}</span>
         <span aria-hidden>{TEXT}</span>
