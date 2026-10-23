@@ -261,8 +261,9 @@ const STATIC = {
       return [r.failed === 0 && r.passed >= phrases.length && missing.length === 0, `${r.passed} passed, ${r.failed} failed${missing.length ? `; missing: ${missing.join(' | ')}` : ''}`];
     }],
     ['no threshold literals outside config.ts', () => {
-      // The engine = every lib/leans/*Lean.ts file (+ players.ts, which applies the per-team caps).
-      const files = sourceFiles('lib/leans').filter((f) => /Lean\.ts$|\/players\.ts$/.test(f));
+      // The engine = every lib/leans/*Lean.ts file (+ players.ts, which applies the per-team caps),
+      // + the prop engine v2 files (signals, tables, roles, combine — 2026-10-23).
+      const files = sourceFiles('lib/leans').filter((f) => /Lean\.ts$|\/(players|propSignals|tables|roles|combine)\.ts$/.test(f));
       // 0, 1 and the percent scale 100 are fine; any other number (incl. 0.6) is a threshold.
       const bad = files.filter((f) => /(?<![\w.$])(?!100(?![\w.]))(?:[2-9]|[1-9]\d+|0\.\d+)(?:\.\d+)?(?![\w.])/.test(codeOnly(read(f))));
       return [bad.length === 0, bad.join(', ')];

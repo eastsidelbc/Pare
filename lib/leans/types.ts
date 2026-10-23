@@ -45,7 +45,17 @@ export interface PlayerGame {
   rec_yd: number;
   rush_td: number;
   rec_td: number;
+  /** Usage (prop engine v2, optional so older fixtures stay valid): his team that week, targets, carries. */
+  team?: string;
+  tgt?: number;
+  att?: number;
+  /** Offensive snaps and his team's; null = Sleeper sent none. */
+  snp?: number | null;
+  tmSnp?: number | null;
 }
+
+/** A player's role on his team going into a week (target share; RBs by touches). */
+export type Role = 'WR1' | 'WR2' | 'WR3' | 'TE1' | 'RB1' | 'RB2';
 
 /** One team's score line in one game (ESPN box score). */
 export interface TeamGame {

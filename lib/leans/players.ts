@@ -48,6 +48,11 @@ export function toPlayerGame(line: PlayerGameLine): PlayerGame {
     rec_yd: stat(line, 'rec_yd'),
     rush_td: stat(line, 'rush_td'),
     rec_td: stat(line, 'rec_td'),
+    team: line.team,
+    tgt: stat(line, 'rec_tgt'),
+    att: stat(line, 'rush_att'),
+    snp: line.stats.off_snp ?? null,
+    tmSnp: line.stats.tm_off_snp ?? null,
   };
 }
 
