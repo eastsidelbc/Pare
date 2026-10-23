@@ -23,7 +23,7 @@ import { kOfNLeans, logitLeans, logitRow, type FrozenParams, type KofNRule, type
 import { LEAN_CONFIG } from './config';
 import { ratingFor } from './evaluate';
 import { propLean, statValue } from './propLean';
-import { computeSignals, SIGNAL_IDS, type LineStat, type SignalId, type SignalValue } from './propSignals';
+import { computeSignals, SIGNAL_IDS, type LineStat, type PropContext, type SignalId, type SignalValue } from './propSignals';
 import { buildRoleBook } from './roles';
 import { buildPropTables } from './tables';
 import type { PropPosition, PropSide, TeamGame } from './types';
@@ -77,6 +77,8 @@ export interface FeatureRow {
   sigs: SignalValue[];
   /** The v1 engine (3 signals, all agree) on the same prop. */
   v1: PropSide | null;
+  /** Research features (prop research v3), when asked for. */
+  f?: Record<string, number | null>;
 }
 
 export const unitKey = (market: MarketKey, side: PropSide): UnitKey => `${market}:${side}`;
@@ -95,8 +97,13 @@ export interface FeatureInput {
   fpa: FpaTable;
 }
 
+export interface FeatureRowOptions {
+  /** Extra per-prop features (prop research v3) from the same context. */
+  features?: (ctx: PropContext, home: boolean | null) => Record<string, number | null>;
+}
+
 /** Graded props (live lineup cap, played, ≥ minGames before, tested market) → feature rows. */
-export function buildFeatureRows(input: FeatureInput): FeatureRow[] {
+export function buildFeatureRows(input: FeatureInput, opts: FeatureRowOptions = {}): FeatureRow[] {
   const book = buildRoleBook(input.lines);
   const gameOf = new Map(input.games.map((g) => [g.eventId, g] as const));
   const teamAt = new Map(input.lines.map((l) => [`${l.playerId}|${l.week}`, l.team] as const));
@@ -122,7 +129,7 @@ export function buildFeatureRows(input: FeatureInput): FeatureRow[] {
       if (!ratings.has(rKey)) ratings.set(rKey, ratingFor({ fpa: input.fpa }, p.position, p.opp, week, LEAN_CONFIG.prop.tierWindow).rating);
       const rating = ratings.get(rKey) ?? null;
       const stat = p.stat;
-      const sigs = computeSignals({
+      const ctx: PropContext = {
         playerId: p.playerId,
         position: p.position,
         team,
@@ -135,7 +142,8 @@ export function buildFeatureRows(input: FeatureInput): FeatureRow[] {
         teamLine,
         total: g?.openTotal ?? null,
         rating,
-      });
+      };
+      const sigs = computeSignals(ctx);
       const v1 = propLean({ games, stat, line: p.line, side: 'over', position: p.position, rating }).verdict;
       out.push({
         season: input.season,
@@ -150,6 +158,7 @@ export function buildFeatureRows(input: FeatureInput): FeatureRow[] {
         underPrice: p.underPrice,
         sigs,
         v1: v1 === 'over' || v1 === 'under' ? v1 : null,
+        ...(opts.features ? { f: opts.features(ctx, g ? home : null) } : {}),
       });
     }
   }

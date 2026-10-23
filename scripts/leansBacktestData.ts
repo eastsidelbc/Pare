@@ -35,7 +35,15 @@ export interface SeasonData {
   calls: number;
 }
 
-export async function loadSeason(SEASON: number, REFRESH = false): Promise<SeasonData> {
+export interface LoadOptions {
+  /** Only weeks 1…maxWeek (a season in progress: every game of those weeks final). */
+  maxWeek?: number;
+  /** Accept unpriced lines (2026 feed: one line per player, no prices) — graded at −110. */
+  unpriced?: boolean;
+}
+
+export async function loadSeason(SEASON: number, REFRESH = false, opts: LoadOptions = {}): Promise<SeasonData> {
+  const WEEK_COUNT = opts.maxWeek ?? WEEKS;
   const ROOT = joinPath(process.cwd(), '.cache', 'leans-backtest', String(SEASON));
   // ── cached fetch ────────────────────────────────────────────────────────
 
@@ -144,7 +152,7 @@ export async function loadSeason(SEASON: number, REFRESH = false): Promise<Seaso
     const teamLog: TeamGame[] = [];
     const propBooks = new Map<string, string>();
     const boards = await Promise.all(
-      Array.from({ length: WEEKS }, (_, i) =>
+      Array.from({ length: WEEK_COUNT }, (_, i) =>
         getJson<EspnScoreboard>(`${SITE}/scoreboard?seasontype=2&week=${i + 1}&dates=${SEASON}`, `scoreboard/w${i + 1}`),
       ),
     );
@@ -186,7 +194,7 @@ export async function loadSeason(SEASON: number, REFRESH = false): Promise<Seaso
   async function loadLines(): Promise<PlayerGameLine[]> {
     const qs = PROP_POSITIONS.map((p) => `position[]=${p}`).join('&');
     const weeks = await Promise.all(
-      Array.from({ length: WEEKS }, (_, i) =>
+      Array.from({ length: WEEK_COUNT }, (_, i) =>
         getJson<SleeperComLineRaw[]>(`${SLEEPER_COM}/stats/nfl/${SEASON}/${i + 1}?season_type=regular&${qs}`, `sleeper/w${i + 1}`),
       ),
     );
@@ -245,7 +253,7 @@ export async function loadSeason(SEASON: number, REFRESH = false): Promise<Seaso
         const teams = [g.away, g.home];
         for (const [key, list] of offers) {
           const [athlete, stat] = key.split('|') as [string, PropStat];
-          const main = pickMainLine(list);
+          const main = pickMainLine(list, { unpriced: opts.unpriced ?? false });
           if (!main) continue;
           let playerId = idx.byEspn.get(athlete) ?? byEspn.get(athlete) ?? null;
           if (playerId) join.byId += 1;
