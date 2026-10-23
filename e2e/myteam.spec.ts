@@ -179,10 +179,8 @@ test.describe('My Team', () => {
     await expect(rowButton(page, 'Jordan Hale')).toHaveAttribute('aria-expanded', 'true');
     await expect(rowButton(page, 'Marcus Reed')).toHaveAttribute('aria-expanded', 'true');
 
-    // Something is open → the mockup's label is "Collapse all"; collapse, then expand everything.
-    await page.getByRole('button', { name: 'Collapse all' }).click();
-    await expect(page.locator('[data-state="expanded"]')).toHaveCount(0);
-    await page.getByRole('button', { name: 'Expand all' }).click();
+    // Expand / Collapse all is gone (2026-10-23) — the Season | Last 4 toggle took its spot.
+    await expect(page.getByRole('button', { name: /^(Expand|Collapse) all$/ })).toHaveCount(0);
     await noHorizontalScroll(page);
     expect(await smallTargets(page)).toEqual([]);
   });
@@ -380,15 +378,16 @@ test.describe('P4 final mockup (FIX-TO-MOCKUP 1–10)', () => {
     await expect(rb.locator('[data-ss-hint]')).toHaveText('vs 3 other RBs');
   });
 
-  test('8: WEEK bar above the sticky pills; section labels with counts', async ({ page }) => {
+  test('8: WEEK bar above the sticky pills; Season | Last 4 in the sticky row; section labels with counts', async ({ page }) => {
     await openRoster(page);
     const bar = page.locator('[data-weekbar]');
     await expect(bar).toContainText('WEEK 6');
-    await expect(bar.getByRole('button', { name: 'Season', exact: true })).toBeVisible();
-    await expect(bar.getByRole('button', { name: 'Last 4', exact: true })).toBeVisible();
-    await expect(bar.getByRole('button', { name: 'What do Season and Last 4 mean?' })).toBeVisible();
+    const filter = page.locator('[data-filter-row]');
+    await expect(filter.getByRole('button', { name: 'Season', exact: true })).toBeVisible();
+    await expect(filter.getByRole('button', { name: 'Last 4', exact: true })).toBeVisible();
+    await expect(filter.getByRole('button', { name: 'What do Season and Last 4 mean?' })).toBeVisible();
     const b = await box(bar);
-    const f = await box(page.locator('[data-filter-row]'));
+    const f = await box(filter);
     expect(b.y + b.height).toBeLessThanOrEqual(f.y + 0.5);
     expect(await page.locator('[data-filter-row]').evaluate((el) => getComputedStyle(el).position)).toBe('sticky');
     for (const [id, title, count] of [['starters', 'STARTERS', 10], ['bench', 'BENCH', 3], ['reserve', 'IR / TAXI', 2]] as const) {
@@ -398,14 +397,14 @@ test.describe('P4 final mockup (FIX-TO-MOCKUP 1–10)', () => {
     }
   });
 
-  test('9: no pill clipped at 393; "Expand all" stays visible', async ({ page }, info) => {
+  test('9: no pill clipped at 393; Season | Last 4 stays visible', async ({ page }, info) => {
     test.skip(info.project.name !== 'iphone-393', 'the 393px check');
     await openRoster(page);
     const scroller = page.locator('[data-pill-scroller]');
     const pills = scroller.getByRole('button');
     const count = await pills.count();
     await expect(pills).toHaveText(['All15', 'QB2', 'RB4', 'WR5', 'TE2', 'K1', 'DEF1']);
-    const expand = page.getByRole('button', { name: 'Expand all' });
+    const control = page.locator('[data-filter-row] [data-window-control]');
     for (let i = 0; i < count; i++) {
       // Fully visible, or reachable by scrolling the pill row itself.
       await pills.nth(i).evaluate((el) => el.scrollIntoView({ block: 'nearest', inline: 'nearest' }));
@@ -413,8 +412,8 @@ test.describe('P4 final mockup (FIX-TO-MOCKUP 1–10)', () => {
       const p = await box(pills.nth(i));
       expect(p.x).toBeGreaterThanOrEqual(s.x - 0.5);
       expect(p.x + p.width).toBeLessThanOrEqual(s.x + s.width + 0.5);
-      // "Expand all" never moves out of view or under the pills.
-      const e = await box(expand);
+      // The window toggle never moves out of view or under the pills.
+      const e = await box(control);
       expect(e.x).toBeGreaterThanOrEqual(s.x + s.width - 0.5);
       expect(e.x + e.width).toBeLessThanOrEqual(393);
     }
@@ -470,19 +469,19 @@ test.describe('P4 final mockup (FIX-TO-MOCKUP 1–10)', () => {
     await scroller.evaluate((el) => el.scrollTo({ left: (el.scrollWidth - el.clientWidth) / 2 }));
     await expect(scroller).toHaveAttribute('data-fade', 'both');
 
-    // A league with only QB / RB / WR → the pills fit → no fade at all.
+    // A league with only QB / RB → the pills fit beside Season | Last 4 → no fade at all.
     const page2 = await page.context().newPage();
     await mockApi(page2);
     await page2.route(/\/api\/myteam\/league\?/, (route) => {
       const bundle = buildSandboxBundle();
-      bundle.roster = { ...bundle.roster, players: bundle.roster.players.filter((p) => ['QB', 'RB', 'WR'].includes(p.position ?? '')) };
+      bundle.roster = { ...bundle.roster, players: bundle.roster.players.filter((p) => ['QB', 'RB'].includes(p.position ?? '')) };
       return route.fulfill({ json: bundle });
     });
     await seedLinked(page2);
     await page2.goto('/myteam');
     await expect(page2.locator('[data-state="roster"]')).toBeVisible();
     const fits = page2.locator('[data-pill-scroller]');
-    await expect(fits.getByRole('button')).toHaveCount(4);
+    await expect(fits.getByRole('button')).toHaveCount(3);
     expect(await fits.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
     await expect(fits).toHaveAttribute('data-fade', 'none');
     expect(await fits.evaluate((el) => getComputedStyle(el).maskImage)).toBe('none');

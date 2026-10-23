@@ -6,7 +6,8 @@
 
 import { NflApiResponse, TeamData } from '@/lib/useNflStats';
 
-export type DisplayMode = 'per-game' | 'total';
+/** 'last4' = last-4-games average: L4 rows carry g = games in the window, so it takes the per-game path. */
+export type DisplayMode = 'per-game' | 'last4' | 'total';
 
 /**
  * Transform API response data to UI-friendly format
@@ -54,7 +55,7 @@ export function transformTeamDataByMode(
     return transformedData;
   }
   
-  // Per-game transformation
+  // Per-game transformation (also 'last4' — same ÷ g over the L4 rows)
   const games = parseFloat(String(teamData.g)) || 1; // Games played, default to 1 to avoid division by zero
   
   // Convert specific metrics to per-game values

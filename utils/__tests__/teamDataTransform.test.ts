@@ -34,6 +34,15 @@ describe('transformTeamDataByMode — total', () => {
   });
 });
 
+describe('transformTeamDataByMode — last4', () => {
+  it('averages like per-game (Last-4 rows carry g = games in the window)', () => {
+    const out = transformTeamDataByMode(team, 'last4')!;
+    expect(out.points).toBe(25);
+    expect(out.third_down_pct).toBe('45.5');
+    expect(out.g).toBe('4');
+  });
+});
+
 describe('transformTeamDataByMode — guards', () => {
   it('returns null for null input', () => {
     expect(transformTeamDataByMode(null, 'per-game')).toBeNull();

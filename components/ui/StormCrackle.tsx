@@ -9,12 +9,17 @@
  *                    for 0.5–1.1 s, then resting 1.5–3.5 s
  * at "Subtle" intensity. A CSS mask fades everything out toward the middle.
  *
- * Cost control: one small canvas per powered half, ~30 fps, paused while off
- * screen or the tab is hidden. prefers-reduced-motion → one still glow, no loop.
- * PERF (Pass 2): PLAY ON CHANGE, THEN SETTLE — the storm plays for PLAY_S
- * seconds after it mounts (card appears / team swap → new color re-runs the
- * effect), fades out, then leaves the still glow and STOPS the frame loop.
- * Before, it drew forever (~1/3 of the phone's idle CPU in the audit).
+ * LOOPS while seen (Kobe's call 2026-10-23 — reverses the Pass 2 "play then
+ * settle"; recorded in design-system §9.8). Kept cheap instead:
+ *   - one shared rAF for every storm on screen, and a storm only joins it while
+ *     its canvas is on screen (IntersectionObserver) → nothing runs off screen
+ *   - 30 fps for the first INTRO_S, then 20 fps (arcs re-roll at ~12 Hz anyway)
+ *   - skips frames while the tab is hidden or the user is swiping / scrolling
+ *     (lib/ambientFx)
+ *   - no ctx.shadowBlur (a Gaussian blur per stroke was the costliest call):
+ *     the glow is faked with wide, faint strokes under a white core
+ *   - node glows are one pre-rendered sprite, edge gradient cached per size
+ * prefers-reduced-motion → one still glow, no loop.
  * Purely decorative → aria-hidden, pointer-events none.
  */
 
@@ -22,6 +27,7 @@
 
 import { memo, useEffect, useRef } from 'react';
 import { boltPoints, type Point } from '@/lib/powerSurge';
+import { isAmbientPaused } from '@/lib/ambientFx';
 
 interface StormCrackleProps {
   /** Which half: 'a' = left (team A), 'b' = right (team B, drawn mirrored). */
@@ -32,14 +38,35 @@ interface StormCrackleProps {
 
 const INTENSITY = 0.6; // "Subtle" from the lab
 const WEB_LEVEL = 0.45; // B2 steady level
-const FPS = 30;
+const INTRO_FPS = 30;
+const AMBIENT_FPS = 20;
+/** Punchier frame rate for this long after the storm appears (seconds). */
+const INTRO_S = 4;
 const FADE_S = 0.3;
-/** How long the storm plays before settling into the still glow (seconds). */
-const PLAY_S = 4;
-/** Fade-out time after PLAY_S before the loop stops (seconds). */
-const SETTLE_S = 0.6;
+const NODE_R = 16; // node glow radius (px)
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
+
+// ---------------------------------------------------------- shared frame clock
+// One requestAnimationFrame drives every visible storm (instead of one each).
+type Tick = (now: number) => void;
+const ticks = new Set<Tick>();
+let rafId = 0;
+function runTicks(now: number) {
+  ticks.forEach((fn) => fn(now));
+  rafId = ticks.size > 0 ? requestAnimationFrame(runTicks) : 0;
+}
+function subscribeFrame(fn: Tick): () => void {
+  ticks.add(fn);
+  if (!rafId) rafId = requestAnimationFrame(runTicks);
+  return () => {
+    ticks.delete(fn);
+    if (ticks.size === 0 && rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = 0;
+    }
+  };
+}
 
 interface State {
   env: [number, number]; // smoothed [edge, web] levels
@@ -47,28 +74,46 @@ interface State {
   flareUntil: number;
   edgeArcs: Point[][];
   edgeNext: number;
+  edgeGlow: CanvasGradient | null; // cached per size (reset on resize)
   nodes: { x: number; y: number; vx: number; vy: number }[];
   webArcs: Point[][];
   webNext: number;
 }
 
+/** Bolt with a faked glow: two wide faint team-color strokes, a color body, a white core. */
 function strokeBolt(ctx: CanvasRenderingContext2D, pts: Point[], rgb: string, a: number, w: number) {
   if (a <= 0.01) return;
-  ctx.save();
-  ctx.lineJoin = 'round';
-  ctx.lineCap = 'round';
   ctx.beginPath();
   pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
-  ctx.shadowColor = `rgba(${rgb}, ${a})`;
-  ctx.shadowBlur = 14;
+  ctx.strokeStyle = `rgba(${rgb}, ${a * 0.12})`;
+  ctx.lineWidth = w * 9;
+  ctx.stroke();
+  ctx.strokeStyle = `rgba(${rgb}, ${a * 0.3})`;
+  ctx.lineWidth = w * 5;
+  ctx.stroke();
   ctx.strokeStyle = `rgba(${rgb}, ${a * 0.9})`;
   ctx.lineWidth = w * 2.6;
   ctx.stroke();
-  ctx.shadowBlur = 6;
   ctx.strokeStyle = `rgba(255, 255, 255, ${a})`;
   ctx.lineWidth = w;
   ctx.stroke();
-  ctx.restore();
+}
+
+/** Pre-render the node glow once; frames stamp it with drawImage + globalAlpha. */
+function makeGlowSprite(rgb: string, dpr: number): HTMLCanvasElement {
+  const sprite = document.createElement('canvas');
+  const px = Math.ceil(NODE_R * 2 * dpr);
+  sprite.width = px;
+  sprite.height = px;
+  const g = sprite.getContext('2d');
+  if (g) {
+    const r = g.createRadialGradient(px / 2, px / 2, 0, px / 2, px / 2, px / 2);
+    r.addColorStop(0, `rgba(${rgb}, 0.35)`);
+    r.addColorStop(1, `rgba(${rgb}, 0)`);
+    g.fillStyle = r;
+    g.fillRect(0, 0, px, px);
+  }
+  return sprite;
 }
 
 function frame(
@@ -79,18 +124,16 @@ function frame(
   dt: number,
   s: State,
   rgb: string,
-  settling = false,
+  sprite: HTMLCanvasElement,
 ) {
-  // Program B·9: steady web, random edge flares. While settling, both fade to 0.
-  if (settling) {
-    s.flareOn = false;
-  } else if (t > s.flareUntil) {
+  // Program B·9: steady web, random edge flares.
+  if (t > s.flareUntil) {
     s.flareOn = !s.flareOn;
     s.flareUntil = t + (s.flareOn ? rnd(0.5, 1.1) : rnd(1.5, 3.5));
   }
   const k = Math.min(1, dt / FADE_S);
   s.env[0] += ((s.flareOn ? 1 : 0) - s.env[0]) * k;
-  s.env[1] += ((settling ? 0 : WEB_LEVEL) - s.env[1]) * k;
+  s.env[1] += (WEB_LEVEL - s.env[1]) * k;
   const edge = Math.min(1, s.env[0] * INTENSITY * 1.05);
   const web = Math.min(1, s.env[1] * INTENSITY * 1.05);
 
@@ -117,11 +160,15 @@ function frame(
       }
       s.edgeNext = t + 0.07;
     }
-    const g = ctx.createLinearGradient(0, 0, w * 0.4, 0);
-    g.addColorStop(0, `rgba(${rgb}, ${0.12 * edge})`);
-    g.addColorStop(1, `rgba(${rgb}, 0)`);
-    ctx.fillStyle = g;
+    if (!s.edgeGlow) {
+      s.edgeGlow = ctx.createLinearGradient(0, 0, w * 0.4, 0);
+      s.edgeGlow.addColorStop(0, `rgba(${rgb}, 0.12)`);
+      s.edgeGlow.addColorStop(1, `rgba(${rgb}, 0)`);
+    }
+    ctx.globalAlpha = edge;
+    ctx.fillStyle = s.edgeGlow;
     ctx.fillRect(0, 0, w, h);
+    ctx.globalAlpha = 1;
     s.edgeArcs.forEach((p) => strokeBolt(ctx, p, rgb, rnd(0.45, 0.9) * edge, 1));
   }
 
@@ -145,13 +192,9 @@ function frame(
       }
       s.webNext = t + 0.09;
     }
-    for (const n of s.nodes) {
-      const r = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 16);
-      r.addColorStop(0, `rgba(${rgb}, ${0.35 * web})`);
-      r.addColorStop(1, `rgba(${rgb}, 0)`);
-      ctx.fillStyle = r;
-      ctx.fillRect(n.x - 16, n.y - 16, 32, 32);
-    }
+    ctx.globalAlpha = web;
+    for (const n of s.nodes) ctx.drawImage(sprite, n.x - NODE_R, n.y - NODE_R, NODE_R * 2, NODE_R * 2);
+    ctx.globalAlpha = 1;
     s.webArcs.forEach((p) => strokeBolt(ctx, p, rgb, rnd(0.4, 0.8) * web, 0.9));
   }
 }
@@ -181,20 +224,25 @@ function StormCrackle({ side, rgb }: StormCrackleProps) {
     let w = 0;
     let h = 0;
     const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-    const s: State = { env: [0, 0], flareOn: false, flareUntil: 0, edgeArcs: [], edgeNext: 0, nodes: [], webArcs: [], webNext: 0 };
+    const s: State = {
+      env: [0, 0], flareOn: false, flareUntil: 0, edgeArcs: [], edgeNext: 0, edgeGlow: null,
+      nodes: [], webArcs: [], webNext: 0,
+    };
 
     const prepare = () => {
       ctx.setTransform(side === 'b' ? -dpr : dpr, 0, 0, dpr, side === 'b' ? w * dpr : 0, 0);
       ctx.clearRect(0, 0, w, h);
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
     };
-    let settled = false;
     const resize = () => {
       const r = cv.getBoundingClientRect();
       w = r.width;
       h = r.height;
       cv.width = Math.round(w * dpr);
       cv.height = Math.round(h * dpr);
-      if ((reduced || settled) && w > 0) {
+      s.edgeGlow = null; // gradient spans the old width
+      if (reduced && w > 0) {
         prepare();
         stillGlow(ctx, w, h, rgb);
       }
@@ -204,39 +252,40 @@ function StormCrackle({ side, rgb }: StormCrackleProps) {
     resize();
     if (reduced) return () => ro.disconnect();
 
-    let visible = true;
-    const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; });
-    io.observe(cv);
-
-    let raf = 0;
+    const sprite = makeGlowSprite(rgb, dpr);
     const start = performance.now();
-    let last = start;
+    let last = 0;
     let acc = 0;
-    const loop = (now: number) => {
-      const elapsed = (now - start) / 1000;
-      // Done playing → draw the still glow once and stop the loop for good.
-      if (elapsed > PLAY_S + SETTLE_S) {
-        settled = true;
-        if (w > 0) {
-          prepare();
-          stillGlow(ctx, w, h, rgb);
-        }
+    const tick = (now: number) => {
+      if (!last) {
+        last = now;
         return;
       }
-      raf = requestAnimationFrame(loop);
-      const dt = Math.min(0.05, (now - last) / 1000);
+      acc += Math.min(0.05, (now - last) / 1000);
       last = now;
-      acc += dt;
-      if (acc < 1 / FPS || !visible || document.hidden || w === 0) return;
+      const fps = now - start < INTRO_S * 1000 ? INTRO_FPS : AMBIENT_FPS;
+      if (acc < 1 / fps || document.hidden || isAmbientPaused() || w === 0) return;
       prepare();
-      frame(ctx, w, h, now / 1000, acc, s, rgb, elapsed > PLAY_S);
-      // Settling: lay the still glow underneath so the hand-off is seamless.
-      if (elapsed > PLAY_S) stillGlow(ctx, w, h, rgb);
+      // Cap the step so nodes don't jump after a long pause (swipe, hidden tab).
+      frame(ctx, w, h, now / 1000, Math.min(acc, 0.1), s, rgb, sprite);
       acc = 0;
     };
-    raf = requestAnimationFrame(loop);
+
+    // Join the shared frame clock only while the canvas is on screen.
+    let unsubscribe: (() => void) | null = null;
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !unsubscribe) {
+        last = 0;
+        unsubscribe = subscribeFrame(tick);
+      } else if (!e.isIntersecting && unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
+      }
+    });
+    io.observe(cv);
+
     return () => {
-      cancelAnimationFrame(raf);
+      unsubscribe?.();
       io.disconnect();
       ro.disconnect();
     };

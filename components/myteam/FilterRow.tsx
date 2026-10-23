@@ -1,8 +1,10 @@
 /**
  * Sticky filter row (design-system §9.4, P4 final mockup): position pills with
  * counts side by side ("QB 3" — 30px, padding 0 9, gap 5, 12px label + 11px
- * count; gold-bright active ring) and "Expand all / Collapse all" (12/700 gold)
- * pinned on the right. No IR/Taxi pill — that section is always open (P4 G5).
+ * count; gold-bright active ring) and the Season | Last 4 toggle + ⓘ
+ * (WindowControl) pinned on the right, so switching windows stays in reach
+ * while scrolling (Kobe 2026-10-23; replaced "Expand all / Collapse all").
+ * No IR/Taxi pill — that section is always open (P4 G5).
  *
  * When K / DEF make the pills wider than the row, the pill group scrolls
  * sideways inside its own row (hidden scrollbar) and FADES at the edge that
@@ -15,7 +17,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { FantasyPosition } from '@/lib/myteam/types';
+import type { FantasyPosition, RatingWindow } from '@/lib/myteam/types';
+import WindowControl from './WindowControl';
 
 export type PositionFilter = 'ALL' | FantasyPosition;
 
@@ -34,12 +37,11 @@ interface Props {
   counts: ReadonlyArray<{ id: PositionFilter; label: string; aria: string; count: number }>;
   value: PositionFilter;
   onChange: (f: PositionFilter) => void;
-  anyExpanded: boolean;
-  onExpandAll: () => void;
-  onCollapseAll: () => void;
+  window: RatingWindow;
+  onWindowChange: (w: RatingWindow) => void;
 }
 
-export default function FilterRow({ counts, value, onChange, anyExpanded, onExpandAll, onCollapseAll }: Props) {
+export default function FilterRow({ counts, value, onChange, window, onWindowChange }: Props) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [fade, setFade] = useState<Fade>('none');
 
@@ -125,14 +127,7 @@ export default function FilterRow({ counts, value, onChange, anyExpanded, onExpa
           );
         })}
       </div>
-      <button
-        type="button"
-        onClick={anyExpanded ? onCollapseAll : onExpandAll}
-        className="touch-optimized flex-none whitespace-nowrap active:opacity-70"
-        style={{ height: 44, minWidth: 44, paddingLeft: 6, fontSize: 12, fontWeight: 700, color: 'var(--gold-bright)' }}
-      >
-        {anyExpanded ? 'Collapse all' : 'Expand all'}
-      </button>
+      <WindowControl window={window} onWindowChange={onWindowChange} />
     </div>
   );
 }

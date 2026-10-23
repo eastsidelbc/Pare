@@ -259,7 +259,7 @@ brighter. Numbers are all white (`--text`) — the trailing team is never greyed
 
 | Rank | Bar | Badge |
 |---|---|---|
-| #1 | gold ring + gold sparks + fast team-color breathe | filled gold |
+| #1 | gold ring + gold sparks + fast team-color breathe — **loops** (see below) | filled gold |
 | #2–5 | soft team-color breathe only (gold is #1's alone) | gold tint |
 | #6–27 | plain | slate |
 | #28–31 | plain | red outline (static) |
@@ -271,7 +271,12 @@ brighter. Numbers are all white (`--text`) — the trailing team is never greyed
 **Play on change, then settle** (perf Pass 2, 2026-10-03): every tier effect runs a short, finite
 burst when it mounts — first load, team swap, PG/TOT (`SplitCapsuleBar` `effectKey`, `RankBadge`
 keyed by team) — then holds a still state. The aura stays invisible while the bar slides (0.5s
-delay) so its blur isn't redrawn every spring frame. Nothing on Compare loops forever.
+delay) so its blur isn't redrawn every spring frame.
+**Exception — #1 bar + Power Surge loop (Kobe's call, 2026-10-23):** the #1 aura keeps breathing
+and its sparks keep rising after the intro; they carry `.pare-fx-loop`, which pauses them while the
+card is off screen (`data-fx-off`, CompactPanel's observer) and while the user swipes/scrolls
+(`<html data-fx="paused">`, `lib/ambientFx.ts`). Every other tier effect still settles. New
+looping effects must use the same gate — never an ungated `infinite`.
 **GPU layers (perf Pass 4, from the iPhone Web Inspector recording):** every animated effect
 class carries `will-change` (aura/ember → opacity, sparks → transform + opacity) so a fading glow
 redraws only itself — un-layered, Safari repainted the whole card area ~7×/s for the whole effect
@@ -318,9 +323,11 @@ live clock in red, or "Final"; 44px tall) — one tap fills both teams.
 (Offense and Defense judged separately; ranks = the row badges, same per-game/total data).
 Chosen option "B·9": faint plasma web always on + edge arcs flaring at random (0.5–1.1 s on,
 1.5–3.5 s off), Subtle intensity, team color, CSS mask fading to the middle. One canvas per
-powered half, 30 fps, paused off-screen/hidden tab; reduced motion → still glow. Plays for
-4 s when it mounts (card appears / team swap), fades, then leaves the still glow and stops its
-frame loop (perf Pass 2).
+powered half; **loops while seen** (Kobe, 2026-10-23 — replaced Pass 2's 4 s play-then-stop).
+Cost control: one shared rAF for all storms, joined only while the canvas is on screen; 30 fps
+for the first 4 s, then 20 fps; skips frames on a hidden tab or mid-swipe/scroll
+(`lib/ambientFx.ts`); glow faked with wide faint strokes (no `shadowBlur`), node glows from one
+pre-rendered sprite. Reduced motion → still glow.
 
 ## 9. Global rules — Neon Frame app-wide (written 2026-10-03, Compare finished)
 
@@ -412,7 +419,9 @@ white 13px/900.
 animation. Opacity/transform only, ~30 fps canvases paused off-screen, everything has a
 `prefers-reduced-motion` still state. Effects are opt-in props so dense screens stay calm.
 **Effects play on change, then settle** — a short finite burst, then a still state; never an
-infinite loop on a resting screen (small status signals like the live-game dot are the exception).
+infinite loop on a resting screen (small status signals like the live-game dot are the exception,
+and so are the Compare #1 bar + Power Surge — Kobe's call 2026-10-23 — which pause off screen and
+mid-gesture via `.pare-fx-loop` / `lib/ambientFx.ts`).
 No full-screen `backdrop-filter` blur over content that animates (use a plain dim), and no blur
 behind a surface that's nearly opaque anyway. Animated elements get `will-change` for the property
 they animate; never animate `box-shadow`, `filter` or size on a glow — fade an extra layer instead.
@@ -512,12 +521,13 @@ management, opponent scoreboards).
 | Part | Recipe |
 |---|---|
 | Header | H1 Inline: "Pare" + gold-bright **FANTASY** label + gold **league capsule** on the right (36px drawn / 44px hit, `--nav-bg` + `--glass-edge`, league name gold-bright, chevron) → bottom sheet **"Your leagues"** (`BottomSheet`): 64px rows — name 15/800 + format line (e.g. "Dynasty · PPR · Superflex · 10 teams"), gold check on the current one; footer "Sleeper · {username}" + "Change username" (restarts onboarding). iPad: sheet max 560px, centred. Switching: "Loading {league}…" pill + the list dims ~0.75s |
-| Week bar | Above the sticky pills: "WEEK n" (white 13px/900, .08em) + date range "Oct 1 – Oct 5" (11px/600 `--subtext`) · **Season \| Last 4** glass toggle (unique `layoutId` `myteam-window`) + **ⓘ** (44px) → a note card under it (260px, `--radius-md`, `--shadow-pop`), **one idea per line**: "**Season** = every game this defense has played." / "**Last 4** = its last 4 games played (byes skipped)." / "Ranks and colors switch with it." + "Showing: Season" |
-| Filter row | **Sticky** (hairline bottom). Position pills with counts side by side ("QB 3"): 30px drawn / **44px hit**, padding 0 9, gap 5, 12px label + 11px count, gold-bright active ring. **No IR/Taxi pill** — that section is always open; K / DEF pills only when the league has them. When the pills are wider than the row they **scroll sideways inside their own row** (hidden scrollbar) and the row **fades at the edge with more pills past it** (alpha mask, 28px; right at the start, left at the end, both mid-way; **no fade when everything fits**). A tapped pill scrolls fully into view. "Expand all" (nothing open) / "Collapse all" (anything open), 12/700 gold-bright, 44px, **pinned right** |
+| Week bar | Above the sticky pills: "WEEK n" (white 13px/900, .08em) + date range "Oct 1 – Oct 5" (11px/600 `--subtext`). Nothing on the right (the window toggle moved to the sticky filter row, 2026-10-23) |
+| Window control | `WindowControl`, **pinned right in the sticky filter row** so it stays in reach while scrolling: **Season \| Last 4** glass toggle (unique `layoutId` `myteam-window`) + **ⓘ** (44px) → a note card under it (260px, `--radius-md`, `--shadow-pop`), **one idea per line**: "**Season** = every game this defense has played." / "**Last 4** = its last 4 games played (byes skipped)." / "Ranks and colors switch with it." + "Showing: Season" |
+| Filter row | **Sticky** (hairline bottom). Position pills with counts side by side ("QB 3"): 30px drawn / **44px hit**, padding 0 9, gap 5, 12px label + 11px count, gold-bright active ring. **No IR/Taxi pill** — that section is always open; K / DEF pills only when the league has them. When the pills are wider than the row they **scroll sideways inside their own row** (hidden scrollbar) and the row **fades at the edge with more pills past it** (alpha mask, 28px; right at the start, left at the end, both mid-way; **no fade when everything fits**). A tapped pill scrolls fully into view. **Pinned right: the window control** (Season \| Last 4 + ⓘ). "Expand all / Collapse all" was removed 2026-10-23 (Kobe), so rows open and close one at a time |
 | Sections | **STARTERS · BENCH · IR / TAXI** — IR / TAXI is **always open** (never collapsed). Gold-rule labels 11px/800/.18em; one deep list card per section (`--radius-lg`), `--hairline` rows |
 | Row | min-height **62**, padding 8×12, gap 10. **Position circle** 38px (11/900 `--pos-*` text on `--pos-*-bg`; a FLEX / SFLX starter shows "FLEX" / "SFLX" and the real position moves to line 2 as "RB · "); **injury badge on the bottom-RIGHT corner** (right −6, bottom −4, 20×17, `--inj-*` fill, `--bg-deep` text, 2px ring). **Name column**: name 14/700 (+ 18px IR / TAXI tag in the reserve section; iPad: gold pin icon when pinned) · line 2 11/600 `--subtext`: team abbr in team color · opponent ("vs LV" / "@ LV") · kickoff (game week: live dot + "Q3 8:12" / "Final" — P6) · **micro-bar under line 2**: 5 segments 18×4, gap 3, tier fill, bye = dashed `--matchup-bye`. [game week only, P6: 46px points column] · **Meter column, 60px, right-aligned**: 5 bars (7px wide, 4→20px in even steps, gap 2; tier n fills n in `--matchup-n`, the rest `--matchup-track`) **above** the label "Good #27" (11/800, tier color). Bye = transparent dashed bars + "Bye" |
-| Expand | Tap a row → it **expands in place** (several can be open; no sheet, no long-press, no swipe); the row header takes a 5% gold tint and the detail sits in a hairline-bordered box (margin 0 12 14, padding 12, gap 12, `--radius-md`) on the build's **dark** surfaces. **Hero = one line**: the pts/g number (26/800 tabular, **tier-colored**) + "PPR pts/g LV allows to QBs · #27 of 32" (12/600 `--subtext`) — no window text (it's on the toggle). **Why-stats**: one bordered box (`--radius-md`, near-black `--nav-bg`), 36px rows, label "{stat} **/ game**" ("Pass yds / game", "INT made / game", "Sacks made / game"; **K red-zone rate: "Red-zone trips / drive"** — it's a per-drive rate), value 13/800, rank 11/700 `--subtext` min-width 28 as **"#28" / "T-14"** (never "28th"); **no footnote**. **Week cells**: "W6" (11/700 `--subtext`) **above** each 36px cell (`--radius-sm`); the cell shows opp ("@SEA" away, "BUF" home) over rank ("#11") — **no tier word**; **dark cell with tier-colored edge (3px top) + tier-colored rank**; bye = dashed outline + "BYE". Then (phone) **"Start / Sit"** — lucide `ArrowUpDown` swap icon + "Start / Sit" 14/800 left, hint right 11/700 `--subtext` **"vs 1 other QB" / "vs 2 other QBs"** (singular/plural), gold chevron — **above** "Open in Compare · KC vs LV" (48px, `--radius-md`). iPad: the action pair is **"Pin to side" / "Unpin" + "Compare"**; pinning collapses the row |
-| Start / Sit | The button area of the **same card** slides (translateX, ~0.34s; none under reduced motion); the metrics above stay. Shows ‹ Back + "START / SIT · RBS", 44px chips of my other players at that position — the likely swap pre-picked (starter → first bench player at that position; bench / IR / taxi → first starter) — both players' next-5 week cells stacked under one week header, "This week, easier matchup: X", "Next 5 weeks: X (n good weeks vs m)", "Matchup only (PPR pts/g allowed to RBs) — not a projection." The easier side gets a gold border. Logic: `lib/myteam/startSit.ts` (pure, tested) |
+| Expand | Tap a row → it **expands in place** (several can be open; no sheet, no long-press, no swipe); the row header takes a 5% gold tint and the detail sits in a hairline-bordered box (margin 0 12 14, padding 12, gap 12, `--radius-md`) on the build's **dark** surfaces. **Hero = one line**: the pts/g number (26/800 tabular, **tier-colored**) + "PPR pts/g LV allows to QBs · #27 of 32" (12/600 `--subtext`) — no window text (it's on the toggle). **Why-stats**: one bordered box (`--radius-md`, near-black `--nav-bg`), 36px rows, label "{stat} **/ game**" ("Pass yds / game", "INT made / game", "Sacks made / game"; **K red-zone rate: "Red-zone trips / drive"** — it's a per-drive rate), value 13/800, rank 11/700 `--subtext` min-width 28 as **"#28" / "T-14"** (never "28th"); **no footnote**. **Week cells**: "W6" (11/700 `--subtext`) **above** each 36px cell (`--radius-sm`); the cell shows opp ("@SEA" away, "BUF" home) over rank ("#11") — **no tier word**; **solid tier-colored cell (`--matchup-n` fill + border) with dark `--bg` text** (opp 11/800, rank 11/800 — dark text because white fails contrast on the bright tier colors; since 2026-10-23); bye = dashed outline + "BYE"; unrated = `--nav-bg` + hairline. Then (phone) **"Start / Sit"** — lucide `ArrowUpDown` swap icon + "Start / Sit" 14/800 left, hint right 11/700 `--subtext` **"vs 1 other QB" / "vs 2 other QBs"** (singular/plural), gold chevron — **above** "Open in Compare · KC vs LV" (48px, `--radius-md`). iPad: the action pair is **"Pin to side" / "Unpin" + "Compare"**; pinning collapses the row |
+| Start / Sit | The button area of the **same card** slides (translateX, ~0.34s; none under reduced motion); the metrics above stay. Shows ‹ Back + "START / SIT · RBS", 44px chips of my other players at that position — the likely swap pre-picked (starter → first bench player at that position; bench / IR / taxi → first starter) — both players' week cells for **this week + the next 4** stacked under one week header (this week's label in `--gold-bright` — you're setting this week's lineup; since 2026-10-23), "This week, easier matchup: X", "W8–W12: X (n good weeks vs m)" (good weeks counted over those same 5 cells), "Matchup only (PPR pts/g allowed to RBs) — not a projection." The easier side gets a gold border. Logic: `lib/myteam/startSit.ts` (pure, tested) |
 | iPad (QE) | List left; **PINNED** panel right (340px portrait / 440px landscape): pin icon + "PINNED" + count + "Clear all"; empty = dashed gold card "Pin players to keep them here". Pins stack in order; a pinned card (gold edge, 35% → 60% when open) starts short (34px circle, name, line 2, 64px meter, ✕ 44px, next-5 cells with the week inside, chevron hint) and opens on a tap anywhere to show the hero ("· #27", 22px), why-stats (34px rows) and Open in Compare (44px) |
 | Onboarding | **Inline** on the My Team screen: header + week bar + a **setup card** where the roster goes + 4 ghost rows ("Your starters, bench and IR / Taxi show up here."). Card: "Link your fantasy league" + one line of value · "Sleeper username" input (48px, 16px text, edge `--seed-edge`, `--radius-md`) · **Continue** (gold-ring glass button) · lock line "Read-only — Pare can't change your lineup. Your username is saved on this device and only used to load your leagues." States in the same card: not found / bad characters (inline red line + red field edge, `role=alert`) · loading (shimmer skeleton, no spinner) · pick a league (64px rows, format + "In season" chip; skipped when there's only one) · no leagues ("Check again" + "Use another username") · pre-draft ("{league} hasn't drafted yet" + Check again) · can't reach Sleeper ("Try again"). Keyboard: Continue stays visible (`visualViewport` handler). iPad: card max 560px |
 | Game day (P6) | Layout reserved now: points column beside the meter (the meter is never hidden), small starters total in the STARTERS header (`aria-live="polite"`), bench points shown, Pare's `.pare-live-dot`. **No total card** |
@@ -526,8 +536,9 @@ management, opponent scoreboards).
 
 Shipped: P5 `dc93658`, mockup fix pass `b84a91d` (source of truth `docs/design/my-team-p4/Final*.dc.html`,
 after screenshots in `docs/design/my-team-p4/after/`) + follow-up (no IR/Taxi pill, pill-row fade, 3-line ⓘ note).
-Color rule for the fix pass (Kobe): keep the build's darker surfaces, dark week cells (tier-colored edge + text) and the
-tier-colored hero number; everything else follows the mockup.
+Color rule for the fix pass (Kobe): keep the build's darker surfaces and the tier-colored hero number; everything else
+follows the mockup. Week cells were dark (tier-colored edge + text) until 2026-10-23, when Kobe switched them to solid
+tier fills with dark text.
 
 Data attributes kept for machine checks: `data-tier="great|good|avg|tough|avoid"` on every meter,
 `data-bye="true"` on bye meters, `data-injury="Q|D|O|IR"` on injury badges, `data-state` on each

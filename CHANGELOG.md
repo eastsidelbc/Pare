@@ -7,6 +7,9 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Added
+- **Last 4 games ("L4") in every Compare panel** (2026-10-23, branch `feat/last4-compare`) — the Offense/Defense header switch is now `PG | L4 | TOT` on Compare, the Home mini-compare and the Leans game screen. L4 = each team's average over its last 4 games played (byes skipped); bars, ranks, gold/red badges and Power Surge are among all 32 teams' last 4, so you can see who is finding their groove (new QB, hot streak) or fading.
+  - See: `docs/devnotes/2026-10-23-last4-compare.md`, plan `docs/plans/wanting-to-add-the-starry-volcano.md`, `DATA_SOURCES.md` §8.
+  - New `GET /api/nfl-2025/last4` (`lib/last4.ts`, ISR 10 min) built from the existing final box scores; the box-score parser now also reads first downs, completions/attempts, rush attempts and plays (cache key `final-boxscore-v3` → one cold re-download of this season's finals after deploy). Prefetched on idle by `components/Last4StatsProvider.tsx`, so tapping L4 is instant.
 - **Leans tab — lines + data leans for every game, and your own prop lines** (2026-10-14, branch `feat/leans-tab`) — new third tab **Leans** (lucide Scale): Home · Compare · Leans · Leaders · Fantasy.
   - See: `docs/devnotes/2026-10-14-leans-tab.md`, plan `docs/plans/2026-10-14-leans-tab.md` (incl. "Mockup differences"), decisions `docs/plans/2026-10-14-leans-tab/DECISIONS.md`, design-system §9.5.
   - `/leans`: this week's games as Home's Frame Row card + a Spread · Total · Moneyline row + a lean row; "Your props" on top. `/leans/[gameId]`: team wordmarks, "Compare these teams ▾" (today's Offense + Defense panels in place), Game lines card (rows open to the last-4 numbers + the 3 checks), Props. `/leans/prop/[id]` prop detail, `/leans/player/[id]` player vs defense (Season / Last 4).
@@ -27,6 +30,8 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - iOS: `SettingsView` restyled to S2 — same native grouped list, gold tint, BgDeep background, deep-navy rows, white titles with gold icons + chevrons, "Email support" row, Pare LLC footer, half-height sheet with grab handle (drag to full).
 
 ### Fixed
+- **Fantasy: Start / Sit starts at this week; no sign-in flash when you open the tab** (2026-10-23, branch `feat/last4-compare`) — the Start / Sit grid now shows this week (gold label) + the next 4, and "good weeks" count those same 5 (line reads "W8–W12: …"); the expanded row's own next-5 strip is unchanged. Opening Fantasy with a saved username no longer shows the username form while Sleeper answers (it looked like being logged out): a cold start shows the loading skeleton, and coming back from another tab shows your roster at once (silent refresh after 10 min).
+  - See: `docs/devnotes/2026-10-23-fantasy-startsit-cells-flash.md`, plan `docs/plans/start-sit-doesn-t-show-joyful-hartmanis.md`.
 - **tsconfig: removed deprecated `baseUrl`** (2026-10-12, `main`) — clears the "baseUrl is deprecated (TS 7.0)" editor error; `@/*` imports unchanged (`paths` resolves relative to tsconfig).
   - See: `docs/devnotes/2026-10-12-tsconfig-baseurl.md`.
 - **Home peek: no dead space above "Open full"** (2026-10-06, `main`) — the inline variant no longer inherits the Compare page's bottom-nav reserve (`MobileCompareLayout` `padBottom` → 8px for `inline`); "Open full" is now a gold neon capsule matching the nav's `ActivePill`.
@@ -47,6 +52,12 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Performance audit (sandbox, 4× CPU, median of 3): LCP 0.56s, view switch 83–131ms tap→paint, scroll 60 fps / 0 dropped, ~1% idle CPU, 0 running animations on iPhone 14 Pro + iPad portrait/landscape → no perf fixes needed. Table in the dev note.
 
 ### Changed
+- **Fantasy: Season | Last 4 stays in reach while you scroll** (2026-10-23, branch `feat/last4-compare`) — the toggle + ⓘ moved from the WEEK bar into the sticky position-pill row (pinned right), replacing "Expand all / Collapse all", which is gone (rows open one at a time). With less room, the pills scroll sideways with the edge fade sooner (All · QB · RB visible at 393px).
+  - See: `docs/devnotes/2026-10-23-fantasy-sticky-window-toggle.md`.
+- **Fantasy week cells are filled with the matchup color** (2026-10-23, branch `feat/last4-compare`) — the "@SEA #11" boxes are now solid tier color (Great green … Avoid red) with dark text instead of a black box with a colored top edge — on expanded rows, Start / Sit, pinned cards (iPad) and Leans player vs defense. Byes stay dashed, unrated weeks stay dark.
+  - See: `docs/devnotes/2026-10-23-fantasy-startsit-cells-flash.md`.
+- **Compare: the #1 gold bar and Power Surge electricity keep going** (2026-10-23, branch `perf/ambient-loops`) — they no longer freeze after a few seconds. To pay for it: they pause while the card is off screen or you're swiping/scrolling, the electricity draws at 20 fps with a much cheaper glow, and the header tips ticker now stops after 3 passes (~9s) instead of scrolling forever.
+  - See: `docs/devnotes/2026-10-23-ambient-loops.md`, plan `docs/plans/performance-audit-i-dont-wise-clarke.md`, design-system §8 + §9.8 (exception recorded).
 - **Live scores are now at most 15 seconds behind ESPN (was ~30s)** (2026-10-12, branch `feat/live-freshness`) — ~7.5s behind on average (was ~15s).
   - See: `docs/devnotes/2026-10-12-live-freshness.md`, ADR amendment in `docs/adr/2026-10-12-live-scores-proxy.md`, plan `docs/plans/2026-10-12-live-freshness.md`.
   - Phone polls every **5s** while a game is live (was 15s, `LIVE_POLL_MS`), never two requests at once; server keeps one shared copy for **10s** (was 15s, `LIVE_TTL_MS`). Idle behavior unchanged. A test holds poll + TTL ≤ 15s.

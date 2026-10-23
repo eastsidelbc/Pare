@@ -9,9 +9,10 @@
 
 'use client';
 
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { TeamData } from '@/lib/useNflStats';
 import { useDisplayMode } from '@/lib/useDisplayMode';
+import { useSharedLast4Stats } from '@/components/Last4StatsProvider';
 import CompactPanelHeader from './CompactPanelHeader';
 import CompactComparisonRow from './CompactComparisonRow';
 import { getMatchupPalettes } from '@/lib/teamColors';
@@ -46,8 +47,9 @@ function CompactPanel({
   onTeamBChange
 }: CompactPanelProps) {
   
-  // Display mode management (per-game vs total)
+  // Display mode management (per-game / last-4 average / total)
   const { mode, setMode, transformTeamData, transformAllData } = useDisplayMode('per-game');
+  const last4 = useSharedLast4Stats();
   
   // Ranking dropdown state management
   const [activeDropdown, setActiveDropdown] = useState<{
@@ -55,8 +57,20 @@ function CompactPanel({
     team: 'A' | 'B';
   } | null>(null);
 
-  // Select correct dataset
-  const allData = type === 'offense' ? allOffenseData : allDefenseData;
+  // Select correct dataset. L4 swaps in the last-4 rows (all 32 teams, so ranks
+  // are among every team's last 4); not loaded yet / failed → no row → "—".
+  const isLast4 = mode === 'last4';
+  const allData = isLast4
+    ? (type === 'offense' ? last4.offense : last4.defense)
+    : (type === 'offense' ? allOffenseData : allDefenseData);
+  const baseTeamAData = useMemo(
+    () => (isLast4 ? allData.find((t) => t.team === teamA) ?? null : teamAData),
+    [isLast4, allData, teamA, teamAData],
+  );
+  const baseTeamBData = useMemo(
+    () => (isLast4 ? allData.find((t) => t.team === teamB) ?? null : teamBData),
+    [isLast4, allData, teamB, teamBData],
+  );
   
   // Transform data based on display mode.
   // Rank by displayed values: per-game averages in per-game mode, totals in total
@@ -66,12 +80,12 @@ function CompactPanel({
     [transformAllData, allData],
   );
   const transformedTeamAData = useMemo(
-    () => transformTeamData(teamAData),
-    [transformTeamData, teamAData],
+    () => transformTeamData(baseTeamAData),
+    [transformTeamData, baseTeamAData],
   );
   const transformedTeamBData = useMemo(
-    () => transformTeamData(teamBData),
-    [transformTeamData, teamBData],
+    () => transformTeamData(baseTeamBData),
+    [transformTeamData, baseTeamBData],
   );
   
   // Handle team change from ranking dropdown (stable identity so memoized rows
@@ -103,6 +117,21 @@ function CompactPanel({
   // Team bar colors for this matchup (lift / clash / fallback rules in lib/teamColors).
   const palettes = useMemo(() => getMatchupPalettes(teamA, teamB), [teamA, teamB]);
 
+  // Looping #1 bar effects pause while this card is off screen (neighbor panes,
+  // scrolled away): the observer flips `data-fx-off`, CSS pauses `.pare-fx-loop`.
+  // Set on the DOM directly — no re-render.
+  const cardRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) el.removeAttribute('data-fx-off');
+      else el.setAttribute('data-fx-off', '');
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   // Neon frame (Round 5 "R"): 2px border that fades from team A's color →
   // neutral → team B's color, with each team's glow spilling off its side.
   // Glow strength matches Round 5 "S" (brighter than R): 2px frame, 34px / 34% side glows.
@@ -114,7 +143,7 @@ function CompactPanel({
   };
 
   return (
-    <div style={frameStyle}>
+    <div ref={cardRef} style={frameStyle}>
       <div
         className="relative isolate overflow-hidden"
         style={{

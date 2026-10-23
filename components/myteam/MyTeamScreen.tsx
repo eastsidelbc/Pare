@@ -1,5 +1,5 @@
 /**
- * My Team roster screen (design-system §9.4): week bar → sticky filter row →
+ * My Team roster screen (design-system §9.4): week bar → sticky filter row (pills + Season | Last 4) →
  * STARTERS · BENCH · IR / TAXI, rows expanding in place. iPad (md+) adds the
  * PINNED side panel. Presentational over a bundle so the live app (MyTeamApp)
  * and the dev sandbox render the exact same markup.
@@ -88,9 +88,6 @@ export default function MyTeamScreen({
     { id: 'bench', title: 'BENCH', rows: vm.bench.filter(keep) },
     { id: 'reserve', title: 'IR / TAXI', rows: vm.reserve.filter(keep) },
   ];
-  const visibleIds = sections.flatMap((s) => s.rows.map((r) => r.player.playerId));
-  // Mockup: "Collapse all" whenever anything is open.
-  const anyExpanded = visibleIds.some((id) => expanded.has(id));
 
   const pill = (id: PositionFilter, label: string, aria: string, count: number) => ({ id, label, aria: `${aria}, ${count} players`, count });
   // No IR/Taxi pill: that section is always open (P4 pick G5). K / DEF only when the league has them.
@@ -127,7 +124,7 @@ export default function MyTeamScreen({
     ) : undefined;
 
   const weekBar = (
-    <WeekBar week={bundle.week} dateRange={dateRangeText(weekKickoffRange(bundle.schedule, bundle.week))} window={window} onWindowChange={onWindowChange} />
+    <WeekBar week={bundle.week} dateRange={dateRangeText(weekKickoffRange(bundle.schedule, bundle.week))} />
   );
 
   if (vm.preDraft) {
@@ -147,9 +144,8 @@ export default function MyTeamScreen({
         counts={counts}
         value={filter}
         onChange={setFilter}
-        anyExpanded={anyExpanded}
-        onExpandAll={() => setExpanded(new Set([...expanded, ...visibleIds]))}
-        onCollapseAll={() => setExpanded(new Set())}
+        window={window}
+        onWindowChange={onWindowChange}
       />
 
       <div className="md:grid md:grid-cols-[minmax(0,1fr)_340px] md:gap-5 lg:grid-cols-[minmax(0,1fr)_440px]">

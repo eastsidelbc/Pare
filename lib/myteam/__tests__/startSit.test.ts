@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { compareStartSit, easierWeek, goodWeeks, likelySwap, startSitCandidates } from '../startSit';
+import { compareStartSit, easierWeek, goodWeeks, likelySwap, startSitCandidates, startSitWeeks } from '../startSit';
 import { tierForRank, TIER_LABEL } from '../rating';
 import type { FantasyPosition, RosterGroup } from '../types';
 import type { MatchupCell, RosterRow } from '../viewModel';
@@ -74,18 +74,30 @@ describe('easierWeek (higher rank = easier)', () => {
   });
 });
 
-describe('next-5 good weeks', () => {
+describe('good weeks', () => {
   it('counts Good (21–27) and Great (28–32) only; byes and unrated weeks never count', () => {
     expect(goodWeeks([game(7, 21), game(8, 27), game(9, 28), game(10, 20), bye(11)])).toBe(3);
     expect(goodWeeks([unknown(7), { ...game(8, 30), rating: null }])).toBe(0);
   });
-  it('compareStartSit: this week decides; the next 5 break a tie', () => {
+  it('compareStartSit: this week decides; this week + next 4 break a tie', () => {
     const a = row('a', 'RB', 'starter', game(6, 10), [game(7, 30), game(8, 30), game(9, 5), bye(10), game(11, 22)]);
-    const b = row('b', 'RB', 'bench', game(6, 25), [game(7, 2), game(8, 15), game(9, 29), game(10, 1), game(11, 1)]);
-    expect(compareStartSit(a, b)).toEqual({ thisWeek: 'b', next: { verdict: 'a', a: 3, b: 1 }, easier: 'b' });
+    // W11 (#29) is the 5th look-ahead week — outside the Start / Sit window.
+    const b = row('b', 'RB', 'bench', game(6, 25), [game(7, 2), game(8, 15), game(9, 1), game(10, 1), game(11, 29)]);
+    expect(compareStartSit(a, b)).toEqual({ thisWeek: 'b', next: { verdict: 'a', a: 2, b: 1 }, easier: 'b' });
     const tieNow = { ...b, thisWeek: game(6, 10) };
     expect(compareStartSit(a, tieNow).easier).toBe('a');
     const even = { ...a, strip: b.strip };
-    expect(compareStartSit(even, tieNow)).toEqual({ thisWeek: 'tie', next: { verdict: 'tie', a: 1, b: 1 }, easier: 'tie' });
+    expect(compareStartSit(even, tieNow)).toEqual({ thisWeek: 'tie', next: { verdict: 'tie', a: 0, b: 0 }, easier: 'tie' });
+  });
+});
+
+describe('startSitWeeks', () => {
+  it('this week first, then the next 4', () => {
+    const r = row('a', 'RB', 'starter', game(6, 10), [game(7, 1), game(8, 1), bye(9), game(10, 1), game(11, 1)]);
+    expect(startSitWeeks(r).map((c) => c.week)).toEqual([6, 7, 8, 9, 10]);
+  });
+  it('shorter at the end of the season', () => {
+    expect(startSitWeeks(row('a', 'RB', 'starter', game(17, 10), [game(18, 1)])).map((c) => c.week)).toEqual([17, 18]);
+    expect(startSitWeeks(row('a', 'RB', 'starter', game(18, 10), [])).map((c) => c.week)).toEqual([18]);
   });
 });
