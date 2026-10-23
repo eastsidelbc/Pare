@@ -10,6 +10,7 @@
 'use client';
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { TeamData } from '@/lib/useNflStats';
 import { useDisplayMode } from '@/lib/useDisplayMode';
 import { useSharedLast4Stats } from '@/components/Last4StatsProvider';
@@ -18,6 +19,7 @@ import CompactComparisonRow from './CompactComparisonRow';
 import { getMatchupPalettes } from '@/lib/teamColors';
 import { usePowerSurge } from '@/lib/usePowerSurge';
 import StormCrackle from '@/components/ui/StormCrackle';
+import MetricPickerSheet from '@/components/compare/MetricPickerSheet';
 
 interface CompactPanelProps {
   type: 'offense' | 'defense';
@@ -32,6 +34,8 @@ interface CompactPanelProps {
   allDefenseData: TeamData[];
   onTeamAChange?: (team: string) => void;
   onTeamBChange?: (team: string) => void;
+  /** Metric picker (Wave B3): shown only when the host can change the list. */
+  onMetricsChange?: (metrics: string[]) => void;
 }
 
 function CompactPanel({
@@ -44,8 +48,14 @@ function CompactPanel({
   allOffenseData,
   allDefenseData,
   onTeamAChange,
-  onTeamBChange
+  onTeamBChange,
+  onMetricsChange,
 }: CompactPanelProps) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+  // The sheet renders into <body>: the Compare pager moves panels with transforms,
+  // which would trap a position:fixed sheet inside the card.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   
   // Display mode management (per-game / last-4 average / total)
   const { mode, setMode, transformTeamData, transformAllData } = useDisplayMode('per-game');
@@ -159,7 +169,13 @@ function CompactPanel({
         type={type}
         displayMode={mode}
         onDisplayModeChange={setMode}
+        onEditMetrics={onMetricsChange ? () => setPickerOpen(true) : undefined}
       />
+      {onMetricsChange && mounted &&
+        createPortal(
+          <MetricPickerSheet open={pickerOpen} onClose={() => setPickerOpen(false)} type={type} selected={selectedMetrics} onChange={onMetricsChange} />,
+          document.body,
+        )}
       
       {/* Metric Rows - tight, theScore-style density with subtle dividers */}
       <div className="divide-y divide-[var(--hairline)]">

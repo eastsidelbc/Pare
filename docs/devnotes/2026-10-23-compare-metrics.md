@@ -32,6 +32,23 @@ way to choose metrics, so availability alone never reached the screen.
 - Live :4000: `/api/nfl-2025/offense` and `/defense` → 32 rows, every new field 32/32; defense has no takeaways /
   sacks / penalties (as designed). Offense 33 metrics available (was 16), defense 20 (was 6).
 
+## B3b — metric picker
+
+- `components/compare/MetricPickerSheet.tsx`: `BottomSheet` (grab = header), `getAvailableMetrics(type)` minus `g`,
+  grouped by category, 44px checkbox rows (`role="checkbox"`), 1–`MAX_PANEL_METRICS` (8), picked order kept,
+  Reset → defaults, live "N of 8 picked". Rendered via `createPortal` to `<body>` — the Compare pager moves panels
+  with transforms, which would trap a `position: fixed` sheet.
+- `CompactPanelHeader`: STATS button (10/800, `pare-hit44` = 44px hit area in the 28px bar) when `onEditMetrics`.
+- `MobileCompareLayout` now forwards `onOffense/DefenseMetricsChange` to the panels (props existed, were unused).
+  Persistence is the hosts' existing behavior: Compare tabs (`settings.offenseMetrics`, localStorage), Home accordion
+  + Leans game screen (local state).
+
+### Verification
+
+- `lib/__tests__/metricPicker.test.ts` (toggle order, min 1, max 8).
+- Playwright at 393px on /compare (real data, MIN vs DET): STATS opens the sheet, Red Zone TD % → "6 of 8", the row
+  appears with ranks (MIN 50.0% T-24th, DET 77.3% T-3rd), no horizontal scroll; screenshots reviewed.
+
 ## Risks / open
 
 - 32 more ESPN calls per 10-min window for the opponent split (cached fetches, like offense).

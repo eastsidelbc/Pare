@@ -329,6 +329,11 @@ for the first 4 s, then 20 fps; skips frames on a hidden tab or mid-swipe/scroll
 (`lib/ambientFx.ts`); glow faked with wide faint strokes (no `shadowBlur`), node glows from one
 pre-rendered sprite. Reduced motion → still glow.
 
+> **Compare metric picker (2026-10-23, Wave B3):** STATS button in the 28px panel header (10/800 .14em `--subtext`,
+> sliders icon, `pare-hit44`) → `BottomSheet` "Offense stats" / "Defense stats (allowed)": category labels 10/800
+> uppercase `--muted`, rows in a `--nav-bg` box with hairlines, 44px, 20px checkbox (gold-bright ring + 18% fill when on),
+> name 13/700 + description 10.5/600 subtext; max 8 per card (extra rows dim to 45%). `components/compare/MetricPickerSheet.tsx`.
+
 ## 9. Global rules — Neon Frame app-wide (written 2026-10-03, Compare finished)
 
 Compare is the reference screen. Every other tab (Home, Standings, Leaders, and anything new)
