@@ -64,6 +64,7 @@ All live from free public APIs — **no** CSV/PFR layer (removed 2026-10-01). En
 |---|---|---|
 | Live score / clock / final | browser polls `/api/live/scoreboard` every **5s** (`LIVE_POLL_MS`, never two requests at once) while a game is live **or** 10 min before → 3h after kickoff (`lib/liveWindow.ts`); server memory cache **10s** live / ≤5 min idle, never past the next live window (`scoreboardTtlMs`); responses **gzip**ped (scoreboard 8.3 → 1.7 KB) | ~5–15s |
 | Standings | `no-store` + `force-dynamic` (ESPN ≈0.19s of a 0.22s TTFB — no cache needed); 5s timeout → last-good copy on ESPN failure; open tab re-fetches on return after 60s (`useRefreshOnReturn`) | instant |
+| Leaders division strip | `getStandingsCached()` = `unstable_cache` 60s over the same no-store fetch (keeps `/leaderboards` ISR); page ISR 5 min | ≤~6 min (tap → `/standings` is instant) |
 | Home schedule + `/api/schedule` | fetch cache 5 min (`LIVE_REVALIDATE_SECONDS`); a loaded week >5 min old is re-fetched (week ±1) on scroll-into-view / app foreground (`ScheduleProvider.refreshStaleWeeks`) | ≤5 min after you look |
 | Compare offense/defense + W-L on Compare | route ISR + fetch cache 10 min (`REVALIDATE_SECONDS`) | ≤10 min |
 | Final box scores (yards-allowed) | per-game `unstable_cache` 24h | new finals next refresh |

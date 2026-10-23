@@ -3,7 +3,7 @@
  *
  * Server component: fetches every board once via `getAllLeaderboards()` and renders
  * the fixed-header + single-scroll shell used across the app.
- * Order: Fantasy (PPR) → Offense → Defense → Special Teams → ROOKIES divider →
+ * Order: Division strip (compact standings) → Fantasy (PPR) → Offense → Defense → Special Teams → ROOKIES divider →
  * Rookie Offense → Rookie Defense → Rookie Special Teams. Rookie boards are the same
  * stat boards filtered to first-year players; an empty rookie board is hidden, and
  * the whole Rookies block hides if none have data.
@@ -13,6 +13,8 @@
 
 import { getAllLeaderboards, type LeaderBoard, type LeaderSection } from '@/lib/leaders';
 import { getCurrentWeekInfo } from '@/lib/schedule';
+import { getStandingsCached } from '@/lib/standings';
+import DivisionStrip from '@/components/leaderboards/DivisionStrip';
 import LeaderCard from '@/components/leaderboards/LeaderCard';
 import FantasyBoards from '@/components/leaderboards/FantasyBoards';
 import { LEADER_GRID } from '@/components/leaderboards/grid';
@@ -50,7 +52,7 @@ const ROOKIE_SECTIONS: { key: LeaderSection; label: string }[] = [
 ];
 
 export default async function LeaderboardsPage() {
-  const [boards, { season }] = await Promise.all([getAllLeaderboards(), getCurrentWeekInfo()]);
+  const [boards, { season }, standings] = await Promise.all([getAllLeaderboards(), getCurrentWeekInfo(), getStandingsCached()]);
 
   const fantasy = boards.filter((b) => b.section === 'fantasy');
   const rookieGroups = ROOKIE_SECTIONS.map((s) => ({
@@ -96,6 +98,7 @@ export default async function LeaderboardsPage() {
         }}
       >
         <div className="mx-auto w-full max-w-[1440px] px-3 pt-1">
+          <DivisionStrip conferences={standings} />
           {fantasy.length > 0 && <FantasyBoards id="lb-fan" boards={fantasy} label="Fantasy" />}
 
           {SECTIONS.map(({ key, label, id }) => (

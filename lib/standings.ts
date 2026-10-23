@@ -13,6 +13,7 @@
  * which is more robust than depending on ESPN's grouping.
  */
 import 'server-only';
+import { unstable_cache } from 'next/cache';
 import {
   NFL_TEAMS,
   resolveTeamByAbbr,
@@ -26,6 +27,9 @@ import { createTtlCache, liveWithLastGood } from './apiCache';
 /** Public ESPN standings endpoint (free, no key). */
 const ESPN_STANDINGS_URL =
   'https://site.api.espn.com/apis/v2/sports/football/nfl/standings';
+
+/** Leaders' division strip: cached standings refresh window (the page itself is ISR 300s). */
+const STRIP_REVALIDATE_SECONDS = 60;
 
 /** Give up on ESPN after this long and serve the last good copy instead of hanging the page. */
 const ESPN_TIMEOUT_MS = 5_000;
@@ -205,6 +209,23 @@ function emptyConferences(): ConferenceStandings[] {
  */
 export async function getStandings(): Promise<ConferenceStandings[]> {
   return liveWithLastGood(lastGood, fetchStandings, emptyConferences, 'standings');
+}
+
+/**
+ * Standings for pages that are ISR (the Leaders division strip). A plain
+ * {@link getStandings} there would turn the page dynamic (no-store = revalidate 0).
+ * Same Leaders pattern (`lib/leaders.ts` getBoardRows): `unstable_cache` around the
+ * no-store fetch, so the 5s timeout always applies and a failed / partial fetch
+ * throws → nothing bad is cached, the previous copy keeps serving. 60s here + the
+ * page's 300s window ≈ 6 min worst case; /standings itself stays live.
+ */
+const cachedStandings = unstable_cache(() => fetchStandings(), ['standings-strip-v1'], {
+  revalidate: STRIP_REVALIDATE_SECONDS,
+  tags: ['standings'],
+});
+
+export async function getStandingsCached(): Promise<ConferenceStandings[]> {
+  return liveWithLastGood(lastGood, () => cachedStandings(), emptyConferences, 'standings:strip');
 }
 
 /** One live ESPN fetch → grouped standings. Throws on any failure (caller falls back). */
