@@ -16,6 +16,7 @@ import { matchupText, slotLabel, type RosterRow } from '@/lib/myteam/viewModel';
 import MatchupDetails, { type DetailContext } from './MatchupDetails';
 import { MatchupMeter, WeekCell } from './MatchupMeter';
 import PositionCircle from './PositionCircle';
+import UsageStats from './UsageStats';
 import { ACTION_BUTTON, kickoffText } from './style';
 
 interface Props {
@@ -129,6 +130,7 @@ export default function PinnedPanel({ rows, open, onToggle, onUnpin, onClear, ct
                   {isOpen && (
                     <div className="flex flex-col" style={{ gap: 10, padding: '0 12px 12px' }}>
                       <MatchupDetails row={row} ctx={ctx} compact />
+                      <UsageStats playerId={row.player.playerId} position={row.player.position} window={ctx.window} usage={ctx.usage} compact />
                       <button
                         type="button"
                         disabled={!(player.nflTeam && opp)}

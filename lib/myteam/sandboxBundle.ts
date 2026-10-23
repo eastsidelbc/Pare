@@ -12,6 +12,7 @@ import type { LeagueBundle } from './apiTypes';
 import type { DefenseGame, OffenseGame } from './defenseProfile';
 import type { FpaTable } from './fpa';
 import type { ScheduleEntry, TeamSchedule } from './schedule';
+import type { UsageMap } from './usage';
 import { FANTASY_POSITIONS, type FantasyLeague, type InjuryTag, type RosterPlayer } from './types';
 
 const SEASON = 2026;
@@ -103,6 +104,30 @@ function sandboxSchedule(): TeamSchedule {
   return schedule;
 }
 
+/** Deterministic usage weeks for the skill players (Wave A2 tiles) — fake numbers, stable across runs. */
+function sandboxUsage(): UsageMap {
+  const out: UsageMap = {};
+  PLAYERS.forEach((p, n) => {
+    if (p.position === 'K' || p.position === 'DEF') return;
+    const receiver = p.position !== 'QB';
+    out[`sb${n + 1}`] = COMPLETED.map((week) => {
+      const tgt = receiver ? 2 + ((n + week * 3) % 9) : 0;
+      return {
+        week,
+        pts: 6 + ((n * 7 + week * 5) % 19) + (week % 3) * 0.4,
+        snaps: 38 + ((n * 3 + week * 11) % 27),
+        teamSnaps: 66,
+        tgt,
+        teamTgt: 34,
+        air: tgt * (p.position === 'WR' ? 11 : 6),
+        teamAir: 290,
+        posRank: 1 + ((n * 5 + week * 13) % 40),
+      };
+    });
+  });
+  return out;
+}
+
 export const SANDBOX_LEAGUES: FantasyLeague[] = [
   { provider: 'sleeper', leagueId: '900000000000000301', name: 'Sandbox League', season: SEASON, status: 'in_season', totalRosters: 10 },
   { provider: 'sleeper', leagueId: '900000000000000302', name: 'Second Sandbox League', season: SEASON, status: 'in_season', totalRosters: 12 },
@@ -136,6 +161,7 @@ export function buildSandboxBundle(): LeagueBundle {
     },
     schedule: sandboxSchedule(),
     fpa: sandboxFpa(),
+    usage: sandboxUsage(),
     defenseLog,
     offenseLog,
     injurySource: 'sleeper',

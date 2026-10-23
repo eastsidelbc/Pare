@@ -89,7 +89,7 @@
 | Provider | Endpoints that work | Pare uses | Fields listed | Fields used | Empty / wrong |
 |---|---|---|---|---|---|
 | ESPN | ~65 | 7 | 1294 | 116 (9%) | 83 |
-| Sleeper | ~29 | 8 | 493 | 48 (10%) | 3 |
+| Sleeper | ~29 | 8 | 493 | 53 (11%) | 3 |
 
 Counts are field slots in this catalog. A few names repeat across categories (e.g. `totalPoints` in several ESPN categories). Endpoint counts treat a card that groups several URLs (e.g. My Team's 5 Sleeper calls) as that many endpoints.
 
@@ -2393,7 +2393,7 @@ Base: `https://api.sleeper.app/v1`
 | `pts_half_ppr` | ⬜ Not used |
 | `pts_std` | ✅ Used |
 | `pts_idp` | ⬜ Not used |
-| `pos_rank_ppr` | ⬜ Not used |
+| `pos_rank_ppr` | ✅ Used |
 | `pos_rank_half_ppr` | ⬜ Not used |
 | `pos_rank_std` | ⬜ Not used |
 | `rank_ppr` | ⬜ Not used |
@@ -2404,10 +2404,10 @@ Base: `https://api.sleeper.app/v1`
 
 | Field | Status |
 |---|---|
-| `off_snp` | ⬜ Not used |
+| `off_snp` | ✅ Used |
 | `def_snp` | ⬜ Not used |
 | `st_snp` | ⬜ Not used |
-| `tm_off_snp` | ⬜ Not used |
+| `tm_off_snp` | ✅ Used |
 | `tm_def_snp` | ⬜ Not used |
 | `tm_st_snp` | ⬜ Not used |
 | `gp` | ✅ Used |
@@ -2479,7 +2479,7 @@ Base: `https://api.sleeper.app/v1`
 | Field | Status |
 |---|---|
 | `rec` | ✅ Used |
-| `rec_tgt` | ⬜ Not used |
+| `rec_tgt` | ✅ Used |
 | `rec_yd` | ✅ Used |
 | `rec_td` | ✅ Used |
 | `rec_2pt` | ⬜ Not used |
@@ -2488,7 +2488,7 @@ Base: `https://api.sleeper.app/v1`
 | `rec_td_lng` | ⬜ Not used |
 | `rec_ypr` | ⬜ Not used |
 | `rec_ypt` | ⬜ Not used |
-| `rec_air_yd` | ⬜ Not used |
+| `rec_air_yd` | ✅ Used |
 | `rec_yar` | ⬜ Not used |
 | `rec_drop` | ⬜ Not used |
 | `rec_rz_tgt` | ⬜ Not used |

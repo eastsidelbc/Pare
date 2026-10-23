@@ -185,6 +185,26 @@ test.describe('My Team', () => {
     expect(await smallTargets(page)).toEqual([]);
   });
 
+  test('usage tiles (Wave A2): WR shows target share + WOPR, QB doesn’t, K shows none; Last 4 changes them', async ({ page }) => {
+    await openRoster(page);
+    await rowButton(page, 'Tyler Brooks').click();
+    const wr = row(page, 'Tyler Brooks').locator('[data-usage]');
+    await expect(wr).toBeVisible();
+    for (const label of ['Pts / game', 'Snap share', 'Target share', 'WOPR']) await expect(wr.getByText(label, { exact: true })).toBeVisible();
+    const season = await wr.textContent();
+    await page.getByRole('button', { name: 'Last 4', exact: true }).click();
+    await expect.poll(async () => wr.textContent()).not.toBe(season);
+
+    await rowButton(page, 'Jordan Hale').click();
+    const qb = row(page, 'Jordan Hale').locator('[data-usage]');
+    await expect(qb.getByText('Pts / game', { exact: true })).toBeVisible();
+    await expect(qb.getByText('Target share', { exact: true })).toHaveCount(0);
+
+    await rowButton(page, 'Eli Grant').click();
+    await expect(row(page, 'Eli Grant').locator('[data-usage]')).toHaveCount(0);
+    await noHorizontalScroll(page);
+  });
+
   test('Season ⇄ Last 4 changes meter text; ⓘ opens its note', async ({ page }) => {
     await openRoster(page);
     const meters = page.locator('section[data-section="starters"] button[aria-expanded] [data-tier]');

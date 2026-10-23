@@ -7,6 +7,7 @@
 import type { DefenseGame, OffenseGame } from './defenseProfile';
 import type { FpaTable } from './fpa';
 import type { TeamSchedule } from './schedule';
+import type { UsageMap } from './usage';
 import type { FantasyLeague, FantasyRoster, FantasyUser, LeagueDetail } from './types';
 
 /** GET /api/myteam/user */
@@ -27,6 +28,8 @@ export interface LeagueBundle {
   /** My players' NFL teams only. */
   schedule: TeamSchedule;
   fpa: FpaTable;
+  /** My players' raw usage weeks (lib/myteam/usage.ts); absent on older bundles + the sandbox. */
+  usage?: UsageMap;
   defenseLog: DefenseGame[];
   offenseLog: OffenseGame[];
   /** Where injury tags come from (decided by rule in P0a). */

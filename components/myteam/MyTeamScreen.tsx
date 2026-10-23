@@ -96,7 +96,7 @@ export default function MyTeamScreen({
     ...FANTASY_POSITIONS.map((p) => pill(p, p, p, allRows.filter((r) => r.player.position === p).length)).filter((c) => c.count > 0),
   ];
 
-  const ctx: DetailContext = { window, format: bundle.league.format, defenseLog: bundle.defenseLog, offenseLog: bundle.offenseLog };
+  const ctx: DetailContext = { window, format: bundle.league.format, defenseLog: bundle.defenseLog, offenseLog: bundle.offenseLog, usage: bundle.usage };
   const pinnedRows = pins.map((id) => allRows.find((r) => r.player.playerId === id)).filter((r): r is RosterRow => !!r);
 
   // Game day: per-row points + the small starters total (whole lineup, whatever the filter).
