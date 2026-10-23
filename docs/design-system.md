@@ -371,6 +371,12 @@ injury badge — **always with the tier word + rank ("Great #30") or the positio
 alone. Team colors stay identity-only (Leans' last-4 bars are neutral `--subtext`). No new colors: the lean
 pill is `--gold` (emphasis — it is *not* tappable) and `--gold-bright` stays for things you tap; a hit dot is
 `--green` (its "win" meaning), a miss a hollow `--muted` ring.
+**Amendment (Leans arrows, 2026-10-23 — Kobe's call):** a prop line's side is a filled arrow, not an "o"/"u"
+letter: **green ▲ `--green` = over, red ▼ `--red` = under** (`components/leans/PropLine.tsx`, prop rows +
+prop cards only). This is a deliberate exception to "red = live / bad rank": it is scoped to prop lines, the
+red ▼ always sits beside the line number and is never shown without its green ▲ counterpart in the same list,
+and the arrow is an image labelled "over" / "under" so a screen reader hears "over 85.5". Lean pills stay
+`--gold`; game totals keep "O/U 44.5" (that's a number, not a side).
 
 **4. Team identity — logos OR names, behind one switch** (`config/teamIdentity.ts`, 2026-10-06).
 Every team mark renders through `components/ui/TeamIdentity.tsx`: `default` = `'logo'` | `'name'`
@@ -579,7 +585,7 @@ Never: lock, guarantee(d), sure thing, free money, can't lose, bet now — and n
 | Game screen order | MatchupHero (lg, **names not tappable** — `interactive={false}`) → "Sun, Oct 25 · 3:05 PM · CBS" 11/600 → glass button "⇄ Compare these teams ▾" (36px, gold-bright 12/700; open = "Hide team stats ▴") → Offense + Defense in place (`ComparePane inline showHero={false}`) → Game lines → PROPS → footer |
 | Game lines card | Neon Frame (§8): 2px team frame, radius 20, both 34px glows. Header 28px "GAME LINES" 11/800 .22em + "One line per game ⓘ". Rows Spread · Total · Moneyline: 9px label, 15/800 line, pill right, reason 11/600 `--subtext` (bold = white 800). Tap → opens in place (gold-bright 4% tint, ▴): last-4 cells (34px team column + 4 dark `--nav-bg` cells, radius 6, ✓ = on the lean side) + "Why — 3 of 3 signals agree" + the checks. One row open at a time |
 | Signal list ("the 3 checks") | Always shown, always 3. Label 9px ("Why — 3 of 3 signals agree" / "Why no lean — signals split (1 of 3)"), then the near-black why box: 36px rows, ✓ `--green` / ✕ `--muted` (14px column), 12/600 `--subtext`, numbers white 800 |
-| Prop card | Deep list card (§9.2), padding 12, gap 12: position circle (38, `--pos-*`, injury badge) + name 14/700 + "ATL · @ LV · Rush yds" · "YOUR LINE" + 17/800 "o85.5" → big pill + "Over in **3 of last 4** · 4 of 6 this season" → hit dots → tier bars + "LV allows the 3rd-most RB pts" → why-stats box. Tap → prop detail |
+| Prop card | Deep list card (§9.2), padding 12, gap 12: position circle (38, `--pos-*`, injury badge) + name 14/700 + "ATL · @ LV · Rush yds" · "LINE" + 17/800 "▲85.5" (green ▲ over / red ▼ under, `PropLine`) → big pill + "Over in **3 of last 4** · 4 of 6 this season" → hit dots → tier bars + "LV allows the 3rd-most RB pts" → why-stats box. Tap → prop detail |
 | Hit dots | grid of 6 (last 6 games): 12px dot (hit `--green` + 6px glow, miss 2px `--muted` ring) · value 11/800 · "W3" 10/700 `--subtext` |
 | Tier bars | My Team meter in a row: 5 bars 7px wide, 4→20px, tier n fills n in `--matchup-n` + "Great #30" 11/800 tier color + reason. (Pickers use `MatchupMeter` itself, stacked) |
 | Sheets | `BottomSheet` (grab="header"): header 44px, gold-bright 11/800 .2em title + ✕ 44. **Pick a player**: 44px search, RESULTS, "In this game · ATL @ LV" rows (52px, circle, short name, team · pos, `MatchupMeter`). **Add a prop line**: player + Change · stat chips (32px drawn / 44 tap, glass recipe) · 48px line field (16px text, `--seed-edge`) + Over | Under glass toggle (`leans-side`) · live hit dots · 48px gold-ring "Save & check the data" · "Pare never sees your sportsbook. The line stays on this device." · footer |
