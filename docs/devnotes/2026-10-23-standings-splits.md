@@ -28,3 +28,9 @@ marks; Pare showed only W-L, PCT, PF/PA and streak.
 ## Risks / open
 
 - Clinch marks untested on real data until ESPN publishes them (December); the mapper reads `clincher.displayValue`.
+
+## Addendum (same day) — LUCK column
+
+- `SplitsTable`: 8th column LUCK = `pythagLuck(wins, games, PF, PA, ties)` (lib/formulas/team.ts, exponent 2.37 from
+  `FORMULA_CONFIG`), `signedLuck` rounds the magnitude first (symmetric ±0.75 → ±0.8, no "−0.0" — both caught in
+  review/tests). Footnote under the view explains GB and LUCK. Fits 393px (screenshot reviewed, no horizontal scroll).

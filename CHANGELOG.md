@@ -7,6 +7,8 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Added
+- **Standings Splits: LUCK column** (2026-10-23, branch `feat/data-rollout`) — actual wins minus the wins a team's points for / against usually produce (Pythagorean, exponent 2.37), with a one-line explanation under the view. First screen to use the formula library.
+  - See: `docs/devnotes/2026-10-23-standings-splits.md` (addendum). `pythagLuck` (`lib/formulas/team.ts`), `signedLuck` in `SplitsTable`.
 - **Leans player screen: season game log** (2026-10-23, branch `feat/data-rollout`) — every game this season, newest first: week, opponent, rush yds, receptions, rec yds, TDs. From the bundle already loaded (no extra request).
   - See: `docs/devnotes/2026-10-23-player-game-log.md`. `GameLog` in `components/leans/PlayerVsDefenseView.tsx`.
 - **Fantasy: "Trending · free in your league"** (2026-10-23, branch `feat/data-rollout`) — under your roster: Sleeper's most-added players of the last 24 hours that nobody in your league has, only positions your league can start, with the add count ("412K adds").

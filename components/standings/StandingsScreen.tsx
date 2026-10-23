@@ -139,6 +139,13 @@ export default function StandingsScreen({ conferences }: { conferences: Conferen
               </section>
             ))}
 
+          {view === 'splits' && (
+            <p className="mb-4" style={{ fontSize: '11px', fontWeight: 600, lineHeight: 1.45, color: 'var(--muted)' }}>
+              GB = games behind the division leader. LUCK = actual wins minus the wins a team&apos;s points for and against
+              usually produce (Pythagorean). Plus means it won more than its scoring says — often close games.
+            </p>
+          )}
+
           {view === 'conference' && (
             <section className="mb-4">
               <SectionLabel>By seed</SectionLabel>
