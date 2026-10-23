@@ -88,7 +88,7 @@
 
 | Provider | Endpoints that work | Pare uses | Fields listed | Fields used | Empty / wrong |
 |---|---|---|---|---|---|
-| ESPN | ~65 | 7 | 1294 | 116 (9%) | 83 |
+| ESPN | ~65 | 7 | 1294 | 127 (10%) | 83 |
 | Sleeper | ~29 | 8 | 493 | 58 (12%) | 3 |
 
 Counts are field slots in this catalog. A few names repeat across categories (e.g. `totalPoints` in several ESPN categories). Endpoint counts treat a card that groups several URLs (e.g. My Team's 5 Sleeper calls) as that many endpoints.
@@ -582,12 +582,12 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 | `gameInfo.officials.fullName` | ⬜ Not used |
 | `gameInfo.officials.position` | ⬜ Not used |
 | `gameInfo.officials.order` | ⬜ Not used |
-| `gameInfo.weather.temperature` | ⬜ Not used |
+| `gameInfo.weather.temperature` | ✅ Used |
 | `gameInfo.weather.highTemperature` | ⬜ Not used |
 | `gameInfo.weather.lowTemperature` | ⬜ Not used |
 | `gameInfo.weather.conditionId` | ⬜ Not used |
-| `gameInfo.weather.gust` | ⬜ Not used |
-| `gameInfo.weather.precipitation` | ⬜ Not used |
+| `gameInfo.weather.gust` | ✅ Used |
+| `gameInfo.weather.precipitation` | ✅ Used |
 | `header.week` | ✅ Used |
 | `header.season.year` | ✅ Used |
 | `header.competitions.competitors.score` | ✅ Used |
@@ -628,7 +628,7 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 | `gameInfo.venue` | ✅ Used |
 | `gameInfo.attendance` | ⬜ Not used |
 | `gameInfo.officials` | ⬜ Not used |
-| `gameInfo.weather` | ⬜ Not used |
+| `gameInfo.weather` | ✅ Used |
 | `predictor` | ⬜ Not used |
 | `lastFiveGames` | ⬜ Not used |
 | `injuries` | ⬜ Not used |
@@ -1452,7 +1452,7 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 
 | Field | Status |
 |---|---|
-| `provider` | ⬜ Not used |
+| `provider` | ✅ Used |
 | `details` | ✅ Used |
 | `overUnder` | ✅ Used |
 | `spread` | ⬜ Not used |
@@ -1468,20 +1468,20 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 
 | Field | Status |
 |---|---|
-| `open.total` | ⬜ Not used |
+| `open.total` | ✅ Used |
 | `close.total` | ⬜ Not used |
-| `current.total` | ⬜ Not used |
+| `current.total` | ✅ Used |
 | `open.over` | ⬜ Not used |
 | `open.under` | ⬜ Not used |
 | `close.over` | ⬜ Not used |
 | `close.under` | ⬜ Not used |
-| `homeTeamOdds.moneyLine` | ⬜ Not used |
-| `awayTeamOdds.moneyLine` | ⬜ Not used |
+| `homeTeamOdds.moneyLine` | ✅ Used |
+| `awayTeamOdds.moneyLine` | ✅ Used |
 | `homeTeamOdds.spreadOdds` | ⬜ Not used |
 | `awayTeamOdds.spreadOdds` | ⬜ Not used |
-| `homeTeamOdds.open.pointSpread` | ⬜ Not used |
+| `homeTeamOdds.open.pointSpread` | ✅ Used |
 | `homeTeamOdds.close.pointSpread` | ⬜ Not used |
-| `homeTeamOdds.current.pointSpread` | ⬜ Not used |
+| `homeTeamOdds.current.pointSpread` | ✅ Used |
 | `favorite` | ⬜ Not used |
 | `underdog` | ⬜ Not used |
 

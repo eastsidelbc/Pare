@@ -7,6 +7,8 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Added
+- **Leans: "Market" card on every game** (2026-10-23, branch `feat/data-rollout`) — under Game lines: how the spread and total moved since they opened ("Moved 0.5 toward PIT"), the win chance the moneyline implies with the book's cut removed, key numbers (3, 7 / 44 …), weather at kickoff, venue + surface. Market facts, labelled as not a Pare lean.
+  - See: `docs/devnotes/2026-10-23-leans-market.md`. New `GET /api/leans/market?event=ID` (`lib/leans/market.ts` + `marketServer.ts`, 5-min shared copy), `components/leans/MarketCard.tsx`, `useGameMarket` in `lib/leans/client.ts`.
 - **Fantasy: "Your season" line** (2026-10-23, branch `feat/data-rollout`) — under the week bar: your record, where you rank in points scored, **luck** (actual wins − what your weekly scores would win against every team, all-play) and points left on your bench. Screen readers get the full sentence incl. the all-play record.
   - See: `docs/devnotes/2026-10-23-fantasy-season-line.md`. Code: `lib/myteam/leagueSeason.ts`, `components/myteam/SeasonSummary.tsx`, provider `getLeagueSeason` (Sleeper matchups per completed week, 1h cache), `LeagueBundle.leagueSeason` (best-effort, null on failure).
 - **Fantasy: usage tiles on every player** (2026-10-23, branch `feat/data-rollout`) — open a player row (or a pinned card on iPad): pts/game in your league's scoring, floor–ceiling (10th–90th percentile week), top-12 weeks, snap share, and for receivers target share + WOPR. Follows the Season | Last 4 toggle. K / DEF show none.
@@ -40,6 +42,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - iOS: `SettingsView` restyled to S2 — same native grouped list, gold tint, BgDeep background, deep-navy rows, white titles with gold icons + chevrons, "Email support" row, Pare LLC footer, half-height sheet with grab handle (drag to full).
 
 ### Fixed
+- **Home: closing line missing (or wrong) on some finished games** (2026-10-23, branch `feat/data-rollout`) — the closing-odds fallback read ESPN's first book, which on older finals can carry only a total, or be an in-game "Live" book showing the end-of-game line. Now the first pregame book with a spread (`pregameBook`, `lib/espnCoreOdds.ts`). See: `docs/devnotes/2026-10-23-leans-market.md`.
 - **Fantasy: Start / Sit starts at this week; no sign-in flash when you open the tab** (2026-10-23, branch `feat/last4-compare`) — the Start / Sit grid now shows this week (gold label) + the next 4, and "good weeks" count those same 5 (line reads "W8–W12: …"); the expanded row's own next-5 strip is unchanged. Opening Fantasy with a saved username no longer shows the username form while Sleeper answers (it looked like being logged out): a cold start shows the loading skeleton, and coming back from another tab shows your roster at once (silent refresh after 10 min).
   - See: `docs/devnotes/2026-10-23-fantasy-startsit-cells-flash.md`, plan `docs/plans/start-sit-doesn-t-show-joyful-hartmanis.md`.
 - **tsconfig: removed deprecated `baseUrl`** (2026-10-12, `main`) — clears the "baseUrl is deprecated (TS 7.0)" editor error; `@/*` imports unchanged (`paths` resolves relative to tsconfig).

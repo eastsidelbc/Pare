@@ -1,5 +1,5 @@
 /**
- * Leans client data — fetch + hooks for /api/leans/data and /api/schedule.
+ * Leans client data — fetch + hooks for /api/leans/data, /api/leans/market and /api/schedule.
  *
  * One in-memory copy per request key for `data.cacheTtlMs` (10 min, the server's
  * window), shared by every Leans screen in the session: list → game → prop →
@@ -13,6 +13,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { reviveMatchups, type SerializedMatchup } from '@/lib/liveClient';
 import type { Matchup } from '@/lib/schedule';
 import { LEAN_CONFIG } from './config';
+import type { GameMarket } from './market';
 import type { LeansBundle } from './types';
 
 interface Entry<T> {
@@ -36,6 +37,7 @@ function memo<T>() {
 
 const bundles = memo<LeansBundle>();
 const weeks = memo<Matchup[]>();
+const markets = memo<GameMarket | null>();
 
 async function json<T>(url: string): Promise<T> {
   const res = await fetch(url, { cache: 'no-store' });
@@ -55,6 +57,26 @@ export function fetchLeansBundle(teams: readonly string[]): Promise<LeansBundle>
 
 export function fetchWeekMatchups(week: number): Promise<Matchup[]> {
   return weeks(String(week), async () => reviveMatchups((await json<{ matchups: SerializedMatchup[] }>(`/api/schedule?week=${week}`)).matchups));
+}
+
+export function fetchGameMarket(eventId: string): Promise<GameMarket | null> {
+  return markets(eventId, () => json<GameMarket | null>(`/api/leans/market?event=${encodeURIComponent(eventId)}`));
+}
+
+/** Market facts for one game (lib/leans/market.ts); null while loading, on failure, or with no ESPN event. */
+export function useGameMarket(eventId: string | null): GameMarket | null {
+  const [loaded, setLoaded] = useState<{ id: string; market: GameMarket | null } | null>(null);
+  useEffect(() => {
+    if (!eventId) return;
+    let alive = true;
+    fetchGameMarket(eventId)
+      .then((market) => alive && setLoaded({ id: eventId, market }))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [eventId]);
+  return loaded && loaded.id === eventId ? loaded.market : null;
 }
 
 export type LoadState = 'loading' | 'ready' | 'error';

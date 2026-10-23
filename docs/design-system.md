@@ -546,6 +546,8 @@ state root.
 
 ### 9.5 Leans — the Leans tab (Leans DECISIONS, built 2026-10-14)
 
+> **Market card (2026-10-23, Wave B1):** under Game lines on the game screen — `LeansLabel` "Market" + a `LIST_CARD` holding one `WHY_BOX` of ≥44px rows (label 12/600 subtext, nowrap · value 13/800 white, right-aligned, may stack · sub 10.5/600 muted): Spread (home) open → current + "Moved N toward X", Total + "Up/Down N", Win chance (no-vig), Key numbers, Weather, Venue. Footnote says these are market facts, not a Pare lean. `components/leans/MarketCard.tsx`.
+
 Picked on the "Matchups & Betting R1" boards: **A2** (own tab) + **G2** game screen + **B1** player vs defense
 + **B2** props. Spec: `docs/plans/2026-10-14-leans-tab/DECISIONS.md` + the boards in that folder; plan
 `docs/plans/2026-10-14-leans-tab.md` (incl. the "Mockup differences" table). Components `components/leans/*`,

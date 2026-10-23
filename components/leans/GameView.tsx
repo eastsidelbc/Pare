@@ -6,6 +6,7 @@
  *   Sun, Oct 25 · 3:05 PM · CBS
  *   ( ⇄ Compare these teams ▾ )      ← glass button; opens Offense + Defense in place
  *   [ Game lines ]                   ← Neon Frame card, rows open in place
+ *   MARKET ───────                   ← line movement, no-vig win chance, key numbers, weather (B1)
  *   PROPS ───────                    ← saved prop cards / empty state + add row
  *   footer
  */
@@ -16,10 +17,12 @@ import MatchupHero from '@/components/compare/MatchupHero';
 import { LIST_CARD } from '@/components/myteam/style';
 import type { EvaluatedProp, WhyRow } from '@/lib/leans/evaluate';
 import type { GameLeans, LeagueForm } from '@/lib/leans/gameLean';
+import type { GameMarket } from '@/lib/leans/market';
 import { formatKickoff, type Matchup } from '@/lib/schedule';
 import { getMatchupPalettes } from '@/lib/teamColors';
 import GameLinesCard, { type LineKind } from './GameLinesCard';
 import LeansFooter from './LeansFooter';
+import MarketCard from './MarketCard';
 import PropCard from './PropCard';
 import { AddCard, LeansLabel } from './ui';
 
@@ -47,9 +50,11 @@ export interface GameViewProps {
   compare: ReactNode;
   props: ReadonlyArray<{ e: EvaluatedProp; why: WhyRow[] }>;
   onAddProp: () => void;
+  /** Market facts (lib/leans/market.ts); the card hides while null. */
+  market?: GameMarket | null;
 }
 
-export default function GameView({ matchup, leans, league, openLine, onToggleLine, statsOpen, onToggleStats, compare, props, onAddProp }: GameViewProps) {
+export default function GameView({ matchup, leans, league, openLine, onToggleLine, statsOpen, onToggleStats, compare, props, onAddProp, market = null }: GameViewProps) {
   const { a, b } = getMatchupPalettes(matchup.away.name, matchup.home.name);
   return (
     <div className="flex flex-col" style={{ padding: '2px 12px 0', gap: 8 }}>
@@ -95,6 +100,7 @@ export default function GameView({ matchup, leans, league, openLine, onToggleLin
       {statsOpen && <div data-team-stats style={{ margin: '0 -12px' }}>{compare}</div>}
 
       <GameLinesCard matchup={matchup} leans={leans} league={league} open={openLine} onToggle={onToggleLine} />
+      <MarketCard market={market} matchup={matchup} />
 
       <LeansLabel style={{ margin: '8px 4px -2px' }}>Props</LeansLabel>
       <div className="flex flex-col" style={{ padding: '0 4px', gap: 8 }}>

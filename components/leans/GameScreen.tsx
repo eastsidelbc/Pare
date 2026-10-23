@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 import ComparePane from '@/components/compare/ComparePane';
 import { useSharedNflStats } from '@/components/NflStatsProvider';
 import { DEFAULT_DEFENSE_METRICS, DEFAULT_OFFENSE_METRICS } from '@/lib/metricsConfig';
-import { useLeansBundle, weekOfGameId } from '@/lib/leans/client';
+import { useGameMarket, useLeansBundle, weekOfGameId } from '@/lib/leans/client';
 import { evaluateProp, leagueFormFor, leansForGame, propWhy } from '@/lib/leans/evaluate';
 import { useSavedProps } from '@/lib/leans/propStore';
 import MatchupCardSkeleton from '@/components/schedule/MatchupCardSkeleton';
@@ -44,6 +44,7 @@ export default function GameScreen({
   const matchup = matchups.find((m) => m.id === gameId) ?? null;
   const teams = useMemo(() => (matchup ? [matchup.away.abbr, matchup.home.abbr] : []), [matchup]);
   const { bundle } = useLeansBundle(teams);
+  const market = useGameMarket(matchup?.espnEventId ?? null);
   const { props: saved } = useSavedProps();
   const stats = useSharedNflStats();
 
@@ -100,6 +101,7 @@ export default function GameScreen({
   return (
     <LeansShell header={header}>
       <GameView
+        market={market}
         matchup={matchup}
         leans={leans}
         league={league}
