@@ -228,3 +228,34 @@ every later step starts with its own plan file.
 - Backtest: deterministic run over 2025 finals; numbers recorded in the dev note.
 - `npm run check` + `npm run test:run`; Kobe checks UI on :4000.
 - CHANGELOG `[Unreleased]` bullet + `docs/devnotes/YYYY-MM-DD-<task>.md` per shipped item.
+
+---
+
+## Status — end of the 2026-10-23 run (branch `feat/data-rollout`, not merged)
+
+| Step | Status | Where |
+|---|---|---|
+| 0 Catalog update | ✅ | `docs/data-catalog.md` (+ counts kept current per phase) |
+| 0b Formula library | ✅ 39 tests | `lib/formulas/*`, devnote `2026-10-23-formula-library.md` |
+| 1 Backtest 2024 + 2025 | ✅ | `npm run backtest:leans`, devnote `2026-10-23-leans-backtest.md` — Pare projections don't beat closing lines; prop leans lost money both seasons |
+| A1 Home Game details | ✅ | devnote `2026-10-23-game-details.md` |
+| A2 Fantasy usage tiles | ✅ | devnote `2026-10-23-fantasy-usage.md` |
+| A3 Your season (luck, bench) | ✅ | devnote `2026-10-23-fantasy-season-line.md` |
+| B1 Leans Market card + Home closing-line fix | ✅ (+ ESPN model row) | devnote `2026-10-23-leans-market.md` |
+| B2 Prop lines auto-filled, typing retired | ✅ (+ measured record line) | devnote `2026-10-23-leans-auto-props.md` |
+| B3 Compare: 17 + 14 metrics, picker, L4 | ✅ | devnote `2026-10-23-compare-metrics.md` |
+| B4 Standings Splits (+ LUCK) | ✅ | devnote `2026-10-23-standings-splits.md` |
+| B5 Waiver watch, Leaders boards | ✅ | devnotes `…-fantasy-waiver-watch.md`, `…-leaders-boards.md` |
+| C1 Player game log | ✅ (slice) | devnote `2026-10-23-player-game-log.md` |
+| C2 Live down & distance | ✅ (unverified on a live game) | devnote `2026-10-23-live-situation.md` |
+| C3 League moves | ✅ (unverified on a real league) | devnote `2026-10-23-fantasy-league-moves.md` |
+
+**Deliberately not built (reasons):**
+
+- *Pare projections / prop P(over) as lean signals or "edge" chips* — failed the out-of-sample backtest.
+- *Passer-rating / yds-per-carry / QBR boards* — ESPN's list isn't attempts-qualified (48-attempt QB leads); QBR needs Core `/qbr`.
+- *RotoWire projections in Start / Sit* — conflicts with the signed-off "not a projection" Start / Sit design (e2e checks it).
+- *Standalone player page (career, splits, contracts, depth chart)* — new route + design pass; the Leans player screen got the game log.
+- *Pare Rating / matchup-edge z / trend arrows in Compare rows* — would change the signed-off row design; formulas exist in `lib/formulas/team.ts`.
+- *ESPN injuries / depth chart* — Sleeper injury tags already used (DATA_SOURCES §5); no screen asks for depth yet.
+- *Monetization* — blocked on a licensed data provider (flag 1).
