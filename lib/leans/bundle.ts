@@ -22,8 +22,13 @@ import { pickTeams, type TeamSchedule } from '@/lib/myteam/schedule';
 import { getSeasonSchedule } from '@/lib/myteam/seasonSchedule';
 import { getWeekLines } from '@/lib/myteam/sleeper/statLines';
 import { getCurrentWeekInfo } from '@/lib/schedule';
+import { toInjuryTag } from '@/lib/myteam/sleeper/roster';
+import type { InjuryTag } from '@/lib/myteam/types';
+import { normalizeTeamAbbr } from '@/lib/teams';
 import { LEAN_CONFIG } from './config';
 import { selectPlayers } from './players';
+import type { RoleCandidate } from './roles';
+import { buildPropTables } from './tables';
 import type { LeansBundle, LeansPlayer, TeamGame } from './types';
 
 /** Sleeper PPR as a scoring rule: every line already carries `pts_ppr`. */
@@ -33,6 +38,9 @@ type Shared = Omit<LeansBundle, 'players' | 'schedule' | 'generatedAt'> & {
   players: LeansPlayer[];
   schedule: TeamSchedule;
 };
+
+/** Injury tags that keep a player out of this week's roles (Questionable still counts). */
+const OUT_TAGS: ReadonlySet<InjuryTag> = new Set(['D', 'O', 'IR']);
 
 const shared = createKeyedCache<Shared>({ ttlMs: LEAN_CONFIG.data.cacheTtlMs, max: 2 });
 
@@ -61,6 +69,16 @@ async function buildShared(): Promise<Shared> {
   const done = gameLines.filter((l) => l.week <= completedWeeks.length);
   const teamLog: TeamGame[] = done.map((l) => ({ team: l.team, opp: l.opponent, week: l.week, points: l.points, pointsAllowed: l.pointsAllowed }));
   const lines = weekLines.flat();
+  // Roles going into this week: the healthy roster (Sleeper map team + injury tag).
+  const roster = new Map<string, RoleCandidate[]>();
+  for (const [id, p] of Object.entries(playerMap)) {
+    const team = normalizeTeamAbbr(p.team);
+    const tag = toInjuryTag(p.injury);
+    if (!team || (tag && OUT_TAGS.has(tag))) continue;
+    const list = roster.get(team) ?? [];
+    list.push({ id, position: p.position });
+    roster.set(team, list);
+  }
   return {
     season,
     week,
@@ -70,6 +88,7 @@ async function buildShared(): Promise<Shared> {
     fpa: skillOnly(buildFpaTable(lines, PPR_RULES)),
     players: selectPlayers(lines, playerMap),
     schedule,
+    tables: buildPropTables(lines, week, { candidates: (team) => roster.get(team) ?? [] }),
   };
 }
 
@@ -77,6 +96,15 @@ async function buildShared(): Promise<Shared> {
 export async function getLeansBundle(teams: readonly string[]): Promise<LeansBundle> {
   const data = await shared.get('shared', buildShared, 'leans:shared');
   const want = new Set(teams);
+  const players = data.players.filter((p) => want.has(p.team));
+  // Role logs only for the defenses the asked teams face this week; roles only for their players.
+  const opps = new Set([...want].map((t) => data.schedule[t]?.[data.week]).flatMap((e) => (e && e !== 'BYE' ? [e.opp] : [])));
+  const ids = new Set(players.map((p) => p.id));
+  const tables = data.tables && {
+    ...data.tables,
+    roleLog: Object.fromEntries(Object.entries(data.tables.roleLog).filter(([def]) => opps.has(def))),
+    roles: Object.fromEntries(Object.entries(data.tables.roles).filter(([id]) => ids.has(id))),
+  };
   return {
     season: data.season,
     week: data.week,
@@ -84,8 +112,9 @@ export async function getLeansBundle(teams: readonly string[]): Promise<LeansBun
     teamLog: data.teamLog,
     defenseLog: data.defenseLog,
     fpa: data.fpa,
-    players: data.players.filter((p) => want.has(p.team)),
+    players,
     schedule: pickTeams(data.schedule, want),
+    tables,
     generatedAt: new Date().toISOString(),
   };
 }

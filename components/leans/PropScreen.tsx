@@ -12,6 +12,7 @@ import { buildGameProps, evaluateAutoProp } from '@/lib/leans/autoProps';
 import { useLeansBundle, useWeekPropLines, weekOfGameId } from '@/lib/leans/client';
 import { propWhy } from '@/lib/leans/evaluate';
 import { PROP_STAT_LABEL } from '@/lib/leans/format';
+import { propMatchupData } from '@/lib/leans/matchupData';
 import { parsePropId } from '@/lib/leans/propLines';
 import LeansFooter from './LeansFooter';
 import { LeansShell, LeansTitleBar } from './LeansShell';
@@ -32,6 +33,7 @@ export default function PropScreen({ propId }: { propId: string }) {
   );
   const e = useMemo(() => (prop ? evaluateAutoProp(prop, bundle) : null), [prop, bundle]);
   const why = useMemo(() => (e ? propWhy(e, bundle) : []), [e, bundle]);
+  const data = useMemo(() => (e ? propMatchupData(e, bundle, matchup?.odds ?? null) : null), [e, bundle, matchup]);
 
   const first = prop?.playerName.split(/\s+/)[0] ?? 'Prop';
   const header = <LeansTitleBar title={prop ? `${first} · ${PROP_STAT_LABEL[prop.stat]}` : 'Prop'} sub={week != null ? `Week ${week}` : undefined} />;
@@ -61,7 +63,7 @@ export default function PropScreen({ propId }: { propId: string }) {
 
   return (
     <LeansShell header={header}>
-      <PropDetailView e={e} why={why} loading={state === 'loading'} />
+      <PropDetailView e={e} why={why} loading={state === 'loading'} data={data} />
     </LeansShell>
   );
 }

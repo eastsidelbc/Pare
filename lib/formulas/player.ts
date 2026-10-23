@@ -97,3 +97,10 @@ export function floorCeiling(weeklyPoints: readonly number[]): { floor: number; 
   const ceiling = percentile(weeklyPoints, FORMULA_CONFIG.ceilingPercentile);
   return floor === null || ceiling === null ? null : { floor, ceiling };
 }
+
+/** Chance a normal(μ, σ) value lands above the line: 1 − Φ((line − μ) / σ). */
+export function normalOverProb(line: number, mu: number, sd: number): number | null {
+  if (![line, mu, sd].every(Number.isFinite) || sd <= 0) return null;
+  const below = normCdf((line - mu) / sd);
+  return below === null ? null : 1 - below;
+}

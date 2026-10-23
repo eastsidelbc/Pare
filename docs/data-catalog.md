@@ -88,8 +88,8 @@
 
 | Provider | Endpoints that work | Pare uses | Fields listed | Fields used | Empty / wrong |
 |---|---|---|---|---|---|
-| ESPN | ~65 | 11 | 1294 | 180 (14%) | 83 |
-| Sleeper | ~29 | 11 | 493 | 70 (14%) | 3 |
+| ESPN | ~65 | 12 | 1294 | 183 (14%) | 83 |
+| Sleeper | ~29 | 11 | 493 | 72 (15%) | 3 |
 
 Counts are field slots in this catalog. A few names repeat across categories (e.g. `totalPoints` in several ESPN categories). Endpoint counts treat a card that groups several URLs (e.g. My Team's 5 Sleeper calls) as that many endpoints.
 
@@ -734,22 +734,22 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 
 ### Roster
 
-⬜ **Available, not used**
+✅ **Used by Pare** — Leans prop lines: ESPN athlete → Sleeper player by name + team when Sleeper has no ESPN id (`lib/leans/propLinesServer.ts`, 24h, since 2026-10-23)
 
 - **URL:** `https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/{id}/roster`
 
-#### athlete — 23 fields
+#### athlete — 23 fields, 3 used
 
 | Field | Status |
 |---|---|
-| `id` | ⬜ Not used |
-| `fullName` | ⬜ Not used |
+| `id` | ✅ Used |
+| `fullName` | ✅ Used |
 | `displayName` | ⬜ Not used |
 | `shortName` | ⬜ Not used |
 | `firstName` | ⬜ Not used |
 | `lastName` | ⬜ Not used |
 | `jersey` | ⬜ Not used |
-| `position` | ⬜ Not used |
+| `position` | ✅ Used |
 | `age` | ⬜ Not used |
 | `dateOfBirth` | ⬜ Not used |
 | `height` | ⬜ Not used |
@@ -2403,7 +2403,7 @@ Base: `https://api.sleeper.app/v1`
 | `rank_half_ppr` | ⬜ Not used |
 | `rank_std` | ⬜ Not used |
 
-#### snaps + games — 9 fields, 1 used
+#### snaps + games — 9 fields, 3 used
 
 | Field | Status |
 |---|---|
@@ -2417,11 +2417,11 @@ Base: `https://api.sleeper.app/v1`
 | `gs` | ⬜ Not used |
 | `gms_active` | ⬜ Not used |
 
-#### passing (27) — 27 fields, 2 used
+#### passing (27) — 27 fields, 3 used
 
 | Field | Status |
 |---|---|
-| `pass_att` | ⬜ Not used |
+| `pass_att` | ✅ Used |
 | `pass_cmp` | ⬜ Not used |
 | `pass_inc` | ⬜ Not used |
 | `cmp_pct` | ⬜ Not used |
@@ -2449,11 +2449,11 @@ Base: `https://api.sleeper.app/v1`
 | `bonus_pass_yd_400` | ✅ Used |
 | `bonus_fd_qb` | ⬜ Not used |
 
-#### rushing (23) — 23 fields, 3 used
+#### rushing (23) — 23 fields, 4 used
 
 | Field | Status |
 |---|---|
-| `rush_att` | ⬜ Not used |
+| `rush_att` | ✅ Used |
 | `rush_yd` | ✅ Used |
 | `rush_td` | ✅ Used |
 | `rush_2pt` | ⬜ Not used |

@@ -7,6 +7,7 @@ import type { DefenseGame } from '@/lib/myteam/defenseProfile';
 import type { FpaTable } from '@/lib/myteam/fpa';
 import type { TeamSchedule } from '@/lib/myteam/schedule';
 import type { InjuryTag } from '@/lib/myteam/types';
+import type { PropTables } from './tables';
 
 /** What the data says about one line. `side` = spread / moneyline lean (with `side` set). */
 export type LeanVerdict = 'over' | 'under' | 'side' | 'none' | 'not-enough';
@@ -45,7 +46,17 @@ export interface PlayerGame {
   rec_yd: number;
   rush_td: number;
   rec_td: number;
+  /** Usage (prop engine v2, optional so older fixtures stay valid): his team that week, targets, carries. */
+  team?: string;
+  tgt?: number;
+  att?: number;
+  /** Offensive snaps and his team's; null = Sleeper sent none. */
+  snp?: number | null;
+  tmSnp?: number | null;
 }
+
+/** A player's role on his team going into a week (target share; RBs by touches). */
+export type Role = 'WR1' | 'WR2' | 'WR3' | 'TE1' | 'RB1' | 'RB2';
 
 /** One team's score line in one game (ESPN box score). */
 export interface TeamGame {
@@ -83,6 +94,12 @@ export interface LeansBundle {
   players: LeansPlayer[];
   /** Only the requested teams (next-5 week cells). */
   schedule: TeamSchedule;
+  /**
+   * Prop engine v2 tables as of this week (lib/leans/tables.ts): league-wide allowance + team
+   * volume, roles for the requested teams' players, role logs only for their opponents.
+   * Optional so older fixtures / cached copies still parse.
+   */
+  tables?: PropTables;
   generatedAt: string;
 }
 
