@@ -88,8 +88,8 @@
 
 | Provider | Endpoints that work | Pare uses | Fields listed | Fields used | Empty / wrong |
 |---|---|---|---|---|---|
-| ESPN | ~65 | 10 | 1294 | 170 (13%) | 83 |
-| Sleeper | ~29 | 8 | 493 | 58 (12%) | 3 |
+| ESPN | ~65 | 11 | 1294 | 180 (14%) | 83 |
+| Sleeper | ~29 | 11 | 493 | 70 (14%) | 3 |
 
 Counts are field slots in this catalog. A few names repeat across categories (e.g. `totalPoints` in several ESPN categories). Endpoint counts treat a card that groups several URLs (e.g. My Team's 5 Sleeper calls) as that many endpoints.
 
@@ -2910,8 +2910,8 @@ Base: `https://api.sleeper.app/v1`
 |---|---|
 | `draft_id` | ⬜ Not used |
 | `league_id` | ⬜ Not used |
-| `type` | ✅ Used |
-| `status` | ✅ Used |
+| `type` | ⬜ Not used |
+| `status` | ⬜ Not used |
 | `season` | ⬜ Not used |
 | `start_time` | ⬜ Not used |
 | `draft_order` | ⬜ Not used |
