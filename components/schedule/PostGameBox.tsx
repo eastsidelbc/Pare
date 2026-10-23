@@ -17,6 +17,7 @@
 import { Fragment } from 'react';
 import { useGameSummary, type PlayerLine, type TeamBox } from '@/lib/hooks/useGameSummary';
 import type { Matchup } from '@/lib/schedule';
+import GameDetails from './GameDetails';
 
 function PlayerCell({ line, align }: { line: PlayerLine | undefined; align: 'left' | 'right' }) {
   if (!line) return <div />;
@@ -103,6 +104,13 @@ export default function PostGameBox({ matchup }: { matchup: Matchup }) {
           <p className="text-center italic" style={{ fontSize: '11px', lineHeight: 1.4, color: 'var(--subtext)' }}>
             {data.headline}
           </p>
+        </>
+      )}
+
+      {data.extras && (
+        <>
+          <div className="mt-2 h-px" style={{ background: 'var(--hairline)' }} />
+          <GameDetails extras={data.extras} />
         </>
       )}
     </div>

@@ -1,0 +1,2508 @@
+{
+ "header": {
+  "week": 13,
+  "season": {
+   "year": 2025
+  },
+  "competitions": [
+   {
+    "status": {
+     "type": {
+      "completed": true,
+      "state": "post"
+     }
+    },
+    "competitors": [
+     {
+      "homeAway": "home",
+      "score": "31",
+      "team": {
+       "abbreviation": "DAL"
+      },
+      "linescores": [
+       {
+        "displayValue": "7"
+       },
+       {
+        "displayValue": "10"
+       },
+       {
+        "displayValue": "3"
+       },
+       {
+        "displayValue": "11"
+       }
+      ]
+     },
+     {
+      "homeAway": "away",
+      "score": "28",
+      "team": {
+       "abbreviation": "KC"
+      },
+      "linescores": [
+       {
+        "displayValue": "14"
+       },
+       {
+        "displayValue": "0"
+       },
+       {
+        "displayValue": "0"
+       },
+       {
+        "displayValue": "14"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "boxscore": {
+  "teams": [
+   {
+    "team": {
+     "abbreviation": "KC"
+    },
+    "statistics": [
+     {
+      "name": "firstDowns",
+      "displayValue": "19",
+      "label": "1st Downs"
+     },
+     {
+      "name": "firstDownsPassing",
+      "displayValue": "12",
+      "label": "Passing 1st downs"
+     },
+     {
+      "name": "firstDownsRushing",
+      "displayValue": "7",
+      "label": "Rushing 1st downs"
+     },
+     {
+      "name": "firstDownsPenalty",
+      "displayValue": "0",
+      "label": "1st downs from penalties"
+     },
+     {
+      "name": "thirdDownEff",
+      "displayValue": "5-13",
+      "label": "3rd down efficiency"
+     },
+     {
+      "name": "fourthDownEff",
+      "displayValue": "3-3",
+      "label": "4th down efficiency"
+     },
+     {
+      "name": "totalOffensivePlays",
+      "displayValue": "60",
+      "label": "Total Plays"
+     },
+     {
+      "name": "totalYards",
+      "displayValue": "362",
+      "label": "Total Yards"
+     },
+     {
+      "name": "yardsPerPlay",
+      "displayValue": "6.0",
+      "label": "Yards per Play"
+     },
+     {
+      "name": "totalDrives",
+      "displayValue": "9",
+      "label": "Total Drives"
+     },
+     {
+      "name": "netPassingYards",
+      "displayValue": "243",
+      "label": "Passing"
+     },
+     {
+      "name": "completionAttempts",
+      "displayValue": "23/34",
+      "label": "Comp/Att"
+     },
+     {
+      "name": "yardsPerPass",
+      "displayValue": "6.6",
+      "label": "Yards per pass"
+     },
+     {
+      "name": "interceptions",
+      "displayValue": "0",
+      "label": "Interceptions thrown"
+     },
+     {
+      "name": "sacksYardsLost",
+      "displayValue": "3-18",
+      "label": "Sacks-Yards Lost"
+     },
+     {
+      "name": "rushingYards",
+      "displayValue": "119",
+      "label": "Rushing"
+     },
+     {
+      "name": "rushingAttempts",
+      "displayValue": "23",
+      "label": "Rushing Attempts"
+     },
+     {
+      "name": "yardsPerRushAttempt",
+      "displayValue": "5.2",
+      "label": "Yards per rush"
+     },
+     {
+      "name": "redZoneAttempts",
+      "displayValue": "3-3",
+      "label": "Red Zone (Made-Att)"
+     },
+     {
+      "name": "totalPenaltiesYards",
+      "displayValue": "10-119",
+      "label": "Penalties"
+     },
+     {
+      "name": "turnovers",
+      "displayValue": "0",
+      "label": "Turnovers"
+     },
+     {
+      "name": "fumblesLost",
+      "displayValue": "0",
+      "label": "Fumbles lost"
+     },
+     {
+      "name": "interceptions",
+      "displayValue": "0",
+      "label": "Interceptions thrown"
+     },
+     {
+      "name": "defensiveTouchdowns",
+      "displayValue": "0",
+      "label": "Defensive / Special Teams TDs"
+     },
+     {
+      "name": "possessionTime",
+      "displayValue": "29:06",
+      "label": "Possession"
+     }
+    ]
+   },
+   {
+    "team": {
+     "abbreviation": "DAL"
+    },
+    "statistics": [
+     {
+      "name": "firstDowns",
+      "displayValue": "23",
+      "label": "1st Downs"
+     },
+     {
+      "name": "firstDownsPassing",
+      "displayValue": "15",
+      "label": "Passing 1st downs"
+     },
+     {
+      "name": "firstDownsRushing",
+      "displayValue": "3",
+      "label": "Rushing 1st downs"
+     },
+     {
+      "name": "firstDownsPenalty",
+      "displayValue": "5",
+      "label": "1st downs from penalties"
+     },
+     {
+      "name": "thirdDownEff",
+      "displayValue": "9-16",
+      "label": "3rd down efficiency"
+     },
+     {
+      "name": "fourthDownEff",
+      "displayValue": "1-1",
+      "label": "4th down efficiency"
+     },
+     {
+      "name": "totalOffensivePlays",
+      "displayValue": "65",
+      "label": "Total Plays"
+     },
+     {
+      "name": "totalYards",
+      "displayValue": "457",
+      "label": "Total Yards"
+     },
+     {
+      "name": "yardsPerPlay",
+      "displayValue": "7.0",
+      "label": "Yards per Play"
+     },
+     {
+      "name": "totalDrives",
+      "displayValue": "10",
+      "label": "Total Drives"
+     },
+     {
+      "name": "netPassingYards",
+      "displayValue": "320",
+      "label": "Passing"
+     },
+     {
+      "name": "completionAttempts",
+      "displayValue": "27/39",
+      "label": "Comp/Att"
+     },
+     {
+      "name": "yardsPerPass",
+      "displayValue": "8.2",
+      "label": "Yards per pass"
+     },
+     {
+      "name": "interceptions",
+      "displayValue": "1",
+      "label": "Interceptions thrown"
+     },
+     {
+      "name": "sacksYardsLost",
+      "displayValue": "0-0",
+      "label": "Sacks-Yards Lost"
+     },
+     {
+      "name": "rushingYards",
+      "displayValue": "137",
+      "label": "Rushing"
+     },
+     {
+      "name": "rushingAttempts",
+      "displayValue": "26",
+      "label": "Rushing Attempts"
+     },
+     {
+      "name": "yardsPerRushAttempt",
+      "displayValue": "5.3",
+      "label": "Yards per rush"
+     },
+     {
+      "name": "redZoneAttempts",
+      "displayValue": "2-4",
+      "label": "Red Zone (Made-Att)"
+     },
+     {
+      "name": "totalPenaltiesYards",
+      "displayValue": "7-50",
+      "label": "Penalties"
+     },
+     {
+      "name": "turnovers",
+      "displayValue": "1",
+      "label": "Turnovers"
+     },
+     {
+      "name": "fumblesLost",
+      "displayValue": "0",
+      "label": "Fumbles lost"
+     },
+     {
+      "name": "interceptions",
+      "displayValue": "1",
+      "label": "Interceptions thrown"
+     },
+     {
+      "name": "defensiveTouchdowns",
+      "displayValue": "0",
+      "label": "Defensive / Special Teams TDs"
+     },
+     {
+      "name": "possessionTime",
+      "displayValue": "30:54",
+      "label": "Possession"
+     }
+    ]
+   }
+  ],
+  "players": [
+   {
+    "team": {
+     "abbreviation": "KC"
+    },
+    "statistics": [
+     {
+      "name": "passing",
+      "labels": [
+       "C/ATT",
+       "YDS",
+       "AVG",
+       "TD",
+       "INT",
+       "SACKS",
+       "QBR",
+       "RTG"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "id": "3139477",
+         "displayName": "Patrick Mahomes"
+        },
+        "stats": [
+         "23/34",
+         "261",
+         "7.7",
+         "4",
+         "0",
+         "3-18",
+         "83.7",
+         "129.7"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "rushing",
+      "labels": [
+       "CAR",
+       "YDS",
+       "AVG",
+       "TD",
+       "LONG"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "id": "3059915",
+         "displayName": "Kareem Hunt"
+        },
+        "stats": [
+         "14",
+         "58",
+         "4.1",
+         "0",
+         "14"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "3139477",
+         "displayName": "Patrick Mahomes"
+        },
+        "stats": [
+         "3",
+         "30",
+         "10.0",
+         "0",
+         "16"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4361529",
+         "displayName": "Isiah Pacheco"
+        },
+        "stats": [
+         "3",
+         "16",
+         "5.3",
+         "0",
+         "9"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4683062",
+         "displayName": "Xavier Worthy"
+        },
+        "stats": [
+         "2",
+         "13",
+         "6.5",
+         "0",
+         "17"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4428331",
+         "displayName": "Rashee Rice"
+        },
+        "stats": [
+         "1",
+         "2",
+         "2.0",
+         "0",
+         "2"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "receiving",
+      "labels": [
+       "REC",
+       "YDS",
+       "AVG",
+       "TD",
+       "LONG",
+       "TGTS"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "id": "4428331",
+         "displayName": "Rashee Rice"
+        },
+        "stats": [
+         "8",
+         "92",
+         "11.5",
+         "2",
+         "28",
+         "12"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4683062",
+         "displayName": "Xavier Worthy"
+        },
+        "stats": [
+         "4",
+         "61",
+         "15.3",
+         "0",
+         "42",
+         "6"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "15847",
+         "displayName": "Travis Kelce"
+        },
+        "stats": [
+         "5",
+         "45",
+         "9.0",
+         "1",
+         "22",
+         "6"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "3059915",
+         "displayName": "Kareem Hunt"
+        },
+        "stats": [
+         "1",
+         "22",
+         "22.0",
+         "0",
+         "22",
+         "2"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4241372",
+         "displayName": "Hollywood Brown"
+        },
+        "stats": [
+         "2",
+         "20",
+         "10.0",
+         "1",
+         "10",
+         "2"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4361529",
+         "displayName": "Isiah Pacheco"
+        },
+        "stats": [
+         "2",
+         "17",
+         "8.5",
+         "0",
+         "11",
+         "2"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4430723",
+         "displayName": "Jared Wiley"
+        },
+        "stats": [
+         "1",
+         "4",
+         "4.0",
+         "0",
+         "4",
+         "1"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "3120348",
+         "displayName": "JuJu Smith-Schuster"
+        },
+        "stats": [
+         "0",
+         "0",
+         "0.0",
+         "0",
+         "0",
+         "1"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "fumbles",
+      "labels": [
+       "FUM",
+       "LOST",
+       "REC"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "id": "4428331",
+         "displayName": "Rashee Rice"
+        },
+        "stats": [
+         "1",
+         "0",
+         "0"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "defensive",
+      "labels": [
+       "TOT",
+       "SOLO",
+       "SACKS",
+       "TFL",
+       "PD",
+       "QB HTS",
+       "TD"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "id": "4362759",
+         "displayName": "Nick Bolton"
+        },
+        "stats": [
+         "11",
+         "6",
+         "0",
+         "0",
+         "2",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4361964",
+         "displayName": "Chamarri Conner"
+        },
+        "stats": [
+         "9",
+         "7",
+         "0",
+         "0",
+         "0",
+         "1",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4426405",
+         "displayName": "Trent McDuffie"
+        },
+        "stats": [
+         "7",
+         "4",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4697639",
+         "displayName": "Jaylen Watson"
+        },
+        "stats": [
+         "6",
+         "6",
+         "0",
+         "0",
+         "1",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4685232",
+         "displayName": "Jaden Hicks"
+        },
+        "stats": [
+         "5",
+         "4",
+         "0",
+         "0",
+         "2",
+         "1",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "3129310",
+         "displayName": "Drue Tranquill"
+        },
+        "stats": [
+         "5",
+         "2",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "3044859",
+         "displayName": "Chris Jones"
+        },
+        "stats": [
+         "4",
+         "2",
+         "0",
+         "1",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "3155647",
+         "displayName": "Mike Edwards"
+        },
+        "stats": [
+         "4",
+         "2",
+         "0",
+         "0",
+         "1",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4684432",
+         "displayName": "Ashton Gillotte"
+        },
+        "stats": [
+         "4",
+         "1",
+         "0",
+         "1",
+         "0",
+         "1",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4426901",
+         "displayName": "Leo Chenal"
+        },
+        "stats": [
+         "3",
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4567826",
+         "displayName": "Cooper McDonald"
+        },
+        "stats": [
+         "2",
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4426659",
+         "displayName": "George Karlaftis"
+        },
+        "stats": [
+         "2",
+         "0",
+         "0",
+         "0",
+         "0",
+         "1",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "3122930",
+         "displayName": "Derrick Nnadi"
+        },
+        "stats": [
+         "1",
+         "1",
+         "0",
+         "0",
+         "0",
+         "1",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4610705",
+         "displayName": "Nohl Williams"
+        },
+        "stats": [
+         "1",
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "3863182",
+         "displayName": "Jerry Tillery"
+        },
+        "stats": [
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "3915487",
+         "displayName": "Mike Danna"
+        },
+        "stats": [
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4247726",
+         "displayName": "Bryan Cook"
+        },
+        "stats": [
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "3929865",
+         "displayName": "Charles Omenihu"
+        },
+        "stats": [
+         "0",
+         "0",
+         "0",
+         "0",
+         "0",
+         "1",
+         "0"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "interceptions",
+      "labels": [
+       "INT",
+       "YDS",
+       "TD"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "id": "4697639",
+         "displayName": "Jaylen Watson"
+        },
+        "stats": [
+         "1",
+         "14",
+         "0"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "kickReturns",
+      "labels": [
+       "NO",
+       "YDS",
+       "AVG",
+       "LONG",
+       "TD"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "id": "4362921",
+         "displayName": "Tyquan Thornton"
+        },
+        "stats": [
+         "5",
+         "107",
+         "21.4",
+         "29",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4372716",
+         "displayName": "Nikko Remigio"
+        },
+        "stats": [
+         "1",
+         "34",
+         "34.0",
+         "34",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4596602",
+         "displayName": "Brashard Smith"
+        },
+        "stats": [
+         "1",
+         "33",
+         "33.0",
+         "33",
+         "0"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "puntReturns",
+      "labels": [
+       "NO",
+       "YDS",
+       "AVG",
+       "LONG",
+       "TD"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "id": "4372716",
+         "displayName": "Nikko Remigio"
+        },
+        "stats": [
+         "1",
+         "10",
+         "10.0",
+         "10",
+         "0"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "kicking",
+      "labels": [
+       "FG",
+       "PCT",
+       "LONG",
+       "XP",
+       "PTS"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "id": "3055899",
+         "displayName": "Harrison Butker"
+        },
+        "stats": [
+         "0/0",
+         "0.0",
+         "0",
+         "4/4",
+         "4"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "punting",
+      "labels": [
+       "NO",
+       "YDS",
+       "AVG",
+       "TB",
+       "In 20",
+       "LONG"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "id": "4361496",
+         "displayName": "Matt Araiza"
+        },
+        "stats": [
+         "5",
+         "215",
+         "43.0",
+         "1",
+         "4",
+         "59"
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "team": {
+     "abbreviation": "DAL"
+    },
+    "statistics": [
+     {
+      "name": "passing",
+      "labels": [
+       "C/ATT",
+       "YDS",
+       "AVG",
+       "TD",
+       "INT",
+       "SACKS",
+       "QBR",
+       "RTG"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "id": "2577417",
+         "displayName": "Dak Prescott"
+        },
+        "stats": [
+         "27/39",
+         "320",
+         "8.2",
+         "2",
+         "1",
+         "0-0",
+         "87.0",
+         "100.4"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "rushing",
+      "labels": [
+       "CAR",
+       "YDS",
+       "AVG",
+       "TD",
+       "LONG"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "id": "4361579",
+         "displayName": "Javonte Williams"
+        },
+        "stats": [
+         "17",
+         "59",
+         "3.5",
+         "0",
+         "11"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4240603",
+         "displayName": "Malik Davis"
+        },
+        "stats": [
+         "3",
+         "47",
+         "15.7",
+         "1",
+         "43"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "3676833",
+         "displayName": "KaVontae Turpin"
+        },
+        "stats": [
+         "3",
+         "33",
+         "11.0",
+         "0",
+         "25"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "2577417",
+         "displayName": "Dak Prescott"
+        },
+        "stats": [
+         "3",
+         "-2",
+         "-0.7",
+         "0",
+         "0"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "receiving",
+      "labels": [
+       "REC",
+       "YDS",
+       "AVG",
+       "TD",
+       "LONG",
+       "TGTS"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "id": "4241389",
+         "displayName": "CeeDee Lamb"
+        },
+        "stats": [
+         "7",
+         "112",
+         "16.0",
+         "1",
+         "51",
+         "9"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4426354",
+         "displayName": "George Pickens"
+        },
+        "stats": [
+         "6",
+         "88",
+         "14.7",
+         "0",
+         "39",
+         "13"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4242355",
+         "displayName": "Jake Ferguson"
+        },
+        "stats": [
+         "5",
+         "36",
+         "7.2",
+         "0",
+         "11",
+         "6"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "5083754",
+         "displayName": "Ryan Flournoy"
+        },
+        "stats": [
+         "3",
+         "34",
+         "11.3",
+         "0",
+         "17",
+         "3"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "3676833",
+         "displayName": "KaVontae Turpin"
+        },
+        "stats": [
+         "2",
+         "28",
+         "14.0",
+         "0",
+         "19",
+         "2"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4361579",
+         "displayName": "Javonte Williams"
+        },
+        "stats": [
+         "3",
+         "21",
+         "7.0",
+         "1",
+         "14",
+         "3"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4372096",
+         "displayName": "Luke Schoonmaker"
+        },
+        "stats": [
+         "1",
+         "1",
+         "1.0",
+         "0",
+         "1",
+         "1"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "fumbles",
+      "labels": [
+       "FUM",
+       "LOST",
+       "REC"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "id": "4426354",
+         "displayName": "George Pickens"
+        },
+        "stats": [
+         "1",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "3676833",
+         "displayName": "KaVontae Turpin"
+        },
+        "stats": [
+         "0",
+         "0",
+         "1"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "defensive",
+      "labels": [
+       "TOT",
+       "SOLO",
+       "SACKS",
+       "TFL",
+       "PD",
+       "QB HTS",
+       "TD"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "id": "16734",
+         "displayName": "Jadeveon Clowney"
+        },
+        "stats": [
+         "6",
+         "5",
+         "2",
+         "2",
+         "0",
+         "2",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4362088",
+         "displayName": "DeMarvion Overshown"
+        },
+        "stats": [
+         "6",
+         "2",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "5095865",
+         "displayName": "Shavon Revel Jr."
+        },
+        "stats": [
+         "6",
+         "2",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "3918330",
+         "displayName": "Logan Wilson"
+        },
+        "stats": [
+         "5",
+         "3",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "3122135",
+         "displayName": "Donovan Wilson"
+        },
+        "stats": [
+         "5",
+         "2",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4428584",
+         "displayName": "Reddy Steward"
+        },
+        "stats": [
+         "4",
+         "2",
+         "0",
+         "0",
+         "1",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4567242",
+         "displayName": "Sam Williams"
+        },
+        "stats": [
+         "4",
+         "2",
+         "0",
+         "1",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4040982",
+         "displayName": "Quinnen Williams"
+        },
+        "stats": [
+         "4",
+         "1",
+         "0",
+         "0",
+         "0",
+         "1",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4035840",
+         "displayName": "Osa Odighizuwa"
+        },
+        "stats": [
+         "4",
+         "0",
+         "0",
+         "0",
+         "0",
+         "1",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4248911",
+         "displayName": "DaRon Bland"
+        },
+        "stats": [
+         "3",
+         "3",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4360967",
+         "displayName": "Brevyn Spann-Ford"
+        },
+        "stats": [
+         "3",
+         "2",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4426513",
+         "displayName": "Trikweze Bridges"
+        },
+        "stats": [
+         "3",
+         "2",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4685400",
+         "displayName": "Shemar James"
+        },
+        "stats": [
+         "3",
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4241394",
+         "displayName": "Kenneth Murray Jr."
+        },
+        "stats": [
+         "2",
+         "2",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4241921",
+         "displayName": "Markquese Bell"
+        },
+        "stats": [
+         "2",
+         "2",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "2980100",
+         "displayName": "Dante Fowler Jr."
+        },
+        "stats": [
+         "2",
+         "1",
+         "1",
+         "1",
+         "0",
+         "1",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4683848",
+         "displayName": "Donovan Ezeiruaku"
+        },
+        "stats": [
+         "2",
+         "1",
+         "0",
+         "0",
+         "0",
+         "1",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "3117258",
+         "displayName": "Solomon Thomas"
+        },
+        "stats": [
+         "2",
+         "0",
+         "0",
+         "0",
+         "0",
+         "1",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4240608",
+         "displayName": "James Houston"
+        },
+        "stats": [
+         "2",
+         "0",
+         "0",
+         "0",
+         "0",
+         "1",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "17474",
+         "displayName": "C.J. Goodwin"
+        },
+        "stats": [
+         "1",
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4242355",
+         "displayName": "Jake Ferguson"
+        },
+        "stats": [
+         "1",
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "3121415",
+         "displayName": "Malik Hooker"
+        },
+        "stats": [
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4240603",
+         "displayName": "Malik Davis"
+        },
+        "stats": [
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "4595352",
+         "displayName": "Alijah Clark"
+        },
+        "stats": [
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "id": "3122752",
+         "displayName": "Kenny Clark"
+        },
+        "stats": [
+         "0",
+         "0",
+         "0",
+         "0",
+         "0",
+         "1",
+         "0"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "interceptions",
+      "labels": [
+       "INT",
+       "YDS",
+       "TD"
+      ],
+      "athletes": []
+     },
+     {
+      "name": "kickReturns",
+      "labels": [
+       "NO",
+       "YDS",
+       "AVG",
+       "LONG",
+       "TD"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "id": "3676833",
+         "displayName": "KaVontae Turpin"
+        },
+        "stats": [
+         "5",
+         "118",
+         "23.6",
+         "26",
+         "0"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "puntReturns",
+      "labels": [
+       "NO",
+       "YDS",
+       "AVG",
+       "LONG",
+       "TD"
+      ],
+      "athletes": []
+     },
+     {
+      "name": "kicking",
+      "labels": [
+       "FG",
+       "PCT",
+       "LONG",
+       "XP",
+       "PTS"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "id": "3953687",
+         "displayName": "Brandon Aubrey"
+        },
+        "stats": [
+         "3/3",
+         "100.0",
+         "49",
+         "2/2",
+         "11"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "punting",
+      "labels": [
+       "NO",
+       "YDS",
+       "AVG",
+       "TB",
+       "In 20",
+       "LONG"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "id": "14950",
+         "displayName": "Bryan Anger"
+        },
+        "stats": [
+         "1",
+         "62",
+         "62.0",
+         "0",
+         "0",
+         "62"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "scoringPlays": [
+  {
+   "type": {
+    "abbreviation": "TD"
+   },
+   "text": "Rashee Rice 27 Yd pass from Patrick Mahomes (Harrison Butker Kick)",
+   "awayScore": 7,
+   "homeScore": 0,
+   "period": {
+    "number": 1
+   },
+   "clock": {
+    "displayValue": "13:04"
+   },
+   "team": {
+    "abbreviation": "KC"
+   }
+  },
+  {
+   "type": {
+    "abbreviation": "TD"
+   },
+   "text": "CeeDee Lamb 15 Yd pass from Dak Prescott (Brandon Aubrey Kick)",
+   "awayScore": 7,
+   "homeScore": 7,
+   "period": {
+    "number": 1
+   },
+   "clock": {
+    "displayValue": "6:50"
+   },
+   "team": {
+    "abbreviation": "DAL"
+   }
+  },
+  {
+   "type": {
+    "abbreviation": "TD"
+   },
+   "text": "Travis Kelce 2 Yd pass from Patrick Mahomes (Harrison Butker Kick)",
+   "awayScore": 14,
+   "homeScore": 7,
+   "period": {
+    "number": 1
+   },
+   "clock": {
+    "displayValue": "0:01"
+   },
+   "team": {
+    "abbreviation": "KC"
+   }
+  },
+  {
+   "type": {
+    "abbreviation": "FG"
+   },
+   "text": "Brandon Aubrey 49 Yd Field Goal",
+   "awayScore": 14,
+   "homeScore": 10,
+   "period": {
+    "number": 2
+   },
+   "clock": {
+    "displayValue": "10:22"
+   },
+   "team": {
+    "abbreviation": "DAL"
+   }
+  },
+  {
+   "type": {
+    "abbreviation": "TD"
+   },
+   "text": "Malik Davis 43 Yd Rush (Brandon Aubrey Kick)",
+   "awayScore": 14,
+   "homeScore": 17,
+   "period": {
+    "number": 2
+   },
+   "clock": {
+    "displayValue": "3:10"
+   },
+   "team": {
+    "abbreviation": "DAL"
+   }
+  },
+  {
+   "type": {
+    "abbreviation": "FG"
+   },
+   "text": "Brandon Aubrey 36 Yd Field Goal ",
+   "awayScore": 14,
+   "homeScore": 20,
+   "period": {
+    "number": 3
+   },
+   "clock": {
+    "displayValue": "4:09"
+   },
+   "team": {
+    "abbreviation": "DAL"
+   }
+  },
+  {
+   "type": {
+    "abbreviation": "TD"
+   },
+   "text": "Rashee Rice 3 Yd pass from Patrick Mahomes (Harrison Butker Kick)",
+   "awayScore": 21,
+   "homeScore": 20,
+   "period": {
+    "number": 4
+   },
+   "clock": {
+    "displayValue": "14:51"
+   },
+   "team": {
+    "abbreviation": "KC"
+   }
+  },
+  {
+   "type": {
+    "abbreviation": "TD"
+   },
+   "text": "Javonte Williams 3 Yd pass from Dak Prescott (Dak Prescott Pass to George Pickens for Two-Point Conversion)",
+   "awayScore": 21,
+   "homeScore": 28,
+   "period": {
+    "number": 4
+   },
+   "clock": {
+    "displayValue": "11:15"
+   },
+   "team": {
+    "abbreviation": "DAL"
+   }
+  },
+  {
+   "type": {
+    "abbreviation": "FG"
+   },
+   "text": "Brandon Aubrey 26 Yd Field Goal",
+   "awayScore": 21,
+   "homeScore": 31,
+   "period": {
+    "number": 4
+   },
+   "clock": {
+    "displayValue": "5:16"
+   },
+   "team": {
+    "abbreviation": "DAL"
+   }
+  },
+  {
+   "type": {
+    "abbreviation": "TD"
+   },
+   "text": "Hollywood Brown 10 Yd pass from Patrick Mahomes (Harrison Butker Kick)",
+   "awayScore": 28,
+   "homeScore": 31,
+   "period": {
+    "number": 4
+   },
+   "clock": {
+    "displayValue": "3:27"
+   },
+   "team": {
+    "abbreviation": "KC"
+   }
+  }
+ ],
+ "winprobability": [
+  {
+   "homeWinPercentage": 0.372
+  },
+  {
+   "homeWinPercentage": 0.3916
+  },
+  {
+   "homeWinPercentage": 0.388
+  },
+  {
+   "homeWinPercentage": 0.3836
+  },
+  {
+   "homeWinPercentage": 0.3074
+  },
+  {
+   "homeWinPercentage": 0.2916
+  },
+  {
+   "homeWinPercentage": 0.2362
+  },
+  {
+   "homeWinPercentage": 0.2347
+  },
+  {
+   "homeWinPercentage": 0.2377
+  },
+  {
+   "homeWinPercentage": 0.2429
+  },
+  {
+   "homeWinPercentage": 0.2532
+  },
+  {
+   "homeWinPercentage": 0.2303
+  },
+  {
+   "homeWinPercentage": 0.255
+  },
+  {
+   "homeWinPercentage": 0.2367
+  },
+  {
+   "homeWinPercentage": 0.2683
+  },
+  {
+   "homeWinPercentage": 0.2531
+  },
+  {
+   "homeWinPercentage": 0.242
+  },
+  {
+   "homeWinPercentage": 0.2934
+  },
+  {
+   "homeWinPercentage": 0.2934
+  },
+  {
+   "homeWinPercentage": 0.3187
+  },
+  {
+   "homeWinPercentage": 0.2821
+  },
+  {
+   "homeWinPercentage": 0.2811
+  },
+  {
+   "homeWinPercentage": 0.3637
+  },
+  {
+   "homeWinPercentage": 0.3658
+  },
+  {
+   "homeWinPercentage": 0.3584
+  },
+  {
+   "homeWinPercentage": 0.3413
+  },
+  {
+   "homeWinPercentage": 0.3314
+  },
+  {
+   "homeWinPercentage": 0.3092
+  },
+  {
+   "homeWinPercentage": 0.2786
+  },
+  {
+   "homeWinPercentage": 0.2879
+  },
+  {
+   "homeWinPercentage": 0.3268
+  },
+  {
+   "homeWinPercentage": 0.3373
+  },
+  {
+   "homeWinPercentage": 0.2827
+  },
+  {
+   "homeWinPercentage": 0.2691
+  },
+  {
+   "homeWinPercentage": 0.2755
+  },
+  {
+   "homeWinPercentage": 0.3352
+  },
+  {
+   "homeWinPercentage": 0.234
+  },
+  {
+   "homeWinPercentage": 0.2256
+  },
+  {
+   "homeWinPercentage": 0.2256
+  },
+  {
+   "homeWinPercentage": 0.2377
+  },
+  {
+   "homeWinPercentage": 0.26
+  },
+  {
+   "homeWinPercentage": 0.2497
+  },
+  {
+   "homeWinPercentage": 0.2528
+  },
+  {
+   "homeWinPercentage": 0.2165
+  },
+  {
+   "homeWinPercentage": 0.2808
+  },
+  {
+   "homeWinPercentage": 0.2563
+  },
+  {
+   "homeWinPercentage": 0.2557
+  },
+  {
+   "homeWinPercentage": 0.2472
+  },
+  {
+   "homeWinPercentage": 0.2769
+  },
+  {
+   "homeWinPercentage": 0.2769
+  },
+  {
+   "homeWinPercentage": 0.2747
+  },
+  {
+   "homeWinPercentage": 0.2499
+  },
+  {
+   "homeWinPercentage": 0.2676
+  },
+  {
+   "homeWinPercentage": 0.2381
+  },
+  {
+   "homeWinPercentage": 0.2337
+  },
+  {
+   "homeWinPercentage": 0.2737
+  },
+  {
+   "homeWinPercentage": 0.2807
+  },
+  {
+   "homeWinPercentage": 0.2962
+  },
+  {
+   "homeWinPercentage": 0.2964
+  },
+  {
+   "homeWinPercentage": 0.2927
+  },
+  {
+   "homeWinPercentage": 0.2915
+  },
+  {
+   "homeWinPercentage": 0.2916
+  },
+  {
+   "homeWinPercentage": 0.2864
+  },
+  {
+   "homeWinPercentage": 0.2755
+  },
+  {
+   "homeWinPercentage": 0.3108
+  },
+  {
+   "homeWinPercentage": 0.3241
+  },
+  {
+   "homeWinPercentage": 0.3112
+  },
+  {
+   "homeWinPercentage": 0.3394
+  },
+  {
+   "homeWinPercentage": 0.3692
+  },
+  {
+   "homeWinPercentage": 0.4822
+  },
+  {
+   "homeWinPercentage": 0.4848
+  },
+  {
+   "homeWinPercentage": 0.4692
+  },
+  {
+   "homeWinPercentage": 0.4652
+  },
+  {
+   "homeWinPercentage": 0.4489
+  },
+  {
+   "homeWinPercentage": 0.4616
+  },
+  {
+   "homeWinPercentage": 0.4618
+  },
+  {
+   "homeWinPercentage": 0.4313
+  },
+  {
+   "homeWinPercentage": 0.4398
+  },
+  {
+   "homeWinPercentage": 0.4272
+  },
+  {
+   "homeWinPercentage": 0.4605
+  },
+  {
+   "homeWinPercentage": 0.4983
+  },
+  {
+   "homeWinPercentage": 0.4998
+  },
+  {
+   "homeWinPercentage": 0.4997
+  },
+  {
+   "homeWinPercentage": 0.5076
+  },
+  {
+   "homeWinPercentage": 0.5077
+  },
+  {
+   "homeWinPercentage": 0.506
+  },
+  {
+   "homeWinPercentage": 0.5093
+  },
+  {
+   "homeWinPercentage": 0.5082
+  },
+  {
+   "homeWinPercentage": 0.4335
+  },
+  {
+   "homeWinPercentage": 0.4553
+  },
+  {
+   "homeWinPercentage": 0.4746
+  },
+  {
+   "homeWinPercentage": 0.5167
+  },
+  {
+   "homeWinPercentage": 0.5189
+  },
+  {
+   "homeWinPercentage": 0.4973
+  },
+  {
+   "homeWinPercentage": 0.4977
+  },
+  {
+   "homeWinPercentage": 0.4851
+  },
+  {
+   "homeWinPercentage": 0.5025
+  },
+  {
+   "homeWinPercentage": 0.4523
+  },
+  {
+   "homeWinPercentage": 0.4729
+  },
+  {
+   "homeWinPercentage": 0.4728
+  },
+  {
+   "homeWinPercentage": 0.4894
+  },
+  {
+   "homeWinPercentage": 0.4609
+  },
+  {
+   "homeWinPercentage": 0.5379
+  },
+  {
+   "homeWinPercentage": 0.4561
+  },
+  {
+   "homeWinPercentage": 0.4893
+  },
+  {
+   "homeWinPercentage": 0.4722
+  },
+  {
+   "homeWinPercentage": 0.5349
+  },
+  {
+   "homeWinPercentage": 0.5093
+  },
+  {
+   "homeWinPercentage": 0.5096
+  },
+  {
+   "homeWinPercentage": 0.523
+  },
+  {
+   "homeWinPercentage": 0.5368
+  },
+  {
+   "homeWinPercentage": 0.5854
+  },
+  {
+   "homeWinPercentage": 0.618
+  },
+  {
+   "homeWinPercentage": 0.6822
+  },
+  {
+   "homeWinPercentage": 0.7164
+  },
+  {
+   "homeWinPercentage": 0.6977
+  },
+  {
+   "homeWinPercentage": 0.6981
+  },
+  {
+   "homeWinPercentage": 0.6249
+  },
+  {
+   "homeWinPercentage": 0.6196
+  },
+  {
+   "homeWinPercentage": 0.642
+  },
+  {
+   "homeWinPercentage": 0.642
+  },
+  {
+   "homeWinPercentage": 0.6461
+  },
+  {
+   "homeWinPercentage": 0.6711
+  },
+  {
+   "homeWinPercentage": 0.5925
+  },
+  {
+   "homeWinPercentage": 0.5803
+  },
+  {
+   "homeWinPercentage": 0.606
+  },
+  {
+   "homeWinPercentage": 0.53
+  },
+  {
+   "homeWinPercentage": 0.5647
+  },
+  {
+   "homeWinPercentage": 0.509
+  },
+  {
+   "homeWinPercentage": 0.5188
+  },
+  {
+   "homeWinPercentage": 0.5133
+  },
+  {
+   "homeWinPercentage": 0.5138
+  },
+  {
+   "homeWinPercentage": 0.6038
+  },
+  {
+   "homeWinPercentage": 0.4093
+  },
+  {
+   "homeWinPercentage": 0.4057
+  },
+  {
+   "homeWinPercentage": 0.4259
+  },
+  {
+   "homeWinPercentage": 0.3991
+  },
+  {
+   "homeWinPercentage": 0.4496
+  },
+  {
+   "homeWinPercentage": 0.4781
+  },
+  {
+   "homeWinPercentage": 0.4557
+  },
+  {
+   "homeWinPercentage": 0.4321
+  },
+  {
+   "homeWinPercentage": 0.5978
+  },
+  {
+   "homeWinPercentage": 0.5188
+  },
+  {
+   "homeWinPercentage": 0.5177
+  },
+  {
+   "homeWinPercentage": 0.5824
+  },
+  {
+   "homeWinPercentage": 0.5734
+  },
+  {
+   "homeWinPercentage": 0.6996
+  },
+  {
+   "homeWinPercentage": 0.755
+  },
+  {
+   "homeWinPercentage": 0.8404
+  },
+  {
+   "homeWinPercentage": 0.721
+  },
+  {
+   "homeWinPercentage": 0.7899
+  },
+  {
+   "homeWinPercentage": 0.7774
+  },
+  {
+   "homeWinPercentage": 0.7735
+  },
+  {
+   "homeWinPercentage": 0.828
+  },
+  {
+   "homeWinPercentage": 0.7921
+  },
+  {
+   "homeWinPercentage": 0.7943
+  },
+  {
+   "homeWinPercentage": 0.8862
+  },
+  {
+   "homeWinPercentage": 0.8646
+  },
+  {
+   "homeWinPercentage": 0.9056
+  },
+  {
+   "homeWinPercentage": 0.9377
+  },
+  {
+   "homeWinPercentage": 0.9383
+  },
+  {
+   "homeWinPercentage": 0.9381
+  },
+  {
+   "homeWinPercentage": 0.9303
+  },
+  {
+   "homeWinPercentage": 0.955
+  },
+  {
+   "homeWinPercentage": 0.9422
+  },
+  {
+   "homeWinPercentage": 0.9726
+  },
+  {
+   "homeWinPercentage": 0.9586
+  },
+  {
+   "homeWinPercentage": 0.8792
+  },
+  {
+   "homeWinPercentage": 0.8983
+  },
+  {
+   "homeWinPercentage": 0.8444
+  },
+  {
+   "homeWinPercentage": 0.8796
+  },
+  {
+   "homeWinPercentage": 0.7726
+  },
+  {
+   "homeWinPercentage": 0.7924
+  },
+  {
+   "homeWinPercentage": 0.7548
+  },
+  {
+   "homeWinPercentage": 0.775
+  },
+  {
+   "homeWinPercentage": 0.8306
+  },
+  {
+   "homeWinPercentage": 0.7814
+  },
+  {
+   "homeWinPercentage": 0.8024
+  },
+  {
+   "homeWinPercentage": 0.8753
+  },
+  {
+   "homeWinPercentage": 0.8646
+  },
+  {
+   "homeWinPercentage": 0.8899
+  },
+  {
+   "homeWinPercentage": 0.8728
+  },
+  {
+   "homeWinPercentage": 0.9768
+  },
+  {
+   "homeWinPercentage": 0.999
+  },
+  {
+   "homeWinPercentage": 0.999
+  },
+  {
+   "homeWinPercentage": 0.999
+  },
+  {
+   "homeWinPercentage": 0.999
+  },
+  {
+   "homeWinPercentage": 1
+  }
+ ],
+ "gameInfo": {
+  "venue": {
+   "fullName": "AT&T Stadium",
+   "address": {
+    "city": "Arlington",
+    "state": "TX"
+   },
+   "grass": false
+  }
+ },
+ "article": {
+  "headline": "Prescott's Cowboys overcome Mahomes' fourth-down magic in 31-28 Thanksgiving win over Chiefs"
+ }
+}

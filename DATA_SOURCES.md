@@ -170,7 +170,7 @@ from ESPN. Since 2026-10-12 they go through our server (`lib/espnLive.ts`, ADR
 | Our route | Validation | ESPN endpoint | Body | Server cache (memory, per process) |
 |---|---|---|---|---|
 | `GET /api/live/scoreboard?week=N` | `^\d{1,2}$`, 1–18 → else 400 `invalid-week` | `site.api.espn.com/.../scoreboard?seasontype=2&week=N` → `mapEspnScoreboard` | `{ week, updatedAt, stale, matchups }` (kickoff ISO) | 10s while any game is in its live window (the phone polls every 5s, `LIVE_POLL_MS`: ≤15 seconds behind ESPN worst case); otherwise ≤5 min, capped at the next live-window start (`scoreboardTtlMs` in `lib/liveWindow.ts`). 0 matchups = failure (last-good wins). Max 18 keys, 6h retention |
-| `GET /api/live/summary?event=ID` | `^\d{6,12}$` → else 400 `invalid-event` | `site.api.espn.com/.../summary?event=ID` → `parseSummary` (`lib/gameSummary.ts`) | `GameSummary` `{ byAbbr, headline }` — Pare points (Sleeper, §5) attached per response, not cached with the summary | 6h once `header.competitions[0].status.type.completed`, else 60s. Max 300 keys, 24h retention |
+| `GET /api/live/summary?event=ID` | `^\d{6,12}$` → else 400 `invalid-event` | `site.api.espn.com/.../summary?event=ID` → `parseSummary` (`lib/gameSummary.ts`) | `GameSummary` `{ byAbbr, headline, extras? }` — `extras` (since 2026-10-23, `lib/gameExtras.ts`): 11 team-stat rows, quarter scores (header linescores), scoring plays, home win % sampled to 60 points, top-2 defenders + kickers per team, venue; omitted when the summary has none of it (pregame). Pare points (Sleeper, §5) attached per response, not cached with the summary | 6h once `header.competitions[0].status.type.completed`, else 60s. Max 300 keys, 24h retention |
 
 - **Single-flight** per key (`createLiveCache`, `lib/apiCache.ts`): ESPN calls don't grow with viewers.
 - **Budgets:** 120 ESPN calls/min overall (`ESPN_LIVE_CALLS_PER_MIN`), of which summaries may use 60 (`SUMMARY_CALLS_PER_MIN`) — random event ids can't starve the scoreboard. Spent → last-good, else 503 `busy`.
@@ -236,7 +236,7 @@ documented above.
 | core `…/teams/{id}/statistics/900` | every stat, "allowed" side (defense without box-score summing) |
 | web `…/statistics/byteam?season=&seasontype=2` | all 32 teams, own (splitId 0) + opponent (900), with ranks, in **one** call |
 | core team stats fields we skip | `netYardsPerPassAttempt`, `yardsPerRushAttempt`, `passingFirstDowns`, `rushingFirstDowns`, `firstDownsPenalty`, `totalPenalties`, `totalPenaltyYards` (map onto 7 hidden metrics) + `redzoneTouchdownPct`, `redzoneScoringPct`, `fourthDownConvPct`, `possessionTimeSeconds`, `totalTakeaways`, `turnOverDifferential`, `passingBigPlays`, `rushingBigPlays` |
-| site `/summary` sections we skip | player defense/kicking/punting/returns, `drives`, `scoringPlays`, `winprobability`, `gameInfo.officials`/`venue` |
+| site `/summary` sections we skip | player punting/returns, `drives`, `gameInfo.officials` (defense, kicking, `scoringPlays`, `winprobability`, `gameInfo.venue` → Home Game details since 2026-10-23) |
 | core `…/competitions/{id}/predictor`, `/probabilities`; `seasons/{yr}/powerindex` (FPI); `…/groups/9/qbr/{0\|10000}` | win %, projected margin, unit EPA, playoff odds, QBR/EPA |
 | core `…/competitions/{id}/odds` (all fields) | 3 books, open / close / current spread, total, moneyline |
 | web `athletes/{id}/gamelog`, `/splits` | player game logs and splits |

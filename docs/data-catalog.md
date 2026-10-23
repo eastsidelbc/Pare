@@ -88,7 +88,7 @@
 
 | Provider | Endpoints that work | Pare uses | Fields listed | Fields used | Empty / wrong |
 |---|---|---|---|---|---|
-| ESPN | ~65 | 7 | 1294 | 92 (7%) | 83 |
+| ESPN | ~65 | 7 | 1294 | 116 (9%) | 83 |
 | Sleeper | ~29 | 8 | 493 | 48 (10%) | 3 |
 
 Counts are field slots in this catalog. A few names repeat across categories (e.g. `totalPoints` in several ESPN categories). Endpoint counts treat a card that groups several URLs (e.g. My Team's 5 Sleeper calls) as that many endpoints.
@@ -354,7 +354,7 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 ✅ **Used by Pare**
 
 - **URL:** `https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event={eventId}`
-- **Pare uses it for:** Home post-game box score, Compare defense yards allowed, L4, My Team game log, Leans team log
+- **Pare uses it for:** Home post-game box score + Game details (team stats, quarters, scoring plays, win-prob line, defense, kicking, venue — `lib/gameExtras.ts`), Compare defense yards allowed, L4, My Team game log, Leans team log
 - **Code:** `lib/espnBoxscore.ts`, `lib/gameSummary.ts`, `lib/espnStats.ts`, `lib/last4.ts`, `lib/myteam/gameLog.ts`
 - **Cache:** 24h per final (team box) · 6h final / 60s otherwise (player box)
 - **Notes:** One request returns everything below. Most of it is unused even though we already download it.
@@ -368,10 +368,10 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 | `firstDownsRushing` | ⬜ Not used |
 | `firstDownsPenalty` | ⬜ Not used |
 | `thirdDownEff` | ✅ Used |
-| `fourthDownEff` | ⬜ Not used |
+| `fourthDownEff` | ✅ Used |
 | `totalOffensivePlays` | ✅ Used |
 | `totalYards` | ✅ Used |
-| `yardsPerPlay` | ⬜ Not used |
+| `yardsPerPlay` | ✅ Used |
 | `totalDrives` | ✅ Used |
 | `netPassingYards` | ✅ Used |
 | `completionAttempts` | ✅ Used |
@@ -382,11 +382,11 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 | `rushingAttempts` | ✅ Used |
 | `yardsPerRushAttempt` | ⬜ Not used |
 | `redZoneAttempts` | ✅ Used |
-| `totalPenaltiesYards` | ⬜ Not used |
+| `totalPenaltiesYards` | ✅ Used |
 | `turnovers` | ✅ Used |
 | `fumblesLost` | ✅ Used |
 | `defensiveTouchdowns` | ⬜ Not used |
-| `possessionTime` | ⬜ Not used |
+| `possessionTime` | ✅ Used |
 
 #### players · passing — 8 fields, 4 used
 
@@ -436,9 +436,9 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 
 | Field | Status |
 |---|---|
-| `totalTackles` | ⬜ Not used |
+| `totalTackles` | ✅ Used |
 | `soloTackles` | ⬜ Not used |
-| `sacks` | ⬜ Not used |
+| `sacks` | ✅ Used |
 | `tacklesForLoss` | ⬜ Not used |
 | `passesDefended` | ⬜ Not used |
 | `QBHits` | ⬜ Not used |
@@ -448,7 +448,7 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 
 | Field | Status |
 |---|---|
-| `interceptions` | ⬜ Not used |
+| `interceptions` | ✅ Used |
 | `interceptionYards` | ⬜ Not used |
 | `interceptionTouchdowns` | ⬜ Not used |
 
@@ -471,10 +471,10 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 
 | Field | Status |
 |---|---|
-| `fieldGoalsMade/fieldGoalAttempts` | ⬜ Not used |
+| `fieldGoalsMade/fieldGoalAttempts` | ✅ Used |
 | `fieldGoalPct` | ⬜ Not used |
-| `longFieldGoalMade` | ⬜ Not used |
-| `extraPointsMade/extraPointAttempts` | ⬜ Not used |
+| `longFieldGoalMade` | ✅ Used |
+| `extraPointsMade/extraPointAttempts` | ✅ Used |
 | `totalKickingPoints` | ⬜ Not used |
 | `punts` | ⬜ Not used |
 | `puntYards` | ⬜ Not used |
@@ -536,15 +536,15 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 
 | Field | Status |
 |---|---|
-| `scoringPlay.type` | ⬜ Not used |
-| `scoringPlay.text` | ⬜ Not used |
-| `scoringPlay.awayScore` | ⬜ Not used |
-| `scoringPlay.homeScore` | ⬜ Not used |
-| `scoringPlay.period` | ⬜ Not used |
-| `scoringPlay.clock` | ⬜ Not used |
-| `scoringPlay.team` | ⬜ Not used |
+| `scoringPlay.type` | ✅ Used |
+| `scoringPlay.text` | ✅ Used |
+| `scoringPlay.awayScore` | ✅ Used |
+| `scoringPlay.homeScore` | ✅ Used |
+| `scoringPlay.period` | ✅ Used |
+| `scoringPlay.clock` | ✅ Used |
+| `scoringPlay.team` | ✅ Used |
 | `scoringPlay.scoringType` | ⬜ Not used |
-| `wp.homeWinPercentage` | ⬜ Not used |
+| `wp.homeWinPercentage` | ✅ Used |
 | `wp.tiePercentage` | ⬜ Not used |
 | `wp.playId` | ⬜ Not used |
 
@@ -575,9 +575,9 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 
 | Field | Status |
 |---|---|
-| `gameInfo.venue.fullName` | ⬜ Not used |
-| `gameInfo.venue.address` | ⬜ Not used |
-| `gameInfo.venue.grass` | ⬜ Not used |
+| `gameInfo.venue.fullName` | ✅ Used |
+| `gameInfo.venue.address` | ✅ Used |
+| `gameInfo.venue.grass` | ✅ Used |
 | `gameInfo.attendance` | ⬜ Not used |
 | `gameInfo.officials.fullName` | ⬜ Not used |
 | `gameInfo.officials.position` | ⬜ Not used |
@@ -621,11 +621,11 @@ Base: `https://site.api.espn.com/apis/site/v2/sports/football/nfl`
 
 | Field | Status |
 |---|---|
-| `scoringPlays` | ⬜ Not used |
-| `winprobability` | ⬜ Not used |
+| `scoringPlays` | ✅ Used |
+| `winprobability` | ✅ Used |
 | `leaders(sacks,totalTackles…)` | ⬜ Not used |
 | `pickcenter` | ⬜ Not used |
-| `gameInfo.venue` | ⬜ Not used |
+| `gameInfo.venue` | ✅ Used |
 | `gameInfo.attendance` | ⬜ Not used |
 | `gameInfo.officials` | ⬜ Not used |
 | `gameInfo.weather` | ⬜ Not used |
