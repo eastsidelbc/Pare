@@ -9,7 +9,7 @@
 
 import type { FpaTable } from '@/lib/myteam/fpa';
 import { FORMULA_CONFIG } from '@/lib/formulas/config';
-import { americanToDecimal, impliedProb } from '@/lib/formulas/odds';
+import { americanToDecimal } from '@/lib/formulas/odds';
 import { anytimeTdProb, propOverProb } from '@/lib/formulas/player';
 import { mean, shrink, stdev } from '@/lib/formulas/stats';
 import { blendForm, projectedMargin, projectedTotal } from '@/lib/formulas/team';
@@ -17,6 +17,7 @@ import { LEAN_CONFIG } from './config';
 import { ratingFor } from './evaluate';
 import { gameLeans, leagueForm, lineFor, type LeagueForm } from './gameLean';
 import { effectiveLine, propLean, statValue } from './propLean';
+export { mergeOffers, pickMainLine, type PropOffer } from './propLines';
 import type { PlayerGame, PropPosition, PropStat, TeamGame } from './types';
 
 export type Outcome = 'win' | 'loss' | 'push';
@@ -36,13 +37,6 @@ export interface BacktestGame {
   moneyline: { away: number | null; home: number | null } | null;
 }
 
-/** One book offer for a player prop (main line or an alternate). Prices are American odds. */
-export interface PropOffer {
-  target: number;
-  over: number | null;
-  under: number | null;
-}
-
 /** One graded-able prop: a player's main line for one stat in one game. */
 export interface BacktestProp {
   eventId: string;
@@ -57,34 +51,6 @@ export interface BacktestProp {
 }
 
 // ── Lines + grading ─────────────────────────────────────────────────────
-
-/**
- * Merge a book's offers that share a target (ESPN splits one line into an over item and an
- * under item), so each target carries both prices when the book has them.
- */
-export function mergeOffers(offers: readonly PropOffer[]): PropOffer[] {
-  const byTarget = new Map<number, PropOffer>();
-  for (const o of offers) {
-    const prev = byTarget.get(o.target);
-    byTarget.set(o.target, { target: o.target, over: prev?.over ?? o.over, under: prev?.under ?? o.under });
-  }
-  return [...byTarget.values()];
-}
-
-/**
- * The main line among a book's offers for one player + market. Unpriced offers are the
- * alternate-line ladder, never the main line. Two-way priced: the one closest to even.
- * One-way priced (anytime TD has no "no TD" price): the first. Nothing priced → null.
- */
-export function pickMainLine(offers: readonly PropOffer[]): PropOffer | null {
-  const merged = mergeOffers(offers);
-  const twoWay = merged.filter((o) => o.over !== null && o.under !== null);
-  if (twoWay.length > 0) {
-    const gap = (o: PropOffer) => Math.abs((impliedProb(o.over ?? 0) ?? 0) - (impliedProb(o.under ?? 0) ?? 0));
-    return [...twoWay].sort((a, b) => gap(a) - gap(b) || a.target - b.target)[0];
-  }
-  return merged.find((o) => o.over !== null || o.under !== null) ?? null;
-}
 
 /** Over/under bet on a line: strictly past the line wins, on it pushes. */
 export function gradeOverUnder(dir: 'over' | 'under', line: number, actual: number): Outcome {

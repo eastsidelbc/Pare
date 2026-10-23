@@ -31,6 +31,7 @@ import {
   type TallyMap,
 } from '@/lib/leans/backtest';
 import { toPlayerGame } from '@/lib/leans/players';
+import { PROP_TYPES } from '@/lib/leans/propLines';
 import { statValue } from '@/lib/leans/propLean';
 import type { PropPosition, PropStat, TeamGame } from '@/lib/leans/types';
 import { buildFpaTable } from '@/lib/myteam/fpa';
@@ -49,8 +50,6 @@ const CORE = 'https://sports.core.api.espn.com/v2/sports/football/leagues/nfl';
 const SLEEPER_COM = 'https://api.sleeper.com';
 const SLEEPER_APP = 'https://api.sleeper.app/v1';
 
-/** ESPN prop market type id → the Leans prop stat it settles. */
-const PROP_TYPES: Readonly<Record<string, PropStat>> = { '12': 'rush_yd', '13': 'rec_yd', '14': 'rec', '20': 'rush_rec_yd', '31': 'anytime_td' };
 const PROP_POSITIONS: readonly PropPosition[] = ['QB', 'RB', 'WR', 'TE'];
 const EDGES = [1, 2, 3, 4, 5];
 const PROBS = [0.55, 0.6, 0.65, 0.7];

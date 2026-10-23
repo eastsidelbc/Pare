@@ -17,6 +17,6 @@ export default defineConfig({
     // Pure-logic tests only (no DOM) — ranking, bar/data math, store, helpers.
     environment: 'node',
     include: ['**/*.test.ts'],
-    exclude: ['node_modules', '.next', 'ios', 'dist'],
+    exclude: ['node_modules', '.next', 'ios', 'dist', '_to-delete'],
   },
 });

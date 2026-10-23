@@ -88,7 +88,7 @@
 
 | Provider | Endpoints that work | Pare uses | Fields listed | Fields used | Empty / wrong |
 |---|---|---|---|---|---|
-| ESPN | ~65 | 7 | 1294 | 127 (10%) | 83 |
+| ESPN | ~65 | 9 | 1294 | 136 (11%) | 83 |
 | Sleeper | ~29 | 8 | 493 | 58 (12%) | 3 |
 
 Counts are field slots in this catalog. A few names repeat across categories (e.g. `totalPoints` in several ESPN categories). Endpoint counts treat a card that groups several URLs (e.g. My Team's 5 Sleeper calls) as that many endpoints.
@@ -104,7 +104,7 @@ Ranked by value to an everyday fan for the effort. **Small** = a few lines in th
 | 3 | **New team stats fans know** — Red-zone TD % and scoring %, 4th-down %, time of possession, takeaways, turnover differential, sacks taken, completion %, passer rating, explosive plays (20+ yard runs and passes), yards after catch. | Small | Core team stats | Each new metric needs its higher/lower-is-better direction checked. |
 | 4 | **Fuller box score with no extra requests** — The summary we already download has defense (tackles, sacks, TFL, QB hits), kicking, punting and returns per player, plus drives, scoring plays, a win-probability line, officials and venue. | Medium | Site /summary | UI only; the data is already fetched. |
 | 5 | **Matchup preview odds** — ESPN's predictor and FPI give a win % and projected margin for every game, plus EPA by offense, defense and special teams. Good for the Home accordion and Leans. | Medium | Core predictor<br>Core powerindex |  |
-| 6 | **Line movement + prop lines for Leans** — Core odds already returns open, close and current spreads, totals and moneylines. We read only the first book's closing line. propBets adds ~1,000 player and game prop lines per game (open + current), so Leans can fill prop lines in instead of the user typing them, and 2025 lines still exist for a backtest. | Medium | Core odds<br>Core propBets | Decided 2026-10-23: prop lines auto-fill only. |
+| 6 | **Line movement + prop lines for Leans** — Core odds already returns open, close and current spreads, totals and moneylines. We read only the first book's closing line. propBets adds ~1,000 player and game prop lines per game (open + current), so Leans can fill prop lines in instead of the user typing them, and 2025 lines still exist for a backtest. | Medium | Core odds<br>Core propBets | **Built 2026-10-23**: Leans Market card + auto-filled prop lines. |
 | 7 | **Fantasy usage stats** — Snap %, target share, air yards, red-zone targets and carries, drops, broken tackles, and fantasy points allowed by position, for My Team start/sit and Leans. | Medium | Sleeper stat keys | Already in the weekly rows we fetch; just not read. |
 | 8 | **Projections, trending and roster %** — RotoWire projections per week, the most added and dropped players in the last 24h, and how often each player is rostered and started. | Medium | Sleeper projections<br>Sleeper trending<br>Sleeper research |  |
 | 9 | **Player pages** — Game logs, home/away/opponent/quarter splits, career stats, QBR and EPA, contracts, depth-chart slot and practice status. That's a full player screen for Leaders and Leans. | Big | Web gamelog + splits<br>Core QBR<br>Sleeper player map |  |
@@ -1487,9 +1487,12 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 
 ### Player + game props (propBets)
 
-⬜ **Available, not used**
+✅ **Used by Pare**
 
 - **URL:** `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/events/{id}/competitions/{id}/odds/{providerId}/propBets?limit=1000&page={n}`
+- **Pare uses it for:** Leans props, auto-filled (types 12/13/14/20/31) — list PROP LEANS, game Props, prop screen
+- **Code:** `lib/leans/propLines.ts`, `lib/leans/propLinesServer.ts`, `lib/leans/autoProps.ts`, `app/api/leans/props/route.ts`; backtest `scripts/leans-backtest.ts`
+- **Cache:** 10 min per game (shared)
 - **Notes:** Player, team and game prop lines from one book. ~1,044 items (upcoming 2026 game, DraftKings 100) and ~1,105 (2025 final, ESPN BET 58), 2 pages each. Still served for finished 2025 games, with the last pregame line in `current` — enough history for a backtest. Player name/position = follow the `athlete` `$ref`. Traps: see [Traps](#traps-found-while-probing) (provider per game, paging, alternate lines, partial prices).
 
 #### item — 10 fields
@@ -1498,15 +1501,15 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 
 | Field | Status |
 |---|---|
-| `athlete` | ⬜ Not used |
+| `athlete` | ✅ Used |
 | `team` | ⬜ Not used |
-| `type.id` | ⬜ Not used |
+| `type.id` | ✅ Used |
 | `type.name` | ⬜ Not used |
-| `open.target` | ⬜ Not used |
-| `current.target` | ⬜ Not used |
-| `open.over` / `open.under` | ⬜ Not used |
-| `current.over` / `current.under` | ⬜ Not used |
-| `lastUpdated` | ⬜ Not used |
+| `open.target` | ✅ Used |
+| `current.target` | ✅ Used |
+| `open.over` / `open.under` | ✅ Used |
+| `current.over` / `current.under` | ✅ Used |
+| `lastUpdated` | ✅ Used |
 | `provider` | ⬜ Not used |
 
 #### markets (by `type.id`) — 8 fields
@@ -1515,9 +1518,9 @@ Base: `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl`
 
 | Field | Status |
 |---|---|
-| `8–24` player totals: pass yds/cmp/att/TD/INT, carries, rush yds, rec yds, receptions, longest pass/rush/rec, pass+rush, rush+rec, kicking pts, XP, FG | ⬜ Not used |
+| `8–24` player totals: pass yds/cmp/att/TD/INT, carries, rush yds, rec yds, receptions, longest pass/rush/rec, pass+rush, rush+rec, kicking pts, XP, FG | ✅ Used (12, 13, 14, 20 → Leans props) |
 | `26–28`, `71` defensive player: tackles, tackles+assists, sacks, INTs (2025 only) | ⬜ Not used |
-| `29–33`, `66`, `67`, `181` TD scorer: first, last, anytime, 2+, 3+, 1st half, 1st quarter, first team TD | ⬜ Not used |
+| `29–33`, `66`, `67`, `181` TD scorer: first, last, anytime, 2+, 3+, 1st half, 1st quarter, first team TD | ✅ Used (31 anytime TD, when posted) |
 | `72–86` halves + quarters: total, moneyline, spread | ⬜ Not used |
 | `98`, `99`, `104` team: total points, 1st-half points, total TDs | ⬜ Not used |
 | `153` overtime yes/no | ⬜ Not used |

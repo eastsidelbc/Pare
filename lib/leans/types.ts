@@ -86,7 +86,10 @@ export interface LeansBundle {
   generatedAt: string;
 }
 
-/** A prop line the user typed, saved on this device only (lib/leans/propStore.ts). */
+/**
+ * One prop line for the engine + views. Since 2026-10-23 built from the book feed
+ * (lib/leans/autoProps.ts); the name is from the retired typed-line store.
+ */
 export interface SavedProp {
   id: string;
   /** `Matchup.id`, e.g. "2026-w7-ATL-LV". */

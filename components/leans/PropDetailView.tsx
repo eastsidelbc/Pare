@@ -1,8 +1,8 @@
 /**
  * PropDetailView — /leans/prop/[propId] body (B2-prop-lean-over, B2-no-lean), pure.
  * One deep card: the prop card body (PropBody) + "Why — 3 of 3 signals agree" (or
- * "Why no lean — signals split (1 of 3)") with the three checks + Edit line / Remove
- * in the card; Edit line / Remove + "How Pare makes a lean" below it. The player row
+ * "Why no lean — signals split (1 of 3)") with the three checks; "How Pare makes a
+ * lean" below it. (Edit line / Remove retired with typed lines, 2026-10-23.) The player row
  * opens the player-vs-defense screen.
  */
 
@@ -18,26 +18,14 @@ import { SignalList } from './ui';
 export const playerHref = (playerId: string, gameId: string) =>
   `/leans/player/${encodeURIComponent(playerId)}?game=${encodeURIComponent(gameId)}`;
 
-/** 48px action button (`.obtn`): deep surface, faint edge, 14/800. */
-const ACTION = {
-  height: 48,
-  borderRadius: 'var(--radius-md)',
-  border: '1px solid var(--frame-mid)',
-  background: 'var(--card-deep-a)',
-  fontSize: 14,
-  fontWeight: 800,
-} as const;
-
 export interface PropDetailViewProps {
   e: EvaluatedProp;
   why: readonly WhyRow[];
-  onEdit: () => void;
-  onRemove: () => void;
   /** The bundle is still loading (vs. loaded without this player). */
   loading: boolean;
 }
 
-export default function PropDetailView({ e, why, onEdit, onRemove, loading }: PropDetailViewProps) {
+export default function PropDetailView({ e, why, loading }: PropDetailViewProps) {
   const [how, setHow] = useState(false);
   const lean = e.lean;
   return (
@@ -60,14 +48,6 @@ export default function PropDetailView({ e, why, onEdit, onRemove, loading }: Pr
           <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--subtext)' }}>{loading ? 'Checking the data…' : 'No data for this player yet.'}</p>
         )}
       </div>
-      <div className="flex" style={{ gap: 8 }}>
-        <button type="button" onClick={onEdit} className="flex flex-1 items-center justify-center touch-optimized active:opacity-70" style={{ ...ACTION, color: 'var(--text)' }}>
-          Edit line
-        </button>
-        <button type="button" onClick={onRemove} className="flex flex-1 items-center justify-center touch-optimized active:opacity-70" style={{ ...ACTION, color: 'var(--subtext)' }}>
-          Remove
-        </button>
-      </div>
       <button
         type="button"
         onClick={() => setHow((v) => !v)}
@@ -80,7 +60,7 @@ export default function PropDetailView({ e, why, onEdit, onRemove, loading }: Pr
       </button>
       {how && (
         <div style={{ ...PROP_CARD_STYLE, fontSize: 12, fontWeight: 600, lineHeight: 1.45, color: 'var(--subtext)' }}>
-          Pare checks your line three ways: his last 4 games, his whole season, and how many points this defense gives up to
+          Pare checks the line three ways: his last 4 games, his whole season, and how many points this defense gives up to
           his position. It shows a lean only when all three point the same way — otherwise “No lean”. Fewer than 4 games
           played: “Not enough games yet”. It’s a read of past data, not a prediction or advice.
         </div>

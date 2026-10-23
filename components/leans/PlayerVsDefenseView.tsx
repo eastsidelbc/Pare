@@ -12,7 +12,7 @@
  */
 
 import Link from 'next/link';
-import { ChevronRight, Plus } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { MatchupMeter, WeekCells } from '@/components/myteam/MatchupMeter';
 import PositionCircle from '@/components/myteam/PositionCircle';
 import { kickoffText, LIST_CARD, positionPlural, tierColor } from '@/components/myteam/style';
@@ -44,7 +44,8 @@ export interface PlayerVsDefenseViewProps {
   weekRange: string | null;
   /** Last-4 bars: the position's main stat. */
   bars: { label: string; games: ReadonlyArray<{ week: number; value: number }> };
-  addHref: string;
+  /** The game screen's Props section (book lines for this game). */
+  propsHref: string;
 }
 
 const statValue = (s: WhyStat) => (Number.isFinite(s.value) ? s.value.toFixed(1) : '—');
@@ -75,7 +76,7 @@ function LastBars({ games }: { games: PlayerVsDefenseViewProps['bars']['games'] 
   );
 }
 
-export default function PlayerVsDefenseView({ player, matchup, window, onWindow, rating, of, why, cells, weekRange, bars, addHref }: PlayerVsDefenseViewProps) {
+export default function PlayerVsDefenseView({ player, matchup, window, onWindow, rating, of, why, cells, weekRange, bars, propsHref }: PlayerVsDefenseViewProps) {
   const home = player.team === matchup.home.abbr;
   const opp = home ? matchup.away.abbr : matchup.home.abbr;
   const first = player.name.split(/\s+/)[0];
@@ -140,7 +141,7 @@ export default function PlayerVsDefenseView({ player, matchup, window, onWindow,
       </div>
 
       <Link
-        href={addHref}
+        href={propsHref}
         className="flex items-center touch-optimized active:opacity-80"
         style={{
           gap: 8,
@@ -154,8 +155,7 @@ export default function PlayerVsDefenseView({ player, matchup, window, onWindow,
           fontWeight: 800,
         }}
       >
-        <Plus size={16} strokeWidth={2.6} aria-hidden style={{ color: 'var(--gold-bright)' }} />
-        <span>Check a prop line for {first}</span>
+        <span>See prop lines for {first}</span>
         <ChevronRight size={16} strokeWidth={2.4} aria-hidden style={{ marginLeft: 'auto', color: 'var(--gold-bright)' }} />
       </Link>
       <LeansFooter />

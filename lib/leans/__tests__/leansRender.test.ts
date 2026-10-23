@@ -5,9 +5,7 @@
  */
 import { createElement } from 'react';
 import { describe, expect, it } from 'vitest';
-import AddLineSheet from '@/components/leans/AddLineSheet';
 import GameView from '@/components/leans/GameView';
-import PlayerPickerSheet from '@/components/leans/PlayerPickerSheet';
 import PlayerVsDefenseView from '@/components/leans/PlayerVsDefenseView';
 import PropDetailView from '@/components/leans/PropDetailView';
 import { buildRanks, cellFor } from '@/lib/myteam/viewModel';
@@ -26,7 +24,7 @@ describe('Leans list (/leans)', () => {
     evaluateProp(savedProp(), b),
     evaluateProp(savedProp({ id: 'p2', playerId: LONDON.id, playerName: LONDON.name, position: 'WR', stat: 'rec_yd', line: 64.5 }), b),
   ];
-  const html = render(createElement(LeansListView, { week: 7, status: 'ready', groups, props, onTrackProp: () => {} }));
+  const html = render(createElement(LeansListView, { week: 7, status: 'ready', groups, props, propsState: 'ready' }));
 
   it('list: footer', () => {
     expect(html).toContain(FOOTER);
@@ -44,13 +42,15 @@ describe('Leans list (/leans)', () => {
     expect(html).toContain('O/U 44.5');
     expect(html).toContain('LV −125');
   });
-  it('list: empty props → the add card', () => {
-    const empty = render(createElement(LeansListView, { week: 7, status: 'ready', groups, props: [], onTrackProp: () => {} }));
-    expect(empty).toContain('Track a prop line');
+  it('list: no prop leans → a quiet note (typing retired 2026-10-23)', () => {
+    const empty = render(createElement(LeansListView, { week: 7, status: 'ready', groups, props: [], propsState: 'ready' }));
+    expect(empty).toContain('No prop leans this week yet');
+    expect(empty).not.toContain('Track a prop line');
+    expect(render(createElement(LeansListView, { week: 7, status: 'ready', groups, props: [], propsState: 'loading' }))).toContain('Checking this week');
     expect(empty).toContain(FOOTER);
   });
   it('list: empty week', () => {
-    const none = render(createElement(LeansListView, { week: 9, status: 'empty', groups: [], props: [], onTrackProp: () => {} }));
+    const none = render(createElement(LeansListView, { week: 9, status: 'empty', groups: [], props: [], propsState: 'ready' }));
     expect(none).toContain('No games this week');
   });
 });
@@ -62,7 +62,7 @@ describe('Leans game screen (/leans/[gameId])', () => {
   const leans = leansForGame(b, m, league);
   const base = {
     matchup: m, leans, league, openLine: null, onToggleLine: () => {}, statsOpen: false, onToggleStats: () => {},
-    compare: createElement('div', null, 'COMPARE'), props: [], onAddProp: () => {},
+    compare: createElement('div', null, 'COMPARE'), props: [],
   } as const;
   const closed = render(createElement(GameView, base));
   const totalOpen = render(createElement(GameView, { ...base, openLine: 'total' as const }));
@@ -82,9 +82,17 @@ describe('Leans game screen (/leans/[gameId])', () => {
     expect((totalOpen.match(/data-signal="ok"/g) ?? []).length).toBe(3);
     expect(totalOpen).toContain('Game totals, last 4 (line 44.5)');
   });
-  it('game: props empty state + add row', () => {
+  it('game: props empty state (no add row since 2026-10-23)', () => {
     expect(closed).toContain('No prop lines yet');
-    expect(closed).toContain('Add a prop line');
+    expect(closed).not.toContain('Add a prop line');
+  });
+  it('game: leans show, other lines wait behind "Show all N lines"', () => {
+    const lean = evaluateProp(savedProp(), b);
+    const flat = evaluateProp(savedProp({ id: 'p2', playerId: LONDON.id, playerName: LONDON.name, position: 'WR', stat: 'rec_yd', line: 64.5 }), b);
+    const html = render(createElement(GameView, { ...base, props: [lean, flat].map((e) => ({ e, why: propWhy(e, b) })) }));
+    expect(html).toContain('Data leans OVER');
+    expect(html).toContain('Show all 2 lines');
+    expect(html).not.toContain(LONDON.name);
   });
   it('game: hero names are not buttons; "Compare these teams" is', () => {
     expect(closed).not.toContain('tap to change team');
@@ -102,11 +110,11 @@ describe('Leans game screen (/leans/[gameId])', () => {
   });
 });
 
-describe('Leans prop detail (/leans/prop/[propId]) + sheets', () => {
+describe('Leans prop detail (/leans/prop/[propId])', () => {
   const b = bundle();
   const view = (p: ReturnType<typeof savedProp>) => {
     const e = evaluateProp(p, b);
-    return render(createElement(PropDetailView, { e, why: propWhy(e, b), onEdit: () => {}, onRemove: () => {}, loading: false }));
+    return render(createElement(PropDetailView, { e, why: propWhy(e, b), loading: false }));
   };
   const over = view(savedProp());
   const none = view(savedProp({ id: 'p2', playerId: LONDON.id, playerName: LONDON.name, position: 'WR', stat: 'rec_yd', line: 64.5 }));
@@ -119,7 +127,7 @@ describe('Leans prop detail (/leans/prop/[propId]) + sheets', () => {
     expect(over).toMatch(/data-lean="over"[^>]*>.*?Data leans OVER<\/span>/);
     expect(over).toContain('Why — 3 of 3 signals agree');
     expect(over).toMatch(/LV allows <\/span><b[^>]*>132\.0<\/b><span> rush yds \/ game/);
-    expect(over).toContain('Edit line');
+    expect(over).not.toContain('Edit line');
   });
   it('prop: No lean + "Why no lean — signals split" + the reason', () => {
     expect(none).toMatch(/data-lean="none"[^>]*>No lean<\/span>/);
@@ -130,26 +138,6 @@ describe('Leans prop detail (/leans/prop/[propId]) + sheets', () => {
   it('prop: not enough games (2 played)', () => {
     expect(thin).toContain('Not enough games yet');
     expect(thin).toContain('has played 2 games so far');
-  });
-  it('sheet: add line (stat chips, Over | Under, live dots, device-only note)', () => {
-    const html = render(
-      createElement(AddLineSheet, {
-        open: true, onClose: () => {}, matchup: matchup('ATL', 'LV'), player: BIJAN, onChangePlayer: () => {}, onSaved: () => {},
-        initial: savedProp(),
-      }),
-    );
-    for (const s of ['Rush yds', 'Rec yds', 'Receptions', 'Rush + rec yds', 'Anytime TD', 'Over', 'Under', 'Save &amp; check the data', 'Pare never sees your sportsbook. The line stays on this device.']) {
-      expect(html).toContain(s);
-    }
-    expect((html.match(/data-hit="yes"/g) ?? []).length).toBe(4);
-    expect(html).toContain(FOOTER);
-  });
-  it('sheet: player picker lists both teams with meters + injury badge', () => {
-    const html = render(createElement(PlayerPickerSheet, { open: true, onClose: () => {}, matchup: matchup('ATL', 'LV'), bundle: b, onPick: () => {} }));
-    expect(html).toContain('In this game · ATL @ LV');
-    expect(html).toContain('B. Robinson');
-    expect(html).toContain('data-meter');
-    expect(html).toContain('data-injury="Q"');
   });
 });
 
@@ -165,7 +153,7 @@ describe('Leans player vs defense (/leans/player/[playerId])', () => {
       player: BIJAN, matchup: m, window: 'season', onWindow: () => {}, rating, of,
       why: whyFor(b, 'RB', 'LV', 7, 'season'), cells, weekRange: 'Oct 22 – Oct 26',
       bars: { label: 'rush yds', games: BIJAN.games.slice(-4).map((g) => ({ week: g.week, value: g.rush_yd })) },
-      addHref: '/leans/2026-w7-ATL-LV?add=1&player=9509',
+      propsHref: '/leans/2026-w7-ATL-LV#props',
     }),
   );
   it('player: footer', () => {
@@ -177,11 +165,20 @@ describe('Leans player vs defense (/leans/player/[playerId])', () => {
     expect(html).toContain('data-meter');
     expect(html).toContain('Rush yds / game');
   });
-  it('player: last-4 bars, week cells with a bye, Season | Last 4, add link', () => {
+  it('player: last-4 bars, week cells with a bye, Season | Last 4, props link', () => {
     expect(html).toContain('Bijan · rush yds, last 4');
     expect((html.match(/data-weekcell/g) ?? []).length).toBe(3);
     expect(html).toContain('data-bye="true"');
     expect(html).toContain('Last 4');
-    expect(html).toContain('href="/leans/2026-w7-ATL-LV?add=1&amp;player=9509"');
+    expect(html).toContain('href="/leans/2026-w7-ATL-LV#props"');
+    expect(html).toContain('See prop lines for Bijan');
+  });
+});
+
+describe('Leans track record (honesty note)', () => {
+  it('list: shows the measured prop-lean record under PROP LEANS', () => {
+    const html = render(createElement(LeansListView, { week: 7, status: 'ready', groups: [], props: [], propsState: 'ready' }));
+    expect(html).toContain('2025 112–113 · 2024 225–175');
+    expect(html).toContain('not an edge');
   });
 });

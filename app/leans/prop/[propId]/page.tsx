@@ -1,6 +1,6 @@
 /**
- * /leans/prop/[propId] — one saved prop line checked against the data (B2). The id
- * names a row in this device's storage only; the line itself never reaches the server.
+ * /leans/prop/[propId] — one prop line from the book feed checked against the data (B2).
+ * The id = game · player · stat (`propIdOf`, lib/leans/propLines.ts).
  */
 
 import type { Metadata } from 'next';

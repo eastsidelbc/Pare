@@ -206,9 +206,17 @@ No new upstream. Everything Leans shows comes from sources above, reused server-
 
 `GET /api/leans/data?teams=ATL,LV` (`lib/leans/bundle.ts`, `server-only`, `force-dynamic`, `private, no-store`): one
 shared in-memory bundle per 10 min (`createKeyedCache`, last good on failure; a missing completed week throws so it
-never skews ranks), then filtered to the asked teams' players + schedule. Carries **team abbreviations only** — the
-user's prop lines stay in `localStorage` (`pare:leans-props:v1`) and never reach the server. ~65 KB for two teams,
-~1.5 s cold. Lean thresholds: `lib/leans/config.ts`.
+never skews ranks), then filtered to the asked teams' players + schedule. Carries **team abbreviations only**. ~65 KB
+for two teams, ~1.5 s cold. Lean thresholds: `lib/leans/config.ts`.
+
+**Prop lines (since 2026-10-23 — typing retired):** `GET /api/leans/props?week=N` → `{ games: Record<MatchupId, GamePropLine[]> }`
+(`lib/leans/propLinesServer.ts`, server-only). Per game: Core `/odds` → first non-"Live" book with a `propBets` link →
+every page (`limit=1000`, 2 pages) → `parseBookLines` (`lib/leans/propLines.ts`): ESPN market types 12 rush yds, 13 rec
+yds, 14 receptions, 20 rush+rec yds, 31 anytime TD; the over + under items are merged by target; priced main line =
+closest to even, unpriced feeds (2026: one line per player) = that line; open + current kept. ESPN athlete id → Sleeper id
+via the player map `espnId`. One shared copy per game for 10 min, last good on failure; a failing game is left out of the
+week. Client (`lib/leans/autoProps.ts`): only bundle players; before kickoff the current line, after kickoff the opener
+(`current` moves in-game). Week 7 2026: 14 games, ~21 KB. TD-scorer markets are often empty → no Anytime TD props then.
 
 ## 8. Compare "L4" (`/api/nfl-2025/last4`) — last-4-games rows (2026-10-23)
 
