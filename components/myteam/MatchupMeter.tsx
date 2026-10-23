@@ -5,7 +5,7 @@
  *                 (bye: transparent dashed bars + "Bye")
  *   NextFiveBar   micro-bar of the next 5 weeks (18×4 per week, under line 2)
  *   WeekCells     week label ABOVE each 36px cell; cell = opp ("@SEA") over "#11"
- *                 (bye: dashed + "BYE"). Dark cell, tier-colored edge + rank text.
+ *                 (bye: dashed + "BYE"). Rated cell = solid tier fill, dark text.
  * `data-tier` / `data-bye` stay as stable hooks for tests.
  */
 
@@ -93,11 +93,15 @@ export function oppShort(cell: MatchupCell): string {
   return `${cell.home ? '' : '@'}${cell.opp}`;
 }
 
-/** One dark 36px week cell: opp over rank; tier-colored edge + rank text. `label` puts the week inside (pinned cards). */
+/**
+ * One 36px week cell: opp over rank. Rated games are filled solid with the tier
+ * color + dark text (bright tier colors only pass contrast with dark text);
+ * byes (dashed) and unrated weeks stay dark. `weekInside` puts the week inside (pinned cards).
+ */
 export function WeekCell({ cell, height = 36, weekInside = false }: { cell: MatchupCell; height?: number; weekInside?: boolean }) {
   const bye = cell.kind === 'bye';
-  const color = cell.rating ? tierColor(cell.rating.tier) : 'var(--subtext)';
-  const edge = cell.rating ? `color-mix(in srgb, ${color} 55%, transparent)` : 'var(--hairline)';
+  const filled = !bye && !!cell.rating;
+  const fill = cell.rating ? tierColor(cell.rating.tier) : 'var(--nav-bg)';
   const second = weekInside ? `W${cell.week}` : bye ? null : cell.rating ? rankText(cell.rating.rank, cell.rating.isTied) : '—';
   return (
     <span
@@ -108,17 +112,24 @@ export function WeekCell({ cell, height = 36, weekInside = false }: { cell: Matc
       style={{
         height,
         borderRadius: 'var(--radius-sm)',
-        background: 'var(--nav-bg)',
-        border: bye ? '1px dashed var(--matchup-bye)' : `1px solid ${edge}`,
-        borderTop: bye ? '1px dashed var(--matchup-bye)' : `3px solid ${cell.rating ? color : 'var(--matchup-track)'}`,
+        background: filled ? fill : 'var(--nav-bg)',
+        border: bye ? '1px dashed var(--matchup-bye)' : filled ? `1px solid ${fill}` : '1px solid var(--hairline)',
         lineHeight: 1.15,
       }}
     >
-      <span className="max-w-full truncate" style={{ fontSize: 11, fontWeight: 800, color: bye ? 'var(--subtext)' : 'var(--text)' }}>
+      <span className="max-w-full truncate" style={{ fontSize: 11, fontWeight: 800, color: filled ? 'var(--bg)' : bye ? 'var(--subtext)' : 'var(--text)' }}>
         {oppShort(cell)}
       </span>
       {second && (
-        <span className="tabular-nums" style={{ fontSize: 11, fontWeight: 700, color: weekInside ? 'var(--subtext)' : color }}>
+        <span
+          className="tabular-nums"
+          style={{
+            fontSize: 11,
+            fontWeight: weekInside ? 700 : 800,
+            color: filled ? 'var(--bg)' : 'var(--subtext)',
+            opacity: filled && weekInside ? 0.7 : undefined,
+          }}
+        >
           {second}
         </span>
       )}

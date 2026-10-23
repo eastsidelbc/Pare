@@ -2,7 +2,7 @@
  * Start / Sit (design-system §9.4, P4 final mockup) — the panel the expanded
  * card's button area slides to: ‹ Back + "START / SIT · QBS", 44px chips of my
  * other players at the position (dot = their this-week tier; likely swap
- * pre-picked), a 74px-name + 5-week grid for both players, the verdicts, and
+ * pre-picked), a 74px-name + 5-week grid (this week, gold label, + next 4) for both players, the verdicts, and
  * "Matchup only (…) — not a projection." Logic: lib/myteam/startSit.ts.
  */
 
@@ -11,7 +11,7 @@
 import { ChevronLeft } from 'lucide-react';
 import { shortPlayerName } from '@/lib/playerName';
 import type { LeagueBundle } from '@/lib/myteam/apiTypes';
-import { compareStartSit, goodWeeks, type Verdict } from '@/lib/myteam/startSit';
+import { compareStartSit, goodWeeks, startSitWeeks, type Verdict } from '@/lib/myteam/startSit';
 import type { RosterRow } from '@/lib/myteam/viewModel';
 import { WeekCell } from './MatchupMeter';
 import { positionPlural, scoringLabel, tierColor } from './style';
@@ -41,11 +41,13 @@ export default function StartSitPanel({ row, candidates, pickId, onPick, onBack,
   const plural = positionPlural(position);
   const aName = shortPlayerName(row.player.name);
   const bName = shortPlayerName(other.player.name);
-  const weeks = row.strip.slice(0, 5).map((c) => c.week);
+  // This week + the next 4 — you're setting this week's lineup.
+  const weeks = startSitWeeks(row).map((c) => c.week);
+  const span = weeks.length > 1 ? `W${weeks[0]}–W${weeks[weeks.length - 1]}` : `W${weeks[0]}`;
   const nextLine =
     result.next.verdict === 'tie'
-      ? `Next ${weeks.length} weeks: even (${result.next.a} good weeks each)`
-      : `Next ${weeks.length} weeks: ${result.next.verdict === 'a' ? aName : bName} (${Math.max(result.next.a, result.next.b)} good weeks vs ${Math.min(result.next.a, result.next.b)})`;
+      ? `${span}: even (${result.next.a} good weeks each)`
+      : `${span}: ${result.next.verdict === 'a' ? aName : bName} (${Math.max(result.next.a, result.next.b)} good weeks vs ${Math.min(result.next.a, result.next.b)})`;
 
   const lane = (r: RosterRow, name: string, side: 'a' | 'b') => (
     <div
@@ -61,10 +63,10 @@ export default function StartSitPanel({ row, candidates, pickId, onPick, onBack,
       <span className="min-w-0 truncate" style={{ fontSize: 12, fontWeight: 800, color: 'var(--text)' }}>
         {name}
         <span className="block" style={{ fontSize: 11, fontWeight: 600, color: 'var(--subtext)' }}>
-          {goodWeeks(r.strip.slice(0, 5))} good wks
+          {goodWeeks(startSitWeeks(r))} good wks
         </span>
       </span>
-      {r.strip.slice(0, 5).map((c) => (
+      {startSitWeeks(r).map((c) => (
         <WeekCell key={c.week} cell={c} />
       ))}
     </div>
@@ -115,8 +117,8 @@ export default function StartSitPanel({ row, candidates, pickId, onPick, onBack,
 
       <div style={{ ...GRID, padding: '0 4.5px' }} aria-hidden>
         <span />
-        {weeks.map((w) => (
-          <span key={w} className="text-center tabular-nums" style={{ fontSize: 11, fontWeight: 700, color: 'var(--subtext)' }}>
+        {weeks.map((w, i) => (
+          <span key={w} className="text-center tabular-nums" style={{ fontSize: 11, fontWeight: i === 0 ? 800 : 700, color: i === 0 ? 'var(--gold-bright)' : 'var(--subtext)' }}>
             W{w}
           </span>
         ))}

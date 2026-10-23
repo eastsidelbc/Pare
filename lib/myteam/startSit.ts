@@ -1,7 +1,7 @@
 /**
  * Start / Sit — pure. Compares two of MY players at the same position by
- * matchup only: this week's FPA rank, then how many of the next 5 weeks are
- * Good/Great. Not a projection (design-system §9.4 — the UI says so).
+ * matchup only: this week's FPA rank, then how many weeks of this week + the
+ * next 4 are Good/Great. Not a projection (design-system §9.4 — the UI says so).
  *
  * Rank convention (lib/myteam/rating.ts): #1 = fewest points allowed, so a
  * HIGHER rank = a more generous defense = the easier matchup.
@@ -55,17 +55,25 @@ export function goodWeeks(cells: readonly MatchupCell[]): number {
   return cells.filter((c) => c.rating && GOOD_TIERS.has(c.rating.tier)).length;
 }
 
+/** Start / Sit window: this week + the next 4 (shorter at the end of the season). */
+export const START_SIT_WEEKS = 5;
+
+export function startSitWeeks(row: RosterRow): MatchupCell[] {
+  return [row.thisWeek, ...row.strip].slice(0, START_SIT_WEEKS);
+}
+
 export interface StartSitResult {
   thisWeek: Verdict;
+  /** Good/Great weeks across the Start / Sit window (this week included). */
   next: { verdict: Verdict; a: number; b: number };
-  /** The side the UI highlights: this week decides; the next 5 break a tie / no-call. */
+  /** The side the UI highlights: this week decides; the window breaks a tie / no-call. */
   easier: Verdict;
 }
 
 export function compareStartSit(a: RosterRow, b: RosterRow): StartSitResult {
   const thisWeek = easierWeek(a.thisWeek, b.thisWeek);
-  const aGood = goodWeeks(a.strip);
-  const bGood = goodWeeks(b.strip);
+  const aGood = goodWeeks(startSitWeeks(a));
+  const bGood = goodWeeks(startSitWeeks(b));
   const nextVerdict: Verdict = aGood === bGood ? 'tie' : aGood > bGood ? 'a' : 'b';
   const easier = thisWeek === 'a' || thisWeek === 'b' ? thisWeek : nextVerdict;
   return { thisWeek, next: { verdict: nextVerdict, a: aGood, b: bGood }, easier };

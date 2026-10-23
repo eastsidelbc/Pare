@@ -5,7 +5,9 @@
  * Prefs (username, user id, league, window) persist to
  * localStorage `pare:myteam` (lib/myteam/store.ts) after a hydration guard,
  * like FavoritesProvider. Data comes from our own API (/api/myteam/*), never
- * from Sleeper directly. Coming back to the tab after 10+ min quietly
+ * from Sleeper directly. A saved username restores behind the loading
+ * skeleton (never the username form); coming back from another tab shows the
+ * last roster at once (LastSession). Coming back after 10+ min quietly
  * re-fetches the league bundle (isDataStale, same rule as useRefreshOnReturn).
  * Switching leagues keeps the current roster on screen (dimmed, "Loading
  * {league}…") until the new one arrives (design-system §9.4).
@@ -21,6 +23,22 @@ import type { FantasyLeague, RatingWindow } from '@/lib/myteam/types';
 
 /** Re-fetch on return once the bundle on screen is this old. */
 const REFRESH_ON_RETURN_AFTER_MS = 10 * 60_000;
+
+/**
+ * The last league shown in this page session. Module scope survives tab
+ * switches (client navigation unmounts this route-scoped provider) but not a
+ * reload, so coming back to Fantasy renders the roster at once instead of
+ * re-running user lookup + league fetch behind a loading state.
+ */
+interface LastSession {
+  username: string;
+  leagueId: string;
+  leagues: FantasyLeague[];
+  season: number | null;
+  bundle: LeagueBundle;
+  loadedAt: number;
+}
+let lastSession: LastSession | null = null;
 
 export type MyTeamPhase = 'boot' | 'entry' | 'lookup' | 'notfound' | 'noleagues' | 'pickleague' | 'loading' | 'ready' | 'error';
 
@@ -93,10 +111,11 @@ export function MyTeamProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  /** mode: 'submit' = typed on the form (busy Continue) · 'restore' = saved username (loading skeleton, never the form). */
   const lookup = useCallback(
-    async (username: string, savedLeagueId: string | null) => {
+    async (username: string, savedLeagueId: string | null, mode: 'submit' | 'restore') => {
       const id = ++requestId.current;
-      setPhase('lookup');
+      setPhase(mode === 'restore' ? 'loading' : 'lookup');
       setLookedUp(username);
       try {
         const { status, body } = await getJson<UserLookupResponse>(`/api/myteam/user?u=${encodeURIComponent(username)}`);
@@ -129,13 +148,29 @@ export function MyTeamProvider({ children }: { children: React.ReactNode }) {
     const saved = loadMyTeam();
     if (saved) setPrefs(saved);
     setHydrated(true);
-    if (saved?.username) void lookup(saved.username, saved.leagueId);
+    const cached = lastSession;
+    if (saved?.username && saved.userId && cached && cached.username === saved.username && cached.leagueId === saved.leagueId) {
+      setLeagues(cached.leagues);
+      setSeason(cached.season);
+      setBundle(cached.bundle);
+      loadedAt.current = cached.loadedAt;
+      setPhase('ready');
+      if (isDataStale(cached.loadedAt, Date.now(), REFRESH_ON_RETURN_AFTER_MS)) void loadBundle(cached.leagueId, saved.userId, 'refresh');
+      return;
+    }
+    if (saved?.username) void lookup(saved.username, saved.leagueId, 'restore');
     else setPhase('entry');
-  }, [lookup]);
+  }, [lookup, loadBundle]);
 
   useEffect(() => {
     if (hydrated) saveMyTeam(prefs);
   }, [hydrated, prefs]);
+
+  // Remember what's on screen for the next visit to the tab (see LastSession).
+  useEffect(() => {
+    if (phase !== 'ready' || !bundle || !prefs.username || prefs.leagueId !== bundle.league.leagueId) return;
+    lastSession = { username: prefs.username, leagueId: bundle.league.leagueId, leagues, season, bundle, loadedAt: loadedAt.current };
+  }, [phase, bundle, leagues, season, prefs.username, prefs.leagueId]);
 
   // Refresh on return (tab/app back in front) once the bundle is 10+ min old.
   useEffect(() => {
@@ -156,7 +191,7 @@ export function MyTeamProvider({ children }: { children: React.ReactNode }) {
         setPhase('notfound');
         return;
       }
-      void lookup(username, null);
+      void lookup(username, null, 'submit');
     },
     [lookup],
   );
@@ -172,6 +207,7 @@ export function MyTeamProvider({ children }: { children: React.ReactNode }) {
 
   const unlink = useCallback(() => {
     requestId.current++;
+    lastSession = null;
     setPrefs((p) => unlinkAccount(p));
     setLeagues([]);
     setBundle(null);
@@ -183,7 +219,7 @@ export function MyTeamProvider({ children }: { children: React.ReactNode }) {
 
   const retry = useCallback(() => {
     setError(null);
-    if (prefs.username) void lookup(prefs.username, prefs.leagueId);
+    if (prefs.username) void lookup(prefs.username, prefs.leagueId, 'restore');
     else setPhase('entry');
   }, [prefs.username, prefs.leagueId, lookup]);
 
