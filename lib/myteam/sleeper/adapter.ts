@@ -14,6 +14,7 @@ import type { FantasyLeague, FantasyRoster, FantasyUser, LeagueDetail, LivePoint
 import { toFantasyLeague, toFantasyUser, toLeagueDetail, type SleeperLeagueRaw, type SleeperUserRaw } from './map';
 import { findMyRoster, normalizeRoster, type SleeperPlayerInfo, type SleeperRoster } from './roster';
 import { SLEEPER_API, sleeperJson } from './http';
+import { buildLeagueSeason, type LeagueSeason } from '../leagueSeason';
 
 const MIN = 60_000;
 const HOUR = 60 * MIN;
@@ -36,6 +37,8 @@ const leagues = createKeyedCache<LeagueRecord>({ ttlMs: HOUR, max: 500 });
 const rosterLists = createKeyedCache<SleeperRoster[]>({ ttlMs: 5 * MIN, max: 500 });
 const rosters = createKeyedCache<FantasyRoster | null>({ ttlMs: 5 * MIN, max: 1_000 });
 const matchups = createKeyedCache<SleeperMatchupRaw[]>({ ttlMs: MIN, max: 500 });
+/** Completed weeks' matchups ("Your season" all-play) — final, so an hour is plenty. */
+const pastMatchups = createKeyedCache<SleeperMatchupRaw[]>({ ttlMs: HOUR, max: 5_000 });
 
 function loadLeague(leagueId: string): Promise<LeagueRecord> {
   return leagues.get(
@@ -127,6 +130,26 @@ export const sleeperProvider: FantasyProvider = {
     const row = rows.find((m) => m.roster_id === mine.roster_id);
     if (!row) return null;
     return { week, total: row.points ?? 0, byPlayer: row.players_points ?? {} };
+  },
+
+  async getLeagueSeason(leagueId, userId, weeks): Promise<LeagueSeason | null> {
+    const list = await loadRosterList(leagueId);
+    const mine = findMyRoster(list, userId);
+    if (!mine) return null;
+    const scores = await Promise.all(
+      weeks.map((w) =>
+        pastMatchups.get(
+          `${leagueId}|${w}`,
+          async () => {
+            const raw = await sleeperJson<SleeperMatchupRaw[] | null>(`${SLEEPER_API}/league/${leagueId}/matchups/${w}`);
+            if (!Array.isArray(raw)) throw new Error('matchups missing');
+            return raw;
+          },
+          'myteam:past-matchups',
+        ),
+      ),
+    );
+    return buildLeagueSeason(list, mine.roster_id, scores);
   },
 };
 

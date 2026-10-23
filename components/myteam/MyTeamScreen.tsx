@@ -22,6 +22,7 @@ import PinnedPanel from './PinnedPanel';
 import RosterView, { type RosterSection } from './RosterView';
 import { dateRangeText } from './style';
 import WeekBar from './WeekBar';
+import SeasonSummary from './SeasonSummary';
 
 interface Props {
   bundle: LeagueBundle;
@@ -139,6 +140,7 @@ export default function MyTeamScreen({
   return (
     <>
       {weekBar}
+      <SeasonSummary season={bundle.leagueSeason} />
       {showLive && live && <LiveFreshness live={live} />}
       <FilterRow
         counts={counts}

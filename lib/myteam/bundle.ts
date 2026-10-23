@@ -88,7 +88,12 @@ export async function buildLeagueBundle(leagueId: string, userId: string): Promi
     sleeperProvider.getRoster(leagueId, userId),
   ]);
   if (!roster) return null;
-  const { fpa, usage } = await getSeasonTables(data.season, data.completedWeeks, league.scoring, league.scoringHash);
+  const regularWeeks = data.completedWeeks.filter((w) => !league.playoffWeekStart || w < league.playoffWeekStart);
+  const [{ fpa, usage }, leagueSeason] = await Promise.all([
+    getSeasonTables(data.season, data.completedWeeks, league.scoring, league.scoringHash),
+    // Best-effort: a Sleeper hiccup here must never cost the user their roster.
+    sleeperProvider.getLeagueSeason(leagueId, userId, regularWeeks).catch(() => null),
+  ]);
   const teams = new Set(roster.players.map((p) => p.nflTeam).filter((t): t is string => !!t));
   const { scoring, ...leagueInfo } = league;
   return {
@@ -100,6 +105,7 @@ export async function buildLeagueBundle(leagueId: string, userId: string): Promi
     schedule: pickTeams(data.schedule, teams),
     fpa,
     usage: pickUsage(usage, roster.players.map((p) => p.playerId)),
+    leagueSeason,
     defenseLog: data.defenseLog,
     offenseLog: data.offenseLog,
     injurySource: 'sleeper',

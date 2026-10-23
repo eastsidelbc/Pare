@@ -89,7 +89,7 @@
 | Provider | Endpoints that work | Pare uses | Fields listed | Fields used | Empty / wrong |
 |---|---|---|---|---|---|
 | ESPN | ~65 | 7 | 1294 | 116 (9%) | 83 |
-| Sleeper | ~29 | 8 | 493 | 53 (11%) | 3 |
+| Sleeper | ~29 | 8 | 493 | 58 (12%) | 3 |
 
 Counts are field slots in this catalog. A few names repeat across categories (e.g. `totalPoints` in several ESPN categories). Endpoint counts treat a card that groups several URLs (e.g. My Team's 5 Sleeper calls) as that many endpoints.
 
@@ -2845,12 +2845,12 @@ Base: `https://api.sleeper.app/v1`
 | `taxi` | ✅ Used |
 | `keepers` | ⬜ Not used |
 | `player_map` | ⬜ Not used |
-| `settings.wins` | ⬜ Not used |
-| `settings.losses` | ⬜ Not used |
-| `settings.ties` | ⬜ Not used |
-| `settings.fpts` | ⬜ Not used |
+| `settings.wins` | ✅ Used |
+| `settings.losses` | ✅ Used |
+| `settings.ties` | ✅ Used |
+| `settings.fpts` | ✅ Used |
 | `settings.fpts_against` | ⬜ Not used |
-| `settings.ppts` | ⬜ Not used |
+| `settings.ppts` | ✅ Used |
 | `settings.waiver_position` | ⬜ Not used |
 | `settings.waiver_budget_used` | ⬜ Not used |
 | `settings.total_moves` | ⬜ Not used |

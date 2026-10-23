@@ -151,6 +151,8 @@ Per-user data (username, user/league ids, rosters, matchups) is **never** put in
 
 **Usage tiles (2026-10-23, `lib/myteam/usage.ts`):** the week lines now keep `off_snp`, `tm_off_snp` and `pos_rank_ppr` (every other split/snap/rank key is still dropped; cache keys `myteam-week-lines-*-v2`). `buildUsage` turns them into per-player weeks (league-scored pts, snaps / team snaps, targets / team targets, air yards / team air yards, PPR positional rank) next to the FPA table (same 30-min cache); the bundle sends only my roster's (`LeagueBundle.usage`). The client sums over the Season / Last 4 window (shares = sum ÷ sum).
 
+**Your season (2026-10-23, `lib/myteam/leagueSeason.ts`):** record + points from `/league/{id}/rosters` `settings` (`wins`/`losses`/`ties`, `fpts`+`fpts_decimal`/100, `ppts`+`ppts_decimal`/100); all-play from `/league/{id}/matchups/{week}` for every completed regular-season week (< `playoff_week_start`), cached 1h per league+week (`pastMatchups`). Best-effort: a failure leaves `LeagueBundle.leagueSeason` null, the roster still loads.
+
 ### ESPN endpoints added for My Team (server-only, shared)
 | Endpoint | Used for | Cache |
 |---|---|---|

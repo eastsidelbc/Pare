@@ -205,6 +205,18 @@ test.describe('My Team', () => {
     await noHorizontalScroll(page);
   });
 
+  test('your season line (Wave A3): record, points rank, luck, bench left', async ({ page }) => {
+    await openRoster(page);
+    const line = page.locator('[data-season]');
+    await expect(line).toBeVisible();
+    await expect(line).toContainText('5-1');
+    await expect(line).toContainText('#2 of 10 in points');
+    await expect(line).toContainText('Luck +0.8 W');
+    await expect(line).toContainText('96.3 pts left on bench');
+    await expect(line.locator('.sr-only')).toContainText('all-play 38-16');
+    await noHorizontalScroll(page);
+  });
+
   test('Season ⇄ Last 4 changes meter text; ⓘ opens its note', async ({ page }) => {
     await openRoster(page);
     const meters = page.locator('section[data-section="starters"] button[aria-expanded] [data-tier]');

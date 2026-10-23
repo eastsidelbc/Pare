@@ -8,6 +8,7 @@
  * engine fed by Sleeper's weekly lines.
  */
 
+import type { LeagueSeason } from './leagueSeason';
 import type {
   FantasyLeague,
   FantasyRoster,
@@ -27,6 +28,8 @@ export interface FantasyProvider {
   /** null = the user owns/co-owns no roster in this league. */
   getRoster(leagueId: string, userId: string): Promise<FantasyRoster | null>;
   getLivePoints(leagueId: string, userId: string, week: number): Promise<LivePoints | null>;
+  /** Record, points rank, all-play luck, bench left over `weeks` (completed regular-season weeks); null = no roster. */
+  getLeagueSeason(leagueId: string, userId: string, weeks: readonly number[]): Promise<LeagueSeason | null>;
 }
 
 export interface StatLineSource {

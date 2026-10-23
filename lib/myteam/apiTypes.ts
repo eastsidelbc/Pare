@@ -8,6 +8,7 @@ import type { DefenseGame, OffenseGame } from './defenseProfile';
 import type { FpaTable } from './fpa';
 import type { TeamSchedule } from './schedule';
 import type { UsageMap } from './usage';
+import type { LeagueSeason } from './leagueSeason';
 import type { FantasyLeague, FantasyRoster, FantasyUser, LeagueDetail } from './types';
 
 /** GET /api/myteam/user */
@@ -30,6 +31,8 @@ export interface LeagueBundle {
   fpa: FpaTable;
   /** My players' raw usage weeks (lib/myteam/usage.ts); absent on older bundles + the sandbox. */
   usage?: UsageMap;
+  /** "Your season": record, points rank, all-play luck, bench left; null when Sleeper failed (best-effort). */
+  leagueSeason?: LeagueSeason | null;
   defenseLog: DefenseGame[];
   offenseLog: OffenseGame[];
   /** Where injury tags come from (decided by rule in P0a). */

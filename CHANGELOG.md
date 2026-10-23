@@ -7,6 +7,8 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Added
+- **Fantasy: "Your season" line** (2026-10-23, branch `feat/data-rollout`) — under the week bar: your record, where you rank in points scored, **luck** (actual wins − what your weekly scores would win against every team, all-play) and points left on your bench. Screen readers get the full sentence incl. the all-play record.
+  - See: `docs/devnotes/2026-10-23-fantasy-season-line.md`. Code: `lib/myteam/leagueSeason.ts`, `components/myteam/SeasonSummary.tsx`, provider `getLeagueSeason` (Sleeper matchups per completed week, 1h cache), `LeagueBundle.leagueSeason` (best-effort, null on failure).
 - **Fantasy: usage tiles on every player** (2026-10-23, branch `feat/data-rollout`) — open a player row (or a pinned card on iPad): pts/game in your league's scoring, floor–ceiling (10th–90th percentile week), top-12 weeks, snap share, and for receivers target share + WOPR. Follows the Season | Last 4 toggle. K / DEF show none.
   - See: `docs/devnotes/2026-10-23-fantasy-usage.md`. Code: `lib/myteam/usage.ts`, `components/myteam/UsageStats.tsx`, `LeagueBundle.usage` (optional). Sleeper week lines now keep `off_snp` / `tm_off_snp` / `pos_rank_ppr` (cache keys `myteam-week-lines-*-v2` → one cold refetch of this season's weeks after deploy).
 - **Home: "Game details" under every finished game's box score** (2026-10-23, branch `feat/data-rollout`) — tap to open: scoring by quarter, the home team's win-chance line through the game, 11 team-stat rows (better side in bold), every scoring play with the running score, top defenders + kickers per team, venue + surface. Same summary the box score already downloads — no extra request; upcoming games unchanged.

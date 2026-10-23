@@ -12,6 +12,7 @@
 
 import { normalizeTeamAbbr } from '@/lib/teams';
 import { isFantasyPosition, type FantasyRoster, type InjuryTag, type RosterGroup, type RosterPlayer } from '../types';
+import type { RosterSeasonRaw } from '../leagueSeason';
 
 export interface SleeperRoster {
   roster_id: number;
@@ -21,6 +22,8 @@ export interface SleeperRoster {
   starters: string[] | null;
   reserve?: string[] | null;
   taxi?: string[] | null;
+  /** Record + points (read by "Your season", lib/myteam/leagueSeason.ts). */
+  settings?: RosterSeasonRaw['settings'];
 }
 
 /** The slice of Sleeper's player map My Team needs. */
