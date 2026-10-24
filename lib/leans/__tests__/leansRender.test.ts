@@ -214,6 +214,14 @@ describe('Leans week by week (prop research v3)', () => {
     expect(html).toContain('data-view="usage"');
     for (const h of ['Tgt', 'Car', 'Share', 'Snap', 'aDOT', 'RZ']) expect(html).toContain(`>${h}</span>`);
   });
+  it('prop: a past week’s prop only sees the defense’s weeks before it (no later games)', () => {
+    const past = evaluateProp(savedProp({ id: 'p5', week: 5, gameId: '2026-w5-ATL-LV' }), b);
+    const d = propMatchupData(past, b, ODDS);
+    expect(d?.defense.map((w) => w.week)).toEqual([4, 3, 2, 1]);
+    expect(d?.his.map((w) => w.week)).toEqual([4, 3, 2, 1]);
+    // LV's RB1 games before week 5 = weeks 2–4 → 3 < roleMinCells → the "vs RB1s" row sits out.
+    expect(d?.vsRole).toBeNull();
+  });
   it('prop: depth rows — red-zone looks the defense allows, with a rank', () => {
     expect(data?.rows.some((r) => r.label === 'LV allows red-zone looks / game to RBs' && r.rank.startsWith('#'))).toBe(true);
   });

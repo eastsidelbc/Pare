@@ -141,10 +141,26 @@ function depthRows(games: readonly PlayerGame[], tables: PropTables, opp: string
   return rows;
 }
 
+/**
+ * The tables as a past week's prop saw them: weekly history (team volume, allowance by week,
+ * role games) cut to weeks BEFORE the prop's week. The current week's tables pass through.
+ * Season allowance totals + roles stay as of the bundle's week (no weekly split to cut them).
+ */
+export function tablesBefore(tables: PropTables, week: number): PropTables {
+  if (week >= tables.asOfWeek) return tables;
+  const cutWeeks = <T extends { week: number }>(xs: readonly T[] | undefined) => (xs ?? []).filter((x) => x.week < week);
+  return {
+    ...tables,
+    teamWeek: Object.fromEntries(Object.entries(tables.teamWeek).map(([t, byWeek]) => [t, Object.fromEntries(Object.entries(byWeek).filter(([w]) => Number(w) < week))])),
+    allowWeeks: Object.fromEntries(Object.entries(tables.allowWeeks).map(([d, byPos]) => [d, Object.fromEntries(Object.entries(byPos).map(([p, xs]) => [p, cutWeeks(xs)]))])),
+    roleLog: Object.fromEntries(Object.entries(tables.roleLog).map(([d, byRole]) => [d, Object.fromEntries(Object.entries(byRole).map(([r, xs]) => [r, cutWeeks(xs)]))])),
+  };
+}
+
 /** Null when the bundle has no v2 tables yet, the player isn't in it, or it's an anytime-TD prop. */
 export function propMatchupData(e: EvaluatedProp, bundle: LeansBundle | null, odds: MatchupOdds | null): MatchupData | null {
   const { prop, player } = e;
-  const tables = bundle?.tables;
+  const tables = bundle?.tables ? tablesBefore(bundle.tables, prop.week) : undefined;
   if (!bundle || !tables || !player || !isLineStat(prop.stat)) return null;
   const stat = prop.stat;
   const games = gamesBefore(player, prop.week);

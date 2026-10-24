@@ -53,3 +53,14 @@ looks, efficiency.
 ## Risks
 - The surviving family beat shuffles only barely; 2024–25 overlap with v2's seen data; 2026 lines are unpriced
   (real under prices are often worse than −110).
+
+## Addendum — past-week props had no defense history (Kobe report, same day)
+- **Cause:** `getLeansBundle` trimmed role logs + weekly allowance to the defenses the asked teams face in the
+  CURRENT week (7). A week-6 prop (Jeanty, LV vs BUF) got LAR's history, not BUF's → defense table, "vs RB1s",
+  similar defenses and the receiver table empty. My checks only used week-7 props.
+- **Fix:** keep the asked teams themselves too (a game screen always asks for both of its teams), and
+  `tablesBefore(tables, prop.week)` cuts weekly history to weeks before a past prop's week (no later games).
+  Season allowance totals + roles stay as of the current week (no weekly split to cut them).
+- **Verified:** live bundle BUF,LV → role logs BUF / LV / LAR; Jeanty W6 rush yds 70.5 → defense weeks 5…1 with each
+  RB1 by name, "vs RB1s, last 4: BUF allowed 51 rush yds · over 70.5 in 0 of 4". New render test
+  `prop: a past week’s prop only sees the defense’s weeks before it`.

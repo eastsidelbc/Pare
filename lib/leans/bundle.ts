@@ -100,8 +100,10 @@ export async function getLeansBundle(teams: readonly string[]): Promise<LeansBun
   const data = await shared.get('shared', buildShared, 'leans:shared');
   const want = new Set(teams);
   const players = data.players.filter((p) => want.has(p.team));
-  // Role logs only for the defenses the asked teams face this week; roles only for their players.
-  const opps = new Set([...want].map((t) => data.schedule[t]?.[data.week]).flatMap((e) => (e && e !== 'BYE' ? [e.opp] : [])));
+  // Role logs only for the defenses the asked teams face this week AND the asked teams themselves
+  // (a game screen asks for both of its teams, so a past week's prop finds its opponent too);
+  // roles only for their players.
+  const opps = new Set([...want, ...[...want].map((t) => data.schedule[t]?.[data.week]).flatMap((e) => (e && e !== 'BYE' ? [e.opp] : []))]);
   const ids = new Set(players.map((p) => p.id));
   const roleLog = data.tables ? Object.fromEntries(Object.entries(data.tables.roleLog).filter(([def]) => opps.has(def))) : {};
   const named = new Set(Object.values(roleLog).flatMap((byRole) => Object.values(byRole).flatMap((cells) => (cells ?? []).map((c) => c.playerId))));
