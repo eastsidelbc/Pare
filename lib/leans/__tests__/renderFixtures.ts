@@ -67,12 +67,15 @@ export function bundle(): LeansBundle {
  */
 export function v2Tables(): PropTables {
   const teams = [...FILLERS, 'ATL', 'LV'];
-  const rb = (t: string) => ({ games: 6, rec: 24, tgt: 30, recYd: 180, rushAtt: 120, rushYd: t === 'LV' ? 792 : 600 });
-  const weeks = (passAtt: number) => Object.fromEntries(WEEKS.map((w) => [w, { tgt: 32, rushAtt: 26, passAtt }]));
+  const rb = (t: string) => ({ games: 6, rec: 24, tgt: 30, recYd: 180, rushAtt: 120, rushYd: t === 'LV' ? 792 : 600, air: 30, rzTgt: 3, rzAtt: 12, yac: 150 });
+  const weeks = (passAtt: number) => Object.fromEntries(WEEKS.map((w) => [w, { tgt: 32, rushAtt: 26, passAtt, air: 260, rzTgt: 4, rzAtt: 5 }]));
   return {
     asOfWeek: WEEK,
     allow: Object.fromEntries(teams.map((t) => [t, { RB: rb(t) }])),
-    league: { RB: { games: 6 * teams.length, rec: 24 * teams.length, tgt: 30 * teams.length, recYd: 180 * teams.length, rushAtt: 120 * teams.length, rushYd: 600 * teams.length + 192 } },
+    league: {
+      RB: { games: 6 * teams.length, rec: 24 * teams.length, tgt: 30 * teams.length, recYd: 180 * teams.length, rushAtt: 120 * teams.length, rushYd: 600 * teams.length + 192, air: 30 * teams.length, rzTgt: 3 * teams.length, rzAtt: 12 * teams.length, yac: 150 * teams.length },
+    },
+    allowWeeks: { LV: { RB: WEEKS.map((week, i) => ({ week, team: FILLERS[i], rec: 4, tgt: 5, recYd: 30, rushAtt: 20, rushYd: 132, air: 5, rzTgt: 0, rzAtt: 2, yac: 25 })) } },
     teamWeek: Object.fromEntries(teams.map((t, i) => [t, weeks(t === 'ATL' ? 40 : 30 + (i % 5))])),
     roleLog: {
       LV: {
@@ -82,6 +85,7 @@ export function v2Tables(): PropTables {
       },
     },
     roles: { [BIJAN.id]: 'RB1', [LONDON.id]: 'WR1' },
+    names: { f0: 'Isiah Pacheco', f1: 'Josh Jacobs' },
   };
 }
 

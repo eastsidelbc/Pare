@@ -9,17 +9,13 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { dateRangeText } from '@/components/myteam/style';
-import { buildRanks, cellFor, type MatchupCell } from '@/lib/myteam/viewModel';
 import type { RatingWindow } from '@/lib/myteam/types';
-import { LEAN_CONFIG } from '@/lib/leans/config';
-import { MAX_WEEK } from '@/lib/schedule';
 import { useLeansBundle, weekOfGameId } from '@/lib/leans/client';
-import { fpaBefore, gamesBefore, ratingFor, whyFor } from '@/lib/leans/evaluate';
 import { gameHref } from './GameCard';
 import LeansFooter from './LeansFooter';
 import { LeansShell, LeansTitleBar } from './LeansShell';
 import PlayerVsDefenseView from './PlayerVsDefenseView';
-import { circlePlayer } from './PropRow';
+import { usePlayerVsDefense } from './usePlayerVsDefense';
 import { useWeekGames } from './useWeekGames';
 
 /** "2026-w7-ATL-LV" → ['ATL', 'LV']. */
@@ -36,24 +32,7 @@ export default function PlayerScreen({ playerId, gameId }: { playerId: string; g
   const home = player && matchup ? player.team === matchup.home.abbr : false;
   const opp = matchup ? (home ? matchup.away.abbr : matchup.home.abbr) : '';
 
-  const view = useMemo(() => {
-    if (!bundle || !player || !matchup || week == null) return null;
-    const { rating, of } = ratingFor(bundle, player.position, opp, week, window);
-    const ranks = buildRanks(fpaBefore(bundle.fpa, week), window);
-    const rp = circlePlayer({ playerId: player.id, playerName: player.name, position: player.position, team: player.team }, player.injury);
-    const cells: MatchupCell[] = Array.from({ length: LEAN_CONFIG.data.weekCells }, (_, i) => week + i)
-      .filter((w) => w <= MAX_WEEK)
-      .map((w) => cellFor(rp, w, bundle.schedule, ranks));
-    const rushing = player.position === 'RB' || player.position === 'QB';
-    const last = gamesBefore(player, week).slice(-LEAN_CONFIG.lastN);
-    return {
-      rating,
-      of,
-      why: whyFor(bundle, player.position, opp, week, window),
-      cells,
-      bars: { label: rushing ? 'rush yds' : 'rec yds', games: last.map((g) => ({ week: g.week, value: rushing ? g.rush_yd : g.rec_yd })) },
-    };
-  }, [bundle, player, matchup, week, opp, window]);
+  const view = usePlayerVsDefense(bundle, player, matchup, week, window);
 
   const weekRange = useMemo(() => {
     if (matchups.length === 0) return null;
@@ -100,6 +79,7 @@ export default function PlayerScreen({ playerId, gameId }: { playerId: string; g
         weekRange={weekRange}
         bars={view.bars}
         propsHref={`${gameHref(gameId)}#props`}
+        tables={bundle?.tables ?? null}
       />
     </LeansShell>
   );

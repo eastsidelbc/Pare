@@ -37,6 +37,8 @@ const PPR_RULES = { pts_ppr: 1 };
 type Shared = Omit<LeansBundle, 'players' | 'schedule' | 'generatedAt'> & {
   players: LeansPlayer[];
   schedule: TeamSchedule;
+  /** Every Sleeper name (server memory only; a request gets the few its role logs need). */
+  names: Record<string, string>;
 };
 
 /** Injury tags that keep a player out of this week's roles (Questionable still counts). */
@@ -89,6 +91,7 @@ async function buildShared(): Promise<Shared> {
     players: selectPlayers(lines, playerMap),
     schedule,
     tables: buildPropTables(lines, week, { candidates: (team) => roster.get(team) ?? [] }),
+    names: Object.fromEntries(Object.entries(playerMap).map(([id, p]) => [id, p.name])),
   };
 }
 
@@ -97,13 +100,19 @@ export async function getLeansBundle(teams: readonly string[]): Promise<LeansBun
   const data = await shared.get('shared', buildShared, 'leans:shared');
   const want = new Set(teams);
   const players = data.players.filter((p) => want.has(p.team));
-  // Role logs only for the defenses the asked teams face this week; roles only for their players.
-  const opps = new Set([...want].map((t) => data.schedule[t]?.[data.week]).flatMap((e) => (e && e !== 'BYE' ? [e.opp] : [])));
+  // Role logs only for the defenses the asked teams face this week AND the asked teams themselves
+  // (a game screen asks for both of its teams, so a past week's prop finds its opponent too);
+  // roles only for their players.
+  const opps = new Set([...want, ...[...want].map((t) => data.schedule[t]?.[data.week]).flatMap((e) => (e && e !== 'BYE' ? [e.opp] : []))]);
   const ids = new Set(players.map((p) => p.id));
+  const roleLog = data.tables ? Object.fromEntries(Object.entries(data.tables.roleLog).filter(([def]) => opps.has(def))) : {};
+  const named = new Set(Object.values(roleLog).flatMap((byRole) => Object.values(byRole).flatMap((cells) => (cells ?? []).map((c) => c.playerId))));
   const tables = data.tables && {
     ...data.tables,
-    roleLog: Object.fromEntries(Object.entries(data.tables.roleLog).filter(([def]) => opps.has(def))),
+    roleLog,
+    allowWeeks: Object.fromEntries(Object.entries(data.tables.allowWeeks).filter(([def]) => opps.has(def))),
     roles: Object.fromEntries(Object.entries(data.tables.roles).filter(([id]) => ids.has(id))),
+    names: Object.fromEntries([...named].flatMap((id) => (data.names[id] ? [[id, data.names[id]]] : []))),
   };
   return {
     season: data.season,

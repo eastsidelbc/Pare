@@ -89,7 +89,7 @@
 | Provider | Endpoints that work | Pare uses | Fields listed | Fields used | Empty / wrong |
 |---|---|---|---|---|---|
 | ESPN | ~65 | 12 | 1294 | 183 (14%) | 83 |
-| Sleeper | ~29 | 11 | 493 | 72 (15%) | 3 |
+| Sleeper | ~29 | 11 | 493 | 80 (16%) | 3 |
 
 Counts are field slots in this catalog. A few names repeat across categories (e.g. `totalPoints` in several ESPN categories). Endpoint counts treat a card that groups several URLs (e.g. My Team's 5 Sleeper calls) as that many endpoints.
 
@@ -2449,7 +2449,7 @@ Base: `https://api.sleeper.app/v1`
 | `bonus_pass_yd_400` | ✅ Used |
 | `bonus_fd_qb` | ⬜ Not used |
 
-#### rushing (23) — 23 fields, 4 used
+#### rushing (23) — 23 fields, 8 used
 
 | Field | Status |
 |---|---|
@@ -2457,15 +2457,15 @@ Base: `https://api.sleeper.app/v1`
 | `rush_yd` | ✅ Used |
 | `rush_td` | ✅ Used |
 | `rush_2pt` | ⬜ Not used |
-| `rush_fd` | ⬜ Not used |
+| `rush_fd` | ✅ Used |
 | `rush_lng` | ⬜ Not used |
 | `rush_td_lng` | ⬜ Not used |
 | `rush_ypa` | ⬜ Not used |
-| `rush_yac` | ⬜ Not used |
-| `rush_btkl` | ⬜ Not used |
+| `rush_yac` | ✅ Used |
+| `rush_btkl` | ✅ Used |
 | `rush_tkl_loss` | ⬜ Not used |
 | `rush_tkl_loss_yd` | ⬜ Not used |
-| `rush_rz_att` | ⬜ Not used |
+| `rush_rz_att` | ✅ Used |
 | `rush_40p` | ⬜ Not used |
 | `rush_td_40p` | ⬜ Not used |
 | `rush_td_50p` | ⬜ Not used |
@@ -2477,7 +2477,7 @@ Base: `https://api.sleeper.app/v1`
 | `bonus_rush_rec_yd_200` | ⬜ Not used |
 | `bonus_fd_rb` | ⬜ Not used |
 
-#### receiving (29) — 29 fields, 4 used
+#### receiving (29) — 29 fields, 8 used
 
 | Field | Status |
 |---|---|
@@ -2486,15 +2486,15 @@ Base: `https://api.sleeper.app/v1`
 | `rec_yd` | ✅ Used |
 | `rec_td` | ✅ Used |
 | `rec_2pt` | ⬜ Not used |
-| `rec_fd` | ⬜ Not used |
+| `rec_fd` | ✅ Used |
 | `rec_lng` | ⬜ Not used |
 | `rec_td_lng` | ⬜ Not used |
 | `rec_ypr` | ⬜ Not used |
 | `rec_ypt` | ⬜ Not used |
 | `rec_air_yd` | ✅ Used |
-| `rec_yar` | ⬜ Not used |
-| `rec_drop` | ⬜ Not used |
-| `rec_rz_tgt` | ⬜ Not used |
+| `rec_yar` | ✅ Used |
+| `rec_drop` | ✅ Used |
+| `rec_rz_tgt` | ✅ Used |
 | `rec_0_4` | ⬜ Not used |
 | `rec_5_9` | ⬜ Not used |
 | `rec_10_19` | ⬜ Not used |

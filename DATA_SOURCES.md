@@ -224,7 +224,10 @@ No new upstream. Everything Leans shows comes from sources above, reused server-
 shared in-memory bundle per 10 min (since 2026-10-23 it also carries `tables` = `buildPropTables(lines, week)`
 (`lib/leans/tables.ts`): every defense's allowance per position, league averages, team volume per week, roles going
 in for the asked teams' players (healthy roster = Sleeper map minus D / O / IR), and role logs only for the
-defenses they face — +22 KB raw / ~3.7 KB gzipped for two teams; player games also carry targets, carries, snaps) (`createKeyedCache`, last good on failure; a missing completed week throws so it
+defenses they face — +22 KB raw / ~3.7 KB gzipped for two teams; player games also carry targets, carries, snaps).
+Research v3 (2026-10-23) adds per game `rec_air_yd`, `rec_rz_tgt`, `rush_rz_att`, `rec_yar`, `rush_yac`, `rec_fd`,
+`rush_fd`, `rec_drop`, `rush_btkl` (absent = 0), team air / red-zone totals per week, each faced defense's allowance
+week by week (`allowWeeks`) and the names of its role-log players — two-team bundle ≈ 19 KB gzipped (`createKeyedCache`, last good on failure; a missing completed week throws so it
 never skews ranks), then filtered to the asked teams' players + schedule. Carries **team abbreviations only**. ~65 KB
 for two teams, ~1.5 s cold. Lean thresholds: `lib/leans/config.ts`.
 
