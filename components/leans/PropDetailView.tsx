@@ -3,13 +3,14 @@
  * One deep card: the prop card body (PropBody) + "Why — 3 of 3 signals agree" (or
  * "Why no lean — signals split (1 of 3)") with the three checks; "How Pare makes a
  * lean" below it. (Edit line / Remove retired with typed lines, 2026-10-23.) The player row
- * opens the player-vs-defense screen. Under the checks: "Matchup data" (prop engine v2 facts +
+ * opens the player-vs-defense screen. `below` = the container's tap-to-open sections (player vs
+ * defense + team compare in place, 2026-10-23). Under the checks: "Matchup data" (prop engine v2 facts +
  * the defense-vs-role and similar-defenses history rows — info only, no lean).
  */
 
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Info } from 'lucide-react';
 import type { EvaluatedProp, WhyRow } from '@/lib/leans/evaluate';
 import type { MatchupData as MatchupDataModel } from '@/lib/leans/matchupData';
@@ -28,9 +29,11 @@ export interface PropDetailViewProps {
   loading: boolean;
   /** Prop engine v2 data rows; null = not available (no tables yet, anytime TD). */
   data?: MatchupDataModel | null;
+  /** Tap-to-open sections under the card (player vs defense, team compare — the container builds them). */
+  below?: ReactNode;
 }
 
-export default function PropDetailView({ e, why, loading, data = null }: PropDetailViewProps) {
+export default function PropDetailView({ e, why, loading, data = null, below = null }: PropDetailViewProps) {
   const [how, setHow] = useState(false);
   const lean = e.lean;
   return (
@@ -54,6 +57,7 @@ export default function PropDetailView({ e, why, loading, data = null }: PropDet
         )}
         {data && <MatchupData data={data} side={e.prop.side} opp={e.prop.opp} stat={e.prop.stat} name={e.prop.playerName} position={e.prop.position} />}
       </div>
+      {below}
       <button
         type="button"
         onClick={() => setHow((v) => !v)}

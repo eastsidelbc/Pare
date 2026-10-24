@@ -227,6 +227,37 @@ describe('Leans week by week (prop research v3)', () => {
   });
 });
 
+describe('Leans prop screen dropdowns (player vs defense + team compare, in place)', () => {
+  const b = bundle();
+  const m = matchup('ATL', 'LV');
+  const { rating, of } = ratingFor(b, 'RB', 'LV', 7, 'season');
+  const pvd = {
+    player: BIJAN, matchup: m, window: 'season' as const, onWindow: () => {}, rating, of,
+    why: whyFor(b, 'RB', 'LV', 7, 'season'), cells: [], weekRange: null,
+    bars: { label: 'rush yds', games: BIJAN.games.slice(-4).map((g) => ({ week: g.week, value: g.rush_yd })) },
+    propsHref: '/leans/2026-w7-ATL-LV#props',
+  };
+  it('embedded player view: no header card, no props link, no footer — the meter + game log stay', () => {
+    const html = render(createElement(PlayerVsDefenseView, { ...pvd, embedded: true }));
+    expect(html).not.toContain(FOOTER);
+    expect(html).not.toContain('See prop lines for Bijan');
+    expect(html).toContain('LV allows the 1st-most RB pts');
+    expect(html).toContain('Season game log');
+  });
+  it('rows start closed and open in place; the slot sits under the prop card', async () => {
+    const { default: ExpandRow } = await import('@/components/leans/ExpandRow');
+    const row = (open: boolean) => createElement(ExpandRow, { id: 'player-vs-defense', title: 'Bijan Robinson vs LV', note: 'player vs defense', open, onToggle: () => {} }, createElement('p', null, 'INSIDE'));
+    const closed = render(row(false));
+    expect(closed).toContain('aria-expanded="false"');
+    expect(closed).not.toContain('INSIDE');
+    expect(render(row(true))).toContain('INSIDE');
+    const e = evaluateProp(savedProp(), b);
+    const html = render(createElement(PropDetailView, { e, why: propWhy(e, b), loading: false, below: row(false) }));
+    expect(html).toContain('data-expand="player-vs-defense"');
+    expect(html.indexOf('data-prop-detail')).toBeLessThan(html.indexOf('data-expand="player-vs-defense"'));
+  });
+});
+
 describe('Leans player vs defense (/leans/player/[playerId])', () => {
   const b = bundle();
   const m = matchup('ATL', 'LV');

@@ -64,3 +64,12 @@ looks, efficiency.
 - **Verified:** live bundle BUF,LV → role logs BUF / LV / LAR; Jeanty W6 rush yds 70.5 → defense weeks 5…1 with each
   RB1 by name, "vs RB1s, last 4: BUF allowed 51 rush yds · over 70.5 in 0 of 4". New render test
   `prop: a past week’s prop only sees the defense’s weeks before it`.
+
+## Addendum 2 — prop screen dropdowns (Kobe: "aaron jones against ind the compare, on that same page" → both)
+- `components/leans/ExpandRow.tsx` (new): 48px tap-to-open card row (gold chevron turns), content only while open.
+- `components/leans/usePlayerVsDefense.ts` (new): the player screen's view model, now shared; `PlayerScreen` uses it.
+- `PlayerVsDefenseView` `embedded`: no header card, no "See prop lines" link, no footer (the prop page has them).
+- `PropDetailView` `below` slot; `PropScreen` builds "<Player> vs <OPP> · player vs defense" and "<AWAY> vs <HOME> ·
+  team compare" (the same inline `ComparePane` the game screen uses, shared NFL stats — no new fetch).
+- Verified: render tests (embedded view drops header / link / footer, rows closed by default, slot under the card);
+  `npm run check` clean; 582 tests; gates l5 14/15, l6 16/17 (build step only — dev holds :4000); dev prop page 200.
