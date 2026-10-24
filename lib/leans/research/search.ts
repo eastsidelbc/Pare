@@ -327,3 +327,55 @@ export function overlap(a: Rule, b: Rule, rows: readonly FeatureRow[]): number {
 
 export const ruleText = (r: Pick<Rule, 'market' | 'side' | 'conds'>) =>
   `${r.market}:${r.side} — ${r.conds.map((c) => `${c.feature} ${c.op} ${c.threshold}`).join(' AND ')}`;
+
+// ── the whole search (real + shuffles) ─────────────────────────────────
+
+export interface SearchAllResult {
+  units: number;
+  conditions: number;
+  evaluated: number;
+  real: Scored[];
+  unitMax: Map<string, number>;
+  nullMax: number[];
+  /** 95th percentile of the best shuffled score. */
+  bar: number;
+  survivors: Scored[];
+}
+
+/**
+ * Every unit's real search, then `nullRuns` shuffled copies (seed = run × 1000 + unit index);
+ * survivors = real rules above the 95th percentile of the shuffled bests.
+ */
+export function searchAll(
+  rows: readonly FeatureRow[],
+  markets: readonly MarketKey[],
+  seasonA: number,
+  nullRuns: number,
+  onProgress?: (run: number, nullMax: readonly number[]) => void,
+): SearchAllResult {
+  const features = Object.keys(rows.find((r) => r.f)?.f ?? {}).sort();
+  const units = markets.flatMap((m) => (['over', 'under'] as const).map((s) => buildUnit(rows, m, s, seasonA, features)));
+  let evaluated = 0;
+  const real: Scored[] = [];
+  const unitMax = new Map<string, number>();
+  for (const u of units) {
+    const r = searchUnit(u);
+    evaluated += r.evaluated;
+    real.push(...r.best);
+    unitMax.set(`${u.market}:${u.side}`, r.max);
+  }
+  real.sort((a, b) => b.score - a.score);
+  const nullMax: number[] = [];
+  for (let run = 1; run <= nullRuns; run++) {
+    let best = -Infinity;
+    units.forEach((u, k) => {
+      const r = searchUnit(u, shuffledWins(u, rng(run * 1000 + k)));
+      if (r.max > best) best = r.max;
+    });
+    nullMax.push(best);
+    onProgress?.(run, nullMax);
+  }
+  const sorted = [...nullMax].sort((a, b) => a - b);
+  const bar = sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(0.95 * sorted.length))] : Infinity;
+  return { units: units.length, conditions: units.reduce((s, u) => s + u.conds.length, 0), evaluated, real, unitMax, nullMax, bar, survivors: real.filter((r) => r.score > bar) };
+}

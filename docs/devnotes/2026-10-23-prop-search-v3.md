@@ -73,3 +73,23 @@ looks, efficiency.
   team compare" (the same inline `ComparePane` the game screen uses, shared NFL stats — no new fetch).
 - Verified: render tests (embedded view drops header / link / footer, rows closed by default, slot under the card);
   `npm run check` clean; 582 tests; gates l5 14/15, l6 16/17 (build step only — dev holds :4000); dev prop page 200.
+
+## Addendum 3 — Leans lab (weekly champion vs challengers)
+Kobe: "each week take what happened, learn, test formulas, add what works next week". Picked: automatic on the Mac
+mini, flag + his approval (never auto-promote). Not an A/B test (that splits users): every formula is graded on
+every prop in shadow mode, which is faster and fairer.
+- `lib/leans/research/lab.ts` (pure): ledger, `gradeWeek` (only entries frozen before the week, once per week),
+  `verdictOf` (READY = ≥ 60 forward bets, p < 0.05 vs −110 break-even, ROI above the champion's same weeks),
+  `addChallengers` (≤ 3 / week, no repeats, no > 70%-overlap copies, ids `c<n>`, retire losers, cap 20),
+  `scoreboard`.
+- `searchAll` (`search.ts`): the real search + shuffles as one function; `scripts/prop-search.ts` now uses it
+  (refactor check: identical 14,140,296 rules, best 0.1507).
+- `scripts/leans-lab.ts --weekly` + `scripts/leans-lab.sh` (pm2 wrapper). Ledger / scoreboard / log in
+  `.cache/leans-lab/<season>/` (gitignored).
+- **Integration test** (throwaway ledger pretending weeks 5–6 were new, 2 shuffles): graded W5–6 (champion v1
+  105–92, +1.8% at −110; the 2 seeds 5–5 and 1–2), learned through W6 (14,450,796 rules, 40 survivors), froze 3
+  distinct new challengers. Found + fixed: duplicate ids, near-copy challengers. Real ledger then reset: champion +
+  2 seeds, first week 7, no results.
+- Tests: `lib/leans/__tests__/researchLab.test.ts` (forward-only grading, once per week, promotion bar, near-copies,
+  retire + ids).
+- Mac mini setup (Kobe): see CLAUDE.md "Leans lab". Runtime ~7 min / week with 200 shuffles.

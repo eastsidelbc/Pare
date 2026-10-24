@@ -159,6 +159,8 @@ pm2 restart pare                # app = "pare" (localhost:4000); tunnel = "pare-
 pm2 logs pare                   # watch for ESPN 429/403
 ```
 
+**Leans lab (Mac mini, weekly, since 2026-10-23):** `pm2 start scripts/leans-lab.sh --name leans-lab --cron-restart "0 6 * * 2" --no-autorestart` then `pm2 save`. Tuesdays 06:00 it grades last week (champion = the live lean, challengers = frozen rules), re-learns, freezes ≤ 3 new challengers. Read `.cache/leans-lab/2026/scoreboard.md`; a "READY" rule goes live only after Kobe says yes. Manual run: `sh scripts/leans-lab.sh`. Pre-registration: `docs/plans/2026-10-23-leans-lab/preregistration.md`.
+
 **iOS (Mac mini only, in `~/Pare-ios` — never `~/Pare`):** `open ios/Pare.xcodeproj` (build/run) · terminal build: `xcodebuild -project ios/Pare.xcodeproj -scheme Pare -destination "id=<UDID>" build` (UDIDs: `xcrun simctl list devices available`).
 
 ## Environment gotchas

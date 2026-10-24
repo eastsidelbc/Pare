@@ -16,10 +16,10 @@ import { createHash } from 'node:crypto';
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { addResult, hitPct, roi, type Tally, type TallyMap } from '@/lib/leans/backtest';
-import { buildFeatureRows, SIDES, TESTED_MARKETS, type FeatureRow } from '@/lib/leans/backtestV2';
+import { buildFeatureRows, TESTED_MARKETS, type FeatureRow } from '@/lib/leans/backtestV2';
 import { researchFeatures } from '@/lib/leans/research/features';
 import { FINALISTS } from '@/lib/leans/research/finalists';
-import { buildUnit, overlap, rng, ruleFires, ruleText, searchUnit, shuffledWins, type Rule, type Scored } from '@/lib/leans/research/search';
+import { overlap, ruleFires, ruleText, searchAll, type Rule, type Scored } from '@/lib/leans/research/search';
 import { normCdf } from '@/lib/formulas/stats';
 import { buildFpaTable } from '@/lib/myteam/fpa';
 import { loadSeason, type LoadOptions } from './leansBacktestData';
@@ -57,35 +57,15 @@ function writeFinalists(body: string): void {
 async function search() {
   const t0 = Date.now();
   const rows = (await Promise.all(SEARCH_SEASONS.map((s) => rowsFor(s)))).flat();
-  const features = Object.keys(rows.find((r) => r.f)?.f ?? {}).sort();
-  const units = TESTED_MARKETS.flatMap((m) => SIDES.map((s) => buildUnit(rows, m, s, SEARCH_SEASONS[0], features)));
-  console.log(`rows ${rows.length} · features ${features.length} · units ${units.length} · conditions ${units.reduce((s, u) => s + u.conds.length, 0)}`);
-
-  let evaluated = 0;
-  const real: Scored[] = [];
-  const unitMax = new Map<string, number>();
-  for (const u of units) {
-    const r = searchUnit(u);
-    evaluated += r.evaluated;
-    real.push(...r.best);
-    unitMax.set(`${u.market}:${u.side}`, r.max);
-  }
-  real.sort((a, b) => b.score - a.score);
-  console.log(`real search: ${evaluated.toLocaleString()} rules in ${((Date.now() - t0) / 1000).toFixed(0)}s · best ${real[0] ? real[0].score.toFixed(4) : '—'}`);
-
-  const nullMax: number[] = [];
   const tn = Date.now();
-  for (let run = 1; run <= NULL_RUNS; run++) {
-    let best = -Infinity;
-    units.forEach((u, k) => {
-      const r = searchUnit(u, shuffledWins(u, rng(run * 1000 + k)));
-      if (r.max > best) best = r.max;
-    });
-    nullMax.push(best);
-    if (run % 10 === 0) console.log(`  shuffle ${run}/${NULL_RUNS} · ${((Date.now() - tn) / 1000).toFixed(0)}s · null best so far p95 ${quantile(nullMax, 0.95).toFixed(4)}`);
-  }
-  const bar = quantile(nullMax, 0.95);
-  const survivors = real.filter((r) => r.score > bar);
+  const res = searchAll(rows, TESTED_MARKETS, SEARCH_SEASONS[0], NULL_RUNS, (run, nm) => {
+    if (run % 10 === 0) console.log(`  shuffle ${run}/${NULL_RUNS} · ${((Date.now() - tn) / 1000).toFixed(0)}s · null best so far p95 ${quantile([...nm], 0.95).toFixed(4)}`);
+  });
+  const { real, unitMax, nullMax, bar, survivors, evaluated } = res;
+  const features = Object.keys(rows.find((r) => r.f)?.f ?? {});
+  const units = { length: res.units, conditions: res.conditions };
+  console.log(`rows ${rows.length} · features ${features.length} · units ${units.length} · conditions ${units.conditions}`);
+  console.log(`real search: ${evaluated.toLocaleString()} rules · best ${real[0] ? real[0].score.toFixed(4) : '—'}`);
 
   // Finalists: greedy, ≤ 3 per unit, ≤ 12, overlap ≤ 0.7. None survive → the 10 best, info only.
   const pool = survivors.length > 0 ? survivors : real;
@@ -109,7 +89,7 @@ async function search() {
 Generated ${new Date().toISOString().slice(0, 10)} at commit \`${commit}\` by \`scripts/prop-search.ts --search\`.
 Pre-registration: docs/plans/2026-10-23-prop-search-v3/preregistration.md.
 
-- Search rows: ${rows.length} props (2024 + 2025) · ${features.length} features · ${units.reduce((s, u) => s + u.conds.length, 0)} conditions over 18 market × side units.
+- Search rows: ${rows.length} props (2024 + 2025) · ${features.length} features · ${units.conditions} conditions over 18 market × side units.
 - **Rules evaluated (real search): ${evaluated.toLocaleString()}**; the same search ran ${NULL_RUNS} more times on shuffled results (≈ ${(evaluated * NULL_RUNS).toLocaleString()} more).
 - Score = Wilson 95% lower bound of the hit rate − the unit's break-even (real prices); must clear break-even in both seasons.
 - **Shuffle bar (95th percentile of the best shuffled score): ${bar.toFixed(4)}** · shuffled best: median ${quantile(nullMax, 0.5).toFixed(4)}, max ${Math.max(...nullMax).toFixed(4)}.
