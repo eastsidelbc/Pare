@@ -32,4 +32,6 @@ He picked a compact strip (not the full division tables) so Fantasy stays near t
 - UI: Kobe to check at 393px.
 
 ## Risks
-- Leaders standings can be up to ~6 min stale (60s cache + 300s page window) right after a final.
+- ~~Up to ~6 min stale~~ — corrected after the first build: Next takes the shortest timer on a page, so the strip's
+  60s cache pulled `/leaderboards` to a **1-min** ISR window (route table `1m`). Standings ≤ ~2 min behind; one ESPN
+  standings call per minute while the page is in use; board data stays cached 30 min. Kobe kept 1 min (2026-10-23).
