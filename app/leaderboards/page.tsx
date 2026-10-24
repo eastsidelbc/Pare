@@ -27,7 +27,8 @@ import { SectionLabel } from '@/components/standings/StandingsRow';
 // Page ISR window: 5 min. (It was 21600 on paper, but the root layout's 5-min schedule
 // fetch already pulled the real window down to 300s — now it says so.) Board DATA is
 // fetch-cached 30 min in lib/leaders.ts + lib/fantasy.ts, so most re-renders are cheap.
-// Must stay a literal.
+// Must stay a literal. Effective window is 60s since 2026-10-23: the division strip's standings cache
+// (`getStandingsCached`, 60s) is the shortest timer on the page, and Next uses the shortest.
 export const revalidate = 300;
 
 const SECTIONS: { key: LeaderSection; label: string; id: string }[] = [
