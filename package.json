@@ -7,7 +7,7 @@
     "dev:clean": "node -e \"require('fs').rmSync('.next', {recursive:true, force:true}); require('fs').rmSync('.turbo', {recursive:true, force:true}); require('fs').rmSync('node_modules/.cache', {recursive:true, force:true});\" && npm run dev",
     "clean": "node -e \"require('fs').rmSync('.next', {recursive:true, force:true}); require('fs').rmSync('.turbo', {recursive:true, force:true}); require('fs').rmSync('node_modules/.cache', {recursive:true, force:true});\"",
     "build": "next build --turbopack",
-    "start": "next start -p 4000",
+    "start": "next start -H 127.0.0.1 -p 4000",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "check": "tsc --noEmit && eslint",

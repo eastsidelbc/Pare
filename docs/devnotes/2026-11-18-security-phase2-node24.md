@@ -1,0 +1,52 @@
+# 2026-11-18 — Security phase 2, step 1: Node 20 → 24
+
+Branch `security/phase2-node24`.
+
+## Why
+
+Node 20 ("Iron") reached end-of-life on 2026-04-30, so new Node security bugs are no longer
+fixed on 20. Production (`pare` under pm2), the pm2 daemon and nvm's default were all still on
+v20.19.2.
+
+## Choice: 24, not 26
+
+| | Status (2026-11-18) | Fixes until | On the Mac mini |
+|---|---|---|---|
+| 24 "Krypton" | maintenance LTS | 2028-04-30 | v24.22.3 (latest 24), installed |
+| 26 "Lithium" | active LTS since 2026-10-28 | 2029-04-30 | not installed |
+
+24 was picked: it's already installed, it's where Next 15.5 is most proven, and 17 months of fixes
+remain. Revisit 26 together with the Next 16 upgrade.
+
+## What changed / plan
+
+- CI: `node-version: 24` in both jobs (`check`, `e2e`), so the e2e job browser-tests the Node 24
+  production build.
+- Production moves at the Phase 2 pm2 switchover: `ecosystem.config.cjs` sets `pare`'s interpreter to
+  the Node 24 binary. The **pm2 daemon stays on Node 20**: moving it means `pm2 update` (kill +
+  resurrect), which is banned on this shared host. The daemon has no network listener; this is
+  recorded as an accepted risk until the security lead OKs a daemon restart.
+- Homebrew's `node` is v23.11.0 (odd-numbered, end-of-life). Pare doesn't use it; it's left alone
+  (it may serve other projects).
+
+## Step 2: `ecosystem.config.cjs` + localhost-only
+
+- New `ecosystem.config.cjs` is the single source of truth for `pare`, `pare-tunnel`, `leans-lab`.
+  `pare` runs `node_modules/next/dist/bin/next start -H 127.0.0.1 -p 4000` directly (no `npm`
+  wrapper, so pm2's signals reach the server) on the Node 24 binary, with `NODE_ENV=production`,
+  `NEXT_TELEMETRY_DISABLED=1`, `min_uptime 30s` / `max_restarts 10` / exponential backoff,
+  `kill_timeout 10s`, and `max_memory_restart 1G` (measured ~123 MB normal). Log files unchanged
+  (pm2-logrotate: 10 MB × 14, compressed).
+- `package.json` `start` is now `next start -H 127.0.0.1 -p 4000` too, so the old pm2 entry (or a
+  reboot before `pm2 save`) also stays off the Wi-Fi.
+- `~/.cloudflared/pare.yml`: `service: http://localhost:4000` → `http://127.0.0.1:4000`, so the
+  tunnel never tries IPv6 `::1`, which Pare no longer listens on.
+- The Node 24 binary on the Mac mini was checked against nodejs.org: the tarball matches
+  SHASUMS256.txt and `bin/node` SHA-256 `ba707358…e854` is identical to the installed one.
+- Every pm2 command in docs/scripts names the app (`--only pare`); never `all`/`resurrect`/`kill`/`update`.
+
+## Verified (workbench, fresh `npm ci` under v24.22.3 / npm 11.19.1)
+
+- `npm run check` exit 0 · `npm run test:run` 586/586 · `npm run build` exit 0 (19/19 pages)
+- `npm audit --omit=dev`: 0 critical / 0 high (unchanged)
+- e2e: the CI run on this branch (Node 24 production build, 50 tests)
