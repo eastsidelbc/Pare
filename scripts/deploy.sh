@@ -75,6 +75,8 @@ wait_for_commit() {
     got="$(health_commit "$url")"
     [ "$got" = "$want" ] && { green "  ✓ $url → $got"; return 0; }
     sleep 2; i=$((i + 2))
+    # Progress, so a slow check never looks frozen.
+    [ $((i % 6)) -eq 0 ] && echo "    … ${i}s/${secs}s waiting for $want at $url (got '${got:-no answer}')"
   done
   red "  ✗ $url → '${got:-no answer}' (wanted $want after ${secs}s)"
   return 1
@@ -99,7 +101,10 @@ activate() {
 }
 
 verify_live() { # <short sha>
-  [ "${PARE_DEPLOY_TEST_FAIL:-0}" = "1" ] && { red "  (PARE_DEPLOY_TEST_FAIL=1: health check fails on purpose)"; set -- "intentional-mismatch"; }
+  if [ "${PARE_DEPLOY_TEST_FAIL:-0}" = "1" ]; then
+    red "  (PARE_DEPLOY_TEST_FAIL=1: health check fails on purpose after 20 s; Ctrl+C during it tests the interrupt rollback)"
+    wait_for_commit "$LOCAL_HEALTH" "intentional-mismatch" 20 || return 1
+  fi
   wait_for_commit "$LOCAL_HEALTH" "$1" 60 || return 1
   wait_for_commit "$PUBLIC_HEALTH" "$1" 30 || return 1
   local code; code="$(curl -s -m 10 -o /dev/null -w '%{http_code}' "$PUBLIC_HOME" || true)"
@@ -126,7 +131,39 @@ prune() {
 for c in git npm node pm2 gh curl; do command -v "$c" >/dev/null || die "missing command: $c"; done
 mkdir -p "$RELEASES"
 mkdir "$RELEASES/.lock" 2>/dev/null || die "another deploy is running (stale? rmdir $RELEASES/.lock)"
-REL=""; SWITCHED=0
+REL=""; SWITCHED=0; VERIFIED=0; PREV_DIR=""; SHORT=""; LIVE_COMMIT=""
+
+# Put the previous release back (health failed, or Ctrl+C before it passed). Not interruptible.
+roll_back() { # <reason for the history log>
+  trap '' INT TERM HUP
+  red ""
+  red "████  ROLLING BACK to ${LIVE_COMMIT:-previous}: $1  ████"
+  activate "$PREV_DIR"
+  if wait_for_commit "$LOCAL_HEALTH" "${LIVE_COMMIT:-unknown}" 60; then
+    history_line "ROLLBACK" "$SHORT $1 -> back on $LIVE_COMMIT"
+    # Old site is healthy again: the failed release is no longer needed (logs are in pm2's files).
+    # If the rollback itself is unhealthy (branch below), it stays on disk for inspection.
+    if git -C "$REPO" worktree remove --force "$REL"; then echo "  removed failed release $(basename "$REL")"
+    else red "  (could not remove $REL; next successful deploy prunes it)"; fi
+    red "✖ Deploy of $SHORT did not go live ($1). pare.gg is on ${LIVE_COMMIT}. Logs: pm2 logs $APP"
+  else
+    history_line "BROKEN" "$SHORT $1, rollback to $LIVE_COMMIT also unhealthy"
+    red "✖✖ ROLLBACK ALSO UNHEALTHY. pare.gg may be down. Run: pm2 logs $APP"
+  fi
+}
+
+# Ctrl+C / kill: before the switch, just stop (cleanup removes the unfinished release); after the
+# switch but before the health check passed, roll back first. npm forwards Ctrl+C as SIGTERM.
+on_signal() {
+  trap '' INT TERM HUP
+  red ""; red "Interrupted."
+  if [ "$SWITCHED" -eq 1 ] && [ "$VERIFIED" -eq 0 ] && [ -n "$PREV_DIR" ]; then
+    roll_back "interrupted before the health check passed"
+  fi
+  exit 130
+}
+trap on_signal INT TERM HUP
+
 cleanup() {
   local rc=$?
   if [ "$rc" -ne 0 ] && [ -n "$REL" ] && [ "$SWITCHED" -eq 0 ] && [ -d "$REL" ]; then
@@ -208,22 +245,10 @@ PREV_DIR="$LIVE_DIR"
 SWITCHED=1
 activate "$REL"
 if ! verify_live "$SHORT"; then
-  red ""
-  red "████  HEALTH CHECK FAILED — ROLLING BACK to ${LIVE_COMMIT:-previous}  ████"
-  activate "$PREV_DIR"
-  if wait_for_commit "$LOCAL_HEALTH" "${LIVE_COMMIT:-unknown}" 60; then
-    history_line "ROLLBACK" "$SHORT failed health -> back on $LIVE_COMMIT"
-    # Old site is healthy again: the failed release is no longer needed (logs are in pm2's files).
-    # If the rollback itself is unhealthy (branch below), it stays on disk for inspection.
-    if git -C "$REPO" worktree remove --force "$REL"; then echo "  removed failed release $(basename "$REL")"
-    else red "  (could not remove $REL; next successful deploy prunes it)"; fi
-    red "✖ Deploy of $SHORT FAILED and was rolled back. pare.gg is on ${LIVE_COMMIT}. Logs: pm2 logs $APP"
-  else
-    history_line "BROKEN" "$SHORT failed health, rollback to $LIVE_COMMIT also unhealthy"
-    red "✖✖ ROLLBACK ALSO UNHEALTHY. pare.gg may be down. Run: pm2 logs $APP"
-  fi
+  roll_back "health check failed"
   exit 1
 fi
+VERIFIED=1
 
 # ── 6. tidy ──────────────────────────────────────────────────────────────
 step "6/6 Tidy"
