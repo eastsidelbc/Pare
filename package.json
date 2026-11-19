@@ -22,7 +22,7 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.21",
     "lucide-react": "^0.544.0",
-    "next": "^15.5.27",
+    "next": "^15.5.29",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "tailwind-merge": "^3.7.0"
@@ -36,10 +36,15 @@
     "@types/react-dom": "^19",
     "critters": "^0.0.23",
     "eslint": "^9",
-    "eslint-config-next": "15.5.4",
+    "eslint-config-next": "15.5.29",
     "postcss": "^8.4.24",
     "tailwindcss": "^4.3.3",
     "typescript": "5.9.3",
     "vitest": "^2.1.9"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "^8.5.23"
+    }
   }
 }

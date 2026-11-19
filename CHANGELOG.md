@@ -6,6 +6,10 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ## [Unreleased]
 
+### Security
+- **Next.js 15.5.27 → 15.5.29 + patched postcss / source-map-js** (2026-11-18, branch `security/phase1-next-patch`) — clears Next advisories GHSA-2464-fhr4-w9xw (image-optimizer RCE, glibc Linux only) and GHSA-p3m5-59mp-jv5r (Server Actions DoS; Pare has none), plus postcss ≤ 8.5.22 and source-map-js 1.2.1. `npm audit --omit=dev`: 1 critical / 2 high → 0 / 0. Next 15.5.29 still pins postcss 8.4.31, so `package.json` `overrides.next.postcss` = `^8.5.23` — **remove that override when moving to Next 16** (16.4.6 ships 8.5.23 itself). `eslint-config-next` aligned to 15.5.29.
+  - See: `docs/devnotes/2026-11-18-security-phase1-next-patch.md`.
+
 ### Changed
 - **Leans prop screen: "Matchup data" — how this defense did against his role, and more** (2026-10-23, branch `feat/prop-engine-v2`) — under the checks on every yardage / receptions prop: what this defense allowed to the player's role in its last games (WR1s, RB1s … "vs WR1s, last 5: SF allowed 6.2 receptions · over 5.5 in 2 of 5") with hit dots; how he did against defenses like this one; for receiving props what the defense allowed to each receiver (WR1 / WR2 / WR3 / TE1 / RB1); plus his share of targets / carries and snaps (season → last 3), his median, what the line implies for his team's points, and the team's pass rate. Info only — the lean itself is unchanged: the 14 new tailored signals were tuned on 2024 and graded once on 2025 (pre-registered), and passed no more often than luck would, so none of them makes a lean.
   - See: `docs/devnotes/2026-10-23-prop-engine-v2.md` (report `docs/devnotes/2026-10-23-prop-engine-v2/report-2025.md`, pre-registration `docs/plans/2026-10-23-prop-engine-v2/preregistration.md`, ADR `docs/adr/2026-10-23-prop-engine-v2.md`). `lib/leans/propSignals.ts`, `tables.ts`, `roles.ts`, `matchupData.ts`, `components/leans/MatchupData.tsx`.
