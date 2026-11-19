@@ -7,6 +7,8 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ## [Unreleased]
 
 ### Security
+- **Generic API errors, slimmer `/api/health`, no fake `PUT`** (2026-11-19, branch `security/phase3-errors-health`) — stale-data responses from offense / defense / last4 say `upstream-unavailable` instead of the raw upstream error (details stay in the server log); `/api/health` returns only `{ ok, commit, builtAt }`; `PUT`/`POST /api/preferences` → 405 (stub removed). e2e-tested.
+  - See: `docs/devnotes/2026-11-19-security-phase3-errors-health.md`.
 - **Per-visitor API rate limit** (2026-11-19, branch `security/phase3-rate-limit`) — `middleware.ts` + `lib/rateLimit.ts`: a token bucket per Cloudflare client IP (`CF-Connecting-IP` only; local requests pass). 240/min general, 60/min for routes that trigger fresh ESPN/Sleeper calls; over → `429` + `Retry-After`. Bounded memory (10k IPs). Stops one script from spending the shared upstream budget. Tested in vitest and e2e (bad input → 400 on 9 routes, 61st fast request → 429).
   - See: `docs/devnotes/2026-11-19-security-phase3-rate-limit.md`.
 - **Security headers: CSP (enforced), HSTS, COOP/CORP, X-Frame-Options DENY** (2026-11-19, branches `security/phase3-headers` + `security/phase3-csp-enforce`) — self-only Content-Security-Policy (no third-party hosts, no eval, no plugins, `frame-ancestors 'none'`), Report-Only first, enforced after 0 violations (CI e2e + phone/iOS); HSTS 1 year + subdomains (no preload); `productionBrowserSourceMaps: false` explicit. Scripts keep `'unsafe-inline'` (nonces would end ISR; SRI is webpack-only). Tested by `lib/__tests__/securityHeaders.test.ts` + `e2e/security.spec.ts` (headers on every main page, no CSP console violations).
