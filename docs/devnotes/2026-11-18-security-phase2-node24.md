@@ -29,6 +29,22 @@ remain. Revisit 26 together with the Next 16 upgrade.
 - Homebrew's `node` is v23.11.0 (odd-numbered, end-of-life). Pare doesn't use it; it's left alone
   (it may serve other projects).
 
+## Step 2: `ecosystem.config.cjs` + localhost-only
+
+- New `ecosystem.config.cjs` is the single source of truth for `pare`, `pare-tunnel`, `leans-lab`.
+  `pare` runs `node_modules/next/dist/bin/next start -H 127.0.0.1 -p 4000` directly (no `npm`
+  wrapper, so pm2's signals reach the server) on the Node 24 binary, with `NODE_ENV=production`,
+  `NEXT_TELEMETRY_DISABLED=1`, `min_uptime 30s` / `max_restarts 10` / exponential backoff,
+  `kill_timeout 10s`, and `max_memory_restart 1G` (measured ~123 MB normal). Log files unchanged
+  (pm2-logrotate: 10 MB × 14, compressed).
+- `package.json` `start` is now `next start -H 127.0.0.1 -p 4000` too, so the old pm2 entry (or a
+  reboot before `pm2 save`) also stays off the Wi-Fi.
+- `~/.cloudflared/pare.yml`: `service: http://localhost:4000` → `http://127.0.0.1:4000`, so the
+  tunnel never tries IPv6 `::1`, which Pare no longer listens on.
+- The Node 24 binary on the Mac mini was checked against nodejs.org: the tarball matches
+  SHASUMS256.txt and `bin/node` SHA-256 `ba707358…e854` is identical to the installed one.
+- Every pm2 command in docs/scripts names the app (`--only pare`); never `all`/`resurrect`/`kill`/`update`.
+
 ## Verified (workbench, fresh `npm ci` under v24.22.3 / npm 11.19.1)
 
 - `npm run check` exit 0 · `npm run test:run` 586/586 · `npm run build` exit 0 (19/19 pages)
