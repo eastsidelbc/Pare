@@ -126,7 +126,7 @@ export async function GET() {
           { context: 'DEFENSE', requestId },
           'Serving STALE cache after ESPN failure'
         );
-        const staleResponse: ApiResponse = { ...stale, stale: true, error: msg };
+        const staleResponse: ApiResponse = { ...stale, stale: true, error: 'upstream-unavailable' }; // generic; details logged server-side (security phase 3)
         return NextResponse.json(staleResponse, {
           headers: {
             'Cache-Control': 'public, max-age=60',
@@ -202,7 +202,7 @@ export async function GET() {
       const staleResponse: ApiResponse = {
         ...stale,
         stale: true,
-        error: errorMessage
+        error: 'upstream-unavailable', // generic; details logged above (security phase 3)
       };
 
       return NextResponse.json(staleResponse, {

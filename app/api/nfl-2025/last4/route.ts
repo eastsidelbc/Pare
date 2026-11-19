@@ -71,7 +71,7 @@ export async function GET() {
 
     const stale = cache.getStale();
     if (stale) {
-      return NextResponse.json({ ...stale, stale: true, error: msg } satisfies ApiResponse, {
+      return NextResponse.json({ ...stale, stale: true, error: 'upstream-unavailable' } satisfies ApiResponse, {
         headers: {
           'Cache-Control': 'public, max-age=60',
           'X-Cache': 'STALE',

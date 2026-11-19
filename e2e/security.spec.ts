@@ -58,6 +58,17 @@ test.describe('API hardening', () => {
     });
   }
 
+  test('/api/health reveals only ok + commit + builtAt', async ({ request }) => {
+    const res = await request.get('/api/health');
+    expect(res.status()).toBe(200);
+    expect(Object.keys(await res.json()).sort()).toEqual(['builtAt', 'commit', 'ok']);
+  });
+
+  test('preferences: write methods → 405', async ({ request }) => {
+    expect((await request.put('/api/preferences', { data: { x: 1 } })).status()).toBe(405);
+    expect((await request.post('/api/preferences', { data: { x: 1 } })).status()).toBe(405);
+  });
+
   test('too many requests from one visitor → 429 + Retry-After; other visitors unaffected', async ({ request }) => {
     const as = (ip: string) => ({ headers: { 'cf-connecting-ip': ip } });
     // Upstream tier = 60 burst. Invalid username → 400 without calling Sleeper.

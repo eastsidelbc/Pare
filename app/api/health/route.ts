@@ -1,47 +1,21 @@
 /**
- * Health Check Endpoint
- * 
- * Required for iOS App Store compliance and production monitoring.
- * Returns basic health status and version information.
- * 
- * Usage:
- * - iOS: Check backend availability before making data requests
- * - Monitoring: Uptime checks from external services
- * - DevOps: Kubernetes/Docker health probes
- * 
- * Response: Always returns 200 OK with current status
+ * GET /api/health → { ok, commit, builtAt }
+ *
+ * Uptime checks, the iOS app and scripts/deploy.sh (which waits for `commit` to equal the new
+ * release) use this. It tells the world only what's needed: no uptime, environment, paths or
+ * versions (security hardening phase 3: less for a scanner to fingerprint).
  */
-
 import { NextResponse } from 'next/server';
 
-export async function GET() {
-  const timestamp = new Date().toISOString();
-  
-  // Calculate uptime (if available)
-  const uptime = process.uptime ? Math.floor(process.uptime()) : 0;
-  
-  // Basic health check response
-  const health = {
-    ok: true,
-    version: '1.0.0',
-    commit: process.env.GIT_SHA ?? 'unknown',
-    builtAt: process.env.BUILD_TIME ?? null,
-    timestamp,
-    uptime,
-    endpoints: {
-      offense: 'available',
-      defense: 'available'
-    },
-    environment: process.env.NODE_ENV || 'development'
-  };
-  
-  return NextResponse.json(health, {
-    headers: {
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Content-Type': 'application/json',
-      'X-Health-Check': 'ok'
-    },
-    status: 200
-  });
-}
+export const dynamic = 'force-dynamic';
 
+export function GET() {
+  return NextResponse.json(
+    {
+      ok: true,
+      commit: process.env.GIT_SHA ?? 'unknown',
+      builtAt: process.env.BUILD_TIME ?? null,
+    },
+    { headers: { 'Cache-Control': 'no-store' } },
+  );
+}
