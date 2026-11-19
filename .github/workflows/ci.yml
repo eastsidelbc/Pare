@@ -41,3 +41,41 @@ jobs:
           grep -rEn --include='*.tsx' --include='*.ts' '#[0-9a-fA-F]{6}' app components || echo "  (none)"
 
       - run: npm run test:run   # vitest run
+
+  # Browser tests (Playwright) against a PRODUCTION build on this throwaway runner.
+  # playwright.config.ts sees CI=true (set by GitHub) → `npm run build && npm run start` on :4000.
+  # Third-party actions are pinned to commit SHAs (tag in the comment); read-only token.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Playwright (iPhone 393 + iPad 834)
+        run: npx playwright test
+
+      - name: Upload Playwright report (on failure)
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

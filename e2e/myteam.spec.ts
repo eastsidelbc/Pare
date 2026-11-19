@@ -573,6 +573,9 @@ test.describe('P4 final mockup (FIX-TO-MOCKUP 1–10)', () => {
 
 /** P6 game-day layout (static sandbox frame — no live game needed). */
 test.describe('P6 game day (sandbox)', () => {
+  // /sandbox/myteam is dev-only (404 in production builds, app/sandbox/myteam/page.tsx) and CI
+  // tests the production build, so this group runs only locally against `npm run dev`.
+  test.skip(!!process.env.CI, 'sandbox page is dev-only (404 in production builds)');
   const frame = (page: Page) => page.locator('[data-state="game-day"]');
 
   test('points beside the meter (meter never hidden), small starters total with aria-live, no total card', async ({ page }) => {
