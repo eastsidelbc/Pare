@@ -217,7 +217,8 @@ export async function getStandings(): Promise<ConferenceStandings[]> {
  * Same Leaders pattern (`lib/leaders.ts` getBoardRows): `unstable_cache` around the
  * no-store fetch, so the 5s timeout always applies and a failed / partial fetch
  * throws → nothing bad is cached, the previous copy keeps serving. 60s here + the
- * page's 300s window ≈ 6 min worst case; /standings itself stays live.
+ * Next uses the shortest timer on a page, so this 60s pulls /leaderboards to a 1-min ISR window
+ * (≈ 2 min worst case; Kobe kept it 2026-10-23). /standings itself stays live.
  */
 const cachedStandings = unstable_cache(() => fetchStandings(), ['standings-strip-v1'], {
   revalidate: STRIP_REVALIDATE_SECONDS,

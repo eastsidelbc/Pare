@@ -64,12 +64,12 @@ All live from free public APIs — **no** CSV/PFR layer (removed 2026-10-01). En
 |---|---|---|
 | Live score / clock / final | browser polls `/api/live/scoreboard` every **5s** (`LIVE_POLL_MS`, never two requests at once) while a game is live **or** 10 min before → 3h after kickoff (`lib/liveWindow.ts`); server memory cache **10s** live / ≤5 min idle, never past the next live window (`scoreboardTtlMs`); responses **gzip**ped (scoreboard 8.3 → 1.7 KB) | ~5–15s |
 | Standings | `no-store` + `force-dynamic` (ESPN ≈0.19s of a 0.22s TTFB — no cache needed); 5s timeout → last-good copy on ESPN failure; open tab re-fetches on return after 60s (`useRefreshOnReturn`) | instant |
-| Leaders division strip | `getStandingsCached()` = `unstable_cache` 60s over the same no-store fetch (keeps `/leaderboards` ISR); page ISR 5 min | ≤~6 min (tap → `/standings` is instant) |
+| Leaders division strip | `getStandingsCached()` = `unstable_cache` 60s over the same no-store fetch (keeps `/leaderboards` ISR). Next takes the shortest timer on a page, so this pulls the **whole Leaders page to a 1-min ISR window** (build route table: `/leaderboards` 1m; Kobe kept it, 2026-10-23) | ≤~2 min (tap → `/standings` is instant) |
 | Home schedule + `/api/schedule` | fetch cache 5 min (`LIVE_REVALIDATE_SECONDS`); a loaded week >5 min old is re-fetched (week ±1) on scroll-into-view / app foreground (`ScheduleProvider.refreshStaleWeeks`) | ≤5 min after you look |
 | Compare offense/defense + W-L on Compare | route ISR + fetch cache 10 min (`REVALIDATE_SECONDS`) | ≤10 min |
 | Final box scores (yards-allowed) | per-game `unstable_cache` 24h | new finals next refresh |
 | Compare **L4** rows (`/api/nfl-2025/last4`) | route ISR 10 min over the 24h per-game box scores; client prefetches on idle, re-fetches on return after 10 min (`Last4StatsProvider`) | ≤10 min after a final |
-| Leaderboards (+ rookies, fantasy) | page ISR 5 min (`revalidate = 300`); board rows / rookie scans / Sleeper stats in `unstable_cache` 30 min over **no-store** fetches with timeouts (5s / 10s / 8s); failed or empty → previous cached copy, then in-memory last-good; Sleeper player map 24h (never caches `{}`); open tab re-fetches on return after 10 min | ≤~40 min worst case |
+| Leaderboards (+ rookies, fantasy) | page ISR **1 min** in practice (`revalidate = 300` in the file, pulled to 60s by the standings strip); board rows / rookie scans / Sleeper stats in `unstable_cache` 30 min over **no-store** fetches with timeouts (5s / 10s / 8s); failed or empty → previous cached copy, then in-memory last-good; Sleeper player map 24h (never caches `{}`); open tab re-fetches on return after 10 min | ≤~40 min worst case |
 
 - **One timer per data type.** The offense/defense routes' in-memory copy is a *last-good backup* only (served on ESPN failure) — never in front of ISR.
 - **Never nest** `unstable_cache` / cached `fetch` inside `unstable_cache` — Next silently bypasses nested caches.
