@@ -20,7 +20,7 @@ test.describe('security headers + CSP', () => {
       const res = await page.goto(path, { waitUntil: 'networkidle' });
       expect(res?.status()).toBe(200);
       const h = res!.headers();
-      expect(h['content-security-policy'] ?? h['content-security-policy-report-only']).toContain("default-src 'self'");
+      expect(h['content-security-policy']).toContain("default-src 'self'");
       expect(h['x-frame-options']).toBe('DENY');
       expect(h['x-content-type-options']).toBe('nosniff');
       expect(h['cross-origin-opener-policy']).toBe('same-origin');

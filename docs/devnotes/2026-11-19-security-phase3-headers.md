@@ -29,7 +29,7 @@ worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame
   every page (ISR off), and hash-based SRI is webpack-only (we build with Turbopack). Pare renders
   no user-supplied HTML and every other directive is locked, so this is the accepted tradeoff.
   Revisit with Next 16 or if user content ever appears.
-- **Report-Only first**, per the hardening plan: enforce only after the e2e check stays clean.
+- **Report-Only first**, then enforced 2026-11-19 (branch `security/phase3-csp-enforce`) after 0 violations in CI e2e (6 pages × 2 viewports) and Kobe checking phone + iOS app.
 
 ## Tests
 

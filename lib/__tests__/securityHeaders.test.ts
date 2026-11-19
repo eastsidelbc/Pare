@@ -30,7 +30,7 @@ describe('security headers', () => {
 
   it('CSP: self-only, no eval, no plugins, no framing', async () => {
     const h = await globalHeaders();
-    const csp = h['Content-Security-Policy'] ?? h['Content-Security-Policy-Report-Only'];
+    const csp = h['Content-Security-Policy']; // enforced, not Report-Only
     expect(csp).toBeDefined();
     const d = Object.fromEntries(
       csp!.split(';').map((p) => p.trim().split(/\s+/)).map(([k, ...v]) => [k, v]),

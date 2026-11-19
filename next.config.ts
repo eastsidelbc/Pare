@@ -14,8 +14,8 @@ const gitSha = (() => {
 const buildTime = new Date().toISOString();
 
 // Content-Security-Policy: the browser may load code, styles, images and data from pare.gg only
-// (fonts are self-hosted by next/font; ESPN/Sleeper are called server-side). Shipped as
-// Report-Only first (logs violations, blocks nothing) → enforce once the console is clean.
+// (fonts are self-hosted by next/font; ESPN/Sleeper are called server-side).
+// Enforced since 2026-11-19 (shipped Report-Only first: 0 violations in CI e2e and on Kobe's phone/iOS).
 // 'unsafe-inline' for scripts is deliberate: nonces force every page to render per request
 // (no ISR), and hash-based SRI is webpack-only (we build with Turbopack). Next's own inline RSC
 // scripts plus our 3 fixed inline scripts in app/layout.tsx need it. No user HTML is ever
@@ -53,7 +53,7 @@ const nextConfig: NextConfig = {
         // docs/devnotes/2026-11-19-security-phase3-headers.md).
         source: '/:path*',
         headers: [
-          { key: 'Content-Security-Policy-Report-Only', value: CSP },
+          { key: 'Content-Security-Policy', value: CSP }, // enforced 2026-11-19 after Report-Only showed 0 violations (CI e2e + Kobe on phone/iOS)
           // HSTS: browsers only ever use HTTPS for pare.gg (1 year). `preload` needs Kobe's OK.
           ...(isDev ? [] : [{ key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' }]),
           { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
