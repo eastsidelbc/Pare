@@ -147,19 +147,26 @@ the port, so find it (`netstat -ano | findstr :4000`), run `taskkill /PID <pid> 
 port is free. Restart the dev server whenever needed (stale code, a crash, a switched branch). Then
 tell Kobe which folder/branch :4000 is serving. Never run `npm run build` while dev is running.
 
-**Deploy (manual — Cloudflare only tunnels):** commit + push from the Windows box (soypc), then on the M1 Mac mini:
+**Deploy (since 2026-11-18, `scripts/deploy.sh`):** push to GitHub `main`, wait for CI to go green, then on the M1 Mac mini:
 
 ```bash
-git restore package-lock.json   # npm install rewrites platform entries; otherwise pull aborts
-git pull
-npm install                     # not `npm ci` — cross-platform lockfile
-npm run clean
-npm run build
-pm2 restart pare                # app = "pare" (localhost:4000); tunnel = "pare-tunnel"
-pm2 logs pare                   # watch for ESPN 429/403
+cd ~/Pare && npm run deploy                 # builds GitHub main in its own folder, flips, health-checks
+npm run deploy -- --dry-run                 # everything except the switch (safe anytime)
+npm run deploy -- --rollback                # back to the previous release in seconds
+pm2 logs pare                               # watch for ESPN 429/403
 ```
 
-**Leans lab (Mac mini, weekly, since 2026-10-23):** `pm2 start scripts/leans-lab.sh --name leans-lab --cron-restart "0 6 * * 2" --no-autorestart` then `pm2 save`. Tuesdays 06:00 it grades last week (champion = the live lean, challengers = frozen rules), re-learns, freezes ≤ 3 new challengers. Read `.cache/leans-lab/2026/scoreboard.md`; a "READY" rule goes live only after Kobe says yes. Manual run: `sh scripts/leans-lab.sh`. Pre-registration: `docs/plans/2026-10-23-leans-lab/preregistration.md`.
+- Releases live in `~/pare-releases/<time>-<sha>/` (git worktrees); `~/pare-current` points at the live one and is
+  pm2 `pare`'s cwd (`ecosystem.config.cjs`). It keeps the live release + 1 previous. `node_modules` is APFS-cloned
+  when `package-lock.json` didn't change, else a fresh `npm ci`. History: `~/pare-releases/deploy-history.log`.
+- It refuses when CI for that commit isn't green, when < 3 GB of disk is free, or when another deploy is running.
+  If the new build doesn't answer `/api/health` with its commit (127.0.0.1 and pare.gg), it flips back automatically.
+- `~/Pare` is the git checkout only (and leans-lab's home); building there no longer touches the live site.
+- **Never run `npm run dev` or Playwright on the Mac mini.** :4000 is production behind the tunnel, so a dev server
+  there would be public.
+- pm2 on this host is shared: name the app (`pm2 reload pare`), never `all` / `resurrect` / `kill` / `update`.
+
+**Leans lab (Mac mini, weekly, since 2026-10-23):** defined in `ecosystem.config.cjs` (runs in `~/Pare`, Node 24; starting it runs the job right away); originally `pm2 start scripts/leans-lab.sh --name leans-lab --cron-restart "0 6 * * 2" --no-autorestart` then `pm2 save`. Tuesdays 06:00 it grades last week (champion = the live lean, challengers = frozen rules), re-learns, freezes ≤ 3 new challengers. Read `.cache/leans-lab/2026/scoreboard.md`; a "READY" rule goes live only after Kobe says yes. Manual run: `sh scripts/leans-lab.sh`. Pre-registration: `docs/plans/2026-10-23-leans-lab/preregistration.md`.
 
 **iOS (Mac mini only, in `~/Pare-ios` — never `~/Pare`):** `open ios/Pare.xcodeproj` (build/run) · terminal build: `xcodebuild -project ios/Pare.xcodeproj -scheme Pare -destination "id=<UDID>" build` (UDIDs: `xcrun simctl list devices available`).
 

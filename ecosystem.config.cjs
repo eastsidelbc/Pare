@@ -27,6 +27,13 @@ if (!fs.existsSync(NODE)) {
   throw new Error(`ecosystem.config.cjs: ${NODE} not found. Run \`nvm install ${NODE_VERSION}\` first.`);
 }
 
+// `pare` serves whatever release ~/pare-current points at (scripts/deploy.sh flips it, then
+// `pm2 reload pare`). Hard-coded, not __dirname: Node resolves __dirname to the release's real
+// path, which would pin pm2 to one release forever.
+const LIVE_DIR = path.join(os.homedir(), 'pare-current');
+// The git checkout. leans-lab runs here: its results (.cache/leans-lab) must outlive releases.
+const REPO_DIR = path.join(os.homedir(), 'Pare');
+
 const LOGS = path.join(os.homedir(), '.pm2/logs'); // same files as before, so pm2-logrotate keeps working
 const LOG_DATE = 'YYYY-MM-DD HH:mm:ss Z';
 
@@ -34,7 +41,7 @@ module.exports = {
   apps: [
     {
       name: 'pare',
-      cwd: __dirname,
+      cwd: LIVE_DIR,
       // Run Next directly, not via `npm start`: pm2's stop/reload signals reach the server itself.
       script: 'node_modules/next/dist/bin/next',
       // 127.0.0.1 only: reachable through the Cloudflare tunnel, not from the Wi-Fi.
@@ -60,7 +67,7 @@ module.exports = {
     },
     {
       name: 'pare-tunnel',
-      cwd: __dirname,
+      cwd: REPO_DIR,
       script: '/opt/homebrew/bin/cloudflared',
       args: `tunnel --config ${path.join(os.homedir(), '.cloudflared/pare.yml')} run`,
       interpreter: 'none',
@@ -75,7 +82,7 @@ module.exports = {
     },
     {
       name: 'leans-lab',
-      cwd: __dirname,
+      cwd: REPO_DIR,
       script: 'scripts/leans-lab.sh',
       interpreter: 'bash',
       cron_restart: '0 6 * * 2', // Tuesdays 06:00 (CLAUDE.md "Leans lab")
