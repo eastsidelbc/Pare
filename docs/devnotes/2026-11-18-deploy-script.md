@@ -47,4 +47,10 @@ so the rollback target exists even on the first run.
 - `npm run deploy -- --dry-run` on the Mac mini: GitHub main `0a8bc96`, CI gate green, release
   folder built, 586/586 tests, build 19/19, release removed. Free disk 7 GB before and after;
   live site untouched (`/api/health` still `0a8bc96`).
-- Real deploy + deliberate health-failure rollback test: pending Kobe's OK.
+- First real deploy (migration), 21:45:41 → 21:46:17: `0a8bc96 → 5409e16`. pm2 `pare` cwd
+  `~/pare-current` → `~/pare-releases/20261118-214541-5409e16`, Node 24, 127.0.0.1 only, all pages 200,
+  offense/defense 32 rows, no new errors, `pm2 save`d. Disk unchanged (node_modules cloned).
+- Follow-up fix: after a successful rollback the failed release folder is removed right away
+  (before, it waited for the next successful deploy's prune). If the rollback is itself unhealthy,
+  the folder is kept for inspection.
+- Deliberate health-failure rollback test (`PARE_DEPLOY_TEST_FAIL=1 npm run deploy`): pending.

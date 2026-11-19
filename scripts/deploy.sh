@@ -213,6 +213,10 @@ if ! verify_live "$SHORT"; then
   activate "$PREV_DIR"
   if wait_for_commit "$LOCAL_HEALTH" "${LIVE_COMMIT:-unknown}" 60; then
     history_line "ROLLBACK" "$SHORT failed health -> back on $LIVE_COMMIT"
+    # Old site is healthy again: the failed release is no longer needed (logs are in pm2's files).
+    # If the rollback itself is unhealthy (branch below), it stays on disk for inspection.
+    if git -C "$REPO" worktree remove --force "$REL"; then echo "  removed failed release $(basename "$REL")"
+    else red "  (could not remove $REL; next successful deploy prunes it)"; fi
     red "✖ Deploy of $SHORT FAILED and was rolled back. pare.gg is on ${LIVE_COMMIT}. Logs: pm2 logs $APP"
   else
     history_line "BROKEN" "$SHORT failed health, rollback to $LIVE_COMMIT also unhealthy"
