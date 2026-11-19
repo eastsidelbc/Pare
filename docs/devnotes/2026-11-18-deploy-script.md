@@ -53,4 +53,13 @@ so the rollback target exists even on the first run.
 - Follow-up fix: after a successful rollback the failed release folder is removed right away
   (before, it waited for the next successful deploy's prune). If the rollback is itself unhealthy,
   the folder is kept for inspection.
-- Deliberate health-failure rollback test (`PARE_DEPLOY_TEST_FAIL=1 npm run deploy`): pending.
+- **First rollback test, interrupted (21:58):** the forced failure waited 60 + 30 s in silence, so it
+  looked frozen and Kobe pressed Ctrl+C. The script died without rolling back or cleaning up: new
+  release live (harmless, real code `89eff0c`), no history line, stale `.lock` (later deploys refused
+  with "another deploy is running"). Lock removed by hand after confirming no deploy process.
+- Fixes: (1) health waits print progress every 6 s; test mode fails after 20 s, not 90.
+  (2) `trap on_signal INT TERM HUP`: Ctrl+C after the switch but before the health check passed rolls
+  back first (`roll_back`, not interruptible), then exits 130; the EXIT trap always removes the lock.
+  Proven with a throwaway `npm run` + bash script sent SIGINT to its whole process group (as a terminal
+  Ctrl+C does): the handler ran, then cleanup ran with rc=130.
+- Rollback tests on the fixed script (forced failure; Ctrl+C during the wait): pending.
