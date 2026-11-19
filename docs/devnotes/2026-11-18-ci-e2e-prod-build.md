@@ -30,6 +30,13 @@ Branch `ci/e2e-prod-build`. Part of the 2026-11-18 security hardening.
   IPs, the data layer's empty fallbacks apply. The My Team specs mock `/api/myteam/*`, but nav
   and pages still render.
 - About +5 min per CI run (build + Chromium install); free on a public repo.
+- **"P6 game day (sandbox)" (2 tests × 2 viewports) is skipped in CI on purpose.** The first CI run
+  (40 passed / 4 failed / 6 skipped) showed those 4 failing because `/sandbox/myteam` is dev-only
+  (`notFound()` in production builds; live `pare.gg/sandbox/myteam` → 404, which is the right
+  security posture). They still run locally against `npm run dev`. Making CI cover game day =
+  rewrite them against the real `/myteam` with mocked live data (separate task). Unlocking the
+  sandbox in production was rejected (it risks shipping a fake-data page).
+- The other 6 skips are pre-existing viewport-only tests (phone-only / iPad-only).
 
 ## Verified
 
